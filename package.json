@@ -1,0 +1,24 @@
+{
+  "name": "jssip",
+  "title": "JsSIP",
+  "description": "Javascript SIP WebSocket library",
+  "version": "0.1.0",
+  "homepage": "http://jssip.net",
+  "author": "José Luis Millán <jmillan@aliax.net>",
+  "contributors": [
+    {
+      "url": "https://github.com/versatica/JsSIP/blob/master/AUTHORS"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/versatica/JsSIP.git"
+  },
+  "keywords": [
+    "sip",
+    "websocket",
+    "stack",
+    "library"
+  ],
+  "license": "MIT"
+}

@@ -1,7 +1,6 @@
-JsSIP
-=====
+# JsSIP: The Open JavaScript SIP Stack
 
-JsSIP is the first JavaScript SIP library implementing the [SIP WebSocket transport](http://tools.ietf.org/html/draft-ietf-sipcore-sip-websocket).
 
-The code will be released very soon.
+**NOTE:** The website and documentation of JsSIP will be ready very soon in [www.jssip.net](http://www.jssip.net).
+
 

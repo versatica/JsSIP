@@ -1,0 +1,753 @@
+/***************** Generales ***************/
+/*******************************************/
+body, div, span, img, h1, h2, h3, h4, h5, h6, form, table, td, tr, p {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+* {
+  font-size: 12px;
+  font-family: sans-serif;
+}
+
+input[type="button"] {  /* Firefox pone un feo margin/padding a los botones */
+  margin: 0;
+  padding: 0;
+}
+
+input[type="text"] {
+  margin: 0;
+  padding: 0;
+}
+
+input[type="checkbox"] {
+  margin: 0px;
+}
+
+
+.spacer {
+  clear: both;
+}
+
+
+
+/***************** body ***************/
+/**************************************/
+body.bg01 {
+  background: url("../images/page-bg-01.jpg");
+}
+body.bg02 {
+  background: url("../images/page-bg-02.jpg");
+}
+body.bg03 {
+  background: url("../images/page-bg-03.jpg");
+}
+body.bg04 {
+  background: url("../images/page-bg-04.jpg");
+}
+body.bg05 {
+  background: url("../images/page-bg-05.jpg");
+}
+
+
+
+/************** login-page ************/
+/**************************************/
+#login-page {
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+  background: #00A8A8;
+  _display: none;
+}
+
+#login-box {
+  position: absolute;
+  width: 500px;
+  height: 420px;
+  left: 50%;
+  top: 50%;
+  margin-left: -250px;
+  margin-top: -210px;
+  background: url("../images/transparent-50-bg.png") repeat;
+  border-radius: 10px;
+  padding-top: 20px;
+}
+
+#login-box div.logo {
+  width: 380px;
+  height: 200px;
+  margin: auto;
+  background: center url("../images/sip-on-the-web.png") no-repeat;
+  z-index: 10;
+}
+
+#login-box div.identification {
+  margin: 30px auto 0 auto;
+  width: 400px;
+  z-index: 10;
+}
+
+#login-box div.identification input {
+  display: block;
+  margin: 0 auto;
+  _width: 100%;
+  width: 400px;
+  height: 34px;
+  border: 0;
+  line-height: 34px;
+  text-indent: 10px;
+  font-size: 20px;
+  color: #111;
+  z-index: 10;
+}
+
+#login-box div.identification input.unset {
+  color: #AAA;
+}
+
+#login-box div.identification input.first {
+  border-radius: 10px 10px 0 0;
+}
+
+#login-box div.identification input {
+  margin-bottom: 10px;
+}
+
+#login-box div.identification input.last {
+  border-radius: 0 0 10px 10px;
+  margin-bottom: 0;
+}
+
+#version {
+  position: relative;
+  margin-top: 20px;
+  margin-right: 20px;
+  float: right;
+  background: url("../images/transparent-black-25-bg.png") repeat;
+  border-radius: 10px;
+  padding: 5px;
+  opacity: 0.8;
+  display: none;
+}
+
+#version div {
+  text-align: center;
+  color: #FFF;
+  font-size: 13px;
+}
+
+
+/***** themes *******/
+#themes {
+  position: fixed;
+  right: 0;
+  top: 50px;
+  width: 64px;
+  padding: 8px;
+  background: url("../images/transparent-black-25-bg.png") repeat;
+  border-radius: 5px 0 0 5px;
+}
+
+#themes div {
+  height: 64px;
+  width: 64px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+#themes div.theme01 {
+  margin-top: 0;
+  background: url("../images/mini-bg-01.png");
+}
+
+#themes div.theme02 {
+  background: url("../images/mini-bg-02.png");
+}
+
+#themes div.theme03 {
+  background: url("../images/mini-bg-03.png");
+}
+
+#themes div.theme04 {
+  background: #000 url("../images/mini-bg-04.png");
+}
+
+#themes div.theme05 {
+  background: #000 url("../images/mini-bg-05.png");
+}
+
+/***************** phone ***************/
+/*******************************************/
+#phone {
+  position: relative;
+  float: left;
+  width: 270px;
+  padding: 20px 10px;  
+  background: url("../images/transparent-25-bg.png") repeat;
+  border-radius: 0 0 10px 0;
+  margin-bottom: 20px;
+}
+
+
+#phone .line-separator {
+  clear: both;
+  height: 1px;
+  background: url("../images/dialpad-buttons-horizontal-separator.png") no-repeat;
+}
+
+#phone .line-separator-black {
+  clear: both;
+  height: 1px;
+  background: url("../images/dialpad-buttons-horizontal-separator-black.png") no-repeat;
+}
+
+
+/* status */
+
+#phone .status {
+  position: relative;
+  padding: 10px;
+  font-family: monospace;
+  /* width interno: 234px */
+  background: url("../images/transparent-50-bg.png") repeat;
+  border-radius: 5px;
+  color: #000;
+  opacity: 0.8;
+}
+
+#phone .status > div + div {
+  margin-top: 10px;
+}
+
+#phone .status span.field {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#phone .status span.value {
+  font-size: 14px;
+  font-weight: bold;
+}
+#phone .status #conn-status.connected span.value {
+  color: #C49300;
+}
+#phone .status #conn-status.registered span.value {
+  color: #008000;
+}
+#phone .status #conn-status.disconnected span.value {
+  color: #FF2200;
+}
+
+#phone .status input[type="checkbox"] {
+  position: relative;
+  top: 2px;
+}
+
+#phone .status span.value.user {
+  font-size: 14px;
+  color: #008000;
+}
+
+
+/* controls */
+#phone .controls {
+  position: relative;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 18px;
+  padding-bottom: 10px;
+  background: url("../images/transparent-black-75-bg.png") repeat;
+  border-radius: 5px;
+}
+
+
+#phone .controls .ws-disconnected {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0.7;
+  background: #333;
+  border-radius: 5px;
+  z-index: 100;
+  display: none;
+}
+
+/* dialbox */
+
+#phone .dialbox {
+  position: relative;
+  font-family: monospace;
+}
+
+#phone .dialbox input.destination {
+  display: block;
+  position: relative;
+  width: 186px;
+  padding: 0 5px 0 40px;
+  height: 43px;
+  line-height: 43px;
+  border: 1px solid #666;
+  margin: 0;
+  outline: none; /* Remove the border when has the focus */
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: bold;
+  color: #FFF;
+  text-align: right;
+  letter-spacing: 1px;
+  background: center url("../images/dialed-number.png") repeat-x;
+  opacity: 0.9;
+  border-radius: 5px;
+}
+#phone .dialbox input.destination:hover {
+  border-color: #EEE;
+}
+#phone .dialbox input.destination:focus {
+  border-color: #EEE;
+  opacity: 1;
+}
+
+#phone .dialbox .to {
+  position: absolute;
+  z-index: 10;
+  top: 2px;
+  padding-left: 8px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 150%;
+  color: #FFF;
+  font-family: inherit;
+  opacity: 0.5;
+}
+
+#phone .dialbox .dial-buttons {
+ position: relative;
+ margin-top: 10px;
+}
+
+#phone .dialbox .dial-buttons .button {
+  height: 50px;
+  line-height: 50px;
+  font-size: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #FFF;
+  opacity: 0.8;
+  letter-spacing: 10px;
+  text-align: center;
+  user-select: none;
+}
+#phone .dialbox .dial-buttons .button:hover {
+  color: #FFF;
+  opacity: 1;
+  text-shadow: #FFF 0px 0px 5px;
+}
+#phone .dialbox .dial-buttons .button:active {
+  color: #00FF00;
+}
+
+
+/* dialpad */
+
+#phone .dialpad {
+  position: relative;
+  margin-top: 10px;
+}
+
+#phone .dialpad .line {
+  height: 50px;
+}
+
+#phone .dialpad .button {
+  float: left;
+  height: 50px;
+  width: 76px;
+  color: #FFF;
+  opacity: 0.8;
+  font-size: 30px;
+  font-weight: bold;
+  line-height: 50px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+}
+
+#phone .dialpad .button:hover {
+  color: #FFF;
+  opacity: 1;
+  text-shadow: #FFF 0px 0px 5px;
+}
+
+#phone .dialpad .button:active {
+  color: #00FF00;
+}
+
+
+
+/***************** sessions ***************/
+/*******************************************/
+#sessions {
+  position: relative;
+  float: left;
+  margin-left: 10px;
+  width: 300px;
+  padding-top: 10px;
+}
+
+#sessions .session {
+  display: none;
+  position: relative;
+  background: url("../images/transparent-25-bg.png") repeat;
+  border-radius: 0 10px 10px 0;
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+#sessions .session .close {
+  position: absolute;
+  right: -45px;
+  top: 10px;
+  width: 60px;
+  height: 40px;
+  background: center top url("../images/session-close.png") no-repeat;
+  cursor: pointer;
+  z-index: 100;
+  display: none;
+}
+
+#sessions .session .container {
+  position: relative;
+  background: url("../images/transparent-75-bg.png") repeat;
+  border-radius: 0 10px 10px 0;
+  padding: 5px;
+}
+
+#sessions .session .peer span {
+  font-size: 12px;
+  color: #555;
+}
+
+#sessions .session .peer span.display-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-right: 5px;
+}
+
+#sessions .session .container > .call {
+  margin-top: 6px;
+  height: 32px;
+  color: #333;
+}
+
+#sessions .session .container > .call .button {
+  float: left;
+  margin-right: 2px;
+  height: 32px;
+  width: 32px;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+#sessions .session .container > .call .button.dial {
+  background-image: url("../images/icon-dial.png");
+}
+#sessions .session .container > .call .button.hangup {
+  background-image: url("../images/icon-hangup.png");
+}
+#sessions .session .container > .call .button.hold {
+  background-image: url("../images/icon-hold.png");
+}
+#sessions .session .container > .call .button.resume {
+  background-image: url("../images/icon-resume.png");
+}
+
+#sessions .session .container > .call .call-status {
+  float: left;
+  width: 178px;
+  height: 24px;
+  padding-top: 8px;
+  _line-height: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  _overflow: hidden;
+}
+
+/* call inactive */
+#sessions .session .container > .call.inactive .button.dial {
+}
+#sessions .session .container > .call.inactive .button.hangup {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.inactive .button.hold {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.inactive .button.resume {
+  display: none;
+}
+
+/* call trying */
+#sessions .session .container > .call.trying .button.dial {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.trying .button.hangup {
+}
+#sessions .session .container > .call.trying .button.hold {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.trying .button.resume {
+  display: none;
+}
+#sessions .session .container > .call.trying .call-status {
+  color: #666;
+}
+
+/* call in-progress */
+#sessions .session .container > .call.in-progress .button.dial {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.in-progress .button.hangup {
+}
+#sessions .session .container > .call.in-progress .button.hold {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.in-progress .button.resume {
+  display: none;
+}
+#sessions .session .container > .call.in-progress .call-status {
+  color: #C49300;
+}
+
+/* call incoming */
+#sessions .session .container > .call.incoming .button.dial {
+}
+#sessions .session .container > .call.incoming .button.hangup {
+}
+#sessions .session .container > .call.incoming .button.hold {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.incoming .button.resume {
+  display: none;
+}
+#sessions .session .container > .call.incoming .call-status {
+  color: #C49300;
+}
+
+/* call answered */
+#sessions .session .container > .call.answered .button.dial {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.answered .button.hangup {
+}
+#sessions .session .container > .call.answered .button.hold {
+}
+#sessions .session .container > .call.answered .button.resume {
+  display: none;
+}
+#sessions .session .container > .call.answered .call-status {
+  color: #008000;
+}
+
+/* call answered-elsewhere */
+#sessions .session .container > .call.answered-elsewhere .button.dial {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.answered-elsewhere .button.hangup {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.answered-elsewhere .button.hold {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.answered-elsewhere .button.resume {
+  display: none;
+}
+#sessions .session .container > .call.answered-elsewhere .call-status {
+  color: #558000;
+}
+
+/* call on-hold */
+#sessions .session .container > .call.on-hold .button.dial {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.on-hold .button.hangup {
+}
+#sessions .session .container > .call.on-hold .button.hold {
+  display: none;
+}
+#sessions .session .container > .call.on-hold .button.resume {
+}
+#sessions .session .container > .call.on-hold .call-status {
+  color: #008000;
+}
+
+/* call terminated */
+#sessions .session .container > .call.terminated .button.dial {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.terminated .button.hangup {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.terminated .button.hold {
+  cursor: default;
+  opacity: 0.4;
+}
+#sessions .session .container > .call.terminated .button.resume {
+  display: none;
+}
+#sessions .session .container > .call.terminated .call-status {
+  color: #FF2200;
+}
+
+
+#sessions .session .chat {
+  position: relative;
+  margin-top: 10px;
+}
+
+#sessions .session .chat .chatting {
+  position: relative;
+  background: #FFF;
+  padding: 5px;
+  font-size: 12px;
+  color: #333;
+  max-height: 80px;
+  overflow: auto;
+  border: 1px solid #CCC;
+}
+#sessions .session .chat .chatting.inactive {
+  display: none;
+}
+
+#sessions .session .chat .iscomposing {
+  position: absolute;
+  background: url("../images/iscomposing2.gif") no-repeat;
+  width: 26px;
+  height: 26px;
+  bottom: 32px;
+  right: 16px;
+  z-index: 20;
+  display: none;
+}
+
+#sessions .session .chat .chatting p {
+  font-size: inherit;
+  margin-bottom: 2px;
+}
+
+#sessions .session .chat .chatting p.me {
+  color: #444;
+}
+
+#sessions .session .chat .chatting p.peer {
+  color: #008F00;
+}
+
+#sessions .session .chat .chatting p.error {
+  color: red;
+}
+
+#sessions .session .chat input[type="text"] {
+  margin: 5px 0 0 0;
+  display: block;
+  line-height: 24px;
+  height: 24px;
+  border: 1px solid #CCC;
+  border-radius: 0 0 5px 0;
+  width: 278px;
+  font-size: 12px;
+  text-indent: 5px;
+  color: #000;
+  font-style: normal;
+}
+#sessions .session .chat input[type="text"].inactive {
+  color: #888;
+  font-style: italic;
+}
+
+
+/***************** webcam **************/
+/***************************************/
+#webcam {
+  position: absolute;
+  top: 50px;
+  right: 100px;
+  width: 400px;
+  height: 300px;
+  padding: 6px;
+  background: url("../images/transparent-black-25-bg.png") repeat;
+  border-radius: 10px;
+  border: 2px solid #EEE;
+}
+
+#webcam video#remoteView {
+  width: 400px;
+  height: 300px;
+  background-color: #000;
+}
+
+#webcam video#selfView {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  width: 133px;
+  height: 100px;
+  background-color: #111;
+  border-top: 2px solid #CCC;
+  border-right: 2px solid #CCC;
+}
+
+
+
+/****************** TMP *********************/
+#deregister_all {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+#ws_reconnect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+
+/* TMP: Simular entrantes */
+#test-incoming {
+  position: absolute;
+  top: 20px;
+  left: 800px;
+}

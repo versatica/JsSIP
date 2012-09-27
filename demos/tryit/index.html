@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!--<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+
+<head>
+  <title>SIP on the Web</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="Author" content="José Luis Millán, Iñaki Baz Castillo" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+  <script src="js/jquery-1.6.1.min.js" type="text/javascript"></script>
+  <script src="js/init.js" type="text/javascript"></script>
+
+  <!-- JsSIP -->
+  <script src="../../dist/jssip-0.1.0.js" type="text/javascript"></script>
+  <!-- /JsSIP -->
+
+  <script src="js/gui.js" type="text/javascript"></script>
+</head>
+
+
+<body class="bg01">
+
+  <div id="login-page">
+    <div id="login-box">
+      <div class="logo"></div>
+      <div class="identification">
+        <input id="sip_uri" class="first unset" type="text" value="SIP uri (i.e: bob@biloxi.com)"/>
+        <input id="sip_password" class="unset" type="password" value="SIP password"/>
+        <input id="ws_uri" class="last unset" type="text" value="WS URI (i.e: wss://example.net)"/>
+      </div>
+    </div>
+
+    <div id="version">
+      <div class="jssip-version">JsSIP version: 0.0.1</div>
+      <div class="jssip-svn-revision">SVN revision: 498</div>
+    </div>
+  </div>
+
+  <div id="phone-page">
+
+    <div id="themes">
+      <div class="theme01"></div>
+      <div class="theme02"></div>
+      <div class="theme03"></div>
+      <div class="theme04"></div>
+      <div class="theme05"></div>
+    </div>
+
+    <div id="phone">
+
+      <div class="status">
+        <div id="conn-status">
+          <span class="field">status: </span>
+          <span class="value"></span>
+        </div>
+        <div>
+          <span class="field">receive incoming calls: </span>
+          <input type="checkbox" id="register"/>
+        </div>
+        <div>
+          <span class="field">user: </span>
+          <span class="value user"></span>
+        </div>
+      </div>
+
+      <div class="controls">
+
+        <div class="ws-disconnected"></div>
+
+        <div class="dialbox">
+          <input type="text" class="destination" value=""/>
+          <div class="to">To:</div>
+          <div class="dial-buttons">
+            <div class="button call">call</div>
+            <div class="line-separator"></div>
+            <div class="button chat">chat</div>
+            <input type="checkbox" id="video" checked/>
+          </div>
+        </div>
+
+        <div class="dialpad">
+          <div class="line">
+            <div class="button digit-1">1</div>
+            <div class="button digit-2">2</div>
+            <div class="button digit-3">3</div>
+          </div>
+          <div class="line-separator"></div>
+          <div class="line">
+            <div class="button digit-4">4</div>
+            <div class="button digit-5">5</div>
+            <div class="button digit-6">6</div>
+          </div>
+          <div class="line-separator"></div>
+          <div class="line">
+            <div class="button digit-7">7</div>
+            <div class="button digit-8">8</div>
+            <div class="button digit-9">9</div>
+          </div>
+          <div class="line-separator"></div>
+          <div class="line">
+            <div class="button digit-asterisk">*</div>
+            <div class="button digit-0">0</div>
+            <div class="button digit-pound">#</div>
+          </div>
+        </div><!-- .dialpad -->
+
+      </div><!-- .controls -->
+    </div><!-- #phone -->
+
+
+    <div id="sessions"></div>
+
+    <div id="webcam">
+      <video id="remoteView" autoplay hidden=true poster="images/sip-on-the-web.png"></video>
+      <!--<video id="remoteView" autoplay
+        src="http://shapeshed.com/examples/HTML5-video-element/video/320x240.ogg">
+      </video>-->
+
+      <video id="selfView" autoplay hidden=true></video>
+      <!--<video id="selfView" autoplay
+        src="http://shapeshed.com/examples/HTML5-video-element/video/320x240.ogg">
+      </video>-->
+    </div>
+
+    <div id="ws_reconnect"></div>
+    <div id="deregister_all"></div>
+  </div><!-- phone-page -->
+
+</body>
+</html>

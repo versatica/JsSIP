@@ -1,0 +1,19 @@
+MAIN AUTHOR
+===========
+
+- José Luis Millán <jmillan@aliax.net> (Github @jmillan)
+
+
+
+CONTRIBUTORS
+============
+
+- Iñaki Baz Castillo <ibc@aliax.net> (Github @ibc)
+
+  Lots of help with the SIP stack design.
+  Providing of OverSIP as the best SIP WebSocket Server for JsSIP.
+
+- Saúl Ibarra Corretgé <saghul@gmail.com> (Github @saghul)
+
+  Great ideas and proposals.
+
