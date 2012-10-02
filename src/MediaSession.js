@@ -115,8 +115,6 @@ JsSIP.MediaSession.prototype = {
     // Set the comming sdp offer as remoteDescription
     offer  = new SessionDescription(sdp);
 
-    console.log(offer.toSdp());
-
     try {
       this.peerConnection.setRemoteDescription(this.peerConnection.SDP_OFFER, offer);
     } catch (e) {
@@ -241,7 +239,6 @@ JsSIP.MediaSession.prototype = {
     } else if (type === this.peerConnection.SDP_ANSWER) {
       var answer = new SessionDescription(sdp);
 
-      console.log(answer.toSdp());
       try {
         this.peerConnection.setRemoteDescription(this.peerConnection.SDP_ANSWER, answer);
         onSuccess();
