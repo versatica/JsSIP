@@ -3,11 +3,11 @@ $(document).ready(function(){
   // Default settings.
   var default_sip_uri = "jmillan@jssip.net";
   var default_sip_password = '';
-  var outbound_proxy_set = [{
+  var outbound_proxy_set = {
     host: "tryit.jssip.net:10080",
     ws_path:'ws',
     ws_query: 'wwdf'
-  }];
+  };
 
 
   // Global variables.
@@ -94,8 +94,15 @@ $(document).ready(function(){
         sip_uri = login_sip_uri.val();
       if (login_sip_password.val() != "" && ! login_sip_password.hasClass("unset"))
         sip_password = login_sip_password.val();
-      if (login_ws_uri.val() != "" && ! login_ws_uri.hasClass("unset"))
+      if (login_ws_uri.val() != "" && ! login_ws_uri.hasClass("unset")) {
         ws_uri = login_ws_uri.val();
+        if (!check_ws_uri(ws_uri)) {
+          alert("Invalid WS URI field");
+          return;
+        } else {
+          outbound_proxy_set = check_ws_uri(ws_uri);
+        }
+      }
 
       if (sip_uri == null) {
         alert("Please fill SIP uri field");
@@ -209,7 +216,7 @@ $(document).ready(function(){
     });
 
     var configuration  = {
-      'outbound_proxy_set':  outbound_proxy_set,
+      'outbound_proxy_set':  [outbound_proxy_set],
       'uri': sip_uri,
       'display_name': '',
       'password':  sip_password,
@@ -288,6 +295,40 @@ $(document).ready(function(){
       return (Math.random() * 255 | 0) + 1;
     }
     return get_octet()+'.'+get_octet()+'.'+get_octet()+'.'+get_octet();
+  }
+
+  function check_ws_uri(ws_uri) {
+    var ws_uri_prefix, ws_uri_hostport, ws_uri_path, ws_uri_query, slash_idx, query_idx;
+
+    ws_uri_prefix = ws_uri.substr(0,5);
+
+    if (ws_uri_prefix !== 'ws://') {
+      return false
+    }
+
+    ws_uri = ws_uri.substr(5);
+    slash_idx = ws_uri.indexOf('/');
+
+    if (slash_idx === -1) {
+      ws_uri_hostport = ws_uri;
+    } else {
+      ws_uri_hostport = ws_uri.substr(0,slash_idx);
+      ws_uri = ws_uri.substr(slash_idx);
+      query_idx = ws_uri.indexOf('?');
+
+      if (query_idx === -1) {
+        ws_uri_path = ws_uri.substr(1);
+      } else {
+        ws_uri_path = ws_uri.substr(1, query_idx-1);
+        ws_uri_query = ws_uri.substr(query_idx+1);
+      }
+    }
+
+    return {
+      host: ws_uri_hostport,
+      ws_path: ws_uri_path,
+      ws_query: ws_uri_query
+    };
   }
 
 
