@@ -12,12 +12,12 @@ window.GUI = {
       return false;
     }
 
-    if (uri.indexOf('@') === -1) {
-      user = uri;
-      uri = 'sip:' + uri + '@jssip.net';
+    uri = JsSIP.utils.normalizeUri(uri, MyPhone.configuration.domain);
+    if (uri) {
+      user = JsSIP.grammar_sip.parse(uri, 'SIP_URI').user;
     } else {
-      user = uri.substr(0,uri.indexOf('@'));
-      uri = 'sip:' + uri + ''
+      console.log('Invalid target');
+      return;
     }
 
     phone_dialed_number_screen.val("");
@@ -45,21 +45,23 @@ window.GUI = {
 
 
   phoneChatButtonPressed : function() {
+    var user, uri;
+
     if (!(destination = phone_dialed_number_screen.val()))
       return false;
 
-    var uri = destination;
+    uri = destination;
     if (! uri) {
       alert("ERROR: wrong destination (" + destination + ")");
       return false;
     }
 
-    if (uri.indexOf('@') === -1) {
-      user = uri;
-      uri = 'sip:' + uri + '@jssip.net';
+    uri = JsSIP.utils.normalizeUri(uri, MyPhone.configuration.domain);
+    if (uri) {
+      user = JsSIP.grammar_sip.parse(uri, 'SIP_URI').user;
     } else {
-      user = uri.substr(0,uri.indexOf('@'));
-      uri = 'sip:' + uri + ''
+      console.log('Invalid target');
+      return;
     }
 
     phone_dialed_number_screen.val("");
