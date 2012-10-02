@@ -15,7 +15,6 @@ $(document).ready(function(){
   document.title = PageTitle;
 
   $("#version .jssip-version").text("JsSIP version:  " + JsSIP.version());
-  $("#version .jssip-svn-revision").text("SVN revision:  " + JsSIP.svn_revision());
   $("#version").show();
 
   sip_uri = default_sip_uri;

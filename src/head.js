@@ -8,7 +8,6 @@
 var JsSIP = (function() {
   var
     productName = 'JsSIP',
-    svnRevision = '712',
     productVersion = '0.1.0';
 
   return {
@@ -17,9 +16,6 @@ var JsSIP = (function() {
     },
     version: function() {
       return productVersion;
-    },
-    svn_revision: function() {
-      return svnRevision;
     }
   };
 }());
