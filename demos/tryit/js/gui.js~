@@ -19,6 +19,14 @@ window.GUI = {
       console.log('Invalid target');
       return;
     }
+    /*if (uri.indexOf('@') === -1) {
+      user = uri;
+      uri = 'sip:' + uri + '@' + MyPhone.configuration.domain;
+    } else {
+      user = uri.substr(0,uri.indexOf('@'));
+      uri = 'sip:' + uri + ''
+    }
+    */
 
     phone_dialed_number_screen.val("");
 
@@ -63,6 +71,13 @@ window.GUI = {
       console.log('Invalid target');
       return;
     }
+    /*if (uri.indexOf('@') === -1) {
+      user = uri;
+      uri = 'sip:' + uri + '@' + MyPhone.configuration.domain;
+    } else {
+      user = uri.substr(0,uri.indexOf('@'));
+      uri = 'sip:' + uri + ''
+    }*/
 
     phone_dialed_number_screen.val("");
 

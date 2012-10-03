@@ -30,10 +30,6 @@
         <input id="ws_uri" class="last unset" type="text" value="WS URI (i.e: ws://example.net:10080)"/>
       </div>
     </div>
-
-    <div id="version">
-      <div class="jssip-version">JsSIP version: 0.0.1</div>
-    </div>
   </div>
 
   <div id="phone-page">
