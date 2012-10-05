@@ -1,5 +1,5 @@
 
-/*global SessionDescription: false, webkitURL: false, webkitPeerConnection00: false*/
+/*global SessionDescription: false, webkitURL: false, webkitRTCPeerConnection: false*/
 
 /**
  * @fileoverview SIP User Agent
@@ -49,9 +49,10 @@ JsSIP.MediaSession.prototype = {
       }
 
       // Set local description and start Ice.
-      offer = self.peerConnection.createOffer();
-      self.peerConnection.setLocalDescription(self.peerConnection.SDP_OFFER, offer);
-      self.peerConnection.startIce();
+      self.peerConnection.createOffer(function(sessionDescription){
+        self.peerConnection.setLocalDescription(sessionDescription);
+        console.log('Here the sessionDescription');
+      });
     }
 
     /** @private */
@@ -85,11 +86,10 @@ JsSIP.MediaSession.prototype = {
       // add stream to peerConnection
       self.peerConnection.addStream(stream);
 
-      // Create sdp answer
-      var answer = self.peerConnection.createAnswer(sdp, mediaType);
-      self.peerConnection.setLocalDescription(self.peerConnection.SDP_ANSWER, answer);
-
-      self.peerConnection.startIce();
+      // Create answer
+      self.peerConnection.createAnswer(function(sessionDescription){
+        self.peerConnection.setLocalDescription(sessionDescription);
+      }, null, null);
     }
 
     function onGetUserMediaFailure() {
@@ -112,11 +112,8 @@ JsSIP.MediaSession.prototype = {
       self.getUserMedia(mediaType, onGetUserMediaSuccess, onGetUserMediaFailure);
     };
 
-    // Set the comming sdp offer as remoteDescription
-    offer  = new SessionDescription(sdp);
-
     try {
-      this.peerConnection.setRemoteDescription(this.peerConnection.SDP_OFFER, offer);
+      this.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'offer', sdp:sdp}));
     } catch (e) {
       onSdpFailure(e);
     }
@@ -129,47 +126,35 @@ JsSIP.MediaSession.prototype = {
   start: function(onSuccess) {
     var
       session = this,
-      sent = false;
+      sent = false,
+      stun_config = 'stun: '+ this.session.ua.configuration.stun_server,
+      servers = [{"url": stun_config}];
 
-    this.peerConnection = new webkitPeerConnection00('STUN '+ this.session.ua.configuration.stun_server,
-      function(candidate, more) {
-        if (candidate) {
-          console.log(JsSIP.c.LOG_MEDIA_SESSION +'ICE candidate received: '+ candidate.toSdp());
-        }
-        if (!more) {
-          console.info(JsSIP.c.LOG_MEDIA_SESSION +'No more ICE candidate');
-          console.log(JsSIP.c.LOG_MEDIA_SESSION +'Peerconnection status: '+ this.readyState);
-          console.log(JsSIP.c.LOG_MEDIA_SESSION +'Ice Status: '+ this.iceState);
-          if (!sent) { // Execute onSuccess just once.
-            sent = true;
-            onSuccess();
-          }
+    this.peerConnection = new webkitRTCPeerConnection({iceServers: servers});
+
+    this.peerConnection.onicecandidate = function(event) {
+      if (event.candidate) {
+        console.log(JsSIP.c.LOG_MEDIA_SESSION +'ICE candidate received: '+ event.candidate.candidate);
+      } else {
+        console.info(JsSIP.c.LOG_MEDIA_SESSION +'No more ICE candidate');
+        console.log(JsSIP.c.LOG_MEDIA_SESSION +'Peerconnection status: '+ this.readyState);
+        console.log(JsSIP.c.LOG_MEDIA_SESSION +'Ice Status: '+ this.iceState);
+        if (!sent) { // Execute onSuccess just once.
+          sent = true;
+          onSuccess();
         }
       }
-    );
+    };
 
     this.peerConnection.onopen = function() {
       console.log(JsSIP.c.LOG_MEDIA_SESSION +'Media session oppened');
     };
 
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
-
       console.warn('stream added');
 
-      switch (this.readyState) {
-        // 1st called when a stream arrives from caller.
-        case this.OPENING:
-          if (session.remoteView && this.remoteStreams.length > 0) {
-            session.remoteView.src = webkitURL.createObjectURL(mediaStreamEvent.stream);
-          }
-          break;
-        case this.ACTIVE:
-          // Attach the stream to session`s remoteView
-          // 1st called when a stream arrives from callee.
-          if (session.remoteView && this.remoteStreams.length > 0) {
-            session.remoteView.src = webkitURL.createObjectURL(mediaStreamEvent.stream);
-          }
-          break;
+      if (session.remoteView && this.remoteStreams.length > 0) {
+        session.remoteView.src = webkitURL.createObjectURL(mediaStreamEvent.stream);
       }
     };
 
@@ -234,13 +219,11 @@ JsSIP.MediaSession.prototype = {
   * @param {Function} onFailure
   */
   onMessage: function(type, sdp, onSuccess, onFailure) {
-    if (type === this.peerConnection.SDP_OFFER) {
+    if (type === 'offer') {
       console.log(JsSIP.c.LOG_MEDIA_SESSION +'re-Invite received');
-    } else if (type === this.peerConnection.SDP_ANSWER) {
-      var answer = new SessionDescription(sdp);
-
+    } else if (type === 'answer') {
       try {
-        this.peerConnection.setRemoteDescription(this.peerConnection.SDP_ANSWER, answer);
+        this.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'answer', sdp:sdp}));
         onSuccess();
       } catch (e) {
         onFailure(e);

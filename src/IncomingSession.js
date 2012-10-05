@@ -78,7 +78,7 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
         offer = request.body;
 
         onMediaSuccess = function() {
-          var sdp = session.mediaSession.peerConnection.localDescription.toSdp();
+          var sdp = session.mediaSession.peerConnection.localDescription.sdp;
 
           if(!session.createConfirmedDialog(request, 'UAS')) {
             return;
