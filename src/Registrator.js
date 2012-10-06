@@ -29,7 +29,7 @@ JsSIP.Registrator = function(ua, transport) {
   this.registrationTimer = null;
 
   // Set status
-  this.registered = this.registered_before = this.closed = false;
+  this.registered = this.registered_before = false;
 
   // Save into ua instance
   this.ua.registrator = this;
@@ -68,10 +68,6 @@ JsSIP.Registrator.prototype = {
     this.receiveResponse = function(response) {
       var contact, expires, min_expires,
         contacts = response.countHeader('contact');
-
-      if(this.closed) {
-        return;
-      }
 
       // Discard responses to older Register/Deregister requests.
       if(response.cseq !== this.cseq) {
@@ -180,7 +176,6 @@ JsSIP.Registrator.prototype = {
       return;
     }
 
-    this.closed = true;
     this.registered = false;
     this.ua.emit('deregister');
 
@@ -247,10 +242,6 @@ JsSIP.Registrator.prototype = {
   * @private
   */
   onTransportClosed: function() {
-    if(this.closed) {
-      return;
-    }
-
     this.registered_before = this.registered;
     window.clearTimeout(this.registrationTimer);
 
@@ -264,11 +255,7 @@ JsSIP.Registrator.prototype = {
   * @private
   */
   onTransportConnected: function() {
-    if(!this.closed) {
-      this.register();
-    } else {
-      this.closed = false;
-    }
+    this.register();
   },
 
   /**
@@ -276,7 +263,6 @@ JsSIP.Registrator.prototype = {
   */
   close: function() {
     this.registered_before = this.registered;
-    this.closed = true;
     this.deregister();
   }
 };

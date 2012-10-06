@@ -75,6 +75,7 @@ JsSIP.UA.prototype.networkIsReady = function() {
  */
 JsSIP.UA.prototype.register = function() {
   if(this.status === JsSIP.c.UA_STATUS_READY) {
+    this.configuration.register = true;
     this.registrator.register();
   } else {
       throw new JsSIP.exceptions.NotReadyError();
@@ -89,6 +90,7 @@ JsSIP.UA.prototype.register = function() {
  */
 JsSIP.UA.prototype.deregister = function(all) {
   if(this.status === JsSIP.c.UA_STATUS_READY) {
+    this.configuration.register = false;
     this.registrator.deregister(all);
   } else {
     throw new JsSIP.exceptions.NotReadyError();
@@ -319,7 +321,7 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
     return;
   }
 
-  if(this.configuration.auto_register) {
+  if(this.configuration.register) {
     if(this.registrator) {
       this.registrator.onTransportConnected();
     } else {
@@ -562,7 +564,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       /* Registration parameters */
       register_expires: 600,
       register_min_expires: 120,
-      auto_register: true,
+      register: true,
       /* Transport related parameters */
       secure_transport: false,
       max_reconnection: 3,
@@ -719,7 +721,6 @@ JsSIP.UA.configuration_skeleton = (function() {
 
       // Optional user configurable parameters
       "authorization_user",
-      "auto_register", // true.
       "display_name",
       "hack_use_via_tcp", // false.
       "stun_server",
@@ -742,6 +743,12 @@ JsSIP.UA.configuration_skeleton = (function() {
       configurable: false
     };
   }
+
+  skeleton['register'] = {
+    value: '',
+    writable: true,
+    configurable: false
+  };
 
   return skeleton;
 }());
@@ -810,9 +817,9 @@ JsSIP.UA.configuration_check = {
         return true;
       }
     },
-    auto_register: function(auto_register) {
-      if(auto_register !== true && auto_register !== false) {
-        console.log(JsSIP.c.LOG_UA +'auto_register must be true or false');
+    register: function(register) {
+      if(register !== true && register !== false) {
+        console.log(JsSIP.c.LOG_UA +'register must be true or false');
         return false;
       } else {
         return true;
