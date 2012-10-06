@@ -36,22 +36,15 @@ JsSIP.MediaSession.prototype = {
 
     /** @private */
     function onGetUserMediaSuccess(stream) {
-      var offer;
-
       // Start peerConnection
-      self.start(onSuccess, onFailure);
+      self.start(onSuccess);
 
       // add stream to peerConnection
-      try {
-        self.peerConnection.addStream(stream);
-      } catch (e) {
-        onFailure('addSstream',e);
-      }
+      self.peerConnection.addStream(stream);
 
       // Set local description and start Ice.
       self.peerConnection.createOffer(function(sessionDescription){
         self.peerConnection.setLocalDescription(sessionDescription);
-        console.log('Here the sessionDescription');
       });
     }
 
@@ -83,22 +76,23 @@ JsSIP.MediaSession.prototype = {
       self = this;
 
     function onGetUserMediaSuccess(stream) {
+      // Start peerConnection
+      self.start(onSuccess);
+
       // add stream to peerConnection
       self.peerConnection.addStream(stream);
 
       self.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'offer', sdp:sdp}));
 
-      // Create answer
+      // Set local description and start Ice.
       self.peerConnection.createAnswer(function(sessionDescription){
         self.peerConnection.setLocalDescription(sessionDescription);
-      }, null, {'has_audio':true, 'has_video':true});
+      });
     }
 
     function onGetUserMediaFailure() {
       onMediaFailure();
     }
-
-    this.start(onSuccess);
 
     self.getUserMedia({'audio':true, 'video':true}, onGetUserMediaSuccess, onGetUserMediaFailure);
    },
