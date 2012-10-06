@@ -86,10 +86,12 @@ JsSIP.MediaSession.prototype = {
       // add stream to peerConnection
       self.peerConnection.addStream(stream);
 
+      self.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'offer', sdp:sdp}));
+
       // Create answer
       self.peerConnection.createAnswer(function(sessionDescription){
         self.peerConnection.setLocalDescription(sessionDescription);
-      }, null, null);
+      }, null, {'has_audio':true, 'has_video':true});
     }
 
     function onGetUserMediaFailure() {
@@ -98,26 +100,8 @@ JsSIP.MediaSession.prototype = {
 
     this.start(onSuccess);
 
-    this.peerConnection.onaddstream = function(mediaStreamEvent) {
-      var audio, video;
-
-      audio = (mediaStreamEvent.stream.audioTracks.length > 0)? true: false;
-      video = (mediaStreamEvent.stream.videoTracks.length > 0)? true: false;
-
-      mediaType = {'audio':audio, 'video':video};
-
-      // Attach stream to remoteView
-      self.remoteView.src = webkitURL.createObjectURL(mediaStreamEvent.stream);
-
-      self.getUserMedia(mediaType, onGetUserMediaSuccess, onGetUserMediaFailure);
-    };
-
-    try {
-      this.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'offer', sdp:sdp}));
-    } catch (e) {
-      onSdpFailure(e);
-    }
-  },
+    self.getUserMedia({'audio':true, 'video':true}, onGetUserMediaSuccess, onGetUserMediaFailure);
+   },
 
   /**
   * peerConnection creation.
@@ -127,10 +111,10 @@ JsSIP.MediaSession.prototype = {
     var
       session = this,
       sent = false,
-      stun_config = 'stun: '+ this.session.ua.configuration.stun_server,
+      stun_config = 'stun:'+this.session.ua.configuration.stun_server,
       servers = [{"url": stun_config}];
 
-    this.peerConnection = new webkitRTCPeerConnection({iceServers: servers});
+    this.peerConnection = new webkitRTCPeerConnection({"iceServers": servers});
 
     this.peerConnection.onicecandidate = function(event) {
       if (event.candidate) {
