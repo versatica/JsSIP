@@ -122,7 +122,7 @@ JsSIP.OutgoingSession = (function() {
           }
 
           this.mediaSession.onMessage(
-            this.mediaSession.peerConnection.SDP_ANSWER,
+            'answer',
             response.body,
             /*
             * OnSuccess.
@@ -227,7 +227,7 @@ JsSIP.OutgoingSession = (function() {
       }
 
       // Set the body to the request and send it.
-      request.body = session.mediaSession.peerConnection.localDescription.toSdp();
+      request.body = session.mediaSession.peerConnection.localDescription.sdp;
       session.status = JsSIP.c.SESSION_INVITE_SENT;
       send();
     }
