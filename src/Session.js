@@ -23,13 +23,18 @@ JsSIP.Session = (function() {
     this.userNoAnswerTimer = null;
     this.closeTimer = null;
 
+    // Session info
+    this.direction = null;
+    this.local_identity = null;
+    this.remote_identity = null;
+    this.start_time = null;
+    this.end_time = null;
+
     this.events = [
-    'ring',
-    'cancel',
-    'answer',
-    'terminate',
-    'failure',
-    'error'
+    'session_progress',
+    'session_failed',
+    'session_started',
+    'session_ended'
     ];
   };
   Session.prototype = new JsSIP.EventEmitter();
@@ -41,7 +46,7 @@ JsSIP.Session = (function() {
   /**
   * @private
   */
-  Session.prototype.close = function(event, args) {
+  Session.prototype.close = function(event, sender, data) {
     if(this.status !== JsSIP.c.SESSION_TERMINATED) {
       var session = this;
 
@@ -70,10 +75,6 @@ JsSIP.Session = (function() {
           }
         }, '5000'
       );
-
-      if (event) {
-        this.emit(event, args);
-      }
     }
   };
 
@@ -198,7 +199,8 @@ JsSIP.Session = (function() {
         reason = request.getHeader('Reason');
 
         this.status = JsSIP.c.SESSION_CANCELED;
-        this.close('cancel', [reason ? reason : undefined]);
+
+        this.failed('remote', request, JsSIP.c.causes.CANCELED);
       }
 
     }
@@ -215,7 +217,8 @@ JsSIP.Session = (function() {
           break;
         case JsSIP.c.BYE:
           request.reply(200, JsSIP.c.REASON_200);
-          this.close('terminate', [JsSIP.c.SESSION_TERMINATE_PEER_TERMINATED]);
+
+          this.ended('remote', request, JsSIP.c.causes.BYE);
           break;
         case JsSIP.c.INVITE:
           if(this.status === JsSIP.c.SESSION_CONFIRMED) {
@@ -245,7 +248,8 @@ JsSIP.Session = (function() {
       console.log(JsSIP.c.LOG_INVITE_SESSION + 'No ACK received. Call will be terminated');
       window.clearTimeout(this.invite2xxTimer);
       this.sendBye();
-      this.close('terminate', [JsSIP.c.SESSION_TERMINATE_NO_ACK_RECEIVED]);
+
+      this.ended('system', null, JsSIP.c.causes.NO_ACK);
     }
   };
 
@@ -256,7 +260,8 @@ JsSIP.Session = (function() {
   Session.prototype.expiresTimeout = function(request) {
     if(this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
       request.reply(487, JsSIP.c.REASON_487);
-      this.close('terminate',[JsSIP.c.SESSION_TERMINATE_EXPIRES_TIMEOUT]);
+
+      this.ended('system', null, JsSIP.c.causes.EXPIRES);
     }
   };
 
@@ -294,7 +299,8 @@ JsSIP.Session = (function() {
   */
   Session.prototype.userNoAnswerTimeout = function(request) {
     request.reply(408, JsSIP.c.REASON_408);
-    this.close('terminate', [JsSIP.c.SESSION_TERMINATE_USER_NO_ANSWER_TIMEOUT]);
+
+    this.failed('system',null, JsSIP.c.causes.NO_ANSWER);
   };
 
   /*
@@ -370,7 +376,7 @@ JsSIP.Session = (function() {
   */
   Session.prototype.onTransportError = function() {
     if(this.status !== JsSIP.c.TERMINATED) {
-      this.close('error',[JsSIP.c.TRANSPORT_ERROR]);
+      this.ended('system', null, JsSIP.c.causes.CONNECTION_ERROR);
     }
   };
 
@@ -380,9 +386,82 @@ JsSIP.Session = (function() {
   */
   Session.prototype.onRequestTimeout = function() {
     if(this.status !== JsSIP.c.TERMINATED) {
-      this.close('error',[JsSIP.c.REQUEST_TIMEOUT]);
+      this.ended('system', null, JsSIP.c.REQUEST_TIMEOUT);
     }
   };
+
+  /**
+   * Internal Callback
+   */
+  Session.prototype.new_session = function(originator, request, target) {
+    var session = this,
+      event_name = 'new_session';
+
+    session.direction = originator;
+
+    if (originator === 'remote') {
+      session.local_identity = request.s('to').uri;
+      session.remote_identity = request.s('from').uri;
+    } else if (originator === 'local'){
+      session.local_identity = session.ua.configuration.user;
+      session.remote_identity = target;
+    }
+
+    session.ua.emit(event_name, session, {
+      originator: originator,
+      request: request
+    });
+  };
+
+  Session.prototype.progress = function(response) {
+    var session = this,
+      event_name = 'session_progress';
+
+    session.emit(event_name, session, {
+      originator: 'remote',
+      response: response
+    });
+  };
+
+  Session.prototype.started = function(originator, message) {
+    var session = this,
+      event_name = 'session_started';
+
+    session.start_time = new Date();
+
+    session.emit(event_name, session, {
+      response: message || null
+    });
+  };
+
+  Session.prototype.ended = function(originator, message, cause) {
+    var session = this,
+      event_name = 'session_ended';
+
+    session.end_time = new Date();
+
+    session.close();
+    session.emit(event_name, session, {
+      originator: originator,
+      message: message,
+      cause: cause
+    });
+  };
+
+
+  Session.prototype.failed = function(originator, response, cause) {
+    var session = this,
+      event_name = 'session_failed';
+
+    session.close();
+    session.emit(event_name, session, {
+      originator: originator,
+      response: response,
+      cause: cause
+    });
+  };
+
+
 
   /*
    * User API
@@ -408,11 +487,11 @@ JsSIP.Session = (function() {
       case JsSIP.c.SESSION_CONFIRMED:
         // Send Bye
         this.sendBye();
+
+        this.ended('local', null, JsSIP.c.causes.BYE);
         break;
     }
 
-    // By convention in this 0.1.0 release. Do not fire events for user generated actions.
-    //this.close('terminate', [JsSIP.c.SESSION_TERMINATE_USER_TERMINATED]);
     this.close();
   };
 
@@ -481,7 +560,7 @@ JsSIP.Session = (function() {
         // RFC3261 14.1.
         // Terminate the dialog if a 408 or 481 is received from a re-Invite.
         if (status_code === '408' || status_code === '480') {
-          this.session.close('terminate', [JsSIP.c.SESSION_TERMINATE_IN_DIALOG_408_480]);
+          this.session.ended('system', null, JsSIP.c.causes.IN_DIALOG_408_480);
           this.session.onFailure(response);
           this.onReceiveResponse(response);
         } else if (status_code === '491' && response.method === JsSIP.c.INVITE) {
@@ -507,7 +586,7 @@ JsSIP.Session = (function() {
       this.onTransportError = function() {
         this.session.onTransportError();
         if (this.onFailure) {
-          this.onFailure(JsSIP.c.TRANSPORT_ERROR);
+          this.onFailure(JsSIP.c.causes.CONNECTION_ERROR);
         }
       };
 

@@ -48,7 +48,10 @@ JsSIP.OutgoingSession = (function() {
 
     //Save the session into the ua sessions collection.
     this.ua.sessions[this.id] = this;
+
     this.send = function() {
+      this.new_session('local', request, target);
+
       new InitialRequestSender(this, ua, request, mediaType);
     };
 
@@ -65,8 +68,10 @@ JsSIP.OutgoingSession = (function() {
       } else if(this.status === JsSIP.c.SESSION_1XX_RECEIVED) {
         request.cancel();
       }
-      this.close('terminate', [JsSIP.c.SESSION_TERMINATE_USER_CANCELED]);
+
+      this.failed('local', null, JsSIP.c.causes.CANCELED);
     };
+
   };
   OutgoingSession.prototype = new JsSIP.Session();
 
@@ -78,7 +83,8 @@ JsSIP.OutgoingSession = (function() {
   * @private
   */
   OutgoingSession.prototype.receiveInitialRequestResponse = function(label, response) {
-    var session = this;
+    var cause,
+      session = this;
 
     if(this.status === JsSIP.c.SESSION_INVITE_SENT || this.status === JsSIP.c.SESSION_1XX_RECEIVED) {
       switch(label) {
@@ -94,7 +100,7 @@ JsSIP.OutgoingSession = (function() {
           }
 
           this.status = JsSIP.c.SESSION_1XX_RECEIVED;
-          this.emit('ring');
+          this.progress(response);
           break;
         case '2xx':
           // Dialog confirmed already
@@ -108,7 +114,9 @@ JsSIP.OutgoingSession = (function() {
           }
 
           this.acceptAndTerminate(response,'SIP ;cause= 400 ;text= "Missing session description"');
-          this.close('terminate', [JsSIP.c.SESSION_TERMINATE_BAD_MEDIA_DESCRIPTION]);
+
+          session.ended('system', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
+
           break;
         case '2xx_answer':
           // Dialog confirmed already
@@ -128,13 +136,14 @@ JsSIP.OutgoingSession = (function() {
             * OnSuccess.
             * SDP Answer fits with Offer. MediaSession will start.
             */
-            function(){
+            function() {
               if(!session.createConfirmedDialog(response, 'UAC')) {
                 return;
               }
               session.sendACK();
               session.status = JsSIP.c.SESSION_CONFIRMED;
-              session.emit('answer');
+
+              session.started('remote', response);
             },
             /*
             * OnFailure.
@@ -143,12 +152,20 @@ JsSIP.OutgoingSession = (function() {
             function(e) {
               console.warn(e);
               session.acceptAndTerminate(response, 'SIP ;cause= 488 ;text= "Not Acceptable Here"');
-              session.close('terminate', [JsSIP.c.SESSION_TERMINATE_BAD_MEDIA_DESCRIPTION]);
+              session.failed('system', response, JsSIP.c.END_BAD_MEDIA_DESCRIPTION);
             }
           );
           break;
         case 'failure':
-          this.close('failure',[response.status_code, response.reason_phrase]);
+          cause = JsSIP.utils.sipErrorCause(response.status_code);
+
+          if (cause) {
+            cause = JsSIP.c.causes[cause];
+          } else {
+            cause = JsSIP.c.causes.SIP_FAILURE_CODE;
+          }
+
+          session.failed('remote', response, cause);
           break;
       }
     }
@@ -235,10 +252,12 @@ JsSIP.OutgoingSession = (function() {
     function onMediaFailure(fail,e) {
       if (fail === 'addStream') {
         console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'PeerConnection Creation Failed: '+ e);
-        session.close('terminate', [JsSIP.c.SESSION_TERMINATE_BAD_MEDIA_DESCRIPTION]);
+
+        session.failed('system', null, JsSIP.c.END_BAD_MEDIA_DESCRIPTION);
       } else if (fail === 'getUserMedia') {
         console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'Media Access denied');
-        session.close('terminate', [JsSIP.c.SESSION_TERMINATE_USER_DENIED_MEDIA_ACCESS]);
+
+        session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
       }
     }
 

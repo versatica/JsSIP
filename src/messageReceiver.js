@@ -15,7 +15,11 @@ JsSIP.messageReceiver = function(ua, request) {
   request.reply(200, JsSIP.c.REASON_200);
 
   if (content_type && content_type === "text/plain") {
-    ua.emit('message',[request.s('from').user, request.s('from').uri, request.body]);
+    ua.emit('new_message', ua, {
+      originator: 'remote',
+      request: request,
+      content: request.body
+    });
   }
   /*
   else if (content_type && content_type.match("application/im-iscomposing\\+xml") && message.body.match("<state>active</state>")) {

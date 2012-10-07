@@ -79,7 +79,7 @@ JsSIP.MessageSender.prototype.onTransportError = function() {
   if(this.closed) {
     return;
   }
-  this.emit('error', [JsSIP.c.TRANSPORT_ERROR]);
+  this.emit('error', [JsSIP.c.causes.CONNECTION_ERROR]);
 };
 
 /**

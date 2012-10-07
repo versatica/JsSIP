@@ -101,10 +101,12 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
                 function() { session.ackTimeout(); },
                 JsSIP.Timers.TIMER_H
               );
+
+              session.started('local');
             },
             // onFailure
             function() {
-            session.close('terminate', [JsSIP.c.SESSION_TERMINATE_TRANSPORT_ERROR]);
+              this.failed('system', null, JsSIP.c.causes.CONNECTION_ERROR);
             }
           );
         };
@@ -112,7 +114,7 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
         onMediaFailure = function(e) {
           // Unable to get User Media
           request.reply(486, JsSIP.c.REASON_486);
-          session.close('terminate', [JsSIP.c.SESSION_TERMINATE_USER_DENIED_MEDIA_ACCESS]);
+          this.failed('local', null, JsSIP.c.END_USER_DENIED_MEDIA_ACCESS);
         };
 
         onSdpFailure = function(e) {
@@ -121,7 +123,7 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
            */
           console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
           request.reply(488, JsSIP.c.REASON_488);
-          session.close('terminate', [JsSIP.c.SESSION_TERMINATE_BAD_MEDIA_DESCRIPTION]);
+          this.failed('system', request, JsSIP.c.END_BAD_MEDIA_DESCRIPTION);
         };
 
         //Initialize Media Session
@@ -139,11 +141,13 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
     this.reject = function() {
       if (this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
         request.reply(486, JsSIP.c.REASON_486);
+
+        this.failed('local', null, JsSIP.c.causes.REJECTED);
       }
     };
 
     // Fire 'call' event callback
-    ua.emit('call',[request.parseHeader('from').user, request.parseHeader('from').uri, this]);
+    this.new_session('remote', request);
   } else {
     request.reply(415, JsSIP.c.REASON_415);
   }

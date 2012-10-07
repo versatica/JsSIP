@@ -101,6 +101,18 @@ JsSIP.utils = {
     }
   },
 
+  sipErrorCause: function(status_code) {
+    var cause;
+
+    for (cause in JsSIP.c.SIP_ERROR_CAUSES) {
+      if (JsSIP.c.SIP_ERROR_CAUSES[cause].indexOf(parseInt(status_code, 10)) !== -1) {
+        return cause;
+      }
+    }
+
+    return;
+  },
+
   // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info
   MD5: function(string) {
     function RotateLeft(lValue, iShiftBits) {

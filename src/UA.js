@@ -10,13 +10,13 @@
  */
 JsSIP.UA = function(configuration) {
   var events = [
-    'connect',
-    'disconnect',
-    'register',
-    'deregister',
-    'registrationFailure',
-    'call',
-    'message'
+    'ua_connected',
+    'ua_disconnected',
+    'ua_registered',
+    'ua_deregistered',
+    'ua_registration_failed',
+    'new_session',
+    'new_message'
   ];
 
   this.configuration = {};
@@ -301,7 +301,7 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
     this.closeSessionsOnTransportError();
     this.status = JsSIP.c.UA_STATUS_NOT_READY;
     this.error = JsSIP.c.UA_NETWORK_ERROR;
-    this.emit('disconnect');
+    this.emit('ua_disconnected');
   }
 };
 
@@ -330,7 +330,7 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
   }
   this.status = JsSIP.c.UA_STATUS_READY;
   this.error = null;
-  this.emit('connect');
+  this.emit('ua_connected', this);
 };
 
 //=========================

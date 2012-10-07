@@ -118,7 +118,7 @@ JsSIP.Subscriber.prototype = {
       };
 
       this.onTransportError = function() {
-        subscriber.onFailure(null, JsSIP.c.TRANSPORT_ERROR);
+        subscriber.onFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
       };
 
       this.send = function() {
@@ -407,7 +407,7 @@ JsSIP.Subscription.prototype = {
       };
 
       this.onTransportError = function() {
-        subscription.subscriber.onFailure(null, JsSIP.c.TRANSPORT_ERROR);
+        subscription.subscriber.onFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
       };
 
       this.send();
@@ -441,7 +441,7 @@ JsSIP.Subscription.prototype = {
         subscription.subscriber.onFailure(null, JsSIP.c.REQUEST_TIMEOUT);
       };
       this.onTransportError = function() {
-        subscription.subscriber.onFailure(null, JsSIP.c.TRANSPORT_ERROR);
+        subscription.subscriber.onFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
       };
 
       this.send();
