@@ -6,6 +6,7 @@
  */
 (function(window) {
 var JsSIP = (function() {
+  "use strict";
   var
     productName = 'JsSIP',
     productVersion = '0.1.0';
