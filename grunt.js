@@ -27,8 +27,6 @@ module.exports = function(grunt) {
           "src/RequestSender.js",
           "src/Registrator.js",
           "src/Session.js",
-          "src/OutgoingSession.js",
-          "src/IncomingSession.js",
           "src/MediaSession.js",
           "src/MessageSender.js",
           "src/messageReceiver.js",

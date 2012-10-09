@@ -151,7 +151,7 @@ JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType) {
   if (!target) {
     throw new JsSIP.exceptions.InvalidTargetError();
   } else {
-    inviteSession = new JsSIP.OutgoingSession(this, target, selfView, remoteView, mediaType);
+    inviteSession = new JsSIP.Session(this, target, selfView, remoteView, mediaType);
     return inviteSession;
   }
 };
@@ -394,7 +394,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
         if(!JsSIP.utils.isWebRtcSupported()) {
           console.warn(JsSIP.c.LOG_UA +'Call invitation received but rtcweb is not supported');
         } else {
-          new JsSIP.IncomingSession(this, request);
+          new JsSIP.Session(this, request);
         }
         break;
       case JsSIP.c.BYE:
