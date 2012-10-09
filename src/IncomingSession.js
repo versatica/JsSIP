@@ -114,7 +114,7 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
         onMediaFailure = function(e) {
           // Unable to get User Media
           request.reply(486, JsSIP.c.REASON_486);
-          this.failed('local', null, JsSIP.c.END_USER_DENIED_MEDIA_ACCESS);
+          this.failed('local', null, JsSIP.c.cuses.USER_DENIED_MEDIA_ACCESS);
         };
 
         onSdpFailure = function(e) {
@@ -123,7 +123,7 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
            */
           console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
           request.reply(488, JsSIP.c.REASON_488);
-          this.failed('system', request, JsSIP.c.END_BAD_MEDIA_DESCRIPTION);
+          this.failed('remote', request, JsSIP.causes.BAD_MEDIA_DESCRIPTION);
         };
 
         //Initialize Media Session

@@ -249,7 +249,7 @@ JsSIP.Session = (function() {
       window.clearTimeout(this.invite2xxTimer);
       this.sendBye();
 
-      this.ended('system', null, JsSIP.c.causes.NO_ACK);
+      this.ended('remote', null, JsSIP.c.causes.NO_ACK);
     }
   };
 
@@ -300,7 +300,7 @@ JsSIP.Session = (function() {
   Session.prototype.userNoAnswerTimeout = function(request) {
     request.reply(408, JsSIP.c.REASON_408);
 
-    this.failed('system',null, JsSIP.c.causes.NO_ANSWER);
+    this.failed('local',null, JsSIP.c.causes.NO_ANSWER);
   };
 
   /*
@@ -560,7 +560,7 @@ JsSIP.Session = (function() {
         // RFC3261 14.1.
         // Terminate the dialog if a 408 or 481 is received from a re-Invite.
         if (status_code === '408' || status_code === '480') {
-          this.session.ended('system', null, JsSIP.c.causes.IN_DIALOG_408_480);
+          this.session.ended('remote', null, JsSIP.c.causes.IN_DIALOG_408_480);
           this.session.onFailure(response);
           this.onReceiveResponse(response);
         } else if (status_code === '491' && response.method === JsSIP.c.INVITE) {

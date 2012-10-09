@@ -115,7 +115,7 @@ JsSIP.OutgoingSession = (function() {
 
           this.acceptAndTerminate(response,'SIP ;cause= 400 ;text= "Missing session description"');
 
-          session.ended('system', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
+          session.ended('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
 
           break;
         case '2xx_answer':
@@ -152,7 +152,7 @@ JsSIP.OutgoingSession = (function() {
             function(e) {
               console.warn(e);
               session.acceptAndTerminate(response, 'SIP ;cause= 488 ;text= "Not Acceptable Here"');
-              session.failed('system', response, JsSIP.c.END_BAD_MEDIA_DESCRIPTION);
+              session.failed('remote', response, JsSIP.causes.BAD_MEDIA_DESCRIPTION);
             }
           );
           break;
@@ -250,13 +250,8 @@ JsSIP.OutgoingSession = (function() {
     }
 
     function onMediaFailure(fail,e) {
-      if (fail === 'addStream') {
-        console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'PeerConnection Creation Failed: '+ e);
-
-        session.failed('system', null, JsSIP.c.END_BAD_MEDIA_DESCRIPTION);
-      } else if (fail === 'getUserMedia') {
+      if (session.status !== JsSIP.c.SESSION_TERMINATED) {
         console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'Media Access denied');
-
         session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
       }
     }
