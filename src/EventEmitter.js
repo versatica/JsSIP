@@ -180,7 +180,7 @@ JsSIP.EventEmitter.prototype = {
 };
 
 JsSIP.Event = function(type, sender, data) {
-    this.type = type;
-      this.sender= sender;
-        this.data = data;
+  this.type = type;
+  this.sender= sender;
+  this.data = data;
 };
