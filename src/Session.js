@@ -37,6 +37,9 @@ JsSIP.Session = (function() {
     this.start_time = null;
     this.end_time = null;
 
+    // Custom session empty object for high user
+    this.data = {};
+
     this.initEvents(events);
 
     // Self contact value. _gruu_ or not.
