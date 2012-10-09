@@ -114,7 +114,7 @@ JsSIP.IncomingSession.prototype.receiveInitialRequest = function(ua, request) {
         onMediaFailure = function(e) {
           // Unable to get User Media
           request.reply(486, JsSIP.c.REASON_486);
-          this.failed('local', null, JsSIP.c.cuses.USER_DENIED_MEDIA_ACCESS);
+          this.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
         };
 
         onSdpFailure = function(e) {
