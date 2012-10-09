@@ -386,7 +386,7 @@ JsSIP.Session = (function() {
   */
   Session.prototype.onRequestTimeout = function() {
     if(this.status !== JsSIP.c.TERMINATED) {
-      this.ended('system', null, JsSIP.c.REQUEST_TIMEOUT);
+      this.ended('system', null, JsSIP.c.causes.REQUEST_TIMEOUT);
     }
   };
 
