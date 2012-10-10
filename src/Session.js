@@ -1000,7 +1000,7 @@ JsSIP.Session = (function() {
     getReatempTimeout: function() { // RFC3261 14.1
       var timeout;
 
-      if(this instanceof JsSIP.OutgoingSession) {
+      if(this.direction === 'local') {
         timeout = (Math.random() * (4 - 2.1) + 2.1).toFixed(2);
       } else {
         timeout = (Math.random() * 2).toFixed(2);
