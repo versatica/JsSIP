@@ -9,7 +9,7 @@
  */
 JsSIP.Session = (function() {
 
-  var Session = function(ua, request, selfView, remoteView, mediaType) {
+  var Session = function(ua) {
     var events = [
     'session_progress',
     'session_failed',
@@ -17,6 +17,7 @@ JsSIP.Session = (function() {
     'session_ended'
     ];
 
+    this.ua = ua;
     this.status = null;
     this.dialog = null;
     this.earlyDialogs = [];
@@ -48,12 +49,6 @@ JsSIP.Session = (function() {
     } else {
       this.contact = ua.contact.uri;
     }
-
-    if (request instanceof JsSIP.IncomingRequest) {
-      this.init_incoming(ua, request);
-    } else {
-      this.init_outgoing(ua, request, selfView, remoteView, mediaType);
-    }
   };
   Session.prototype = new JsSIP.EventEmitter();
 
@@ -64,9 +59,8 @@ JsSIP.Session = (function() {
   /**
   * @private
   */
-  Session.prototype.init_incoming = function(ua, request) {
+  Session.prototype.init_incoming = function(request) {
     // Session parameter initialization
-    this.ua = ua;
     this.from_tag = request.from_tag;
     this.status = JsSIP.c.SESSION_INVITE_RECEIVED;
     this.id = request.call_id + this.from_tag;
@@ -74,17 +68,21 @@ JsSIP.Session = (function() {
     //Save the session into the ua sessions collection.
     this.ua.sessions[this.id] = this;
 
-    this.receiveInitialRequest(ua, request);
+    this.receiveInitialRequest(this.ua, request);
   };
 
   /**
    * @private
    */
-  Session.prototype.init_outgoing = function(ua, target, selfView, remoteView, mediaType) {
-    var request;
+  Session.prototype.init_outgoing = function(target, options) {
+    var request, selfView, remoteView, mediaType;
+
+    // Get call options
+    selfView = options.views ? options.views.selfView : null;
+    remoteView = options.views ? options.views.remoteView : null;
+    mediaType = options.mediaType || {audio: true, video: true};
 
     // Session parameter initialization
-    this.ua = ua;
     this.from_tag = JsSIP.utils.newTag();
     this.status = JsSIP.c.SESSION_NULL;
     this.mediaSession = new JsSIP.MediaSession(this, selfView, remoteView);
@@ -93,7 +91,7 @@ JsSIP.Session = (function() {
     this.isCanceled = false;
     this.received_100 = false;
 
-    request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, ua, {
+    request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, {
       from_tag: this.from_tag }, {
         'contact': '<' + this.contact + ';ob>',
         'allow': JsSIP.c.ALLOWED_METHODS,
@@ -108,7 +106,7 @@ JsSIP.Session = (function() {
     this.send = function() {
       this.new_session('local', request, target);
 
-      new InitialRequestSender(this, ua, request, mediaType);
+      new InitialRequestSender(this, this.ua, request, mediaType);
     };
 
     /**
