@@ -11,7 +11,7 @@
 
 JsSIP.Message = function(ua) {
   this.ua = ua;
-  this.direciton = null;
+  this.direction = null;
   this.local_identity = null;
   this.remote_identity = null;
 };
