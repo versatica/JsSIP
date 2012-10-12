@@ -460,6 +460,8 @@ JsSIP.Session = (function() {
 
       // Reply with 180 if the session is not closed. It may be closed in the newSession event.
       if (this.status !== JsSIP.c.SESSION_TERMINATED) {
+        this.progress('local');
+
         request.reply(180, JsSIP.c.REASON_180, {
           'Contact': '<' + this.contact + '>'
         });
@@ -495,7 +497,7 @@ JsSIP.Session = (function() {
           }
 
           this.status = JsSIP.c.SESSION_1XX_RECEIVED;
-          this.progress(response);
+          this.progress('remote', response);
           break;
         case '2xx':
           // Dialog confirmed already
