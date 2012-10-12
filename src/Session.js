@@ -11,10 +11,11 @@ JsSIP.Session = (function() {
 
   var Session = function(ua) {
     var events = [
-    'session_progress',
-    'session_failed',
-    'session_started',
-    'session_ended'
+    'connecting',
+    'progress',
+    'failed',
+    'started',
+    'ended'
     ];
 
     this.ua = ua;
@@ -74,40 +75,51 @@ JsSIP.Session = (function() {
   /**
    * @private
    */
-  Session.prototype.init_outgoing = function(target, options) {
-    var request, selfView, remoteView, mediaType;
+  Session.prototype.connect = function(target, options) {
+    var event, eventHandlers, request, selfView, remoteView, mediaType, headers;
 
     // Get call options
+    options = options || {};
     selfView = options.views ? options.views.selfView : null;
     remoteView = options.views ? options.views.remoteView : null;
     mediaType = options.mediaType || {audio: true, video: true};
+    headers = options.headers || {};
+    eventHandlers = options.eventHandlers || {};
+
+    // Set event handlers
+    for (event in eventHandlers) {
+      this.on(event, eventHandlers[event]);
+    }
+
+    // Check target validity
+    target = JsSIP.utils.normalizeUri(target, this.ua.configuration.domain);
+    if (!target) {
+      throw new JsSIP.exceptions.InvalidTargetError();
+    }
 
     // Session parameter initialization
     this.from_tag = JsSIP.utils.newTag();
     this.status = JsSIP.c.SESSION_NULL;
     this.mediaSession = new JsSIP.MediaSession(this, selfView, remoteView);
 
+    // Set anonymous property
+    this.anonymous = options.anonymous;
+
     // OutgoingSession specific parameters
     this.isCanceled = false;
     this.received_100 = false;
 
+    headers.contact = '<' + this.contact + ';ob>';
+    headers.allow = JsSIP.c.ALLOWED_METHODS;
+    headers.content_type = 'application/sdp';
+
     request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, {
-      from_tag: this.from_tag }, {
-        'contact': '<' + this.contact + ';ob>',
-        'allow': JsSIP.c.ALLOWED_METHODS,
-        'content-type': 'application/sdp'
-      });
+      from_tag: this.from_tag }, headers);
 
     this.id = request.headers['Call-ID'] + this.from_tag;
 
     //Save the session into the ua sessions collection.
     this.ua.sessions[this.id] = this;
-
-    this.send = function() {
-      this.new_session('local', request, target);
-
-      new InitialRequestSender(this, this.ua, request, mediaType);
-    };
 
     /**
      * @private
@@ -125,6 +137,15 @@ JsSIP.Session = (function() {
 
       this.failed('local', null, JsSIP.c.causes.CANCELED);
     };
+
+    this.send = function() {
+      this.newSession('local', request, target);
+      this.connecting('local', request, target);
+
+      new InitialRequestSender(this, this.ua, request, mediaType);
+    };
+
+    this.send();
   };
 
   /**
@@ -347,11 +368,6 @@ JsSIP.Session = (function() {
         return;
       }
 
-      request.reply(180,
-                    JsSIP.c.REASON_180, {
-                      'Contact': '<' + this.contact + '>'}
-                  );
-
       this.status = JsSIP.c.SESSION_WAITING_FOR_ANSWER;
 
       this.userNoAnswerTimer = window.setTimeout(
@@ -440,7 +456,14 @@ JsSIP.Session = (function() {
       };
 
       // Fire 'call' event callback
-      this.new_session('remote', request);
+      this.newSession('remote', request);
+
+      // Reply with 180 if the session is not closed. It may be closed in the newSession event.
+      if (this.status !== JsSIP.c.SESSION_TERMINATED) {
+        request.reply(180, JsSIP.c.REASON_180, {
+          'Contact': '<' + this.contact + '>'
+        });
+      }
     } else {
       request.reply(415, JsSIP.c.REASON_415);
     }
@@ -704,11 +727,11 @@ JsSIP.Session = (function() {
   /**
    * Internal Callbacks
    */
-  Session.prototype.new_session = function(originator, request, target) {
+  Session.prototype.newSession = function(originator, request, target) {
     var session = this,
-      event_name = 'new_session';
+      event_name = 'newSession';
 
-    session.direction = originator;
+    session.direction = (originator === 'local') ? 'outgoing' : 'incoming';
 
     if (originator === 'remote') {
       session.local_identity = request.s('to').uri;
@@ -718,25 +741,36 @@ JsSIP.Session = (function() {
       session.remote_identity = target;
     }
 
-    session.ua.emit(event_name, session, {
+    session.ua.emit(event_name, session.ua, {
       originator: originator,
+      session: session,
       request: request
     });
   };
 
-  Session.prototype.progress = function(response) {
+  Session.prototype.connecting = function(originator, request) {
     var session = this,
-      event_name = 'session_progress';
+    event_name = 'connecting';
 
     session.emit(event_name, session, {
-      originator: 'remote',
-      response: response
+      originator: 'local',
+      request: request
+    });
+  };
+
+  Session.prototype.progress = function(originator, response) {
+    var session = this,
+      event_name = 'progress';
+
+    session.emit(event_name, session, {
+      originator: originator,
+      response: response || null
     });
   };
 
   Session.prototype.started = function(originator, message) {
     var session = this,
-      event_name = 'session_started';
+      event_name = 'started';
 
     session.start_time = new Date();
 
@@ -747,14 +781,14 @@ JsSIP.Session = (function() {
 
   Session.prototype.ended = function(originator, message, cause) {
     var session = this,
-      event_name = 'session_ended';
+      event_name = 'ended';
 
     session.end_time = new Date();
 
     session.close();
     session.emit(event_name, session, {
       originator: originator,
-      message: message,
+      message: message || null,
       cause: cause
     });
   };
@@ -762,7 +796,7 @@ JsSIP.Session = (function() {
 
   Session.prototype.failed = function(originator, response, cause) {
     var session = this,
-      event_name = 'session_failed';
+      event_name = 'failed';
 
     session.close();
     session.emit(event_name, session, {
@@ -1000,7 +1034,7 @@ JsSIP.Session = (function() {
     getReatempTimeout: function() { // RFC3261 14.1
       var timeout;
 
-      if(this.direction === 'local') {
+      if(this.direction === 'outgoing') {
         timeout = (Math.random() * (4 - 2.1) + 2.1).toFixed(2);
       } else {
         timeout = (Math.random() * 2).toFixed(2);

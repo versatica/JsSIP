@@ -126,7 +126,7 @@ JsSIP.Registrator.prototype = {
           }
 
           this.registered = true;
-          this.ua.emit('ua_registered', this.ua);
+          this.ua.emit('registered', this.ua);
           break;
         // Interval too brief RFC3261 10.2.8
         case /^423$/.test(response.status_code):
@@ -177,7 +177,7 @@ JsSIP.Registrator.prototype = {
     }
 
     this.registered = false;
-    this.ua.emit('ua_deregistered');
+    this.ua.emit('deregistered');
 
     // Clear the registration timer.
     window.clearTimeout(this.registrationTimer);
@@ -233,9 +233,9 @@ JsSIP.Registrator.prototype = {
   registrationFailure: function(cause) {
     if (this.registered) {
       this.registered = false;
-      this.ua.emit('ua_deregistered', this.ua); // this.ua.emit('deregister', [cause]);
+      this.ua.emit('deregistered', this.ua); // this.ua.emit('deregister', [cause]);
     }
-    this.ua.emit('ua_registration_failed', this.ua); // this.ua.emit('registrationFailure', [cause]);
+    this.ua.emit('registration_failed', this.ua); // this.ua.emit('registrationFailure', [cause]);
   },
 
   /**
@@ -247,7 +247,7 @@ JsSIP.Registrator.prototype = {
 
     if(this.registered) {
       this.registered = false;
-      this.ua.emit('ua_deregistered', this.ua);
+      this.ua.emit('deregistered', this.ua);
     }
   },
 
