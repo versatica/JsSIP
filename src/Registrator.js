@@ -235,7 +235,7 @@ JsSIP.Registrator.prototype = {
       this.registered = false;
       this.ua.emit('deregistered', this.ua); // this.ua.emit('deregister', [cause]);
     }
-    this.ua.emit('registration_failed', this.ua); // this.ua.emit('registrationFailure', [cause]);
+    this.ua.emit('registrationFailed', this.ua); // this.ua.emit('registrationFailure', [cause]);
   },
 
   /**
