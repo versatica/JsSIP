@@ -13,7 +13,7 @@ JsSIP.UA = function(configuration) {
     'ua_connected',
     'ua_disconnected',
     'registered',
-    'deregistered',
+    'unregistered',
     'registrationFailed',
     'newSession',
     'newMessage'

@@ -172,12 +172,12 @@ JsSIP.Registrator.prototype = {
     * - all: If true, then perform a "deregister all" action ("Contact: *");
     */
     if(!this.registered) {
-      console.log(JsSIP.c.LOG_REGISTRATOR +"Already deregistered");
+      console.log(JsSIP.c.LOG_REGISTRATOR +"Already unregistered");
       return;
     }
 
     this.registered = false;
-    this.ua.emit('deregistered');
+    this.ua.emit('unregistered');
 
     // Clear the registration timer.
     window.clearTimeout(this.registrationTimer);
@@ -233,7 +233,7 @@ JsSIP.Registrator.prototype = {
   registrationFailure: function(cause) {
     if (this.registered) {
       this.registered = false;
-      this.ua.emit('deregistered', this.ua); // this.ua.emit('deregister', [cause]);
+      this.ua.emit('unregistered', this.ua); // this.ua.emit('deregister', [cause]);
     }
     this.ua.emit('registrationFailed', this.ua); // this.ua.emit('registrationFailure', [cause]);
   },
@@ -247,7 +247,7 @@ JsSIP.Registrator.prototype = {
 
     if(this.registered) {
       this.registered = false;
-      this.ua.emit('deregistered', this.ua);
+      this.ua.emit('unregistered', this.ua);
     }
   },
 
