@@ -22,8 +22,8 @@ var ClientTransaction = function() {
     this.request_sender = request_sender;
     this.request = request;
 
-    via = request_sender.ua.configuration.via_core_value + ';branch=' +
-    this.id;
+    via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
+    via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
     this.request.setHeader('via', via);
   };

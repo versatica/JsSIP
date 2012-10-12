@@ -17,7 +17,7 @@ JsSIP.Transport = function(ua, server) {
   this.ws = null;
   this.server = server;
   this.reconnection_attempts = 0;
-  this.ua_closed = false;
+  this.closed = false;
   this.connected = false;
   this.reconnectTimer = null;
 
@@ -50,7 +50,7 @@ JsSIP.Transport.prototype = {
   */
   disconnect: function() {
     if(this.ws) {
-      this.ua_closed = true;
+      this.closed = true;
       console.log(JsSIP.c.LOG_TRANSPORT +'closing WebSocket connection ' + this.server.ws_uri);
       this.ws.close();
     }
@@ -110,8 +110,8 @@ JsSIP.Transport.prototype = {
     console.log(JsSIP.c.LOG_TRANSPORT +'WebSocket connected: ' + this.server.ws_uri);
     // Clear reconnectTimer since we are not disconnected
     window.clearTimeout(this.reconnectTimer);
-    // Disable ua_closed
-    this.ua_closed = false;
+    // Disable closed
+    this.closed = false;
     // Trigger onTransportConnected callback
     this.ua.onTransportConnected(this);
   },
@@ -133,7 +133,7 @@ JsSIP.Transport.prototype = {
     if(connected_before === true) {
       this.ua.onTransportClosed(this);
       // Check whether the user requested to close.
-      if(!this.ua_closed) {
+      if(!this.closed) {
         // Reset reconnection_attempts
         this.reconnection_attempts = 0;
         this.reConnect();

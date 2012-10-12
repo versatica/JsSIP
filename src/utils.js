@@ -113,6 +113,13 @@ JsSIP.utils = {
     return;
   },
 
+  getRandomIP: function() {
+    function get_octet() {
+      return (Math.random() * 255 | 0) + 1;
+    }
+    return get_octet()+'.'+get_octet()+'.'+get_octet()+'.'+get_octet();
+  },
+
   // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info
   MD5: function(string) {
     function RotateLeft(lValue, iShiftBits) {
