@@ -128,6 +128,7 @@ JsSIP.UA.prototype.isConnected = function() {
  * @param {HTMLVideoElement} selfView
  * @param {HTMLVideoElement} remoteView
  * @param {Object} mediaType
+ * @param {Object} [eventHandlers]
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.WebRtcNotSupportedError} If rtcweb is not supported by the client.
@@ -135,13 +136,14 @@ JsSIP.UA.prototype.isConnected = function() {
  *
  * @returns {JsSIP.OutgoingSession}
  */
-JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType) {
+JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType, eventHandlers) {
   var session, options;
 
   // Call Options
   options = {
     views: {selfView: selfView, remoteView: remoteView},
-    mediaType: mediaType
+    mediaType: mediaType,
+    eventHandlers: eventHandlers
   };
 
   if(this.status !== JsSIP.c.UA_STATUS_READY) {
@@ -162,14 +164,20 @@ JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType) {
  * @param {String} target
  * @param {String} body
  * @param {String} [content_type]
+ * @param {Object} [eventHandlers]
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.InvalidTargetError} If the calling target is invalid.
  *
  * @returns {JsSIP.MessageSender}
  */
-JsSIP.UA.prototype.message = function(target, body, content_type) {
+JsSIP.UA.prototype.message = function(target, body, content_type, eventHandlers) {
   var message, options;
+
+  // Message Options
+  options = {
+    eventHandlers: eventHandlers
+  };
 
   if(this.status !== JsSIP.c.UA_STATUS_READY) {
     throw new JsSIP.exceptions.NotReadyError();
@@ -180,7 +188,7 @@ JsSIP.UA.prototype.message = function(target, body, content_type) {
     throw new JsSIP.exceptions.InvalidTargetError();
   } else {
     message = new JsSIP.Message(this);
-    message.send(target, body, content_type);
+    message.send(target, body, content_type, options);
   }
 };
 
