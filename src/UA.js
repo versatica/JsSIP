@@ -125,24 +125,23 @@ JsSIP.UA.prototype.isConnected = function() {
  * Make an outgoing call.
  *
  * @param {String} target
- * @param {HTMLVideoElement} selfView
- * @param {HTMLVideoElement} remoteView
- * @param {Object} mediaType
+ * @param {Boolean} useAudio
+ * @param {Boolean} useVideo
  * @param {Object} [eventHandlers]
+ * @param {Object} videoViews
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.WebRtcNotSupportedError} If rtcweb is not supported by the client.
  * @throws {JsSIP.exceptions.InvalidTargetError} If the calling target is invalid.
  *
- * @returns {JsSIP.OutgoingSession}
  */
-JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType, eventHandlers) {
+JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, videoViews) {
   var session, options;
 
   // Call Options
   options = {
-    views: {selfView: selfView, remoteView: remoteView},
-    mediaType: mediaType,
+    views: videoViews,
+    mediaType: {audio: useAudio, video: useVideo},
     eventHandlers: eventHandlers
   };
 
@@ -169,7 +168,6 @@ JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType, even
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.InvalidTargetError} If the calling target is invalid.
  *
- * @returns {JsSIP.MessageSender}
  */
 JsSIP.UA.prototype.message = function(target, body, content_type, eventHandlers) {
   var message, options;
