@@ -101,14 +101,14 @@ JsSIP.Dialog.prototype = {
   */
 
   // RFC 3261 12.2.1.1
-  createRequest: function(method, headers) {
-    var cseq, request;
-    headers = headers || {};
+  createRequest: function(method, extraHeaders) {
+    var cseq, request, length, idx;
+    extraHeaders = extraHeaders || [];
 
     if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }
 
     cseq = (method === JsSIP.c.CANCEL || method === JsSIP.c.ACK) ? this.local_seqnum : this.local_seqnum += 1;
-    headers.route = this.route_set;
+
     request = new JsSIP.OutgoingRequest(
       method,
       this.remote_target,
@@ -118,8 +118,9 @@ JsSIP.Dialog.prototype = {
         'from_uri': this.local_uri,
         'from_tag': this.id.local_tag,
         'to_uri': this.remote_uri,
-        'to_tag': this.id.remote_tag },
-      headers);
+        'to_tag': this.id.remote_tag,
+        'route_set': this.route_set
+      }, extraHeaders);
 
     request.dialog = this;
 

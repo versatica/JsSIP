@@ -19,7 +19,7 @@ JsSIP.Message.prototype = new JsSIP.EventEmitter();
 
 
 JsSIP.Message.prototype.send = function(target, body, content_type, options) {
-  var request_sender, event, eventHandlers,
+  var request_sender, event, eventHandlers, extraHeaders,
     events = [
       'sending',
       'succeeded',
@@ -30,6 +30,7 @@ JsSIP.Message.prototype.send = function(target, body, content_type, options) {
 
   // Get call options
   options = options || {};
+  extraHeaders = options.extraHeaders || [];
   eventHandlers = options.eventHandlers || {};
 
   // Set event handlers
@@ -43,8 +44,10 @@ JsSIP.Message.prototype.send = function(target, body, content_type, options) {
 
   this.closed = false;
   this.ua.applicants[this] = this;
-  this.request = new JsSIP.OutgoingRequest(JsSIP.c.MESSAGE, target, this.ua, null, {
-    'content_type': content_type || 'text/plain'});
+
+  extraHeaders.push('Content-Type: '+ (content_type ? content_type : 'text/plain'));
+
+  this.request = new JsSIP.OutgoingRequest(JsSIP.c.MESSAGE, target, this.ua, null, extraHeaders);
 
   if(body) {
     this.request.body = body;

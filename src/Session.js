@@ -76,14 +76,14 @@ JsSIP.Session = (function() {
    * @private
    */
   Session.prototype.connect = function(target, options) {
-    var event, eventHandlers, request, selfView, remoteView, mediaType, headers, requestParams;
+    var event, eventHandlers, request, selfView, remoteView, mediaType, extraHeaders, requestParams;
 
     // Get call options
     options = options || {};
     selfView = options.views ? options.views.selfView : null;
     remoteView = options.views ? options.views.remoteView : null;
     mediaType = options.mediaType || {audio: true, video: true};
-    headers = options.headers || {};
+    extraHeaders = options.extraHeaders || [];
     eventHandlers = options.eventHandlers || {};
 
     // Set event handlers
@@ -109,20 +109,21 @@ JsSIP.Session = (function() {
     this.isCanceled = false;
     this.received_100 = false;
 
-    headers.contact = '<' + this.contact + ';ob>';
-    headers.allow = JsSIP.c.ALLOWED_METHODS;
-    headers.content_type = 'application/sdp';
+    extraHeaders.push('Contact: <'+ this.contact + ';ob>');
+    extraHeaders.push('Allow: '+ JsSIP.c.ALLOWED_METHODS);
+    extraHeaders.push('Content-Type: application/sdp');
 
     requestParams = {from_tag: this.from_tag};
 
     if (options.anonymous) {
       requestParams.from_display_name = 'Anonymous';
       requestParams.from_uri = 'sip:anonymous@anonymous.invalid';
-      headers.p_preferred_identity = this.ua.configuration.from_uri;
-      headers.privacy = 'id';
+
+      extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.from_uri);
+      extraHeaders.push('Privacy: id');
     }
 
-    request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, requestParams, headers);
+    request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, requestParams, extraHeaders);
 
     this.id = request.headers['Call-ID'] + this.from_tag;
 
@@ -692,7 +693,8 @@ JsSIP.Session = (function() {
   */
   Session.prototype.sendBye = function(reason) {
     var request, byeSender,
-      session = this;
+      session = this,
+      extraHeaders = [];
 
     function ByeSender(request) {
       this.request = request;
@@ -703,8 +705,11 @@ JsSIP.Session = (function() {
       };
     }
 
-    reason = reason ? {'reason': reason} : {};
-    request = this.dialog.createRequest(JsSIP.c.BYE, reason);
+    if (reason) {
+      extraHeaders.push('Reason: '+ reason);
+    }
+
+    request = this.dialog.createRequest(JsSIP.c.BYE, extraHeaders);
     byeSender = new ByeSender(request);
 
     byeSender.send();
@@ -859,16 +864,16 @@ JsSIP.Session = (function() {
   */
   Session.prototype.message = function(body, content_type, onSuccess, onFailure) {
     // Check Callbacks
-    var request, request_sender;
+    var request, request_sender,
+      extraHeaders = [];
 
     onSuccess = (JsSIP.utils.isFunction(onSuccess)) ? onSuccess : null;
     onFailure = (JsSIP.utils.isFunction(onFailure)) ? onFailure : null;
-    content_type = content_type || 'text/plain';
+
+    extraHeaders.push("Content-Type: "+ (content_type ? content_type : 'text/plain'));
 
     // Create Request
-    request = this.dialog.createRequest(JsSIP.c.MESSAGE, {
-      content_type: content_type
-    });
+    request = this.dialog.createRequest(JsSIP.c.MESSAGE, extraHeaders);
     request.body = body;
 
     // Define receiveResponse logic

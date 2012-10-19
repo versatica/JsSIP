@@ -11,11 +11,11 @@
  * @param {JsSIP.UA} ua
  * @param {Object} params parameters that will have priority over ua.configuration parameters:
  * <br>
- *  - cseq, call_id, from_tag, from_uri, from_display_name, to_uri, to_tag
+ *  - cseq, call_id, from_tag, from_uri, from_display_name, to_uri, to_tag, route_set
  * @param {Object} [headers] extra headers
  * @param {String} [body]
  */
-JsSIP.OutgoingRequest = function(method, ruri, ua, params, headers, body) {
+JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   var
     to_display_name,
     to_uri,
@@ -30,7 +30,6 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, headers, body) {
     header;
 
   params = params || {};
-  headers = headers || {};
 
   // Mandatory parameters check
   if(!method || !ruri || !ua) {
@@ -41,11 +40,16 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, headers, body) {
   this.method = method;
   this.ruri = ruri;
   this.body = body;
+  this.extraHeaders = extraHeaders;
 
   // Fill the Common SIP Request Headers
 
   //ROUTE
-  this.setHeader('route', ua.transport.server.sip_uri);
+  if (params.route_set) {
+    this.setHeader('route', params.route_set);
+  } else {
+    this.setHeader('route', ua.transport.server.sip_uri);
+  }
 
   // VIA
   // Empty Via header. Will be filled by the client transaction
@@ -83,11 +87,6 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, headers, body) {
   cseq = params.cseq || Math.floor(Math.random() * 10000);
   cseq = cseq + ' ' + method;
   this.setHeader('cseq', cseq);
-
-  // Add extra headers
-  for(header in headers) {
-    this.setHeader(header, headers[header]);
-  }
 };
 
 JsSIP.OutgoingRequest.prototype = {
@@ -108,6 +107,11 @@ JsSIP.OutgoingRequest.prototype = {
       for(idx in this.headers[header]) {
         msg += header + ': ' + this.headers[header][idx] + '\r\n';
       }
+    }
+
+    length = this.extraHeaders.length;
+    for(idx=0; idx < length; idx++) {
+      msg += this.extraHeaders[idx] +'\r\n';
     }
 
     msg += 'Supported: ' +  JsSIP.c.SUPPORTED +'\r\n';

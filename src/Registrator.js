@@ -55,10 +55,10 @@ JsSIP.Registrator.prototype = {
         'to_uri': this.from_uri,
         'call_id': this.call_id,
         'cseq': (this.cseq += 1)
-      }, {
-        'contact': this.contact + ';expires=' + this.expires,
-        'allow': JsSIP.c.ALLOWED_METHODS
-      });
+      }, [
+        'Contact: '+ this.contact + ';expires=' + this.expires,
+        'Allow: '+ JsSIP.c.ALLOWED_METHODS
+      ]);
 
     request_sender = new JsSIP.RequestSender(this, this.ua);
 
@@ -187,18 +187,18 @@ JsSIP.Registrator.prototype = {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
-        }, {
-          'contact': '*',
-          'expires': 0
-        });
+        }, [
+          'Contact: *',
+          'Expires : 0'
+        ]);
     } else {
       this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
-        }, {
-          'contact': this.contact + ';expires=0'
-        });
+        }, [
+          'Contact: '+ this.contact + ';expires=0'
+        ]);
     }
 
     var request_sender = new JsSIP.RequestSender(this, this.ua);
