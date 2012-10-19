@@ -76,7 +76,7 @@ JsSIP.Session = (function() {
    * @private
    */
   Session.prototype.connect = function(target, options) {
-    var event, eventHandlers, request, selfView, remoteView, mediaType, headers;
+    var event, eventHandlers, request, selfView, remoteView, mediaType, headers, requestParams;
 
     // Get call options
     options = options || {};
@@ -113,8 +113,16 @@ JsSIP.Session = (function() {
     headers.allow = JsSIP.c.ALLOWED_METHODS;
     headers.content_type = 'application/sdp';
 
-    request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, {
-      from_tag: this.from_tag }, headers);
+    requestParams = {from_tag: this.from_tag};
+
+    if (options.anonymous) {
+      requestParams.from_display_name = 'Anonymous';
+      requestParams.from_uri = 'sip:anonymous@anonymous.invalid';
+      headers.p_preferred_identity = this.ua.configuration.from_uri;
+      headers.privacy = 'id';
+    }
+
+    request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, requestParams, headers);
 
     this.id = request.headers['Call-ID'] + this.from_tag;
 
