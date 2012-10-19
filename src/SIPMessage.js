@@ -118,7 +118,7 @@ JsSIP.OutgoingRequest.prototype = {
       msg += 'Content-Length: ' + length + '\r\n\r\n';
       msg += this.body;
     } else {
-      msg += '\r\n';
+      msg += 'Content-Length: ' + 0 + '\r\n\r\n';
     }
 
     return msg;
