@@ -18,7 +18,7 @@ JsSIP.Message = function(ua) {
 JsSIP.Message.prototype = new JsSIP.EventEmitter();
 
 
-JsSIP.Message.prototype.send = function(target, body, content_type, options) {
+JsSIP.Message.prototype.send = function(target, body, contentType, options) {
   var request_sender, event, eventHandlers, extraHeaders,
     events = [
       'sending',
@@ -45,7 +45,7 @@ JsSIP.Message.prototype.send = function(target, body, content_type, options) {
   this.closed = false;
   this.ua.applicants[this] = this;
 
-  extraHeaders.push('Content-Type: '+ (content_type ? content_type : 'text/plain'));
+  extraHeaders.push('Content-Type: '+ (contentType ? contentType : 'text/plain'));
 
   this.request = new JsSIP.OutgoingRequest(JsSIP.c.MESSAGE, target, this.ua, null, extraHeaders);
 
@@ -148,7 +148,7 @@ JsSIP.Message.prototype.close = function() {
  * @private
  */
 JsSIP.Message.prototype.init_incoming = function(request) {
-  var content_type = request.getHeader('content-type');
+  var contentType = request.getHeader('content-type');
 
   this.direction = 'incoming';
   this.local_identity = request.s('to').uri;
@@ -156,7 +156,7 @@ JsSIP.Message.prototype.init_incoming = function(request) {
 
   request.reply(200, JsSIP.c.REASON_200);
 
-  if (content_type && content_type === "text/plain") {
+  if (contentType && contentType === "text/plain") {
     this.ua.emit('newMessage', this.ua, {
       originator: 'remote',
       message: this,

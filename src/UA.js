@@ -162,14 +162,14 @@ JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, vi
  * Send a message.
  * @param {String} target
  * @param {String} body
- * @param {String} [content_type]
+ * @param {String} [contentType]
  * @param {Object} [eventHandlers]
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.InvalidTargetError} If the calling target is invalid.
  *
  */
-JsSIP.UA.prototype.message = function(target, body, content_type, eventHandlers) {
+JsSIP.UA.prototype.sendMessage = function(target, body, contentType, eventHandlers) {
   var message, options;
 
   // Message Options
@@ -186,7 +186,7 @@ JsSIP.UA.prototype.message = function(target, body, content_type, eventHandlers)
     throw new JsSIP.exceptions.InvalidTargetError();
   } else {
     message = new JsSIP.Message(this);
-    message.send(target, body, content_type, options);
+    message.send(target, body, contentType, options);
   }
 };
 
