@@ -233,9 +233,9 @@ JsSIP.Registrator.prototype = {
   registrationFailure: function(cause) {
     if (this.registered) {
       this.registered = false;
-      this.ua.emit('unregistered', this.ua); // this.ua.emit('deregister', [cause]);
+      this.ua.emit('unregistered', this.ua);
     }
-    this.ua.emit('registrationFailed', this.ua); // this.ua.emit('registrationFailure', [cause]);
+    this.ua.emit('registrationFailed', this.ua);
   },
 
   /**

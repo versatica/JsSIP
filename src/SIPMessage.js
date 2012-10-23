@@ -429,8 +429,8 @@ JsSIP.IncomingRequest = (function() {
 JsSIP.IncomingResponse = (function() {
   var IncomingResponse = function() {
     this.headers = {};
-    this.response_code = null; // to be moved to this.code
-    this.reason_phrase = null; // to be voved to this.reason
+    this.response_code = null;
+    this.reason_phrase = null;
   };
   IncomingResponse.prototype = new JsSIP.IncomingMessage();
 
