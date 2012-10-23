@@ -320,7 +320,9 @@ JsSIP.Subscription.prototype = {
       return;
     }
 
-    request.reply(200, JsSIP.c.REASON_200, {'Contact': this.subscriber.contact});
+    request.reply(200, JsSIP.c.REASON_200, [
+      'Contact: <'+ this.subscriber.contact +'>'
+    ]);
 
     subscription_state = request.s('Subscription-State');
 

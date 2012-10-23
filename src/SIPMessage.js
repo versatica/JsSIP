@@ -40,7 +40,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   this.method = method;
   this.ruri = ruri;
   this.body = body;
-  this.extraHeaders = extraHeaders;
+  this.extraHeaders = extraHeaders || [];
 
   // Fill the Common SIP Request Headers
 
@@ -340,8 +340,9 @@ JsSIP.IncomingRequest = (function() {
   * @param {Function} [onSuccess] onSuccess callback
   * @param {Function} [onFailure] onFailure callback
   */
-  IncomingRequest.prototype.reply = function(code, reason, headers, body, onSuccess, onFailure) {
-    var rr, vias, header, length,
+  IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
+    var rr, vias, header, length, idx,
+      extraHeaders = extraHeaders || [],
       response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
       to = this.to,
       r = 0,
@@ -375,8 +376,9 @@ JsSIP.IncomingRequest = (function() {
     response += 'Call-ID: ' + this.call_id + '\r\n';
     response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
 
-    for(header in headers) {
-      response += header + ': ' + headers[header] + '\r\n';
+    length = extraHeaders.length;
+    for(idx=0; idx < length; idx++) {
+      response += extraHeaders[idx] +'\r\n';
     }
 
     if(body) {

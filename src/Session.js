@@ -402,8 +402,8 @@ JsSIP.Session = (function() {
               return;
             }
 
-            request.reply(200, JsSIP.c.REASON_200, {
-              'Contact': '<' + session.contact + '>'},
+            request.reply(200, JsSIP.c.REASON_200, [
+              'Contact: <' + session.contact + '>'],
               sdp,
               // onSuccess
               function(){
@@ -471,9 +471,9 @@ JsSIP.Session = (function() {
       if (this.status !== JsSIP.c.SESSION_TERMINATED) {
         this.progress('local');
 
-        request.reply(180, JsSIP.c.REASON_180, {
-          'Contact': '<' + this.contact + '>'
-        });
+        request.reply(180, JsSIP.c.REASON_180, [
+          'Contact: <' + this.contact + '>'
+        ]);
       }
     } else {
       request.reply(415, JsSIP.c.REASON_415);
@@ -625,8 +625,8 @@ JsSIP.Session = (function() {
     if((retransmissions * JsSIP.Timers.T1) <= JsSIP.Timers.T2) {
       retransmissions += 1;
 
-      request.reply(200, JsSIP.c.REASON_200, {
-        'Contact': '<' + this.contact + '>'},
+      request.reply(200, JsSIP.c.REASON_200, [
+        'Contact: <' + this.contact + '>'],
         body);
 
       this.invite2xxTimer = window.setTimeout(

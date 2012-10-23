@@ -373,11 +373,10 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
    * They are processed as if they had been received outside the dialog.
    */
   if(method === JsSIP.c.OPTIONS) {
-    request.reply(200, JsSIP.c.REASON_200, {
-      'Allow': JsSIP.c.ALLOWED_METHODS,
-      'Accept': JsSIP.c.ACCEPTED_BODY_TYPES
-      }
-    );
+    request.reply(200, JsSIP.c.REASON_200, [
+      'Allow: '+ JsSIP.c.ALLOWED_METHODS,
+      'Accept: '+ JsSIP.c.ACCEPTED_BODY_TYPES
+    ]);
   }
 
   // Initial Request
