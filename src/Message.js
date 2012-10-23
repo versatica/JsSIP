@@ -38,6 +38,13 @@ JsSIP.Message.prototype.send = function(target, body, contentType, options) {
     this.on(event, eventHandlers[event]);
   }
 
+  // Check target validity
+  target = JsSIP.utils.normalizeUri(target, this.ua.configuration.domain);
+  if (!target) {
+    throw new JsSIP.exceptions.InvalidTargetError();
+  }
+
+  // Message parameter initialization
   this.direction = 'outgoing';
   this.local_identity = this.ua.configuration.user;
   this.remote_identity = target;
@@ -120,6 +127,7 @@ JsSIP.Message.prototype.onRequestTimeout = function() {
     return;
   }
   this.emit('failed', this, {
+    originator: 'system',
     cause: JsSIP.c.causes.REQUEST_TIMEOUT
   });
 };
@@ -132,6 +140,7 @@ JsSIP.Message.prototype.onTransportError = function() {
     return;
   }
   this.emit('failed', this, {
+    originator: 'system',
     cause: JsSIP.c.causes.CONNECTION_ERROR
   });
 };

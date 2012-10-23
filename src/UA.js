@@ -181,13 +181,8 @@ JsSIP.UA.prototype.sendMessage = function(target, body, contentType, eventHandle
     throw new JsSIP.exceptions.NotReadyError();
   }
 
-  target = JsSIP.utils.normalizeUri(target, this.configuration.domain);
-  if (!target) {
-    throw new JsSIP.exceptions.InvalidTargetError();
-  } else {
-    message = new JsSIP.Message(this);
-    message.send(target, body, contentType, options);
-  }
+  message = new JsSIP.Message(this);
+  message.send(target, body, contentType, options);
 };
 
 /**
