@@ -83,15 +83,15 @@ JsSIP.UA.prototype.register = function() {
 };
 
 /**
- * Deregister.
- * @param {Boolean} [all] deregister all user bindings.
+ * Unregister.
+ * @param {Boolean} [all] unregister all user bindings.
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
-JsSIP.UA.prototype.deregister = function(all) {
+JsSIP.UA.prototype.unregister = function(all) {
   if(this.status === JsSIP.c.UA_STATUS_READY) {
     this.configuration.register = false;
-    this.registrator.deregister(all);
+    this.registrator.unregister(all);
   } else {
     throw new JsSIP.exceptions.NotReadyError();
   }
