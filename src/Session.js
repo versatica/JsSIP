@@ -981,7 +981,9 @@ JsSIP.Session = (function() {
       request.body = session.mediaSession.peerConnection.localDescription.sdp;
 
       // Hack to quit m=video section from sdp until it is solved in http://code.google.com/p/webrtc/issues/detail?id=935
-      request.body = request.body.substring(0, request.body.indexOf('m=video'));
+      if (!mediaType.video) {
+        request.body = request.body.substring(0, request.body.indexOf('m=video'));
+      }
       // End of Hack
 
       session.status = JsSIP.c.SESSION_INVITE_SENT;
