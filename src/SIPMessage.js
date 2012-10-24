@@ -342,12 +342,12 @@ JsSIP.IncomingRequest = (function() {
   */
   IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
     var rr, vias, header, length, idx,
-      extraHeaders = extraHeaders || [],
       response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
       to = this.to,
       r = 0,
       v = 0;
 
+    extraHeaders = extraHeaders || [];
 
     if(this.method === JsSIP.c.INVITE && code > 100 && code <= 200) {
       rr = this.countHeader('record-route');
