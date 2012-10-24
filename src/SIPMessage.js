@@ -134,6 +134,7 @@ JsSIP.OutgoingRequest.prototype = {
  * @class Class for incoming SIP message.
  */
 JsSIP.IncomingMessage = function(){
+  this.data = null;
   this.headers = null;
   this.method =  null;
   this.via = null;
@@ -314,6 +315,10 @@ JsSIP.IncomingMessage.prototype = {
   setHeader: function(name, value) {
     var header = { raw: value };
     this.headers[JsSIP.utils.headerize(name)] = [header];
+  },
+
+  toString: function() {
+    return this.data;
   }
 };
 

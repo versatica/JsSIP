@@ -186,7 +186,7 @@ JsSIP.Parser = (function() {
       message.reason_phrase = parsed.reason_phrase;
     }
 
-    message.msg = data;
+    message.data = data;
     header_start = header_end + 2;
 
     /* Loop over every line in msg. Detect the end of each header and parse
