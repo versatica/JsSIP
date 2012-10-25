@@ -520,8 +520,7 @@ JsSIP.Session = (function() {
           }
 
           this.acceptAndTerminate(response,'SIP ;cause= 400 ;text= "Missing session description"');
-
-          session.ended('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
+          session.failed('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
 
           break;
         case '2xx_answer':
@@ -606,7 +605,7 @@ JsSIP.Session = (function() {
     if(this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
       request.reply(487, JsSIP.c.REASON_487);
 
-      this.ended('system', null, JsSIP.c.causes.EXPIRES);
+      this.failed('system', null, JsSIP.c.causes.EXPIRES);
     }
   };
 
