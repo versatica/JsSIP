@@ -20,5 +20,8 @@
     "stack",
     "library"
   ],
+   "devDependencies": {
+     "grunt": "0.3.12"
+   },
   "license": "MIT"
 }
