@@ -564,17 +564,24 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       * Value to be set in Via sent_by and host part of Contact FQDN
       */
       via_host: Math.random().toString(36).substr(2, 12) + '.invalid',
-      /* Registration parameters */
+
+      // Registration parameters
       register_expires: 600,
       register_min_expires: 120,
       register: true,
-      /* Transport related parameters */
+
+      // Transport related parameters
       max_reconnection: 3,
       reconnection_timeout: 4,
 
+      // Session parameters
       no_answer_timeout: 30,
       stun_server: 'stun.l.google.com:19302',
-      /* Hacks */
+
+      // Loggin parameters
+      trace_sip: false,
+
+      // Hacks
       hack_via_tcp: false,
       hack_ip_in_contact: false
     };
@@ -725,6 +732,7 @@ JsSIP.UA.configuration_skeleton = (function() {
       "stun_server",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
+      "trace_sip",
       "via_host", // random.
 
       // Post-configuration generated parameters
@@ -836,6 +844,13 @@ JsSIP.UA.configuration_check = {
     },
     register_expires: function(register_expires) {
       if(!Number(register_expires)) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    trace_sip: function(trace_sip) {
+      if(typeof trace_sip !== 'boolean') {
         return false;
       } else {
         return true;

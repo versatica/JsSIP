@@ -34,9 +34,12 @@ JsSIP.Transport.prototype = {
    * @returns {Boolean}
    */
   send: function(msg) {
+    var message = msg.toString();
+
     if(this.ws && this.ws.readyState === WebSocket.OPEN) {
-      var message = msg.toString();
-      console.info(JsSIP.c.LOG_TRANSPORT +'Sending WebSocket message: \n\n' + message + '\n');
+      if (this.ua.configuration.trace_sip === true) {
+        console.info(JsSIP.c.LOG_TRANSPORT +'Sending WebSocket message: \n\n' + message + '\n');
+      }
       this.ws.send(message);
       return true;
     } else {
@@ -153,7 +156,9 @@ JsSIP.Transport.prototype = {
     var message, transaction,
       data = e.data;
 
-    console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket message: \n\n' + data + '\n');
+    if (this.ua.configuration.trace_sip === true) {
+      console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket message: \n\n' + data + '\n');
+    }
 
     // Keep alive response from server. Scape it.
     if(data === '\r\n') {
