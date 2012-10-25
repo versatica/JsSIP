@@ -109,19 +109,23 @@ JsSIP.Session = (function() {
     this.isCanceled = false;
     this.received_100 = false;
 
-    extraHeaders.push('Contact: <'+ this.contact + ';ob>');
-    extraHeaders.push('Allow: '+ JsSIP.c.ALLOWED_METHODS);
-    extraHeaders.push('Content-Type: application/sdp');
-
     requestParams = {from_tag: this.from_tag};
 
     if (options.anonymous) {
+      if (this.ua.contact.temp_gruu) {
+        this.contact = this.ua.contact.temp_gruu;
+      }
+
       requestParams.from_display_name = 'Anonymous';
       requestParams.from_uri = 'sip:anonymous@anonymous.invalid';
 
       extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.from_uri);
       extraHeaders.push('Privacy: id');
     }
+
+    extraHeaders.push('Contact: <'+ this.contact + ';ob>');
+    extraHeaders.push('Allow: '+ JsSIP.c.ALLOWED_METHODS);
+    extraHeaders.push('Content-Type: application/sdp');
 
     request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, requestParams, extraHeaders);
 
