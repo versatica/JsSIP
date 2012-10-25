@@ -635,7 +635,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   //for this instance.
   settings.jssip_id = Math.random().toString(36).substr(2, 5);
 
-  uri = JsSIP.grammar_sip.parse(settings.uri, 'lazy_uri');
+  uri = JsSIP.grammar.parse(settings.uri, 'lazy_uri');
 
   settings.user = uri.user;
   settings.domain = uri.host;
@@ -662,7 +662,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   // Transports
   for (idx in configuration.outbound_proxy_set) {
-    ws_uri = JsSIP.grammar_sip.parse(settings.outbound_proxy_set[idx].ws_uri, 'absoluteURI');
+    ws_uri = JsSIP.grammar.parse(settings.outbound_proxy_set[idx].ws_uri, 'absoluteURI');
 
     settings.outbound_proxy_set[idx].sip_uri = '<sip:' + ws_uri.host + (ws_uri.port ? ':' + ws_uri.port : '') + ';transport=ws;lr>';
 
@@ -776,7 +776,7 @@ JsSIP.UA.configuration_check = {
           return false;
         }
 
-        url = JsSIP.grammar_sip.parse(outbound_proxy_set[idx].ws_uri, 'absoluteURI');
+        url = JsSIP.grammar.parse(outbound_proxy_set[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
           console.log(JsSIP.c.LOG_UA +'Invalid "ws_uri" attribute in outbound_proxy_set parameter: ' + outbound_proxy_set[idx].ws_uri);
@@ -791,7 +791,7 @@ JsSIP.UA.configuration_check = {
     uri: function(uri) {
       var parsed;
 
-      parsed = JsSIP.grammar_sip.parse(uri, 'lazy_uri');
+      parsed = JsSIP.grammar.parse(uri, 'lazy_uri');
 
       if(parsed === -1) {
         console.log(JsSIP.c.LOG_UA +'Invalid uri: ' + uri);
@@ -804,7 +804,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     password: function(password) {
-      if(JsSIP.grammar_sip.parse(password, 'password') === -1) {
+      if(JsSIP.grammar.parse(password, 'password') === -1) {
         return false;
       } else {
         return true;
@@ -813,7 +813,7 @@ JsSIP.UA.configuration_check = {
   },
   optional: {
     authorization_user: function(authorization_user) {
-      if(JsSIP.grammar_sip.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
+      if(JsSIP.grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
         return false;
       } else {
         return true;
@@ -828,7 +828,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     display_name: function(display_name) {
-      if(JsSIP.grammar_sip.parse(display_name, 'display_name') === -1) {
+      if(JsSIP.grammar.parse(display_name, 'display_name') === -1) {
         return false;
       } else {
         return true;
@@ -844,7 +844,7 @@ JsSIP.UA.configuration_check = {
     stun_server: function(stun_server) {
       var parsed;
 
-      parsed = JsSIP.grammar_sip.parse(stun_server, 'hostport');
+      parsed = JsSIP.grammar.parse(stun_server, 'hostport');
 
       if(parsed === -1) {
         console.log(JsSIP.c.LOG_UA +'Invalid stun_server: ' + stun_server);

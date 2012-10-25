@@ -30,7 +30,7 @@ JsSIP.utils = {
   checkUri: function(target) {
     if (!target) {
       return false;
-    } else if(JsSIP.grammar_sip.parse(target, 'lazy_uri') === -1) {
+    } else if(JsSIP.grammar.parse(target, 'lazy_uri') === -1) {
       return false;
     } else {
       return true;
@@ -51,7 +51,7 @@ JsSIP.utils = {
       return;
     }
 
-    uri = JsSIP.grammar_sip.parse(target, 'lazy_uri');
+    uri = JsSIP.grammar.parse(target, 'lazy_uri');
 
     if (!uri.host && !domain) {
       console.log('No domain specified in target nor as function parameter');

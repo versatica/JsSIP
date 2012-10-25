@@ -42,14 +42,14 @@ module.exports = function(grunt) {
       post: {
         src: [
           'dist/<%= pkg.name %>-<%= pkg.version %>.js',
-          "src/grammar/grammar_rfc3261.js"
+          "src/grammar/dist/grammar.js"
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
       },
       post_min: {
         src: [
         'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
-        "src/grammar/grammar_rfc3261.min.js"
+        "src/grammar/dist/grammar.min.js"
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js'
       }
