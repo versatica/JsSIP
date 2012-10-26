@@ -47,5 +47,15 @@ JsSIP.exceptions = {
     };
     exception.prototype = new Error();
     return exception;
+  }()),
+
+  InvalidStateError: (function(){
+    var exception = function() {
+      this.code = 5;
+      this.name = 'INVALID_STATE_ERROR';
+      this.message = this.name +': JsSIP Exception '+ this.code;
+    };
+    exception.prototype = new Error();
+    return exception;
   }())
 };

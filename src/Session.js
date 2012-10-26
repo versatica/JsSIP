@@ -78,6 +78,11 @@ JsSIP.Session = (function() {
   Session.prototype.connect = function(target, options) {
     var event, eventHandlers, request, selfView, remoteView, mediaType, extraHeaders, requestParams;
 
+    // Check Session Status
+    if (this.status !== null) {
+      throw new JsSIP.exceptions.InvalidStateError();
+    }
+
     // Get call options
     options = options || {};
     selfView = options.views ? options.views.selfView : null;
@@ -396,64 +401,65 @@ JsSIP.Session = (function() {
       this.answer = function(selfView, remoteView) {
         var offer, onMediaSuccess, onMediaFailure, onSdpFailure;
 
-        if(session.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-          offer = request.body;
-
-          onMediaSuccess = function() {
-            var sdp = session.mediaSession.peerConnection.localDescription.sdp;
-
-            if(!session.createConfirmedDialog(request, 'UAS')) {
-              return;
-            }
-
-            request.reply(200, JsSIP.c.REASON_200, [
-              'Contact: <' + session.contact + '>'],
-              sdp,
-              // onSuccess
-              function(){
-                session.status = JsSIP.c.SESSION_WAITING_FOR_ACK;
-
-                session.invite2xxTimer = window.setTimeout(
-                  function() {session.invite2xxRetransmission(1, request,sdp);},JsSIP.Timers.T1
-                );
-
-                window.clearTimeout(session.userNoAnswerTimer);
-
-                session.ackTimer = window.setTimeout(
-                  function() { session.ackTimeout(); },
-                  JsSIP.Timers.TIMER_H
-                );
-
-                session.started('local');
-              },
-              // onFailure
-              function() {
-                session.failed('system', null, JsSIP.c.causes.CONNECTION_ERROR);
-              }
-            );
-          };
-
-          onMediaFailure = function(e) {
-            // Unable to get User Media
-            request.reply(486, JsSIP.c.REASON_486);
-            session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
-          };
-
-          onSdpFailure = function(e) {
-            /* Bad SDP Offer
-            * peerConnection.setRemoteDescription thows an exception
-            */
-            console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
-            request.reply(488, JsSIP.c.REASON_488);
-            session.failed('remote', request, JsSIP.causes.BAD_MEDIA_DESCRIPTION);
-          };
-
-          //Initialize Media Session
-          session.mediaSession = new JsSIP.MediaSession(session, selfView, remoteView);
-          session.mediaSession.startCallee(onMediaSuccess, onMediaFailure, onSdpFailure, offer);
-        } else {
-          console.warn(JsSIP.c.LOG_SERVER_INVITE_SESSION +'No call waiting for answer');
+        // Check Session Status
+        if (this.status !== JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
+          throw new JsSIP.exceptions.InvalidStateError();
         }
+
+        offer = request.body;
+
+        onMediaSuccess = function() {
+          var sdp = session.mediaSession.peerConnection.localDescription.sdp;
+
+          if(!session.createConfirmedDialog(request, 'UAS')) {
+            return;
+          }
+
+          request.reply(200, JsSIP.c.REASON_200, [
+            'Contact: <' + session.contact + '>'],
+            sdp,
+            // onSuccess
+            function(){
+              session.status = JsSIP.c.SESSION_WAITING_FOR_ACK;
+
+              session.invite2xxTimer = window.setTimeout(
+                function() {session.invite2xxRetransmission(1, request,sdp);},JsSIP.Timers.T1
+              );
+
+              window.clearTimeout(session.userNoAnswerTimer);
+
+              session.ackTimer = window.setTimeout(
+                function() { session.ackTimeout(); },
+                JsSIP.Timers.TIMER_H
+              );
+
+              session.started('local');
+            },
+            // onFailure
+            function() {
+              session.failed('system', null, JsSIP.c.causes.CONNECTION_ERROR);
+            }
+          );
+        };
+
+        onMediaFailure = function(e) {
+          // Unable to get User Media
+          request.reply(486, JsSIP.c.REASON_486);
+          session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
+        };
+
+        onSdpFailure = function(e) {
+          /* Bad SDP Offer
+          * peerConnection.setRemoteDescription thows an exception
+          */
+          console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
+          request.reply(488, JsSIP.c.REASON_488);
+          session.failed('remote', request, JsSIP.causes.BAD_MEDIA_DESCRIPTION);
+        };
+
+        //Initialize Media Session
+        session.mediaSession = new JsSIP.MediaSession(session, selfView, remoteView);
+        session.mediaSession.startCallee(onMediaSuccess, onMediaFailure, onSdpFailure, offer);
       };
 
       /**
@@ -835,6 +841,11 @@ JsSIP.Session = (function() {
   * @param {String} [reason]
   */
   Session.prototype.terminate = function() {
+    // Check Session Status
+    if (this.status === JsSIP.c.SESSION_TERMINATED) {
+      throw new JsSIP.exceptions.InvalidStateError();
+    }
+
     switch(this.status) {
       // - UAC -
       case JsSIP.c.SESSION_NULL:
@@ -866,9 +877,13 @@ JsSIP.Session = (function() {
   * @param {Function} [onFailure]
   */
   Session.prototype.message = function(body, content_type, onSuccess, onFailure) {
-    // Check Callbacks
     var request, request_sender,
       extraHeaders = [];
+
+    // Check Session Status
+    if (this.status !== JsSIP.c.SESSION_CONFIRMED) {
+      throw new JsSIP.exceptions.InvalidStateError();
+    }
 
     onSuccess = (JsSIP.utils.isFunction(onSuccess)) ? onSuccess : null;
     onFailure = (JsSIP.utils.isFunction(onFailure)) ? onFailure : null;
