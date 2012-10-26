@@ -92,7 +92,7 @@ JsSIP.utils = {
   },
 
   isWebRtcSupported: function() {
-    if(typeof window.webkitPeerConnection00 === 'undefined'){
+    if(typeof window.webkitRTCPeerConnection === 'undefined'){
       return false;
     } else if(typeof navigator.webkitGetUserMedia === 'undefined'){
       return false;
