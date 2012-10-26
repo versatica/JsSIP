@@ -10,8 +10,8 @@
  */
 JsSIP.UA = function(configuration) {
   var events = [
-    'ua_connected',
-    'ua_disconnected',
+    'connected',
+    'disconnected',
     'registered',
     'unregistered',
     'registrationFailed',
@@ -303,7 +303,7 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
     this.closeSessionsOnTransportError();
     this.status = JsSIP.c.UA_STATUS_NOT_READY;
     this.error = JsSIP.c.UA_NETWORK_ERROR;
-    this.emit('ua_disconnected');
+    this.emit('disconnected');
   }
 };
 
@@ -332,7 +332,7 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
   }
   this.status = JsSIP.c.UA_STATUS_READY;
   this.error = null;
-  this.emit('ua_connected', this);
+  this.emit('connected', this);
 };
 
 //=========================
