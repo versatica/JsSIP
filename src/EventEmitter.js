@@ -136,7 +136,7 @@ JsSIP.EventEmitter.prototype = {
   * @param {String} events
   * @param {Array} args
   */
-  emit: function(event, args) {
+  emit: function(event, sender, data) {
     var listeners, length,
       idx=0;
 
@@ -149,9 +149,11 @@ JsSIP.EventEmitter.prototype = {
     listeners = this.events[event];
     length = listeners.length;
 
-    if (args) {
+    var e = new JsSIP.Event(event, sender, data);
+
+    if (e) {
       for (idx; idx<length; idx++) {
-        listeners[idx].apply(null, args);
+        listeners[idx].apply(null, [e]);
       }
     } else {
       for (idx; idx<length; idx++) {
@@ -175,4 +177,10 @@ JsSIP.EventEmitter.prototype = {
   newListener: function(listener) {
     this.events.newListener = listener;
   }
+};
+
+JsSIP.Event = function(type, sender, data) {
+  this.type = type;
+  this.sender= sender;
+  this.data = data;
 };

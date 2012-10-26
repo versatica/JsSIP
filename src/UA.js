@@ -10,13 +10,13 @@
  */
 JsSIP.UA = function(configuration) {
   var events = [
-    'connect',
-    'disconnect',
-    'register',
-    'deregister',
-    'registrationFailure',
-    'call',
-    'message'
+    'ua_connected',
+    'ua_disconnected',
+    'registered',
+    'unregistered',
+    'registrationFailed',
+    'newSession',
+    'newMessage'
   ];
 
   this.configuration = {};
@@ -83,15 +83,15 @@ JsSIP.UA.prototype.register = function() {
 };
 
 /**
- * Deregister.
- * @param {Boolean} [all] deregister all user bindings.
+ * Unregister.
+ * @param {Boolean} [all] unregister all user bindings.
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
-JsSIP.UA.prototype.deregister = function(all) {
+JsSIP.UA.prototype.unregister = function(all) {
   if(this.status === JsSIP.c.UA_STATUS_READY) {
     this.configuration.register = false;
-    this.registrator.deregister(all);
+    this.registrator.unregister(all);
   } else {
     throw new JsSIP.exceptions.NotReadyError();
   }
@@ -125,18 +125,25 @@ JsSIP.UA.prototype.isConnected = function() {
  * Make an outgoing call.
  *
  * @param {String} target
- * @param {HTMLVideoElement} selfView
- * @param {HTMLVideoElement} remoteView
- * @param {Object} mediaType
+ * @param {Boolean} useAudio
+ * @param {Boolean} useVideo
+ * @param {Object} [eventHandlers]
+ * @param {Object} videoViews
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.WebRtcNotSupportedError} If rtcweb is not supported by the client.
  * @throws {JsSIP.exceptions.InvalidTargetError} If the calling target is invalid.
  *
- * @returns {JsSIP.OutgoingSession}
  */
-JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType) {
-  var inviteSession;
+JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, videoViews) {
+  var session, options;
+
+  // Call Options
+  options = {
+    views: videoViews,
+    mediaType: {audio: useAudio, video: useVideo},
+    eventHandlers: eventHandlers
+  };
 
   if(this.status !== JsSIP.c.UA_STATUS_READY) {
     throw new JsSIP.exceptions.NotReadyError();
@@ -147,40 +154,35 @@ JsSIP.UA.prototype.call = function(target, selfView, remoteView, mediaType) {
     throw new JsSIP.exceptions.WebRtcNotSupportedError();
   }
 
-  target = JsSIP.utils.normalizeUri(target, this.configuration.domain);
-  if (!target) {
-    throw new JsSIP.exceptions.InvalidTargetError();
-  } else {
-    inviteSession = new JsSIP.OutgoingSession(this, target, selfView, remoteView, mediaType);
-    return inviteSession;
-  }
+  session = new JsSIP.Session(this);
+  session.connect(target, options);
 };
 
 /**
  * Send a message.
  * @param {String} target
  * @param {String} body
- * @param {String} [content_type]
+ * @param {String} [contentType]
+ * @param {Object} [eventHandlers]
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  * @throws {JsSIP.exceptions.InvalidTargetError} If the calling target is invalid.
  *
- * @returns {JsSIP.MessageSender}
  */
-JsSIP.UA.prototype.message = function(target, body, content_type) {
-  var message;
+JsSIP.UA.prototype.sendMessage = function(target, body, contentType, eventHandlers) {
+  var message, options;
+
+  // Message Options
+  options = {
+    eventHandlers: eventHandlers
+  };
 
   if(this.status !== JsSIP.c.UA_STATUS_READY) {
     throw new JsSIP.exceptions.NotReadyError();
   }
 
-  target = JsSIP.utils.normalizeUri(target, this.configuration.domain);
-  if (!target) {
-    throw new JsSIP.exceptions.InvalidTargetError();
-  } else {
-    message = new JsSIP.MessageSender(this, target, body, content_type);
-    return message;
-  }
+  message = new JsSIP.Message(this);
+  message.send(target, body, contentType, options);
 };
 
 /**
@@ -301,7 +303,7 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
     this.closeSessionsOnTransportError();
     this.status = JsSIP.c.UA_STATUS_NOT_READY;
     this.error = JsSIP.c.UA_NETWORK_ERROR;
-    this.emit('disconnect');
+    this.emit('ua_disconnected');
   }
 };
 
@@ -330,7 +332,7 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
   }
   this.status = JsSIP.c.UA_STATUS_READY;
   this.error = null;
-  this.emit('connect');
+  this.emit('ua_connected', this);
 };
 
 //=========================
@@ -343,7 +345,7 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
  * @param {JsSIP.IncomingRequest} request.
  */
 JsSIP.UA.prototype.receiveRequest = function(request) {
-  var dialog, session,
+  var dialog, session, message,
     method = request.method;
 
   //Check that Ruri points to us
@@ -371,11 +373,10 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
    * They are processed as if they had been received outside the dialog.
    */
   if(method === JsSIP.c.OPTIONS) {
-    request.reply(200, JsSIP.c.REASON_200, {
-      'Allow': JsSIP.c.ALLOWED_METHODS,
-      'Accept': JsSIP.c.ACCEPTED_BODY_TYPES
-      }
-    );
+    request.reply(200, JsSIP.c.REASON_200, [
+      'Allow: '+ JsSIP.c.ALLOWED_METHODS,
+      'Accept: '+ JsSIP.c.ACCEPTED_BODY_TYPES
+    ]);
   }
 
   // Initial Request
@@ -388,13 +389,15 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
 
     switch(method) {
       case JsSIP.c.MESSAGE:
-        JsSIP.messageReceiver(this, request);
+        message = new JsSIP.Message(this);
+        message.init_incoming(request);
         break;
       case JsSIP.c.INVITE:
         if(!JsSIP.utils.isWebRtcSupported()) {
           console.warn(JsSIP.c.LOG_UA +'Call invitation received but rtcweb is not supported');
         } else {
-          new JsSIP.IncomingSession(this, request);
+          session = new JsSIP.Session(this);
+          session.init_incoming(request);
         }
         break;
       case JsSIP.c.BYE:
@@ -555,41 +558,48 @@ JsSIP.UA.prototype.closeSessionsOnTransportError = function() {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var name, parameter, attribute, idx, uri, host, ws_server, contact,
+  var name, parameter, attribute, idx, uri, host, ws_uri, contact,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
       */
       via_host: Math.random().toString(36).substr(2, 12) + '.invalid',
-      /* Registration parameters */
+
+      // Registration parameters
       register_expires: 600,
       register_min_expires: 120,
       register: true,
-      /* Transport related parameters */
-      secure_transport: false,
+
+      // Transport related parameters
       max_reconnection: 3,
       reconnection_timeout: 4,
 
+      // Session parameters
       no_answer_timeout: 30,
       stun_server: 'stun.l.google.com:19302',
-      /* Hacks */
-      hack_use_via_tcp: false
+
+      // Loggin parameters
+      trace_sip: false,
+
+      // Hacks
+      hack_via_tcp: false,
+      hack_ip_in_contact: false
     };
 
   // Pre-Configuration
 
   /* Allow defining outbound_proxy_set parameter as:
    *  String: "host"
-   *  Array of Strings: ["host_1", "host_2"]
-   *  Array of Objects: [{host:"host_1", weight:1}, {host:"host_2", weight:0}]
-   *  Array of Objects and Strings: [{host:"host_1"}, "host_2"]
+   *  Array of Strings: ["host1", "host2"]
+   *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
+   *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
    */
   if (typeof configuration.outbound_proxy_set === 'string'){
-    configuration.outbound_proxy_set = [{host:configuration.outbound_proxy_set}];
+    configuration.outbound_proxy_set = [{ws_uri:configuration.outbound_proxy_set}];
   } else if (configuration.outbound_proxy_set instanceof Array) {
     for(idx in configuration.outbound_proxy_set) {
       if (typeof configuration.outbound_proxy_set[idx] === 'string'){
-        configuration.outbound_proxy_set[idx] = {host:configuration.outbound_proxy_set[idx]};
+        configuration.outbound_proxy_set[idx] = {ws_uri:configuration.outbound_proxy_set[idx]};
       }
     }
   }
@@ -632,7 +642,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   //for this instance.
   settings.jssip_id = Math.random().toString(36).substr(2, 5);
 
-  uri = JsSIP.grammar_sip.parse(settings.uri, 'lazy_uri');
+  uri = JsSIP.grammar.parse(settings.uri, 'lazy_uri');
 
   settings.user = uri.user;
   settings.domain = uri.host;
@@ -652,25 +662,24 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // User no_answer_timeout
   settings.no_answer_timeout = settings.no_answer_timeout * 1000;
 
-  // Create the Via header value (excepting branch parameter)
-  settings.via_core_value = 'SIP/2.0/' + (settings.hack_use_via_tcp ? 'TCP' : (settings.secure_transport ? 'WSS':'WS')) + ' ' + settings.via_host;
+  // Via Host
+  if (settings.hack_ip_in_contact) {
+    settings.via_host = JsSIP.utils.getRandomIP();
+  }
 
   // Transports
   for (idx in configuration.outbound_proxy_set) {
-    ws_server = JsSIP.grammar_sip.parse(settings.outbound_proxy_set[idx].host, 'hostport');
+    ws_uri = JsSIP.grammar.parse(settings.outbound_proxy_set[idx].ws_uri, 'absoluteURI');
 
-    settings.outbound_proxy_set[idx].ws_uri = (settings.secure_transport ? 'wss':'ws') + '://' + ws_server.host + (ws_server.port ? ':' + ws_server.port : '');
-
-    settings.outbound_proxy_set[idx].ws_uri += (settings.outbound_proxy_set[idx].ws_path)? '/' + settings.outbound_proxy_set[idx].ws_path :'/';
-    settings.outbound_proxy_set[idx].ws_uri += (settings.outbound_proxy_set[idx].ws_query)? '?' + settings.outbound_proxy_set[idx].ws_query :'';
-
-    settings.outbound_proxy_set[idx].sip_uri = '<sip:' + ws_server.host + (ws_server.port ? ':' + ws_server.port : '') + ';transport=ws;lr>';
+    settings.outbound_proxy_set[idx].sip_uri = '<sip:' + ws_uri.host + (ws_uri.port ? ':' + ws_uri.port : '') + ';transport=ws;lr>';
 
     if (!settings.outbound_proxy_set[idx].weight) {
       settings.outbound_proxy_set[idx].weight = 0;
     }
 
     settings.outbound_proxy_set[idx].status = 0;
+    settings.outbound_proxy_set[idx].scheme = ws_uri.scheme.toUpperCase();
+
   }
 
   contact = {
@@ -693,9 +702,6 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   return true;
 };
 
-//============================
-// Class Methods / Attributes
-//============================
 
 /**
  * Configuration Object skeleton.
@@ -712,7 +718,6 @@ JsSIP.UA.configuration_skeleton = (function() {
 
       "reconnection_timeout",
       "register_min_expires",
-      "secure_transport",
 
       // Mandatory user configurable parameters
       "outbound_proxy_set",
@@ -722,10 +727,12 @@ JsSIP.UA.configuration_skeleton = (function() {
       // Optional user configurable parameters
       "authorization_user",
       "display_name",
-      "hack_use_via_tcp", // false.
+      "hack_via_tcp", // false.
+      "hack_ip_in_contact", //false
       "stun_server",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
+      "trace_sip",
       "via_host", // random.
 
       // Post-configuration generated parameters
@@ -768,8 +775,8 @@ JsSIP.UA.configuration_check = {
       }
 
       for (idx in outbound_proxy_set) {
-        if (!outbound_proxy_set[idx].host) {
-          console.log(JsSIP.c.LOG_UA +'Missing "host" attribute in outbound_proxy_set parameter');
+        if (!outbound_proxy_set[idx].ws_uri) {
+          console.log(JsSIP.c.LOG_UA +'Missing "ws_uri" attribute in outbound_proxy_set parameter');
           return false;
         }
         if (outbound_proxy_set[idx].weight && !Number(outbound_proxy_set[idx].weight)) {
@@ -777,10 +784,13 @@ JsSIP.UA.configuration_check = {
           return false;
         }
 
-        url = JsSIP.grammar_sip.parse(outbound_proxy_set[idx].host, 'hostport');
+        url = JsSIP.grammar.parse(outbound_proxy_set[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
-          console.log(JsSIP.c.LOG_UA +'Invalid "host" attribute in outbound_proxy_set parameter: ' + outbound_proxy_set[idx].host);
+          console.log(JsSIP.c.LOG_UA +'Invalid "ws_uri" attribute in outbound_proxy_set parameter: ' + outbound_proxy_set[idx].ws_uri);
+          return false;
+        } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
+          console.log(JsSIP.c.LOG_UA +'Invalid url scheme: ' + url.scheme);
           return false;
         }
       }
@@ -789,7 +799,7 @@ JsSIP.UA.configuration_check = {
     uri: function(uri) {
       var parsed;
 
-      parsed = JsSIP.grammar_sip.parse(uri, 'lazy_uri');
+      parsed = JsSIP.grammar.parse(uri, 'lazy_uri');
 
       if(parsed === -1) {
         console.log(JsSIP.c.LOG_UA +'Invalid uri: ' + uri);
@@ -802,7 +812,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     password: function(password) {
-      if(JsSIP.grammar_sip.parse(password, 'password') === -1) {
+      if(JsSIP.grammar.parse(password, 'password') === -1) {
         return false;
       } else {
         return true;
@@ -811,14 +821,14 @@ JsSIP.UA.configuration_check = {
   },
   optional: {
     authorization_user: function(authorization_user) {
-      if(JsSIP.grammar_sip.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
+      if(JsSIP.grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
         return false;
       } else {
         return true;
       }
     },
     register: function(register) {
-      if(register !== true && register !== false) {
+      if(typeof register !== 'boolean') {
         console.log(JsSIP.c.LOG_UA +'register must be true or false');
         return false;
       } else {
@@ -826,21 +836,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     display_name: function(display_name) {
-      if(JsSIP.grammar_sip.parse(display_name, 'display_name') === -1) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    via_host: function(via_host) {
-      if(JsSIP.grammar_sip.parse(via_host, 'host') === -1) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    secure_transport:function(secure_transport) {
-      if(secure_transport !== true && secure_transport !== false) {
+      if(JsSIP.grammar.parse(display_name, 'display_name') === -1) {
         return false;
       } else {
         return true;
@@ -853,10 +849,17 @@ JsSIP.UA.configuration_check = {
         return true;
       }
     },
+    trace_sip: function(trace_sip) {
+      if(typeof trace_sip !== 'boolean') {
+        return false;
+      } else {
+        return true;
+      }
+    },
     stun_server: function(stun_server) {
       var parsed;
 
-      parsed = JsSIP.grammar_sip.parse(stun_server, 'hostport');
+      parsed = JsSIP.grammar.parse(stun_server, 'hostport');
 
       if(parsed === -1) {
         console.log(JsSIP.c.LOG_UA +'Invalid stun_server: ' + stun_server);
@@ -874,8 +877,15 @@ JsSIP.UA.configuration_check = {
         return true;
       }
     },
-    hack_use_via_tcp: function(hack_use_via_tcp) {
-      if(hack_use_via_tcp !== true && hack_use_via_tcp !== false) {
+    hack_via_tcp: function(hack_via_tcp) {
+      if(typeof hack_via_tcp !== 'boolean') {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    hack_ip_in_contact: function(hack_ip_in_contact) {
+      if(typeof hack_ip_in_contact !== 'boolean') {
         return false;
       } else {
         return true;

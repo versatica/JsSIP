@@ -30,7 +30,7 @@ JsSIP.utils = {
   checkUri: function(target) {
     if (!target) {
       return false;
-    } else if(JsSIP.grammar_sip.parse(target, 'lazy_uri') === -1) {
+    } else if(JsSIP.grammar.parse(target, 'lazy_uri') === -1) {
       return false;
     } else {
       return true;
@@ -51,7 +51,7 @@ JsSIP.utils = {
       return;
     }
 
-    uri = JsSIP.grammar_sip.parse(target, 'lazy_uri');
+    uri = JsSIP.grammar.parse(target, 'lazy_uri');
 
     if (!uri.host && !domain) {
       console.log('No domain specified in target nor as function parameter');
@@ -99,6 +99,25 @@ JsSIP.utils = {
     } else {
       return true;
     }
+  },
+
+  sipErrorCause: function(status_code) {
+    var cause;
+
+    for (cause in JsSIP.c.SIP_ERROR_CAUSES) {
+      if (JsSIP.c.SIP_ERROR_CAUSES[cause].indexOf(parseInt(status_code, 10)) !== -1) {
+        return cause;
+      }
+    }
+
+    return;
+  },
+
+  getRandomIP: function() {
+    function get_octet() {
+      return (Math.random() * 255 | 0) + 1;
+    }
+    return get_octet()+'.'+get_octet()+'.'+get_octet()+'.'+get_octet();
   },
 
   // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info

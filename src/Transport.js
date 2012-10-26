@@ -17,7 +17,7 @@ JsSIP.Transport = function(ua, server) {
   this.ws = null;
   this.server = server;
   this.reconnection_attempts = 0;
-  this.ua_closed = false;
+  this.closed = false;
   this.connected = false;
   this.reconnectTimer = null;
 
@@ -34,9 +34,12 @@ JsSIP.Transport.prototype = {
    * @returns {Boolean}
    */
   send: function(msg) {
+    var message = msg.toString();
+
     if(this.ws && this.ws.readyState === WebSocket.OPEN) {
-      var message = msg.toString();
-      console.info(JsSIP.c.LOG_TRANSPORT +'Sending WebSocket message: \n\n' + message + '\n');
+      if (this.ua.configuration.trace_sip === true) {
+        console.info(JsSIP.c.LOG_TRANSPORT +'Sending WebSocket message: \n\n' + message + '\n');
+      }
       this.ws.send(message);
       return true;
     } else {
@@ -50,7 +53,7 @@ JsSIP.Transport.prototype = {
   */
   disconnect: function() {
     if(this.ws) {
-      this.ua_closed = true;
+      this.closed = true;
       console.log(JsSIP.c.LOG_TRANSPORT +'closing WebSocket connection ' + this.server.ws_uri);
       this.ws.close();
     }
@@ -110,8 +113,8 @@ JsSIP.Transport.prototype = {
     console.log(JsSIP.c.LOG_TRANSPORT +'WebSocket connected: ' + this.server.ws_uri);
     // Clear reconnectTimer since we are not disconnected
     window.clearTimeout(this.reconnectTimer);
-    // Disable ua_closed
-    this.ua_closed = false;
+    // Disable closed
+    this.closed = false;
     // Trigger onTransportConnected callback
     this.ua.onTransportConnected(this);
   },
@@ -133,7 +136,7 @@ JsSIP.Transport.prototype = {
     if(connected_before === true) {
       this.ua.onTransportClosed(this);
       // Check whether the user requested to close.
-      if(!this.ua_closed) {
+      if(!this.closed) {
         // Reset reconnection_attempts
         this.reconnection_attempts = 0;
         this.reConnect();
@@ -153,7 +156,9 @@ JsSIP.Transport.prototype = {
     var message, transaction,
       data = e.data;
 
-    console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket message: \n\n' + data + '\n');
+    if (this.ua.configuration.trace_sip === true) {
+      console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket message: \n\n' + data + '\n');
+    }
 
     // Keep alive response from server. Scape it.
     if(data === '\r\n') {

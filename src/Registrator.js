@@ -55,10 +55,10 @@ JsSIP.Registrator.prototype = {
         'to_uri': this.from_uri,
         'call_id': this.call_id,
         'cseq': (this.cseq += 1)
-      }, {
-        'contact': this.contact + ';expires=' + this.expires,
-        'allow': JsSIP.c.ALLOWED_METHODS
-      });
+      }, [
+        'Contact: '+ this.contact + ';expires=' + this.expires,
+        'Allow: '+ JsSIP.c.ALLOWED_METHODS
+      ]);
 
     request_sender = new JsSIP.RequestSender(this, this.ua);
 
@@ -69,7 +69,7 @@ JsSIP.Registrator.prototype = {
       var contact, expires, min_expires,
         contacts = response.countHeader('contact');
 
-      // Discard responses to older Register/Deregister requests.
+      // Discard responses to older Register/Unregister requests.
       if(response.cseq !== this.cseq) {
         return;
       }
@@ -126,7 +126,7 @@ JsSIP.Registrator.prototype = {
           }
 
           this.registered = true;
-          this.ua.emit('register');
+          this.ua.emit('registered', this.ua);
           break;
         // Interval too brief RFC3261 10.2.8
         case /^423$/.test(response.status_code):
@@ -137,7 +137,7 @@ JsSIP.Registrator.prototype = {
               self.register();
             }, this.expires * 1000);
           } else { //This response MUST contain a Min-Expires header field
-          console.log(JsSIP.c.LOG_REGISTRATOR +'423 response code received to a REGISTER without min-expires. Deregister');
+          console.log(JsSIP.c.LOG_REGISTRATOR +'423 response code received to a REGISTER without min-expires. Unregister');
           this.registrationFailure();
           }
           break;
@@ -166,18 +166,18 @@ JsSIP.Registrator.prototype = {
   /**
   * @param {Boolean} [all=false]
   */
-  deregister: function(all) {
+  unregister: function(all) {
     /* Parameters:
     *
-    * - all: If true, then perform a "deregister all" action ("Contact: *");
+    * - all: If true, then perform a "unregister all" action ("Contact: *");
     */
     if(!this.registered) {
-      console.log(JsSIP.c.LOG_REGISTRATOR +"Already deregistered");
+      console.log(JsSIP.c.LOG_REGISTRATOR +"Already unregistered");
       return;
     }
 
     this.registered = false;
-    this.ua.emit('deregister');
+    this.ua.emit('unregistered');
 
     // Clear the registration timer.
     window.clearTimeout(this.registrationTimer);
@@ -187,18 +187,18 @@ JsSIP.Registrator.prototype = {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
-        }, {
-          'contact': '*',
-          'expires': 0
-        });
+        }, [
+          'Contact: *',
+          'Expires : 0'
+        ]);
     } else {
       this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
-        }, {
-          'contact': this.contact + ';expires=0'
-        });
+        }, [
+          'Contact: '+ this.contact + ';expires=0'
+        ]);
     }
 
     var request_sender = new JsSIP.RequestSender(this, this.ua);
@@ -207,21 +207,21 @@ JsSIP.Registrator.prototype = {
     * @private
     */
     this.receiveResponse = function(response) {
-      console.log(JsSIP.c.LOG_REGISTRATOR +response.status_code + ' ' + response.reason_phrase + ' received to deregister request');
+      console.log(JsSIP.c.LOG_REGISTRATOR +response.status_code + ' ' + response.reason_phrase + ' received to unregister request');
     };
 
     /**
     * @private
     */
     this.onRequestTimeout = function() {
-      console.log(JsSIP.c.LOG_REGISTRATOR +'Request Timeout received for deregister request');
+      console.log(JsSIP.c.LOG_REGISTRATOR +'Request Timeout received for unregister request');
     };
 
     /**
     * @private
     */
     this.onTransportError = function() {
-      console.log(JsSIP.c.LOG_REGISTRATOR +'Transport Error received for deregister request');
+      console.log(JsSIP.c.LOG_REGISTRATOR +'Transport Error received for unregister request');
     };
 
     request_sender.send();
@@ -233,9 +233,9 @@ JsSIP.Registrator.prototype = {
   registrationFailure: function(cause) {
     if (this.registered) {
       this.registered = false;
-      this.ua.emit('deregister'); // this.ua.emit('deregister', [cause]);
+      this.ua.emit('unregistered', this.ua);
     }
-    this.ua.emit('registrationFailure'); // this.ua.emit('registrationFailure', [cause]);
+    this.ua.emit('registrationFailed', this.ua);
   },
 
   /**
@@ -247,7 +247,7 @@ JsSIP.Registrator.prototype = {
 
     if(this.registered) {
       this.registered = false;
-      this.ua.emit('deregister');
+      this.ua.emit('unregistered', this.ua);
     }
   },
 
@@ -263,6 +263,6 @@ JsSIP.Registrator.prototype = {
   */
   close: function() {
     this.registered_before = this.registered;
-    this.deregister();
+    this.unregister();
   }
 };

@@ -50,7 +50,7 @@ JsSIP.MediaSession.prototype = {
 
     /** @private */
     function onGetUserMediaFailure() {
-      onFailure('getUserMedia');
+      onFailure();
     }
 
     this.getUserMedia(mediaType, onGetUserMediaSuccess, onGetUserMediaFailure);

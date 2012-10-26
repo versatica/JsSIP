@@ -180,7 +180,7 @@ JsSIP.sanityCheck = (function() {
     ua = u;
     transport = t;
 
-    len = all.lengt;
+    len = all.length;
     while(len--) {
       pass = all[len](message);
       if(pass === false) {

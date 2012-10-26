@@ -21,17 +21,14 @@ module.exports = function(grunt) {
           "src/timers.js",
           "src/Transport.js",
           "src/Parser.js",
-          "src/Message.js",
+          "src/SIPMessage.js",
           "src/Transactions.js",
           "src/Dialogs.js",
           "src/RequestSender.js",
           "src/Registrator.js",
           "src/Session.js",
-          "src/OutgoingSession.js",
-          "src/IncomingSession.js",
           "src/MediaSession.js",
-          "src/MessageSender.js",
-          "src/messageReceiver.js",
+          "src/Message.js",
           "src/Subscriber.js",
           "src/dialog-info.js",
           "src/UA.js",
@@ -45,14 +42,14 @@ module.exports = function(grunt) {
       post: {
         src: [
           'dist/<%= pkg.name %>-<%= pkg.version %>.js',
-          "src/grammar/grammar_rfc3261.js"
+          "src/grammar/dist/grammar.js"
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
       },
       post_min: {
         src: [
         'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
-        "src/grammar/grammar_rfc3261.min.js"
+        "src/grammar/dist/grammar.min.js"
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js'
       }
