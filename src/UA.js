@@ -575,7 +575,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       reconnection_timeout: 4,
 
       // Session parameters
-      no_answer_timeout: 30,
+      no_answer_timeout: 60,
       stun_server: 'stun.l.google.com:19302',
 
       // Loggin parameters
