@@ -8,7 +8,7 @@
 /**
  * @augments JsSIP
  * @class PeerConnection helper Class.
- * @param {JsSIP.OutgoingSession|JsSIP.IncomingSession} session
+ * @param {JsSIP.Session} session
  * @param {HTMLVideoElement} selfView
  * @param {HTMLVideoElement} remoteView
  */
@@ -158,9 +158,9 @@ JsSIP.MediaSession.prototype = {
   },
 
   /**
+  * @param {Object} mediaType
   * @param {Function} onSuccess
   * @param {Function} onFailure
-  * @param {Object} mediaType
   */
   getUserMedia: function(mediaType, onSuccess, onFailure) {
     var self = this;

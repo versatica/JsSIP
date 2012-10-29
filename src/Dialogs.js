@@ -6,7 +6,7 @@
 /**
  * @augments JsSIP
  * @class Class creating a SIP dialog.
- * @param {JsSIP.OutgoingSession|JsSIP.IncomingSession} session
+ * @param {JsSIP.Session} session
  * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} msg
  * @param {Enum} type UAC / UAS
  * @param {Enum} state JsSIP.c.DIALOG_EARLY / JsSIP.c.DIALOG_CONFIRMED
@@ -96,7 +96,7 @@ JsSIP.Dialog.prototype = {
 
   /**
   * @param {String} method request method
-  * @param {Object} headers extra headers
+  * @param {Object} extraHeaders extra headers
   * @returns {JsSIP.OutgoingRequest}
   */
 
