@@ -25,7 +25,7 @@ JsSIP.Session = (function() {
     this.mediaSession = null;
 
     // Session Timers
-    // A BYE will be sent if ACK for the response stablishing the session is not received
+    // A BYE will be sent if ACK for the response establishing the session is not received
     this.ackTimer = null;
     this.expiresTimer = null;
     this.invite2xxTimer = null;
@@ -303,10 +303,10 @@ JsSIP.Session = (function() {
 
     if(request.method === JsSIP.c.CANCEL) {
       /* RFC3261 15 States that a UAS may have accepted an invitation while a CANCEL
-      * was in progrees and that the UAC MAY continue with the session stablished by
+      * was in progress and that the UAC MAY continue with the session established by
       * any 2xx response, or MAY terminate with BYE. JsSIP does continue with the
-      *stablished session. So the CANCEL is processed only if the session is not yet
-      *stablished.
+      * established session. So the CANCEL is processed only if the session is not yet
+      * established.
       */
 
       // Transaction layer already responded 487 to the initial request.
@@ -316,7 +316,7 @@ JsSIP.Session = (function() {
 
       /*
       * Terminate the whole session in case the user didn't accept nor reject the
-      *request oppening the session.
+      *request opening the session.
       */
       if(this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
         reason = request.getHeader('Reason');
@@ -450,7 +450,7 @@ JsSIP.Session = (function() {
 
         onSdpFailure = function(e) {
           /* Bad SDP Offer
-          * peerConnection.setRemoteDescription thows an exception
+          * peerConnection.setRemoteDescription throws an exception
           */
           console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
           request.reply(488, JsSIP.c.REASON_488);
@@ -524,7 +524,7 @@ JsSIP.Session = (function() {
             if (response.to_tag === this.to_tag) {
               console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx retransmission received');
             } else {
-              console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx received from an endpoint not stablishing the dialog');
+              console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx received from an endpoint not establishing the dialog');
             }
             return;
           }
@@ -539,7 +539,7 @@ JsSIP.Session = (function() {
             if (response.to_tag === this.to_tag) {
               console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx_answer retransmission received');
             } else {
-              console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx_answer received from an endpoint not stablishing the dialog');
+              console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx_answer received from an endpoint not establishing the dialog');
             }
             return;
           }
@@ -621,7 +621,7 @@ JsSIP.Session = (function() {
 
   /**
   * RFC3261 13.3.1.4
-  * Response retransmisions cannot be accomplished by transaction layer
+  * Response retransmissions cannot be accomplished by transaction layer
   *  since it is destroyed when receiving the first 2xx answer
   * @private
   */

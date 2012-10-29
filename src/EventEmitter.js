@@ -19,7 +19,7 @@ JsSIP.EventEmitter.prototype = {
     var i = events.length;
 
     this.events = {};
-    this.onceNotFired = []; // Array containing events with _once_ defined tat did't fire yet.
+    this.onceNotFired = []; // Array containing events with _once_ defined tat didn't fire yet.
     this.maxListeners = 10;
     this.events.newListener = function(event) { // Default newListener callback
       console.log(JsSIP.c.LOG_EVENT_EMITTER +'new Listener added to event: '+ event);
@@ -161,7 +161,7 @@ JsSIP.EventEmitter.prototype = {
       }
     }
 
-    // Check wheter _once_ was defined for the event
+    // Check whether _once_ was defined for the event
     idx = this.onceNotFired.indexOf(event);
 
     if (idx !== -1) {

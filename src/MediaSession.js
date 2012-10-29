@@ -22,7 +22,7 @@ JsSIP.MediaSession = function(session, selfView, remoteView) {
 
 JsSIP.MediaSession.prototype = {
   /**
-   * Stablish peerConnection for Caller.
+   * Establish peerConnection for Caller.
    * <br> - Prompt the user for permission to use the Web cam or other video or audio input.
    * <br> -- If the user consents, create a peerConnection.
    * <br> -- If the user doesn't consent, fire onFailure callback.
@@ -57,7 +57,7 @@ JsSIP.MediaSession.prototype = {
   },
 
   /**
-  * Stablish peerConnection for Callee.
+  * Establish peerConnection for Callee.
   * <br> - Prompt the user for permission to use the Web cam or other video or audio input.
   * <br> -- If the user consents, create a peerConnection.
   * <br> -- If the user doesn't consent, fire onMediaFailure callback.

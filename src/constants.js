@@ -11,7 +11,7 @@
 JsSIP.c = {
   USER_AGENT: JsSIP.name() +' '+ JsSIP.version(),
 
-  // Modules and Classes names for loging purposes
+  // Modules and Classes names for logging purposes
   // Modules
   LOG_PARSER:                 JsSIP.name() +' | '+ 'PARSER' +' | ',
   LOG_DIGEST_AUTHENTICATION:  JsSIP.name() +' | '+ 'DIGEST AUTHENTICATION' +' | ',
