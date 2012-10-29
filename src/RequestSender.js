@@ -17,7 +17,7 @@ JsSIP.RequestSender = function(applicant, ua) {
   this.request = applicant.request;
   this.challenged = false;
 
-  // If ua is in clossing process or even closed just allow sending Bye and ACK
+  // If ua is in closing process or even closed just allow sending Bye and ACK
   if (ua.status === JsSIP.c.UA_STATUS_USER_CLOSED && (this.method !== JsSIP.c.BYE || this.method !== JsSIP.c.ACK)) {
     this.onTransportError();
   }
@@ -51,7 +51,7 @@ JsSIP.RequestSender.prototype = {
   },
 
   /**
-  * Callback fired when receiving a transpor error from the client transaction.
+  * Callback fired when receiving a transport error from the client transaction.
   * To be re-defined by the applicant.
   * @event
   */

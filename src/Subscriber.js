@@ -89,7 +89,7 @@ JsSIP.Subscriber.prototype = {
                 function() {subscriber.timer_N();},
                 (expires * 1000)
               );
-              // Save route set and to tag for backwards compatibiltiy (3265)
+              // Save route set and to tag for backwards compatibility (3265)
               subscriber.route_set_2xx =  response.getHeaderAll('record-route').reverse();
               subscriber.to_tag_2xx = response.s('to').tag;
               subscriber.initial_local_seqnum = parseInt(response.s('cseq').value,10);

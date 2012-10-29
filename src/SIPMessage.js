@@ -150,7 +150,7 @@ JsSIP.IncomingMessage = function(){
 
 JsSIP.IncomingMessage.prototype = {
   /**
-  * Insert a header of the given name and value into the last possition of the
+  * Insert a header of the given name and value into the last position of the
   * header array.
   * @param {String} name header name
   * @param {String} value header value
@@ -183,7 +183,7 @@ JsSIP.IncomingMessage.prototype = {
   },
 
   /**
-   * Get the value of the given header name at the given possition.
+   * Get the value of the given header name at the given position.
    * @param {String} name header name
    * @param {Number} [idx=0] header index
    * @returns {String|undefined} Returns the specified header, null if header doesn't exist.

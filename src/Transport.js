@@ -130,7 +130,7 @@ JsSIP.Transport.prototype = {
     console.warn(JsSIP.c.LOG_TRANSPORT +'WebSocket disconnected: code=' + e.code + (e.reason? ', reason=' + e.reason : ''));
 
     if(e.wasClean === false) {
-      console.log(JsSIP.c.LOG_TRANSPORT +'ERROR: abrupt disconection');
+      console.log(JsSIP.c.LOG_TRANSPORT +'ERROR: abrupt disconnection');
     }
     // Transport was connected
     if(connected_before === true) {

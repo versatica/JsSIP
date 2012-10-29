@@ -86,7 +86,7 @@ JsSIP.Registrator.prototype = {
           // Search the contact pointing to us and update the expires value
           //accordingly
           if (!contacts) {
-            console.log(JsSIP.c.LOG_REGISTRATOR +'No Contact header possitive response to Register. Ignore response');
+            console.log(JsSIP.c.LOG_REGISTRATOR +'No Contact header positive response to Register. Ignore response');
             break;
           }
 
@@ -107,7 +107,7 @@ JsSIP.Registrator.prototype = {
             expires = this.expires;
           } else if(expires < this.min_expires) {
             // Set the expires value to min_expires in case it is slower
-            console.log(JsSIP.c.LOG_REGISTRATOR +'Received expires value: ' + expires + ' is smaller than the nimum expires time: ' + this.min_expires);
+            console.log(JsSIP.c.LOG_REGISTRATOR +'Received expires value: ' + expires + ' is smaller than the minimum expires time: ' + this.min_expires);
             expires = this.min_expires;
           }
 

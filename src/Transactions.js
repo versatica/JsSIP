@@ -46,7 +46,7 @@ var NonInviteClientTransactionPrototype = function() {
   };
 
   this.onTransportError = function() {
-    console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error ocurred. Deleting non invite client transaction: ' + this.id);
+    console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error occurred. Deleting non invite client transaction: ' + this.id);
     window.clearTimeout(this.F);
     window.clearTimeout(this.K);
     delete this.request_sender.ua.transactions.nict[this.id];
@@ -121,7 +121,7 @@ var InviteClientTransactionPrototype = function() {
   };
 
   this.onTransportError = function() {
-    console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error ocurred. Deleting invite client transaction: ' + this.id);
+    console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error occurred. Deleting invite client transaction: ' + this.id);
     window.clearTimeout(this.B);
     window.clearTimeout(this.D);
     window.clearTimeout(this.M);
@@ -285,7 +285,7 @@ var NonInviteServerTransactionPrototype = function() {
     if (!this.transportError) {
       this.transportError = true;
 
-      console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error ocurred. Deleting non invite server transaction: ' + this.id);
+      console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error occurred. Deleting non invite server transaction: ' + this.id);
 
       window.clearTimeout(this.J);
       delete this.ua.transactions.nist[this.id];
@@ -381,7 +381,7 @@ var InviteServerTransactionPrototype = function() {
     if (!this.transportError) {
       this.transportError = true;
 
-      console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error ocurred. Deleting invite server transaction: ' + this.id);
+      console.log(JsSIP.c.LOG_TRANSACTION +'Transport Error occurred. Deleting invite server transaction: ' + this.id);
 
       window.clearTimeout(this.reliableProvisionalTimer);
       window.clearTimeout(this.L);
