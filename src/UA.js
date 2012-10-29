@@ -225,7 +225,7 @@ JsSIP.UA.prototype.stop = function() {
 };
 
 /**
- * Connect to the WS server if staus = UA_STATUS_INIT.
+ * Connect to the WS server if status = UA_STATUS_INIT.
  * Resume UA after being closed.
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
@@ -414,7 +414,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
         break;
       case JsSIP.c.ACK:
         /* Absorb it.
-         * ACK request whithout a correspondining Invite Transaction
+         * ACK request without a corresponding Invite Transaction
          * and without To tag.
          */
         break;
@@ -478,7 +478,7 @@ JsSIP.UA.prototype.findSession = function(request) {
 };
 
 /**
- * Get the dialog to which the request belogns to, if any.
+ * Get the dialog to which the request belongs to, if any.
  * @private
  * @param {JsSIP.IncomingRequest}
  * @returns {JsSIP.Dialog|null}
@@ -541,7 +541,7 @@ JsSIP.UA.prototype.getNextWsServer = function() {
 JsSIP.UA.prototype.closeSessionsOnTransportError = function() {
   var idx;
 
-  // Run _transporError_ for every Session
+  // Run _transportError_ for every Session
   for(idx in this.sessions) {
     this.sessions[idx].onTransportError();
   }

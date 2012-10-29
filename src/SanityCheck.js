@@ -30,7 +30,7 @@ JsSIP.sanityCheck = (function() {
    *  - _rfc3261_18_3_response_ Body Content-Length
    *
    * All:
-   *  - Minimun headers in a SIP message
+   *  - Minimum headers in a SIP message
    */
   var requests = [], responses = [], all = [], message, ua, transport;
 

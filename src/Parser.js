@@ -14,13 +14,13 @@ JsSIP.Parser = (function() {
   function getHeader(msg, header_start) {
     var
 
-      // 'start' possition of the header.
+      // 'start' position of the header.
       start = header_start,
 
-      // 'end' possition of the header.
+      // 'end' position of the header.
       end = 0,
 
-      // 'partial end' of the header -char possition-.
+      // 'partial end' of the header -char position-.
       pend = 0;
 
     //End of message.
