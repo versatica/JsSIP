@@ -68,27 +68,27 @@ JsSIP.c = {
 
   // Invite session end causes
   causes: {
-    BYE:                      'TERMINATED',
-    CANCELED:                 'CANCELED',
-    NO_ANSWER:                'NO ANSWER',
-    EXPIRES:                  'EXPIRES',
-    CONNECTION_ERROR:         'CONNECTION ERROR',
-    REQUEST_TIMEOUT:          'REQUEST TIMEOUT',
-    NO_ACK:                   'NO ACK',
-    USER_DENIED_MEDIA_ACCESS: 'USER DENIED MEDIA ACCESS',
-    BAD_MEDIA_DESCRIPTION:    'BAD MEDIA DESCRIPTION',
-    IN_DIALOG_408_OR_481:     'IN DIALOG 408 OR 481',
-    SIP_FAILURE_CODE:         'SIP FAILURE CODE',
+    BYE:                      'Terminated',
+    CANCELED:                 'Canceled',
+    NO_ANSWER:                'No Answer',
+    EXPIRES:                  'Expires',
+    CONNECTION_ERROR:         'Connection Error',
+    REQUEST_TIMEOUT:          'Request Timeout',
+    NO_ACK:                   'No ACK',
+    USER_DENIED_MEDIA_ACCESS: 'User Denied Media Access',
+    BAD_MEDIA_DESCRIPTION:    'Bad Media Description',
+    IN_DIALOG_408_OR_481:     'In-dialog 408 or 481',
+    SIP_FAILURE_CODE:         'SIP Failure Code',
 
     // SIP ERROR CAUSES
-    BUSY:                     'BUSY',
-    REJECTED:                 'REJECTED',
-    REDIRECTED:               'REDIRECTED',
-    UNAVAILABLE:              'UNAVAILABLE',
-    NOT_FOUND:                'NOT FOUND',
-    ADDRESS_INCOMPLETE:       'ADDRESS INCOMPLETE',
-    INCOMPATIBLE_SDP:         'INCOMPATIBLE SDP',
-    AUTHENTICATION_ERROR:     'AUTHENTICATION ERROR'
+    BUSY:                     'Busy',
+    REJECTED:                 'Rejected',
+    REDIRECTED:               'Redirected',
+    UNAVAILABLE:              'Unavailable',
+    NOT_FOUND:                'Not Found',
+    ADDRESS_INCOMPLETE:       'Address Incomplete',
+    INCOMPATIBLE_SDP:         'Incompatible SDP',
+    AUTHENTICATION_ERROR:     'Authentication Error'
   },
 
   SIP_ERROR_CAUSES: {
