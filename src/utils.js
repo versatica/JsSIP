@@ -91,15 +91,18 @@ JsSIP.utils = {
     return hname;
   },
 
-  isWebRtcSupported: function() {
-    if(typeof window.webkitRTCPeerConnection === 'undefined'){
-      return false;
-    } else if(typeof navigator.webkitGetUserMedia === 'undefined'){
-      return false;
-    } else {
-      return true;
+  isWebRtcSupported: (function() {
+    var supported = false;
+
+    try {
+      if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+        supported = true;
+      }
+    } catch(e) {
     }
-  },
+
+    return function(){ return supported; };
+  }()),
 
   sipErrorCause: function(status_code) {
     var cause;
@@ -118,6 +121,12 @@ JsSIP.utils = {
       return (Math.random() * 255 | 0) + 1;
     }
     return get_octet()+'.'+get_octet()+'.'+get_octet()+'.'+get_octet();
+  },
+
+  checkUAStatus: function(ua) {
+    if(ua.status !== JsSIP.c.UA_STATUS_READY) {
+      throw new JsSIP.exceptions.NotReadyError();
+    }
   },
 
   // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info

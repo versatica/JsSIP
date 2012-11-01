@@ -145,15 +145,6 @@ JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, vi
     eventHandlers: eventHandlers
   };
 
-  if(this.status !== JsSIP.c.UA_STATUS_READY) {
-    throw new JsSIP.exceptions.NotReadyError();
-  }
-
-  if(!JsSIP.utils.isWebRtcSupported()) {
-    console.log(JsSIP.c.LOG_UA +'rtcweb not supported.');
-    throw new JsSIP.exceptions.WebRtcNotSupportedError();
-  }
-
   session = new JsSIP.Session(this);
   session.connect(target, options);
 };
@@ -176,10 +167,6 @@ JsSIP.UA.prototype.sendMessage = function(target, body, contentType, eventHandle
   options = {
     eventHandlers: eventHandlers
   };
-
-  if(this.status !== JsSIP.c.UA_STATUS_READY) {
-    throw new JsSIP.exceptions.NotReadyError();
-  }
 
   message = new JsSIP.Message(this);
   message.send(target, body, contentType, options);

@@ -78,6 +78,15 @@ JsSIP.Session = (function() {
   Session.prototype.connect = function(target, options) {
     var event, eventHandlers, request, selfView, remoteView, mediaType, extraHeaders, requestParams;
 
+    // Check UA Status
+    JsSIP.utils.checkUAStatus(this.ua);
+
+    // Check WebRTC support
+    if(!JsSIP.utils.isWebRtcSupported()) {
+      console.log(JsSIP.c.LOG_UA +'rtcweb not supported.');
+      throw new JsSIP.exceptions.WebRtcNotSupportedError();
+    }
+
     // Check Session Status
     if (this.status !== null) {
       throw new JsSIP.exceptions.InvalidStateError();
@@ -400,6 +409,9 @@ JsSIP.Session = (function() {
       */
       this.answer = function(selfView, remoteView) {
         var offer, onMediaSuccess, onMediaFailure, onSdpFailure;
+
+        // Check UA Status
+        JsSIP.utils.checkUAStatus(this.ua);
 
         // Check Session Status
         if (this.status !== JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
@@ -841,6 +853,9 @@ JsSIP.Session = (function() {
   * @param {String} [reason]
   */
   Session.prototype.terminate = function() {
+    // Check UA Status
+    JsSIP.utils.checkUAStatus(this.ua);
+
     // Check Session Status
     if (this.status === JsSIP.c.SESSION_TERMINATED) {
       throw new JsSIP.exceptions.InvalidStateError();

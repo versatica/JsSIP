@@ -26,6 +26,8 @@ JsSIP.Message.prototype.send = function(target, body, contentType, options) {
       'failed'
     ];
 
+  JsSIP.utils.checkUAStatus(this.ua);
+
   this.initEvents(events);
 
   // Get call options
