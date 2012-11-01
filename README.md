@@ -1,44 +1,75 @@
-<a href="http://www.jssip.net"><img src="http://www-test.jssip.net/images/jssip-banner.png"/></a>
+<a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner.png"/></a>
+
+## Overview
+
+* SIP over [WebSocket](http://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
+* Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)), instant messaging and presence
+* Lightweight! (~140KB)
+* Easy to use and powerful user API
+* Works with OverSIP, Kamailio and Asterisk servers ([more info](http://jssip.net/documentation/misc/interoperability))
+* Written by the authors of [draft-ietf-sipcore-sip-websocket](http://tools.ietf.org/html/draft-ietf-sipcore-sip-websocket) and [OverSIP](http://www.oversip.net)
 
 
-**NOTE:** The website and documentation of JsSIP will be ready very soon in [www.jssip.net](http://www.jssip.net).
+## Getting Started
 
-### JsSIP demos
+The following simple JavaScript code creates a JsSIP User Agent instance and makes a SIP call:
 
-Check the [jssip-demos](https://github.com/versatica/jssip-demos) project.
+```javascript
+// Create our JsSIP instance and run it:
 
+var configuration = {
+  'outbound_proxy_set': 'ws://sip-ws.example.com',
+  'uri':                'sip:alice@example.com',
+  'password':           'superpassword'
+};
 
-What you need to build JsSIP
-----------------------------
+var coolPhone = new JsSIP.UA(configuration);
 
-You just need to have `Node.js`/`npm` and `git` installed.
-
-* [Install Node.js via package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
-* [Install Node.js from source](http://nodejs.org)
-* [Install Git](http://git-scm.com/book/en/Getting-Started-Installing-Git)
-
-**NOTE** npm comes with node now.
-
-How to build JsSIP
-------------------
-
-Clone a copy of the main JsSIP git repo by running:
-
-    git clone https://github.com/versatica/JsSIP.git
-
-Enter the directory and install the Node dependencies:
-
-    cd JsSIP && npm install
+coolPhone.start();
 
 
-Make sure you have `grunt` installed by testing:
+// Make an audio/video call:
 
-    grunt -version
+var useAudio = true;
+var useVideo = true;
+
+// id attribute of existing HTML5 <video> elements in which local and remote video will be shown
+var views = {
+  'localView':  "my-cam",
+  'remoteView': "peer-cam"
+};
+
+var eventHandlers = {
+  'connecting': function(e){ // Your code here },
+  'progress':   function(e){ // Your code here },
+  'failed':     function(e){ // Your code here },
+  'started':    function(e){ // Your code here },
+  'ended':      function(e){ // Your code here }
+};
+
+var session = coolPhone.call('sip:bob@example.com', useAudio, useVideo, eventHandlers, views);
+```
+
+Want to see more? Check the full [Getting Started](http://jssip.net/documentation/0.2.x/getting_started/) section in the project website and our nice [demos](https://github.com/versatica/jssip-demos).
 
 
-Finally, to get a complete version of JsSIP, type the following:
+## Website and Documentation
 
-    grunt && grunt post
+* [jssip.net](http://jssip.net/)
 
 
-The built version of JsSIP will be available in the `dist/` subdirectory in both flavors; normal and minified. Both linted (with JSHint).
+## Authors
+
+### Main Author
+
+* José Luis Millán (<jmillan@aliax.net> | [github](https://github.com/jmillan) | [twitter](https://twitter.com/jomivi))
+
+### Contributors
+
+* Iñaki Baz Castillo (<ibc@aliax.net> | [github](https://github.com/ibc) | [twitter](https://twitter.com/ibc_tw))
+* Saúl Ibarra Corretgé (<saghul@gmail.com> | [github](https://github.com/saghul) | [twitter](https://twitter.com/saghul))
+
+
+## License
+
+JsSIP is released under the [MIT license](http://jssip.net/license).
