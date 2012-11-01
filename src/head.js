@@ -9,7 +9,7 @@ var JsSIP = (function() {
   "use strict";
   var
     productName = 'JsSIP',
-    productVersion = '0.2.0.beta1';
+    productVersion = '0.2.0';
 
   return {
     name: function() {
