@@ -552,6 +552,9 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       */
       via_host: Math.random().toString(36).substr(2, 12) + '.invalid',
 
+      // Password
+      password: null,
+
       // Registration parameters
       register_expires: 600,
       register_min_expires: 120,
@@ -708,7 +711,6 @@ JsSIP.UA.configuration_skeleton = (function() {
 
       // Mandatory user configurable parameters
       "outbound_proxy_set",
-      "password",
       "uri",
 
       // Optional user configurable parameters
@@ -716,6 +718,7 @@ JsSIP.UA.configuration_skeleton = (function() {
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
+      "password",
       "stun_server",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
@@ -797,13 +800,6 @@ JsSIP.UA.configuration_check = {
       } else {
         return true;
       }
-    },
-    password: function(password) {
-      if(JsSIP.grammar.parse(password, 'password') === -1) {
-        return false;
-      } else {
-        return true;
-      }
     }
   },
   optional: {
@@ -838,6 +834,13 @@ JsSIP.UA.configuration_check = {
     },
     trace_sip: function(trace_sip) {
       if(typeof trace_sip !== 'boolean') {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    password: function(password) {
+      if(JsSIP.grammar.parse(password, 'password') === -1) {
         return false;
       } else {
         return true;
