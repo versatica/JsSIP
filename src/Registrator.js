@@ -48,7 +48,7 @@ JsSIP.Registrator = function(ua, transport) {
 
 JsSIP.Registrator.prototype = {
   register: function() {
-    var request_sender,
+    var request_sender, cause,
       self = this;
 
     this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
@@ -126,7 +126,9 @@ JsSIP.Registrator.prototype = {
           }
 
           this.registered = true;
-          this.ua.emit('registered', this.ua);
+          this.ua.emit('registered', this.ua, {
+            response: response
+          });
           break;
         // Interval too brief RFC3261 10.2.8
         case /^423$/.test(response.status_code):
@@ -138,11 +140,19 @@ JsSIP.Registrator.prototype = {
             }, this.expires * 1000);
           } else { //This response MUST contain a Min-Expires header field
           console.log(JsSIP.c.LOG_REGISTRATOR +'423 response code received to a REGISTER without min-expires. Unregister');
-          this.registrationFailure();
+          this.registrationFailure(response, JsSIP.c.causes.SIP_FAILURE_CODE);
           }
           break;
         default:
-          this.registrationFailure();
+          cause = JsSIP.utils.sipErrorCause(response.status_code);
+
+          if (cause) {
+            cause = JsSIP.c.causes[cause];
+          } else {
+            cause = JsSIP.c.causes.SIP_FAILURE_CODE;
+          }
+
+          this.registrationFailure(response, cause);
       }
     };
 
@@ -150,14 +160,14 @@ JsSIP.Registrator.prototype = {
     * @private
     */
     this.onRequestTimeout = function() {
-      this.registrationFailure();
+      this.registrationFailure(null, JsSIP.c.REQUEST_TIMEOUT);
     };
 
     /**
     * @private
     */
     this.onTransportError = function() {
-      this.registrationFailure();
+      this.registrationFailure(null, JsSIP.c.CONNECTION_ERROR);
     };
 
     request_sender.send();
@@ -230,12 +240,15 @@ JsSIP.Registrator.prototype = {
   /**
   * @private
   */
-  registrationFailure: function(cause) {
+  registrationFailure: function(response, cause) {
     if (this.registered) {
       this.registered = false;
       this.ua.emit('unregistered', this.ua);
     }
-    this.ua.emit('registrationFailed', this.ua);
+    this.ua.emit('registrationFailed', this.ua, {
+      response: response || null,
+      cause: cause
+    });
   },
 
   /**
