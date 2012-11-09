@@ -583,7 +583,8 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
       // Hacks
       hack_via_tcp: false,
-      hack_ip_in_contact: false
+      hack_ip_in_contact: false,
+      hack_asterisk_single_crypto: false
     };
 
   // Pre-Configuration
@@ -729,6 +730,7 @@ JsSIP.UA.configuration_skeleton = (function() {
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
+      "hack_asterisk_single_crypto", //false
       "stun_server",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
@@ -886,6 +888,13 @@ JsSIP.UA.configuration_check = {
     },
     hack_ip_in_contact: function(hack_ip_in_contact) {
       if(typeof hack_ip_in_contact !== 'boolean') {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    hack_asterisk_single_crypto: function(hack_asterisk_single_crypto) {
+      if(typeof hack_asterisk_single_crypto !== 'boolean') {
         return false;
       } else {
         return true;

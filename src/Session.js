@@ -997,6 +997,19 @@ JsSIP.Session = (function() {
 
       // Set the body to the request and send it.
       request.body = session.mediaSession.peerConnection.localDescription.sdp;
+      
+      if (ua.configuration.hack_asterisk_single_crypto) {
+        var line_re = /.*crypto:[0-9].*(\r\n|\n|\r)/g;
+        var aes_80 = /.*AES_CM_128_HMAC_SHA1_80.*/g;
+        var crypto = request.body.match(line_re);
+        request.body = request.body.replace(line_re, "");
+        crypto.forEach(function (element, index, array) {
+          if (aes_80.test(element)) {
+            request.body += element;
+          } 
+        });
+      }
+      
       session.status = JsSIP.c.SESSION_INVITE_SENT;
       send();
     }
