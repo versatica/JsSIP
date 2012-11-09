@@ -1013,9 +1013,12 @@ JsSIP.Session = (function() {
       // Set the body to the request and send it.
       request.body = session.mediaSession.peerConnection.localDescription.sdp;
 
-      // Hack to quit m=video section from sdp until it is solved in http://code.google.com/p/webrtc/issues/detail?id=935
+      // Hack to quit m=video section from sdp defined in http://code.google.com/p/webrtc/issues/detail?id=935
+      // To be deleted when the fix arrives to chrome stable version
       if (!mediaType.video) {
-        request.body = request.body.substring(0, request.body.indexOf('m=video'));
+        if (request.body.indexOf('m=video') !== -1){
+          request.body = request.body.substring(0, request.body.indexOf('m=video'));
+        }
       }
       // End of Hack
 
