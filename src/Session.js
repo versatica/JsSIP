@@ -466,7 +466,7 @@ JsSIP.Session = (function() {
           */
           console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
           request.reply(488, JsSIP.c.REASON_488);
-          session.failed('remote', request, JsSIP.causes.BAD_MEDIA_DESCRIPTION);
+          session.failed('remote', request, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
         };
 
         //Initialize Media Session
@@ -579,7 +579,7 @@ JsSIP.Session = (function() {
             function(e) {
               console.warn(e);
               session.acceptAndTerminate(response, 'SIP ;cause= 488 ;text= "Not Acceptable Here"');
-              session.failed('remote', response, JsSIP.causes.BAD_MEDIA_DESCRIPTION);
+              session.failed('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
             }
           );
           break;
