@@ -815,7 +815,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     display_name: function(display_name) {
-      if(JsSIP.grammar.parse(display_name, 'display_name') === -1) {
+      if(JsSIP.grammar.parse('"' + display_name + '"', 'display_name') === -1) {
         return false;
       } else {
         return true;
