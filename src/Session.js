@@ -700,6 +700,7 @@ JsSIP.Session = (function() {
       this.request = request;
       this.send = function() {
         var request_sender = new JsSIP.RequestSender(this, session.ua);
+        this.receiveResponse = function(response){};
         request_sender.send();
       };
     }
@@ -721,7 +722,7 @@ JsSIP.Session = (function() {
       this.request = request;
       this.send = function() {
         var request_sender = new JsSIP.RequestSender(this, session.ua);
-        request_sender.receiveResponse = function(response){};
+        this.receiveResponse = function(response){};
         request_sender.send();
       };
     }
