@@ -65,7 +65,7 @@ JsSIP.DigestAuthentication = function (ua, request, response) {
   authorization.response = '"' + response + '"';
   authorization.algorithm = "MD5";
   authorization.opaque = authenticate.opaque || null;
-  authorization.cnonce = authenticate.qop ? cnonce : null;
+  authorization.cnonce = authenticate.qop ? '"' + cnonce + '"' : null;
   authorization.nc = authenticate.qop ? nc : null;
 
   for(param in authorization) {
