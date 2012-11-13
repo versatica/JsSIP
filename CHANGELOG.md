@@ -8,7 +8,8 @@ Version 0.2.1 (not yet released)
 * [(24e32c0)](https://github.com/versatica/JsSIP/commit/24e32c0d16ff5fcefd2319fc445a59d6fc2bcb59) UA configuration `password` parameter is now optional.
 * [(ffe7af6)](https://github.com/versatica/JsSIP/commit/ffe7af6276915695af9fd00db281af51fec2714f) UA configuration `display_name` parameter fixed.
 * [(aa51291)](https://github.com/versatica/JsSIP/commit/aa512913733a4f63af066b0a9e12a8e38f2a5acb) Allows multibyte symbols in UA configuration `display_name` parameter (and require not to write it between double quotes).
-* [(aa48201)](https://github.com/versatica/JsSIP/commit/aa48201) "cnonce" value value was not being quoted in Digest Authentication.
+* [(aa48201)](https://github.com/versatica/JsSIP/commit/aa48201) "cnonce" value was not being quoted in Digest Authentication.
+* [(1ecabf5)](https://github.com/versatica/JsSIP/commit/1ecabf5) ByeSender was rewriting the receiveRequest method of RequestSender, so no authorization was being made for such request
 
 
 Version 0.2.0 (released in 2012-11-01)
