@@ -12,6 +12,7 @@ Version 0.2.1 (not yet released)
 * [(1ecabf5)](https://github.com/versatica/JsSIP/commit/1ecabf5) Bug fix: Fixed authentication for in-dialog requests (reported by [vf1](https://github.com/vf1)).
 * [(11c6bb6)](https://github.com/versatica/JsSIP/commit/11c6bb6aeef9de3bf2a339263f620b1caf60d634) Allow receiving WebSocket binary messages (code provided by [vf1](https://github.com/vf1)).
 * [(0e8c5cf)](https://github.com/versatica/JsSIP/commit/0e8c5cf) Bug fix: Fixed Contact and Record-Route header split (reported by Davide Corda).
+* [(0c91285)](https://github.com/versatica/JsSIP/commit/0c91285) Bug fix: Fixed failure causes in 'registrationFailed' UA event.
 
 
 Version 0.2.0 (released in 2012-11-01)
