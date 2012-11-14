@@ -7559,8 +7559,8 @@ JsSIP.grammar = (function(){
         pos0 = pos;
         result0 = parse_extension_code();
         if (result0 !== null) {
-          result0 = (function(offset) {
-                          data.status_code = input.substring(pos, offset); })(pos0);
+          result0 = (function(offset, status_code) {
+                          data.status_code = parseInt(status_code.join("")); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;

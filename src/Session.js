@@ -1070,11 +1070,11 @@ JsSIP.Session = (function() {
 
         // RFC3261 14.1.
         // Terminate the dialog if a 408 or 481 is received from a re-Invite.
-        if (status_code === '408' || status_code === '481') {
+        if (status_code === 408 || status_code === 481) {
           this.session.ended('remote', null, JsSIP.c.causes.IN_DIALOG_408_OR_481);
           this.session.onFailure(response);
           this.onReceiveResponse(response);
-        } else if (status_code === '491' && response.method === JsSIP.c.INVITE) {
+        } else if (status_code === 491 && response.method === JsSIP.c.INVITE) {
           if(!this.reatempt && this.session.status !== JsSIP.c.SESSION_TERMINATED) {
             this.request.cseq.value = this.request.dialog.local_seqnum += 1;
             this.reatemptTimer = window.setTimeout(

@@ -23,7 +23,7 @@ JsSIP.DigestAuthentication = function (ua, request, response) {
       password: ua.configuration.password
     };
 
-  if(response.status_code === '401') {
+  if(response.status_code === 401) {
     authenticate = response.parseHeader('www-authenticate');
   } else {
     authenticate = response.parseHeader('proxy-authenticate');

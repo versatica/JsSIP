@@ -72,10 +72,10 @@ JsSIP.RequestSender.prototype = {
     * Authentication
     * Authenticate once. _challenged_ flag used to avoid infinite authentications.
     */
-    if ((status_code === '401' || status_code === '407') && !this.challenged && this.ua.configuration.password !== null) {
+    if ((status_code === 401 || status_code === 407) && !this.challenged && this.ua.configuration.password !== null) {
       authorization = JsSIP.DigestAuthentication(this.ua, this.request, response);
 
-      if (status_code === '401') {
+      if (status_code === 401) {
         this.request.setHeader('authorization', authorization);
       } else {
         this.request.setHeader('proxy-authorization', authorization);
