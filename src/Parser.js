@@ -87,12 +87,14 @@ JsSIP.Parser = (function() {
         }
         break;
       case 'record-route':
-        header = header_value.split(',');
+        header = header_value.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
         length = header.length;
         parsed = 0;
 
         for(idx=0; idx < length; idx++) {
-          message.addHeader('record-route', header[idx]);
+          if (header[idx].length > 0) {
+            message.addHeader('record-route', header[idx]);
+          }
         }
         break;
       case 'call-id':
@@ -105,12 +107,17 @@ JsSIP.Parser = (function() {
         break;
       case 'contact':
       case 'm':
-        header = header_value.split(',');
+        header = header_value.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
         length = header.length;
 
         for(idx=0; idx < length; idx++) {
-          message.addHeader('contact', header[idx]);
-          parsed = message.parseHeader('contact', idx);
+          if (header[idx].length > 0) {
+            message.addHeader('contact', header[idx]);
+            parsed = message.parseHeader('contact', idx);
+            if (parsed === undefined) {
+              break;
+            }
+          }
         }
         break;
       case 'content-length':
