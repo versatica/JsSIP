@@ -1,4 +1,3 @@
-
 /**
  * @fileoverview SIP User Agent
  */
@@ -147,6 +146,7 @@ JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, vi
 
   session = new JsSIP.Session(this);
   session.connect(target, options);
+  return session;
 };
 
 /**
