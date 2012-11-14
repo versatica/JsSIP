@@ -160,14 +160,14 @@ JsSIP.Registrator.prototype = {
     * @private
     */
     this.onRequestTimeout = function() {
-      this.registrationFailure(null, JsSIP.c.REQUEST_TIMEOUT);
+      this.registrationFailure(null, JsSIP.c.causes.REQUEST_TIMEOUT);
     };
 
     /**
     * @private
     */
     this.onTransportError = function() {
-      this.registrationFailure(null, JsSIP.c.CONNECTION_ERROR);
+      this.registrationFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
     };
 
     request_sender.send();
