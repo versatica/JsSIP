@@ -701,6 +701,11 @@ JsSIP.Session = (function() {
       this.send = function() {
         var request_sender = new JsSIP.RequestSender(this, session.ua);
         this.receiveResponse = function(response){};
+
+        this.onTransportError = function() {
+          session.onTransportError();
+        };
+
         request_sender.send();
       };
     }
@@ -723,6 +728,15 @@ JsSIP.Session = (function() {
       this.send = function() {
         var request_sender = new JsSIP.RequestSender(this, session.ua);
         this.receiveResponse = function(response){};
+
+        this.onRequestTimeout = function() {
+          session.onRequestTimeout();
+        };
+
+        this.onTransportError = function() {
+          session.onTransportError();
+        };
+
         request_sender.send();
       };
     }
@@ -746,7 +760,7 @@ JsSIP.Session = (function() {
   * @private
   */
   Session.prototype.onTransportError = function() {
-    if(this.status !== JsSIP.c.TERMINATED) {
+    if(this.status !== JsSIP.c.SESSION_TERMINATED) {
       this.ended('system', null, JsSIP.c.causes.CONNECTION_ERROR);
     }
   };
@@ -756,7 +770,7 @@ JsSIP.Session = (function() {
   * @private
   */
   Session.prototype.onRequestTimeout = function() {
-    if(this.status !== JsSIP.c.TERMINATED) {
+    if(this.status !== JsSIP.c.SESSION_TERMINATED) {
       this.ended('system', null, JsSIP.c.causes.REQUEST_TIMEOUT);
     }
   };
@@ -1061,7 +1075,7 @@ JsSIP.Session = (function() {
           this.session.onFailure(response);
           this.onReceiveResponse(response);
         } else if (status_code === '491' && response.method === JsSIP.c.INVITE) {
-          if(!this.reatempt && this.session.status !== JsSIP.c.TERMINATED) {
+          if(!this.reatempt && this.session.status !== JsSIP.c.SESSION_TERMINATED) {
             this.request.cseq.value = this.request.dialog.local_seqnum += 1;
             this.reatemptTimer = window.setTimeout(
               function() { request_sender.send(); },
