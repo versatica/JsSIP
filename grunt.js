@@ -25,6 +25,7 @@ module.exports = function(grunt) {
           "src/Transactions.js",
           "src/Dialogs.js",
           "src/RequestSender.js",
+          "src/InDialogRequestSender.js",
           "src/Registrator.js",
           "src/Session.js",
           "src/MediaSession.js",
