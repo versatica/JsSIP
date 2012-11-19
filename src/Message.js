@@ -159,19 +159,38 @@ JsSIP.Message.prototype.close = function() {
  * @private
  */
 JsSIP.Message.prototype.init_incoming = function(request) {
-  var contentType = request.getHeader('content-type');
+  var transaction,
+    contentType = request.getHeader('content-type');
 
   this.direction = 'incoming';
   this.local_identity = request.s('to').uri;
   this.remote_identity = request.s('from').uri;
 
-  request.reply(200, JsSIP.c.REASON_200);
+  this.accept = function() {
+    request.reply(200, JsSIP.c.REASON_200);
+  };
 
-  if (contentType && contentType === "text/plain") {
+  this.reject = function(status_code, reason_phrase) {
+    if (status_code && reason_phrase) {
+      request.reply(status_code, reason_phrase);
+    } else {
+      request.reply(480, JsSIP.c.REASON_480);
+    }
+  };
+
+  if (contentType && (contentType.match(/^text\/plain(\s*;\s*.+)*$/i) || contentType.match(/^text\/html(\s*;\s*.+)*$/i))) {
     this.ua.emit('newMessage', this.ua, {
       originator: 'remote',
       message: this,
       request: request
     });
+
+    transaction = this.ua.transactions.nist[request.via_branch];
+
+    if (transaction && (transaction.state === JsSIP.c.TRANSACTION_TRYING || transaction.state === JsSIP.c.TRANSACTION_PROCEEDING)) {
+      request.reply(200, JsSIP.c.REASON_200);
+    }
+  } else {
+    request.reply(415, JsSIP.c.REASON_415, ["Accept: text/plain, text/html"]);
   }
 };
