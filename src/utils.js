@@ -1,4 +1,3 @@
-
 JsSIP.utils = {
 
   str_utf8_length: function(string) {
@@ -95,7 +94,7 @@ JsSIP.utils = {
     var supported = false;
 
     try {
-      if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+      if ((navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) || (navigator.mozGetUserMedia && window.mozRTCPeerConnection)) {
         supported = true;
       }
     } catch(e) {
