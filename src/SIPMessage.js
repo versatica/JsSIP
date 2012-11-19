@@ -325,120 +325,112 @@ JsSIP.IncomingMessage.prototype = {
  * @augments JsSIP.IncomingMessage
  * @class Class for incoming SIP request.
  */
-JsSIP.IncomingRequest = (function() {
+JsSIP.IncomingRequest = function() {
+  this.headers = {};
+  this.ruri = null;
+  this.transport = null;
+  this.server_transaction = null;
+};
+JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
 
-  var IncomingRequest = function() {
-    this.headers = {};
-    this.ruri = null;
-    this.transport = null;
-    this.server_transaction = null;
-  };
-  IncomingRequest.prototype = new JsSIP.IncomingMessage();
+/**
+* Stateful reply.
+* @param {Number} code status code
+* @param {String} reason reason phrase
+* @param {Object} headers extra headers
+* @param {String} body body
+* @param {Function} [onSuccess] onSuccess callback
+* @param {Function} [onFailure] onFailure callback
+*/
+JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
+  var rr, vias, header, length, idx,
+    response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
+    to = this.to,
+    r = 0,
+    v = 0;
 
-  /**
-  * Stateful reply.
-  * @param {Number} code status code
-  * @param {String} reason reason phrase
-  * @param {Object} headers extra headers
-  * @param {String} body body
-  * @param {Function} [onSuccess] onSuccess callback
-  * @param {Function} [onFailure] onFailure callback
-  */
-  IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
-    var rr, vias, header, length, idx,
-      response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
-      to = this.to,
-      r = 0,
-      v = 0;
+  extraHeaders = extraHeaders || [];
 
-    extraHeaders = extraHeaders || [];
+  if(this.method === JsSIP.c.INVITE && code > 100 && code <= 200) {
+    rr = this.countHeader('record-route');
 
-    if(this.method === JsSIP.c.INVITE && code > 100 && code <= 200) {
-      rr = this.countHeader('record-route');
-
-      for(r; r < rr; r++) {
-        response += 'Record-Route: ' + this.getHeader('record-route', r) + '\r\n';
-      }
+    for(r; r < rr; r++) {
+      response += 'Record-Route: ' + this.getHeader('record-route', r) + '\r\n';
     }
+  }
 
+  vias = this.countHeader('via');
+
+  for(v; v < vias; v++) {
+    response += 'Via: ' + this.getHeader('via', v) + '\r\n';
+  }
+
+  response += 'Max-Forwards: ' + JsSIP.c.MAX_FORWARDS + '\r\n';
+
+  if(code !== 100 && !this.to_tag) {
+    to += ';tag=' + JsSIP.utils.newTag();
+  } else if(this.to_tag && !this.s('to').tag) {
+    to += ';tag=' + this.to_tag;
+  }
+
+  response += 'To: ' + to + '\r\n';
+  response += 'From: ' + this.from + '\r\n';
+  response += 'Call-ID: ' + this.call_id + '\r\n';
+  response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
+
+  length = extraHeaders.length;
+  for(idx=0; idx < length; idx++) {
+    response += extraHeaders[idx] +'\r\n';
+  }
+
+  if(body) {
+    length = JsSIP.utils.str_utf8_length(body);
+    response += 'Content-Type: application/sdp\r\n';
+    response += 'Content-Length: ' + length + '\r\n\r\n';
+    response += body;
+  } else {
+    response += "\r\n";
+  }
+
+  this.server_transaction.receiveResponse(code, response, onSuccess, onFailure);
+};
+
+/**
+* Stateless reply.
+* @param {Number} code status code
+* @param {String} reason reason phrase
+*/
+JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
+  var to,
+    response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
     vias = this.countHeader('via');
 
-    for(v; v < vias; v++) {
-      response += 'Via: ' + this.getHeader('via', v) + '\r\n';
-    }
+  for(var v = 0; v < vias; v++) {
+    response += 'Via: ' + this.getHeader('via', v) + '\r\n';
+  }
 
-    response += 'Max-Forwards: ' + JsSIP.c.MAX_FORWARDS + '\r\n';
+  to = this.to;
 
-    if(code !== 100 && !this.to_tag) {
-      to += ';tag=' + JsSIP.utils.newTag();
-    } else if(this.to_tag && !this.s('to').tag) {
-      to += ';tag=' + this.to_tag;
-    }
+  if(!this.to_tag) {
+    to += ';tag=' + JsSIP.utils.newTag();
+  }
 
-    response += 'To: ' + to + '\r\n';
-    response += 'From: ' + this.from + '\r\n';
-    response += 'Call-ID: ' + this.call_id + '\r\n';
-    response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
+  response += 'To: ' + to + '\r\n';
+  response += 'From: ' + this.from + '\r\n';
+  response += 'Call-ID: ' + this.call_id + '\r\n';
+  response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n\r\n';
 
-    length = extraHeaders.length;
-    for(idx=0; idx < length; idx++) {
-      response += extraHeaders[idx] +'\r\n';
-    }
+  this.transport.send(response);
+};
 
-    if(body) {
-      length = JsSIP.utils.str_utf8_length(body);
-      response += 'Content-Type: application/sdp\r\n';
-      response += 'Content-Length: ' + length + '\r\n\r\n';
-      response += body;
-    } else {
-      response += "\r\n";
-    }
-
-    this.server_transaction.receiveResponse(code, response, onSuccess, onFailure);
-  };
-
-  /**
-  * Stateless reply.
-  * @param {Number} code status code
-  * @param {String} reason reason phrase
-  */
-  IncomingRequest.prototype.reply_sl = function(code, reason) {
-    var to,
-      response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
-      vias = this.countHeader('via');
-
-    for(var v = 0; v < vias; v++) {
-      response += 'Via: ' + this.getHeader('via', v) + '\r\n';
-    }
-
-    to = this.to;
-
-    if(!this.to_tag) {
-      to += ';tag=' + JsSIP.utils.newTag();
-    }
-
-    response += 'To: ' + to + '\r\n';
-    response += 'From: ' + this.from + '\r\n';
-    response += 'Call-ID: ' + this.call_id + '\r\n';
-    response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n\r\n';
-
-    this.transport.send(response);
-  };
-
-  return IncomingRequest;
-}());
 
 /**
  * @augments JsSIP.IncomingMessage
  * @class Class for incoming SIP response.
  */
-JsSIP.IncomingResponse = (function() {
-  var IncomingResponse = function() {
-    this.headers = {};
-    this.response_code = null;
-    this.reason_phrase = null;
-  };
-  IncomingResponse.prototype = new JsSIP.IncomingMessage();
-
-  return IncomingResponse;
-}());
+JsSIP.IncomingResponse = function() {
+  this.headers = {};
+  this.response_code = null;
+  this.reason_phrase = null;
+};
+JsSIP.IncomingResponse.prototype = new JsSIP.IncomingMessage();
