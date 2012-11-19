@@ -281,12 +281,11 @@ JsSIP.IncomingMessage.prototype = {
     }
 
     //substitute '-' by '_' for grammar rule matching.
-    name = name.replace(/-/g, '_');
-    parsed = JsSIP.grammar.parse(value, name);
+    parsed = JsSIP.grammar.parse(value, name.replace(/-/g, '_'));
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      console.error(JsSIP.c.LOG_MESSAGE +'Error parsing Header ' + name + ':"' + value + '"');
+      console.error(JsSIP.c.LOG_MESSAGE +'Error parsing "' + name + '" header field with value: "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
