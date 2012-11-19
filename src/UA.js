@@ -646,10 +646,6 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Create the From uri
   settings.from_uri = (uri.scheme ? '':'sip:') + settings.uri;
 
-  if(settings.display_name) {
-    settings.from_uri = '"' + settings.display_name + '" <' + settings.from_uri + '>';
-  }
-
   // User no_answer_timeout
   settings.no_answer_timeout = settings.no_answer_timeout * 1000;
 
@@ -821,7 +817,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     display_name: function(display_name) {
-      if(JsSIP.grammar.parse(display_name, 'display_name') === -1) {
+      if(JsSIP.grammar.parse('"' + display_name + '"', 'display_name') === -1) {
         return false;
       } else {
         return true;

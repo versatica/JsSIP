@@ -311,8 +311,8 @@ extension_method  = token
 
 Status_Line     = SIP_Version SP Status_Code SP Reason_Phrase
 
-Status_Code     = extension_code {
-                  data.status_code = input.substring(pos, offset); }
+Status_Code     = status_code: extension_code {
+                  data.status_code = parseInt(status_code.join("")); }
 
 extension_code  = DIGIT DIGIT DIGIT
 

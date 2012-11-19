@@ -23,7 +23,7 @@ JsSIP.DigestAuthentication = function (ua, request, response) {
       password: ua.configuration.password
     };
 
-  if(response.status_code === '401') {
+  if(response.status_code === 401) {
     authenticate = response.parseHeader('www-authenticate');
   } else {
     authenticate = response.parseHeader('proxy-authenticate');
@@ -65,7 +65,7 @@ JsSIP.DigestAuthentication = function (ua, request, response) {
   authorization.response = '"' + response + '"';
   authorization.algorithm = "MD5";
   authorization.opaque = authenticate.opaque || null;
-  authorization.cnonce = authenticate.qop ? cnonce : null;
+  authorization.cnonce = authenticate.qop ? '"' + cnonce + '"' : null;
   authorization.nc = authenticate.qop ? nc : null;
 
   for(param in authorization) {

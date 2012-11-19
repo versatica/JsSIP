@@ -156,16 +156,33 @@ JsSIP.Transport.prototype = {
     var message, transaction,
       data = e.data;
 
-    if (this.ua.configuration.trace_sip === true) {
-      console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket message: \n\n' + data + '\n');
+    // CRLF Keep Alive response from server. Ignore it.
+    if(data === '\r\n') {
+      if (this.ua.configuration.trace_sip === true) {
+        console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket message with CRLF Keep Alive response');
+      }
+      return;
     }
 
-    // Keep alive response from server. Scape it.
-    if(data === '\r\n') {
-      return;
-    } else if (typeof data !== 'string') {
-      console.info(JsSIP.c.LOG_TRANSPORT +'Binary data received. Ignoring message\n');
-      return;
+    // WebSocket binary message.
+    else if (typeof data !== 'string') {
+      try {
+        data = String.fromCharCode.apply(null, new Uint8Array(e.data));
+      } catch(e) {
+        console.warn(JsSIP.c.LOG_TRANSPORT +'Received WebSocket binary message failed to be converted into String, message ignored');
+        return;
+      }
+
+      if (this.ua.configuration.trace_sip === true) {
+        console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket binary message: \n\n' + data + '\n');
+      }
+    }
+
+    // WebSocket text message.
+    else {
+      if (this.ua.configuration.trace_sip === true) {
+        console.info(JsSIP.c.LOG_TRANSPORT +'Received WebSocket text message: \n\n' + data + '\n');
+      }
     }
 
     message = JsSIP.Parser.parseMessage(data);

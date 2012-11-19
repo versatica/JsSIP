@@ -108,7 +108,7 @@ JsSIP.utils = {
     var cause;
 
     for (cause in JsSIP.c.SIP_ERROR_CAUSES) {
-      if (JsSIP.c.SIP_ERROR_CAUSES[cause].indexOf(parseInt(status_code, 10)) !== -1) {
+      if (JsSIP.c.SIP_ERROR_CAUSES[cause].indexOf(status_code) !== -1) {
         return cause;
       }
     }
