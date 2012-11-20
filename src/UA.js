@@ -364,6 +364,14 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
       'Allow: '+ JsSIP.utils.getAllowedMethods(this),
       'Accept: '+ JsSIP.c.ACCEPTED_BODY_TYPES
     ]);
+  } else if (method === JsSIP.c.MESSAGE) {
+    if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
+        request.reply(405, JsSIP.c.REASON_405, ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
+      }
+      return;
+    }
+    message = new JsSIP.Message(this);
+    message.init_incoming(request);
   }
 
   // Initial Request
@@ -375,10 +383,6 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
     }
 
     switch(method) {
-      case JsSIP.c.MESSAGE:
-        message = new JsSIP.Message(this);
-        message.init_incoming(request);
-        break;
       case JsSIP.c.INVITE:
         if(!JsSIP.utils.isWebRtcSupported()) {
           console.warn(JsSIP.c.LOG_UA +'Call invitation received but rtcweb is not supported');
