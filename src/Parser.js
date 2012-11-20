@@ -13,18 +13,15 @@ JsSIP.Parser = (function() {
   /** @private */
   function getHeader(msg, header_start) {
     var
-
       // 'start' position of the header.
       start = header_start,
-
       // 'end' position of the header.
       end = 0,
-
       // 'partial end' of the header -char position-.
       pend = 0;
 
     //End of message.
-    if(msg.substring(start, start + 2).match(/(^\r\n)/)) {
+    if (msg.substring(start, start + 2).match(/(^\r\n)/)) {
       return -2;
     }
 
@@ -47,11 +44,8 @@ JsSIP.Parser = (function() {
   function parseHeader(message, msg, header_start, header_end) {
     var header, length, idx, parsed,
       hcolonIndex = msg.indexOf(':', header_start),
-      header_name = msg.substring(header_start, hcolonIndex).replace(/\s+/, ''),
-      header_value = msg.substring(hcolonIndex + 1, header_end);
-
-      // Delete all spaces before and after the body.
-      header_value = header_value.replace(/^\s+/g, '').replace(/\s+$/g, '');
+      header_name = msg.substring(header_start, hcolonIndex).trim(),
+      header_value = msg.substring(hcolonIndex + 1, header_end).trim();
 
     // If header-field is well-known, parse it.
     switch(header_name.toLowerCase()) {
@@ -159,10 +153,9 @@ JsSIP.Parser = (function() {
     }
 
     if (parsed === undefined) {
-      return {
-        'header_name': header_name,
-        'header_value': header_value
-      };
+      return false;
+    } else {
+      return true;
     }
   }
 
@@ -214,8 +207,7 @@ JsSIP.Parser = (function() {
 
       parsed = parseHeader(message, data, header_start, header_end);
 
-      if(parsed) {
-        console.log(JsSIP.c.LOG_PARSER +'Error parsing "' + parsed.header_name + '" header field with value: "' + parsed.header_value + '"');
+      if(!parsed) {
         return;
       }
 
