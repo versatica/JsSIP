@@ -366,8 +366,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
     ]);
   } else if (method === JsSIP.c.MESSAGE) {
     if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
-        request.reply(405, JsSIP.c.REASON_405, ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
-      }
+      request.reply(405, JsSIP.c.REASON_405, ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
       return;
     }
     message = new JsSIP.Message(this);
