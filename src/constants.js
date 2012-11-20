@@ -198,5 +198,11 @@ JsSIP.c = {
   ALLOWED_METHODS: 'INVITE, ACK, CANCEL, BYE, OPTIONS, MESSAGE, SUBSCRIBE',
   SUPPORTED: 'path, outbound, gruu',
   ACCEPTED_BODY_TYPES: 'application/sdp',
-  TAG_LENGTH: 10
+  TAG_LENGTH: 10,
+
+  // User Agent EVENT METHODS
+  UA_EVENT_METHODS: {
+    'newSession': 'INVITE',
+    'newMessage': 'MESSAGE'
+  }
 };

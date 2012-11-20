@@ -361,7 +361,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
    */
   if(method === JsSIP.c.OPTIONS) {
     request.reply(200, JsSIP.c.REASON_200, [
-      'Allow: '+ JsSIP.c.ALLOWED_METHODS,
+      'Allow: '+ JsSIP.utils.getAllowedMethods(this),
       'Accept: '+ JsSIP.c.ACCEPTED_BODY_TYPES
     ]);
   }

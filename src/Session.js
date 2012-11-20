@@ -134,7 +134,7 @@ JsSIP.Session.prototype.connect = function(target, options) {
   }
 
   extraHeaders.push('Contact: <'+ this.contact + ';ob>');
-  extraHeaders.push('Allow: '+ JsSIP.c.ALLOWED_METHODS);
+  extraHeaders.push('Allow: '+ JsSIP.utils.getAllowedMethods(this.ua));
   extraHeaders.push('Content-Type: application/sdp');
 
   request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, requestParams, extraHeaders);
