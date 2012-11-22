@@ -67,7 +67,7 @@ JsSIP.Parser = (function() {
         message.setHeader('from', header_value);
         parsed = message.parseHeader('from');
         if(parsed) {
-          message.from = header_value;
+          message.from = parsed;
           message.from_tag = parsed.tag;
         }
         break;
@@ -76,7 +76,7 @@ JsSIP.Parser = (function() {
         message.setHeader('to', header_value);
         parsed = message.parseHeader('to');
         if(parsed) {
-          message.to = header_value;
+          message.to = parsed;
           message.to_tag = parsed.tag;
         }
         break;
