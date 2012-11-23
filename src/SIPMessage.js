@@ -345,7 +345,7 @@ JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
 JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
   var rr, vias, header, length, idx,
     response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
-    to = this.to,
+    to = this.getHeader('To'),
     r = 0,
     v = 0;
 
@@ -374,7 +374,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
   }
 
   response += 'To: ' + to + '\r\n';
-  response += 'From: ' + this.from + '\r\n';
+  response += 'From: ' + this.getHeader('From') + '\r\n';
   response += 'Call-ID: ' + this.call_id + '\r\n';
   response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
 
@@ -409,14 +409,14 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
     response += 'Via: ' + this.getHeader('via', v) + '\r\n';
   }
 
-  to = this.to;
+  to = this.getHeader('To');
 
   if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
   }
 
   response += 'To: ' + to + '\r\n';
-  response += 'From: ' + this.from + '\r\n';
+  response += 'From: ' + this.getHeader('From') + '\r\n';
   response += 'Call-ID: ' + this.call_id + '\r\n';
   response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n\r\n';
 

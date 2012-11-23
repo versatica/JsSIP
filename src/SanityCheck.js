@@ -146,14 +146,14 @@ JsSIP.sanityCheck = (function() {
       response += "Via: " + message.getHeader('via', idx) + "\r\n";
     }
 
-    to = message.to;
+    to = message.getHeader('To');
 
     if(!message.to_tag) {
       to += ';tag=' + JsSIP.utils.newTag();
     }
 
     response += "To: " + to + "\r\n";
-    response += "From: " + message.from + "\r\n";
+    response += "From: " + message.getHeader('From') + "\r\n";
     response += "Call-ID: " + message.call_id + "\r\n";
     response += "CSeq: " + message.cseq + " " + message.method + "\r\n";
     response += "\r\n";
