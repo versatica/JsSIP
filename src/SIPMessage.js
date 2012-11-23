@@ -343,13 +343,15 @@ JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
 * @param {Function} [onFailure] onFailure callback
 */
 JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
-  var rr, vias, header, length, idx,
-    response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
+  var rr, vias, header, length, idx, response,
     to = this.getHeader('To'),
     r = 0,
     v = 0;
 
+  reason = reason || JsSIP.c.REASON_PHRASE[code] || ' ';
   extraHeaders = extraHeaders || [];
+
+  response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
   if(this.method === JsSIP.c.INVITE && code > 100 && code <= 200) {
     rr = this.countHeader('record-route');
@@ -401,9 +403,12 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
 * @param {String} reason reason phrase
 */
 JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
-  var to,
-    response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
+  var to, response,
     vias = this.countHeader('via');
+
+  reason = reason || JsSIP.c.REASON_PHRASE[code] || ' ';
+
+  response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
   for(var v = 0; v < vias; v++) {
     response += 'Via: ' + this.getHeader('via', v) + '\r\n';

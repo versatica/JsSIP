@@ -167,14 +167,14 @@ JsSIP.Message.prototype.init_incoming = function(request) {
   this.remote_identity = request.s('from').uri;
 
   this.accept = function() {
-    request.reply(200, JsSIP.c.REASON_200);
+    request.reply(200);
   };
 
   this.reject = function(status_code, reason_phrase) {
     if (status_code && reason_phrase) {
       request.reply(status_code, reason_phrase);
     } else {
-      request.reply(480, JsSIP.c.REASON_480);
+      request.reply(480);
     }
   };
 
@@ -188,9 +188,9 @@ JsSIP.Message.prototype.init_incoming = function(request) {
     transaction = this.ua.transactions.nist[request.via_branch];
 
     if (transaction && (transaction.state === JsSIP.c.TRANSACTION_TRYING || transaction.state === JsSIP.c.TRANSACTION_PROCEEDING)) {
-      request.reply(200, JsSIP.c.REASON_200);
+      request.reply(200);
     }
   } else {
-    request.reply(415, JsSIP.c.REASON_415, ["Accept: text/plain, text/html"]);
+    request.reply(415, JsSIP.c.REASON_PHRASE[415], ["Accept: text/plain, text/html"]);
   }
 };

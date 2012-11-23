@@ -362,7 +362,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
   //Check that Ruri points to us
   if(request.ruri.user !== this.configuration.user) {
     console.log(JsSIP.c.LOG_UA +'Request URI does not point to us');
-    request.reply_sl(404, JsSIP.c.REASON_404);
+    request.reply_sl(404);
     return;
   }
 
@@ -384,13 +384,13 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
    * They are processed as if they had been received outside the dialog.
    */
   if(method === JsSIP.c.OPTIONS) {
-    request.reply(200, JsSIP.c.REASON_200, [
+    request.reply(200, JsSIP.c.REASON_PHRASE[200], [
       'Allow: '+ JsSIP.utils.getAllowedMethods(this),
       'Accept: '+ JsSIP.c.ACCEPTED_BODY_TYPES
     ]);
   } else if (method === JsSIP.c.MESSAGE) {
     if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
-      request.reply(405, JsSIP.c.REASON_405, ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
+      request.reply(405, JsSIP.c.REASON_PHRASE[405], ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
       return;
     }
     message = new JsSIP.Message(this);
@@ -401,7 +401,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
   if(!request.to_tag) {
     if(!this.registrator || (this.registrator && !this.registrator.registered)) {
       // High user does not want to be contacted
-      request.reply(410, JsSIP.c.REASON_410);
+      request.reply(410);
       return;
     }
 
@@ -416,7 +416,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
         break;
       case JsSIP.c.BYE:
         // Out of dialog BYE received
-        request.reply(481, JsSIP.c.REASON_481);
+        request.reply(481);
         break;
       case JsSIP.c.CANCEL:
         session = this.findSession(request);
@@ -433,7 +433,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
          */
         break;
       default:
-        request.reply(405, JsSIP.c.REASON_405);
+        request.reply(405);
         break;
     }
   }
@@ -459,7 +459,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
      */
     else {
       if(method !== JsSIP.c.ACK) {
-        request.reply(481, JsSIP.c.REASON_481);
+        request.reply(481);
       }
     }
   }

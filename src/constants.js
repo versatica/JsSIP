@@ -130,68 +130,83 @@ JsSIP.c = {
   UPDATE:     'UPDATE',
   SUBSCRIBE:  'SUBSCRIBE',
 
-  // SIP Response Reasons
-
-  // Provisional
-  REASON_100: 'Trying',
-  REASON_180: 'Ringing',
-  REASON_181: 'Call Is Being Forwarded',
-  REASON_182: 'Queued',
-  REASON_183: 'Session Progress',
-
-  // Successful
-  REASON_200: 'OK',
-
-  // Redirection
-  REASON_300: 'Multiple Choices',
-  REASON_301: 'Moved Permanently',
-  REASON_302: 'Moved Temporarily',
-  REASON_305: 'Use Proxy',
-  REASON_380: 'Alternative Service',
-
-  // Request Failure
-  REASON_400: 'Bad Request',
-  REASON_401: 'Unauthorized',
-  REASON_402: 'Payment Required',
-  REASON_403: 'Forbidden',
-  REASON_404: 'Not Found',
-  REASON_405: 'Method Not Allowed',
-  REASON_406: 'Not Acceptable',
-  REASON_407: 'Proxy Authentication Required ',
-  REASON_408: 'Request Timeout',
-  REASON_410: 'Gone',
-  REASON_413: 'Request Entity Too Large',
-  REASON_414: 'Request-URI Too Long',
-  REASON_415: 'Unsupported Media Type',
-  REASON_416: 'Unsupported URI Scheme',
-  REASON_420: 'Bad Extension',
-  REASON_421: 'Extension Required',
-  REASON_423: 'Interval Too Brief',
-  REASON_480: 'Temporarily Unavailable',
-  REASON_481: 'Call/Transaction Does Not Exist',
-  REASON_482: 'Loop Detected',
-  REASON_483: 'Too Many Hops',
-  REASON_484: 'Address Incomplete',
-  REASON_485: 'Ambiguous',
-  REASON_486: 'Busy Here',
-  REASON_487: 'Request Terminated',
-  REASON_488: 'Not Acceptable Here',
-  REASON_491: 'Request Pending ',
-  REASON_493: 'Undecipherable',
-
-  // Server Failure
-  REASON_500: 'Server Internal Error',
-  REASON_501: 'Not Implemented',
-  REASON_502: 'Bad Gateway',
-  REASON_503: 'Service Unavailable',
-  REASON_504: 'Server Time-out',
-  REASON_505: 'Version Not Supported',
-  REASON_513: 'Message Too Large',
-
-  // Global Failure
-  REASON_600: 'Busy Everywhere',
-  REASON_603: 'Decline',
-  REASON_604: 'Does Not Exist Anywhere',
+  /* SIP Response Reasons
+   * DOC: http://www.iana.org/assignments/sip-parameters
+   * Copied from https://github.com/versatica/OverSIP/blob/master/lib/oversip/sip/constants.rb#L7
+   */
+  REASON_PHRASE: {
+    100: 'Trying',
+    180: 'Ringing',
+    181: 'Call Is Being Forwarded',
+    182: 'Queued',
+    183: 'Session Progress',
+    199: 'Early Dialog Terminated',  // draft-ietf-sipcore-199
+    200: 'OK',
+    202: 'Accepted',  // RFC 3265
+    204: 'No Notification',  //RFC 5839
+    300: 'Multiple Choices',
+    301: 'Moved Permanently',
+    302: 'Moved Temporarily',
+    305: 'Use Proxy',
+    380: 'Alternative Service',
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    402: 'Payment Required',
+    403: 'Forbidden',
+    404: 'Not Found',
+    405: 'Method Not Allowed',
+    406: 'Not Acceptable',
+    407: 'Proxy Authentication Required',
+    408: 'Request Timeout',
+    410: 'Gone',
+    412: 'Conditional Request Failed',  // RFC 3903
+    413: 'Request Entity Too Large',
+    414: 'Request-URI Too Long',
+    415: 'Unsupported Media Type',
+    416: 'Unsupported URI Scheme',
+    417: 'Unknown Resource-Priority',  // RFC 4412
+    420: 'Bad Extension',
+    421: 'Extension Required',
+    422: 'Session Interval Too Small',  // RFC 4028
+    423: 'Interval Too Brief',
+    428: 'Use Identity Header',  // RFC 4474
+    429: 'Provide Referrer Identity',  // RFC 3892
+    430: 'Flow Failed',  // RFC 5626
+    433: 'Anonymity Disallowed',  // RFC 5079
+    436: 'Bad Identity-Info',  // RFC 4474
+    437: 'Unsupported Certificate',  // RFC 4744
+    438: 'Invalid Identity Header',  // RFC 4744
+    439: 'First Hop Lacks Outbound Support',  // RFC 5626
+    440: 'Max-Breadth Exceeded',  // RFC 5393
+    469: 'Bad Info Package',  // draft-ietf-sipcore-info-events
+    470: 'Consent Needed',  // RF C5360
+    478: 'Unresolvable Destination',  // Custom code copied from Kamailio.
+    480: 'Temporarily Unavailable',
+    481: 'Call/Transaction Does Not Exist',
+    482: 'Loop Detected',
+    483: 'Too Many Hops',
+    484: 'Address Incomplete',
+    485: 'Ambiguous',
+    486: 'Busy Here',
+    487: 'Request Terminated',
+    488: 'Not Acceptable Here',
+    489: 'Bad Event',  // RFC 3265
+    491: 'Request Pending',
+    493: 'Undecipherable',
+    494: 'Security Agreement Required',  // RFC 3329
+    500: 'Server Internal Error',
+    501: 'Not Implemented',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable',
+    504: 'Server Time-out',
+    505: 'Version Not Supported',
+    513: 'Message Too Large',
+    580: 'Precondition Failure',  // RFC 3312
+    600: 'Busy Everywhere',
+    603: 'Decline',
+    604: 'Does Not Exist Anywhere',
+    606: 'Not Acceptable'
+  },
 
   // SIP Attributes
   MAX_FORWARDS: 69,

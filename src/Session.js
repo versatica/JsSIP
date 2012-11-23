@@ -310,7 +310,7 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
     // Transaction layer already responded 487 to the initial request.
 
     // Reply 200 to CANCEL
-    request.reply(200, JsSIP.c.REASON_200);
+    request.reply(200);
 
     /*
     * Terminate the whole session in case the user didn't accept nor reject the
@@ -332,7 +332,7 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
         break;
       case JsSIP.c.BYE:
         if(this.status === JsSIP.c.SESSION_CONFIRMED) {
-          request.reply(200, JsSIP.c.REASON_200);
+          request.reply(200);
           this.ended('remote', request, JsSIP.c.causes.BYE);
         }
         break;
@@ -408,7 +408,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
           return;
         }
 
-        request.reply(200, JsSIP.c.REASON_200, [
+        request.reply(200, JsSIP.c.REASON_PHRASE[200], [
           'Contact: <' + session.contact + '>'],
           sdp,
           // onSuccess
@@ -437,7 +437,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
 
       onMediaFailure = function(e) {
         // Unable to get User Media
-        request.reply(486, JsSIP.c.REASON_486);
+        request.reply(486);
         session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
       };
 
@@ -446,7 +446,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
         * peerConnection.setRemoteDescription throws an exception
         */
         console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
-        request.reply(488, JsSIP.c.REASON_488);
+        request.reply(488);
         session.failed('remote', request, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
       };
 
@@ -461,7 +461,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     */
     this.reject = function() {
       if (this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-        request.reply(486, JsSIP.c.REASON_486);
+        request.reply(486);
 
         this.failed('local', null, JsSIP.c.causes.REJECTED);
       }
@@ -474,12 +474,12 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     if (this.status !== JsSIP.c.SESSION_TERMINATED) {
       this.progress('local');
 
-      request.reply(180, JsSIP.c.REASON_180, [
+      request.reply(180, JsSIP.c.REASON_PHRASE[180], [
         'Contact: <' + this.contact + '>'
       ]);
     }
   } else {
-    request.reply(415, JsSIP.c.REASON_415);
+    request.reply(415);
   }
 };
 
@@ -639,7 +639,7 @@ JsSIP.Session.prototype.ackTimeout = function() {
 */
 JsSIP.Session.prototype.expiresTimeout = function(request) {
   if(this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-    request.reply(487, JsSIP.c.REASON_487);
+    request.reply(487);
 
     this.failed('system', null, JsSIP.c.causes.EXPIRES);
   }
@@ -660,7 +660,7 @@ JsSIP.Session.prototype.invite2xxRetransmission = function(retransmissions, requ
   if((retransmissions * JsSIP.Timers.T1) <= JsSIP.Timers.T2) {
     retransmissions += 1;
 
-    request.reply(200, JsSIP.c.REASON_200, [
+    request.reply(200, JsSIP.c.REASON_PHRASE[200], [
       'Contact: <' + this.contact + '>'],
       body);
 
@@ -678,7 +678,7 @@ JsSIP.Session.prototype.invite2xxRetransmission = function(retransmissions, requ
 * @private
 */
 JsSIP.Session.prototype.userNoAnswerTimeout = function(request) {
-  request.reply(408, JsSIP.c.REASON_408);
+  request.reply(408);
 
   this.failed('local',null, JsSIP.c.causes.NO_ANSWER);
 };
