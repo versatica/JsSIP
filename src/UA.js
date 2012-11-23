@@ -19,6 +19,10 @@ JsSIP.UA = function(configuration) {
     'newMessage'
   ];
 
+  this.cache = {
+    credentials: {}
+  };
+
   this.configuration = {};
   this.dialogs = {};
   this.registrator = null;
@@ -233,6 +237,26 @@ JsSIP.UA.prototype.start = function() {
     throw new JsSIP.exceptions.NotReadyError();
   }
 };
+
+
+JsSIP.UA.prototype.saveCredentials = function(credentials) {
+  this.cache.credentials[credentials.realm] = this.cache.credentials[credentials.realm] || {};
+  this.cache.credentials[credentials.realm][credentials.uri] = credentials;
+};
+
+JsSIP.UA.prototype.getCredentials = function(request) {
+  var realm, credentials;
+
+  realm = JsSIP.grammar.parse(request.headers['To'].toString(), 'To').host;
+
+  if (this.cache.credentials[realm] && this.cache.credentials[realm][request.ruri]) {
+    credentials = this.cache.credentials[realm][request.ruri];
+    credentials.method = request.method;
+  }
+
+  return credentials;
+};
+
 
 //==========================
 // Event Handlers
