@@ -89,7 +89,7 @@ JsSIP.RequestSender.prototype = {
       if (status_code === 401) {
         challenge = response.s('WWW-Authenticate');
       } else {
-        challenge = response.s('Authenticate');
+        challenge = response.s('Proxy-Authenticate');
       }
 
       if ( !this.challenged || (this.challenged && !this.staled && challenge.stale) ) {
