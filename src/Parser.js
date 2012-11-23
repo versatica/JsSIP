@@ -42,7 +42,7 @@ JsSIP.Parser = (function() {
 
   /** @private */
   function parseHeader(message, msg, header_start, header_end) {
-    var header, length, idx, parsed,
+    var header, length, idx, parsed, count,
       hcolonIndex = msg.indexOf(':', header_start),
       header_name = msg.substring(header_start, hcolonIndex).trim(),
       header_value = msg.substring(hcolonIndex + 1, header_end).trim();
@@ -103,11 +103,13 @@ JsSIP.Parser = (function() {
       case 'm':
         header = header_value.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
         length = header.length;
+        count = 0;
 
         for(idx=0; idx < length; idx++) {
           if (header[idx].length > 0) {
             message.addHeader('contact', header[idx]);
-            parsed = message.parseHeader('contact', idx);
+            parsed = message.parseHeader('contact', count);
+            count += 1;
             if (parsed === undefined) {
               break;
             }
