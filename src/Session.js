@@ -18,7 +18,7 @@ JsSIP.Session = function(ua) {
   ];
 
   this.ua = ua;
-  this.status = null;
+  this.status = JsSIP.c.SESSION_NULL;
   this.dialog = null;
   this.earlyDialogs = [];
   this.mediaSession = null;
@@ -64,6 +64,7 @@ JsSIP.Session.prototype.init_incoming = function(request) {
   this.from_tag = request.from_tag;
   this.status = JsSIP.c.SESSION_INVITE_RECEIVED;
   this.id = request.call_id + this.from_tag;
+  this.request = request;
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
@@ -84,7 +85,7 @@ JsSIP.Session.prototype.connect = function(target, options) {
   }
 
   // Check Session Status
-  if (this.status !== null) {
+  if (this.status !== JsSIP.c.SESSION_NULL) {
     throw new JsSIP.exceptions.InvalidStateError();
   }
 
@@ -144,23 +145,6 @@ JsSIP.Session.prototype.connect = function(target, options) {
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
-
-  /**
-   * @private
-   */
-  this.cancel = function() {
-    if (this.status === JsSIP.c.SESSION_INVITE_SENT) {
-      if(this.received_100) {
-        request.cancel();
-      } else {
-        this.isCanceled = true;
-      }
-    } else if(this.status === JsSIP.c.SESSION_1XX_RECEIVED) {
-      request.cancel();
-    }
-
-    this.failed('local', null, JsSIP.c.causes.CANCELED);
-  };
 
   this.newSession('local', request, target);
   this.connecting('local', request, target);
@@ -455,18 +439,6 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
       session.mediaSession.startCallee(onMediaSuccess, onMediaFailure, onSdpFailure, offer);
     };
 
-    /**
-    * Reject the call
-    * @private
-    */
-    this.reject = function() {
-      if (this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-        request.reply(486);
-
-        this.failed('local', null, JsSIP.c.causes.REJECTED);
-      }
-    };
-
     // Fire 'call' event callback
     this.newSession('remote', request);
 
@@ -498,7 +470,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
   // Proceed to cancelation if the user requested.
   if(this.isCanceled) {
     if(response.status_code >= 100 && response.status_code < 200) {
-      this.request.cancel();
+      this.request.cancel(this.cancelReason);
     } else if(response.status_code >= 200 && response.status_code < 299) {
       this.acceptAndTerminate(response);
     }
@@ -885,6 +857,66 @@ JsSIP.Session.prototype.terminate = function() {
   this.close();
 };
 
+/**
+ * Reject the incoming call
+ * Only valid for incoming Messages
+ *
+ * @param {Number} status_code
+ * @param {String} [reason_phrase]
+ */
+JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
+  // Check Session Direction and Status
+  if (this.direction !== 'incoming') {
+    throw new JsSIP.exceptions.InvalidMethodError();
+  } else if (this.status !== JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
+    throw new JsSIP.exceptions.InvalidStateError();
+  }
+
+  if (status_code) {
+    if ((status_code < 300 || status_code >= 700)) {
+      throw new JsSIP.exceptions.InvalidValueError();
+    } else {
+      this.request.reply(status_code, reason_phrase);
+    }
+  } else {
+    this.request.reply(480);
+  }
+
+  this.failed('local', null, JsSIP.c.causes.REJECTED);
+};
+
+/**
+ * Cancel the outgoing call
+ *
+ * @param {String} [reason]
+ */
+JsSIP.Session.prototype.cancel = function(reason) {
+  // Check Session Direction
+  if (this.direction !== 'outgoing') {
+    throw new JsSIP.exceptions.InvalidMethodError();
+  }
+
+  // Check Session Status
+  if (this.status === JsSIP.c.SESSION_NULL) {
+    this.isCanceled = true;
+    this.cancelReason = reason;
+  } else if (this.status === JsSIP.c.SESSION_INVITE_SENT) {
+    if(this.received_100) {
+      this.request.cancel(reason);
+    } else {
+      this.isCanceled = true;
+      this.cancelReason = reason;
+    }
+  } else if(this.status === JsSIP.c.SESSION_1XX_RECEIVED) {
+    this.request.cancel(reason);
+  } else {
+    throw new JsSIP.exceptions.InvalidStateError();
+  }
+
+  this.failed('local', null, JsSIP.c.causes.CANCELED);
+};
+
+
 
 /**
  * Initial Request Sender
@@ -899,7 +931,7 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
     request_sender = new JsSIP.RequestSender(self, this.ua);
 
   function onMediaSuccess() {
-    if (self.status === JsSIP.c.SESSION_TERMINATED) {
+    if (self.isCanceled || self.status === JsSIP.c.SESSION_TERMINATED) {
       self.mediaSession.close();
       return;
     }
