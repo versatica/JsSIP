@@ -79,6 +79,29 @@ JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
   return this.toString();
 };
 
+
+JsSIP.DigestAuthentication.prototype.update = function(response) {
+  var authenticate, nonce;
+
+  if(response.status_code === 401) {
+    authenticate = response.parseHeader('www-authenticate');
+  } else {
+    authenticate = response.parseHeader('proxy-authenticate');
+  }
+
+  nonce = authenticate.nonce.replace(/"/g,'');
+
+  if(nonce !== this.nonce) {
+    this.nc = 0;
+    this.nonce = nonce;
+  }
+
+  this.realm = authenticate.realm.replace(/"/g,'');
+  this.qop = authenticate.qop || null;
+  this.opaque = authenticate.opaque;
+};
+
+
 JsSIP.DigestAuthentication.prototype.toString = function() {
   var authorization = 'Digest ';
 

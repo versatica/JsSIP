@@ -95,6 +95,8 @@ JsSIP.RequestSender.prototype = {
       if ( !this.challenged || (this.challenged && !this.staled && challenge.stale) ) {
         if (!this.credentials) {
           this.credentials = new JsSIP.DigestAuthentication(this.ua, this.request, response);
+        } else {
+          this.credentials.update(response);
         }
 
         if (response.method === JsSIP.c.REGISTER) {
