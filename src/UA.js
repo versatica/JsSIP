@@ -239,6 +239,10 @@ JsSIP.UA.prototype.start = function() {
 };
 
 
+//===============================
+//  Private (For internal use)
+//===============================
+
 JsSIP.UA.prototype.saveCredentials = function(credentials) {
   this.cache.credentials[credentials.realm] = this.cache.credentials[credentials.realm] || {};
   this.cache.credentials[credentials.realm][credentials.uri] = credentials;
