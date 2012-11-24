@@ -35,7 +35,7 @@ JsSIP.RequestSender.prototype = {
     if (this.credentials) {
       if (this.request.method === JsSIP.c.REGISTER) {
         this.request.setHeader('authorization', this.credentials.authenticate());
-      } else {
+      } else if (this.request.method !== JsSIP.c.CANCEL) {
         this.request.setHeader('proxy-authorization', this.credentials.authenticate());
       }
     }
