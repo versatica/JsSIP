@@ -180,7 +180,7 @@ JsSIP.Message.prototype.init_incoming = function(request) {
       request.reply(200);
     }
   } else {
-    request.reply(415, JsSIP.c.REASON_PHRASE[415], ["Accept: text/plain, text/html"]);
+    request.reply(415, null, ['Accept: text/plain, text/html']);
   }
 };
 

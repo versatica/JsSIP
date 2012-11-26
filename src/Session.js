@@ -392,8 +392,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
           return;
         }
 
-        request.reply(200, JsSIP.c.REASON_PHRASE[200], [
-          'Contact: <' + session.contact + '>'],
+        request.reply(200, null, ['Contact: <' + session.contact + '>'],
           sdp,
           // onSuccess
           function(){
@@ -446,9 +445,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     if (this.status !== JsSIP.c.SESSION_TERMINATED) {
       this.progress('local');
 
-      request.reply(180, JsSIP.c.REASON_PHRASE[180], [
-        'Contact: <' + this.contact + '>'
-      ]);
+      request.reply(180, null, ['Contact: <' + this.contact + '>']);
     }
   } else {
     request.reply(415);
@@ -632,9 +629,7 @@ JsSIP.Session.prototype.invite2xxRetransmission = function(retransmissions, requ
   if((retransmissions * JsSIP.Timers.T1) <= JsSIP.Timers.T2) {
     retransmissions += 1;
 
-    request.reply(200, JsSIP.c.REASON_PHRASE[200], [
-      'Contact: <' + this.contact + '>'],
-      body);
+    request.reply(200, null, ['Contact: <' + this.contact + '>'], body);
 
     this.invite2xxTimer = window.setTimeout(
       function() {

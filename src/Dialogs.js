@@ -152,9 +152,7 @@ JsSIP.Dialog.prototype = {
         if(request.cseq < this.remote_seqnum) {
           if(this.state === JsSIP.c.DIALOG_EARLY) {
             var retryAfter = (Math.random() * 10 | 0) + 1;
-            request.reply(500, JsSIP.c.REASON_PHRASE[500], [
-              'Retry-After:'+ retryAfter
-            ]);
+            request.reply(500, null, ['Retry-After:'+ retryAfter]);
           } else {
             request.reply(500);
           }

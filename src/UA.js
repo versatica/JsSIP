@@ -388,13 +388,13 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
    * They are processed as if they had been received outside the dialog.
    */
   if(method === JsSIP.c.OPTIONS) {
-    request.reply(200, JsSIP.c.REASON_PHRASE[200], [
+    request.reply(200, null, [
       'Allow: '+ JsSIP.utils.getAllowedMethods(this),
       'Accept: '+ JsSIP.c.ACCEPTED_BODY_TYPES
     ]);
   } else if (method === JsSIP.c.MESSAGE) {
     if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
-      request.reply(405, JsSIP.c.REASON_PHRASE[405], ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
+      request.reply(405, null, ['Allow: '+ JsSIP.utils.getAllowedMethods(this)]);
       return;
     }
     message = new JsSIP.Message(this);
