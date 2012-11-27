@@ -358,7 +358,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     throw new JsSIP.exceptions.InvalidValueError();
   }
 
-  reason = reason || JsSIP.c.REASON_PHRASE[code] || ' ';
+  reason = reason || JsSIP.c.REASON_PHRASE[code] || '';
   extraHeaders = extraHeaders || [];
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
