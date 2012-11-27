@@ -348,6 +348,16 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     r = 0,
     v = 0;
 
+  code = code || null;
+  reason = reason || null;
+
+  // Validate code and reason values
+  if (!code || (code < 100 || code > 699)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  }
+
   reason = reason || JsSIP.c.REASON_PHRASE[code] || ' ';
   extraHeaders = extraHeaders || [];
 
@@ -367,9 +377,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     response += 'Via: ' + this.getHeader('via', v) + '\r\n';
   }
 
-  response += 'Max-Forwards: ' + JsSIP.c.MAX_FORWARDS + '\r\n';
-
-  if(code !== 100 && !this.to_tag) {
+  if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
   } else if(this.to_tag && !this.s('to').tag) {
     to += ';tag=' + this.to_tag;
@@ -391,7 +399,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     response += 'Content-Length: ' + length + '\r\n\r\n';
     response += body;
   } else {
-    response += "\r\n";
+    response += '\r\n';
   }
 
   this.server_transaction.receiveResponse(code, response, onSuccess, onFailure);
@@ -406,7 +414,17 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
   var to, response,
     vias = this.countHeader('via');
 
-  reason = reason || JsSIP.c.REASON_PHRASE[code] || ' ';
+  code = code || null;
+  reason = reason || null;
+
+  // Validate code and reason values
+  if (!code || (code < 100 || code > 699)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  }
+
+  reason = reason || JsSIP.c.REASON_PHRASE[code] || '';
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
@@ -418,6 +436,8 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
 
   if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
+  } else if(this.to_tag && !this.s('to').tag) {
+    to += ';tag=' + this.to_tag;
   }
 
   response += 'To: ' + to + '\r\n';
