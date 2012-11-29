@@ -139,7 +139,7 @@ JsSIP.Dialog.prototype = {
     } else if(request.method !== JsSIP.c.INVITE && request.cseq < this.remote_seqnum) {
         //Do not try to reply to an ACK request.
         if (request.method !== JsSIP.c.ACK) {
-          request.reply(500, JsSIP.c.REASON_500);
+          request.reply(500);
         }
         return false;
     } else if(request.cseq > this.remote_seqnum) {
@@ -152,17 +152,15 @@ JsSIP.Dialog.prototype = {
         if(request.cseq < this.remote_seqnum) {
           if(this.state === JsSIP.c.DIALOG_EARLY) {
             var retryAfter = (Math.random() * 10 | 0) + 1;
-            request.reply(500, JsSIP.c.REASON_500, [
-              'Retry-After:'+ retryAfter
-            ]);
+            request.reply(500, null, ['Retry-After:'+ retryAfter]);
           } else {
-            request.reply(500, JsSIP.c.REASON_500);
+            request.reply(500);
           }
           return false;
         }
         // RFC3261 14.2
         if(this.state === JsSIP.c.DIALOG_EARLY) {
-          request.reply(491, JsSIP.c.REASON_491);
+          request.reply(491);
           return false;
         }
         // RFC3261 12.2.2 Replace the dialog`s remote target URI

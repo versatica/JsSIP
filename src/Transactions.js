@@ -552,7 +552,7 @@ JsSIP.Transactions.InviteServerTransaction = function(request, ua) {
 
   this.reliableProvisionalTimer = null;
 
-  request.reply(100, JsSIP.c.REASON_100);
+  request.reply(100);
 };
 JsSIP.Transactions.InviteServerTransaction.prototype = new InviteServerTransactionPrototype();
 
@@ -622,13 +622,13 @@ JsSIP.Transactions.checkTransaction = function(ua, request) {
       tr = ua.transactions.ist[request.via_branch];
       if(tr) {
         if(tr.state === JsSIP.c.TRANSACTION_PROCEEDING) {
-          tr.request.reply(487, JsSIP.c.REASON_487);
+          tr.request.reply(487);
           return false;
         } else {
           return true;
         }
       } else {
-        request.reply_sl(481, JsSIP.c.REASON_481);
+        request.reply_sl(481);
         return true;
       }
       break;

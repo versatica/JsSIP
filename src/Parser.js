@@ -8,56 +8,55 @@
  * @augments JsSIP
  * @namespace
  */
-JsSIP.Parser = (function() {
+JsSIP.Parser = {
 
   /** @private */
-  function getHeader(msg, header_start) {
+  getHeader: function(data, headerStart) {
     var
-
       // 'start' position of the header.
-      start = header_start,
-
+      start = headerStart,
       // 'end' position of the header.
       end = 0,
-
-      // 'partial end' of the header -char position-.
-      pend = 0;
+      // 'partial end' possition of the header.
+      partialEnd = 0;
 
     //End of message.
-    if(msg.substring(start, start + 2).match(/(^\r\n)/)) {
+    if (data.substring(start, start + 2).match(/(^\r\n)/)) {
       return -2;
     }
 
     while(end === 0) {
       // Partial End of Header.
-      pend = msg.indexOf('\r\n', start);
+      partialEnd = data.indexOf('\r\n', start);
+
       // 'indexOf' returns -1 if the value to be found never occurs.
-      if(!msg.substring(pend + 2, pend + 4).match(/(^\r\n)/) && msg.charAt(pend + 2).match(/(^\s+)/)) {
-        // continue from the next position.
-        start = pend + 2;
+      if (partialEnd === -1) {
+        return partialEnd;
+      }
+
+      if(!data.substring(partialEnd + 2, partialEnd + 4).match(/(^\r\n)/) && data.charAt(partialEnd + 2).match(/(^\s+)/)) {
+        // Not the end of the message. Continue from the next position.
+        start = partialEnd + 2;
       } else {
-        end = pend;
+        end = partialEnd;
       }
     }
 
     return end;
-  }
+  },
 
   /** @private */
-  function parseHeader(message, msg, header_start, header_end) {
-    var header, length, idx, parsed,
-      hcolonIndex = msg.indexOf(':', header_start),
-      header_name = msg.substring(header_start, hcolonIndex).replace(/\s+/, ''),
-      header_value = msg.substring(hcolonIndex + 1, header_end);
-
-      // Delete all spaces before and after the body.
-      header_value = header_value.replace(/^\s+/g, '').replace(/\s+$/g, '');
+  parseHeader: function(message, data, headerStart, headerEnd) {
+    var header, length, idx, parsed, count,
+      hcolonIndex = data.indexOf(':', headerStart),
+      headerName = data.substring(headerStart, hcolonIndex).trim(),
+      headerValue = data.substring(hcolonIndex + 1, headerEnd).trim();
 
     // If header-field is well-known, parse it.
-    switch(header_name.toLowerCase()) {
+    switch(headerName.toLowerCase()) {
       case 'via':
       case 'v':
-        message.addHeader('via', header_value);
+        message.addHeader('via', headerValue);
         if(message.countHeader('via') === 1) {
           parsed = message.parseHeader('Via');
           if(parsed) {
@@ -70,24 +69,24 @@ JsSIP.Parser = (function() {
         break;
       case 'from':
       case 'f':
-        message.setHeader('from', header_value);
+        message.setHeader('from', headerValue);
         parsed = message.parseHeader('from');
         if(parsed) {
-          message.from = header_value;
+          message.from = parsed;
           message.from_tag = parsed.tag;
         }
         break;
       case 'to':
       case 't':
-        message.setHeader('to', header_value);
+        message.setHeader('to', headerValue);
         parsed = message.parseHeader('to');
         if(parsed) {
-          message.to = header_value;
+          message.to = parsed;
           message.to_tag = parsed.tag;
         }
         break;
       case 'record-route':
-        header = header_value.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
+        header = headerValue.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
         length = header.length;
         parsed = 0;
 
@@ -99,21 +98,23 @@ JsSIP.Parser = (function() {
         break;
       case 'call-id':
       case 'i':
-        message.setHeader('call-id', header_value);
+        message.setHeader('call-id', headerValue);
         parsed = message.parseHeader('call-id');
         if(parsed) {
-          message.call_id = header_value;
+          message.call_id = headerValue;
         }
         break;
       case 'contact':
       case 'm':
-        header = header_value.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
+        header = headerValue.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
         length = header.length;
+        count = 0;
 
         for(idx=0; idx < length; idx++) {
           if (header[idx].length > 0) {
             message.addHeader('contact', header[idx]);
-            parsed = message.parseHeader('contact', idx);
+            parsed = message.parseHeader('contact', count);
+            count += 1;
             if (parsed === undefined) {
               break;
             }
@@ -122,16 +123,16 @@ JsSIP.Parser = (function() {
         break;
       case 'content-length':
       case 'l':
-        message.setHeader('content-length', header_value);
+        message.setHeader('content-length', headerValue);
         parsed = message.parseHeader('content-length');
         break;
       case 'content-type':
       case 'c':
-        message.setHeader('content-type', header_value);
+        message.setHeader('content-type', headerValue);
         parsed = message.parseHeader('content-type');
         break;
       case 'cseq':
-        message.setHeader('cseq', header_value);
+        message.setHeader('cseq', headerValue);
         parsed = message.parseHeader('cseq');
         if(parsed) {
           message.cseq = parsed.value;
@@ -141,43 +142,47 @@ JsSIP.Parser = (function() {
         }
         break;
       case 'max-forwards':
-        message.setHeader('max-forwards', header_value);
+        message.setHeader('max-forwards', headerValue);
         parsed = message.parseHeader('max-forwards');
         break;
       case 'www-authenticate':
-        message.setHeader('www-authenticate', header_value);
+        message.setHeader('www-authenticate', headerValue);
         parsed = message.parseHeader('www-authenticate');
         break;
       case 'proxy-authenticate':
-        message.setHeader('proxy-authenticate', header_value);
+        message.setHeader('proxy-authenticate', headerValue);
         parsed = message.parseHeader('proxy-authenticate');
         break;
       default:
-        // This is not a well known header. Do not parse it.
-        message.setHeader(header_name, header_value);
+        // Do not parse this header.
+        message.setHeader(headerName, headerValue);
         parsed = 0;
     }
 
     if (parsed === undefined) {
-      return {
-        'header_name': header_name,
-        'header_value': header_value
-      };
+      return false;
+    } else {
+      return true;
     }
-  }
+  },
 
-  /** @private */
-  function parseMessage(data) {
-    var message, firstLine, contentLength, body_start, parsed,
-      header_start = 0,
-      header_end = data.indexOf('\r\n');
+  /** Parse SIP Message
+   * @function
+   * @param {String} message SIP message.
+   * @returns {JsSIP.IncomingRequest|JsSIP.IncomingResponse|undefined}
+   */
+  parseMessage: function(data) {
+    var message, firstLine, contentLength, bodyStart, parsed,
+      headerStart = 0,
+      headerEnd = data.indexOf('\r\n');
 
-    if(header_end === -1) {
+    if(headerEnd === -1) {
       console.log(JsSIP.c.LOG_PARSER +'No CRLF found. Not a SIP message.');
+      return;
     }
 
     // Parse first line. Check if it is a Request or a Reply.
-    firstLine = data.substring(0, header_end);
+    firstLine = data.substring(0, headerEnd);
     parsed = JsSIP.grammar.parse(firstLine, 'Request_Response');
 
     if(parsed === -1) {
@@ -194,32 +199,31 @@ JsSIP.Parser = (function() {
     }
 
     message.data = data;
-    header_start = header_end + 2;
+    headerStart = headerEnd + 2;
 
-    /* Loop over every line in msg. Detect the end of each header and parse
+    /* Loop over every line in data. Detect the end of each header and parse
     * it or simply add to the headers collection.
     */
     while(true) {
-      header_end = getHeader(data, header_start);
+      headerEnd = JsSIP.Parser.getHeader(data, headerStart);
 
       // The SIP message has normally finished.
-      if(header_end === -2) {
-        body_start = header_start + 2;
+      if(headerEnd === -2) {
+        bodyStart = headerStart + 2;
         break;
       }
-      // msg.indexOf returned -1 due to a malformed message.
-      else if(header_end === -1) {
+      // data.indexOf returned -1 due to a malformed message.
+      else if(headerEnd === -1) {
         return;
       }
 
-      parsed = parseHeader(message, data, header_start, header_end);
+      parsed = JsSIP.Parser.parseHeader(message, data, headerStart, headerEnd);
 
-      if(parsed) {
-        console.log(JsSIP.c.LOG_PARSER +'Error parsing "' + parsed.header_name + '" header field with value: "' + parsed.header_value + '"');
+      if(!parsed) {
         return;
       }
 
-      header_start = header_end + 2;
+      headerStart = headerEnd + 2;
     }
 
     /* RFC3261 18.3.
@@ -228,20 +232,11 @@ JsSIP.Parser = (function() {
      */
     if(message.hasHeader('content-length')) {
       contentLength = message.getHeader('content-length');
-      message.body = data.substr(body_start, contentLength);
+      message.body = data.substr(bodyStart, contentLength);
     } else {
-      message.body = data.substring(body_start);
+      message.body = data.substring(bodyStart);
     }
 
     return message;
- }
-
- return {
-   /** Parse SIP Message
-    * @function
-    * @param {String} message SIP message.
-    * @returns {JsSIP.IncomingRequest|JsSIP.IncomingResponse|undefined}
-    */
-   parseMessage: parseMessage
- };
-}());
+  }
+};

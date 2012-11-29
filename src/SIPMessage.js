@@ -343,13 +343,25 @@ JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
 * @param {Function} [onFailure] onFailure callback
 */
 JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
-  var rr, vias, header, length, idx,
-    response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
-    to = this.to,
+  var rr, vias, header, length, idx, response,
+    to = this.getHeader('To'),
     r = 0,
     v = 0;
 
+  code = code || null;
+  reason = reason || null;
+
+  // Validate code and reason values
+  if (!code || (code < 100 || code > 699)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  }
+
+  reason = reason || JsSIP.c.REASON_PHRASE[code] || '';
   extraHeaders = extraHeaders || [];
+
+  response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
   if(this.method === JsSIP.c.INVITE && code > 100 && code <= 200) {
     rr = this.countHeader('record-route');
@@ -365,16 +377,14 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     response += 'Via: ' + this.getHeader('via', v) + '\r\n';
   }
 
-  response += 'Max-Forwards: ' + JsSIP.c.MAX_FORWARDS + '\r\n';
-
-  if(code !== 100 && !this.to_tag) {
+  if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
   } else if(this.to_tag && !this.s('to').tag) {
     to += ';tag=' + this.to_tag;
   }
 
   response += 'To: ' + to + '\r\n';
-  response += 'From: ' + this.from + '\r\n';
+  response += 'From: ' + this.getHeader('From') + '\r\n';
   response += 'Call-ID: ' + this.call_id + '\r\n';
   response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
 
@@ -389,7 +399,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     response += 'Content-Length: ' + length + '\r\n\r\n';
     response += body;
   } else {
-    response += "\r\n";
+    response += '\r\n';
   }
 
   this.server_transaction.receiveResponse(code, response, onSuccess, onFailure);
@@ -401,22 +411,37 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
 * @param {String} reason reason phrase
 */
 JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
-  var to,
-    response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n',
+  var to, response,
     vias = this.countHeader('via');
+
+  code = code || null;
+  reason = reason || null;
+
+  // Validate code and reason values
+  if (!code || (code < 100 || code > 699)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
+    throw new JsSIP.exceptions.InvalidValueError();
+  }
+
+  reason = reason || JsSIP.c.REASON_PHRASE[code] || '';
+
+  response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
   for(var v = 0; v < vias; v++) {
     response += 'Via: ' + this.getHeader('via', v) + '\r\n';
   }
 
-  to = this.to;
+  to = this.getHeader('To');
 
   if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
+  } else if(this.to_tag && !this.s('to').tag) {
+    to += ';tag=' + this.to_tag;
   }
 
   response += 'To: ' + to + '\r\n';
-  response += 'From: ' + this.from + '\r\n';
+  response += 'From: ' + this.getHeader('From') + '\r\n';
   response += 'Call-ID: ' + this.call_id + '\r\n';
   response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n\r\n';
 

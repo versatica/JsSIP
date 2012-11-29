@@ -57,7 +57,7 @@ JsSIP.Registrator.prototype = {
         'cseq': (this.cseq += 1)
       }, [
         'Contact: '+ this.contact + ';expires=' + this.expires,
-        'Allow: '+ JsSIP.c.ALLOWED_METHODS
+        'Allow: '+ JsSIP.utils.getAllowedMethods(this.ua)
       ]);
 
     request_sender = new JsSIP.RequestSender(this, this.ua);

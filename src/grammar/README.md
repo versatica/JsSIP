@@ -49,7 +49,7 @@ The changes to be done in `dist/grammar.js` file are located at the end of the `
       }
 
 -       return result;
-+       return msg;
++       return data;
     },
 
     /* Returns the parser source code. */

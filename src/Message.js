@@ -159,19 +159,62 @@ JsSIP.Message.prototype.close = function() {
  * @private
  */
 JsSIP.Message.prototype.init_incoming = function(request) {
-  var contentType = request.getHeader('content-type');
+  var transaction,
+    contentType = request.getHeader('content-type');
 
   this.direction = 'incoming';
+  this.request = request;
   this.local_identity = request.s('to').uri;
   this.remote_identity = request.s('from').uri;
 
-  request.reply(200, JsSIP.c.REASON_200);
-
-  if (contentType && contentType === "text/plain") {
+  if (contentType && (contentType.match(/^text\/plain(\s*;\s*.+)*$/i) || contentType.match(/^text\/html(\s*;\s*.+)*$/i))) {
     this.ua.emit('newMessage', this.ua, {
       originator: 'remote',
       message: this,
       request: request
     });
+
+    transaction = this.ua.transactions.nist[request.via_branch];
+
+    if (transaction && (transaction.state === JsSIP.c.TRANSACTION_TRYING || transaction.state === JsSIP.c.TRANSACTION_PROCEEDING)) {
+      request.reply(200);
+    }
+  } else {
+    request.reply(415, null, ['Accept: text/plain, text/html']);
+  }
+};
+
+/**
+ * Accept the incoming Message
+ * Only valid for incoming Messages
+ */
+JsSIP.Message.prototype.accept = function() {
+  if (this.direction !== 'incoming') {
+    throw new JsSIP.exceptions.InvalidMethodError();
+  }
+
+  this.request.reply(200);
+};
+
+/**
+ * Reject the incoming Message
+ * Only valid for incoming Messages
+ *
+ * @param {Number} status_code
+ * @param {String} [reason_phrase]
+ */
+JsSIP.Message.prototype.reject = function(status_code, reason_phrase) {
+  if (this.direction !== 'incoming') {
+    throw new JsSIP.exceptions.InvalidMethodError();
+  }
+
+  if (status_code) {
+    if ((status_code < 300 || status_code >= 700)) {
+      throw new JsSIP.exceptions.InvalidValueError();
+    } else {
+      this.request.reply(status_code, reason_phrase);
+    }
+  } else {
+    this.request.reply(480);
   }
 };

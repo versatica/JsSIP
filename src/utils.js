@@ -129,6 +129,19 @@ JsSIP.utils = {
     }
   },
 
+  getAllowedMethods: function(ua) {
+    var event,
+      allowed = JsSIP.c.ALLOWED_METHODS.split(', ');
+
+    for (event in JsSIP.c.UA_EVENT_METHODS) {
+      if (!ua.checkEvent(event) || ua.listeners(event).length === 0) {
+        allowed.splice(allowed.indexOf(JsSIP.c.UA_EVENT_METHODS[event]), 1);
+      }
+    }
+
+    return allowed.join(', ');
+  },
+
   // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info
   MD5: function(string) {
     function RotateLeft(lValue, iShiftBits) {

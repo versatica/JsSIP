@@ -37,7 +37,7 @@ JsSIP.sanityCheck = (function() {
   // Sanity Check functions for requests
   function rfc3261_8_2_2_1() {
     if(message.s('to').scheme !== 'sip') {
-      reply(416, JsSIP.c.REASON_416);
+      reply(416);
       return false;
     }
   }
@@ -45,7 +45,7 @@ JsSIP.sanityCheck = (function() {
   function rfc3261_16_3_4() {
     if(!message.to_tag) {
       if(message.call_id.substr(0, 5) === ua.configuration.jssip_id) {
-        reply(482, JsSIP.c.REASON_482);
+        reply(482);
         return false;
       }
     }
@@ -56,7 +56,7 @@ JsSIP.sanityCheck = (function() {
     contentLength = message.getHeader('content-length');
 
     if(len < contentLength) {
-      reply(400, JsSIP.c.REASON_400);
+      reply(400);
       return false;
     }
   }
@@ -76,7 +76,7 @@ JsSIP.sanityCheck = (function() {
           for(idx in ua.transactions.ist) {
             tr = ua.transactions.ist[idx];
             if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-              reply(482, JsSIP.c.REASON_482);
+              reply(482);
               return false;
             }
           }
@@ -89,7 +89,7 @@ JsSIP.sanityCheck = (function() {
           for(idx in ua.transactions.nist) {
             tr = ua.transactions.nist[idx];
             if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-              reply(482, JsSIP.c.REASON_482);
+              reply(482);
               return false;
             }
           }
@@ -136,9 +136,9 @@ JsSIP.sanityCheck = (function() {
   }
 
   // Reply
-  function reply(status_code, reason_phrase) {
+  function reply(status_code) {
     var to,
-      response = "SIP/2.0 " + status_code + " " + reason_phrase + "\r\n",
+      response = "SIP/2.0 " + status_code + " " + JsSIP.c.REASON_PHRASE[status_code] + "\r\n",
       via_length = message.countHeader('via'),
       idx = 0;
 
@@ -146,14 +146,14 @@ JsSIP.sanityCheck = (function() {
       response += "Via: " + message.getHeader('via', idx) + "\r\n";
     }
 
-    to = message.to;
+    to = message.getHeader('To');
 
     if(!message.to_tag) {
       to += ';tag=' + JsSIP.utils.newTag();
     }
 
     response += "To: " + to + "\r\n";
-    response += "From: " + message.from + "\r\n";
+    response += "From: " + message.getHeader('From') + "\r\n";
     response += "Call-ID: " + message.call_id + "\r\n";
     response += "CSeq: " + message.cseq + " " + message.method + "\r\n";
     response += "\r\n";
