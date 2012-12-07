@@ -627,6 +627,8 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       connection_recovery_min_interval: 2,
       connection_recovery_max_interval: 30,
 
+      use_preloaded_route: false,
+
       // Session parameters
       no_answer_timeout: 60,
       stun_server: 'stun.l.google.com:19302',
@@ -777,6 +779,8 @@ JsSIP.UA.configuration_skeleton = (function() {
 
       "connection_recovery_min_interval",
       "connection_recovery_max_interval",
+
+      "use_preloaded_route",
 
       "register_min_expires",
 
@@ -951,6 +955,13 @@ JsSIP.UA.configuration_check = {
       if(!Number(connection_recovery_max_interval)) {
         return false;
       } else if(connection_recovery_max_interval < 0) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    use_preloaded_route: function(use_preloaded_route) {
+      if(typeof use_preloaded_route !== 'boolean') {
         return false;
       } else {
         return true;
