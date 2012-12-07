@@ -42,6 +42,8 @@ JsSIP.UA = function(configuration) {
     ict: {}
   };
 
+  this.transportRecoverAttempts = 0;
+
   /**
    * Load configuration
    *
@@ -60,17 +62,6 @@ JsSIP.UA.prototype = new JsSIP.EventEmitter();
 //=================
 //  High Level API
 //=================
-
-/**
- * Notify the UA about network availability.
- */
-JsSIP.UA.prototype.networkIsReady = function() {
-  console.log('Network Ready notification received');
-  // Stablish connection if needed.
-  if(this.status === JsSIP.c.UA_STATUS_NOT_READY && this.error === JsSIP.c.UA_NETWORK_ERROR) {
-    this.transport.connect();
-  }
-};
 
 /**
  * Register.
@@ -316,9 +307,14 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
     new JsSIP.Transport(this, server);
   }else {
     this.closeSessionsOnTransportError();
-    this.status = JsSIP.c.UA_STATUS_NOT_READY;
-    this.error = JsSIP.c.UA_NETWORK_ERROR;
-    this.emit('disconnected');
+    if (!this.error || this.error !== JsSIP.c.UA_NETWORK_ERROR) {
+      this.status = JsSIP.c.UA_STATUS_NOT_READY;
+      this.error = JsSIP.c.UA_NETWORK_ERROR;
+      this.emit('disconnected');
+    }
+
+    // Transport Recovery process
+    this.recoverTransport();
   }
 };
 
@@ -330,6 +326,9 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
  */
 JsSIP.UA.prototype.onTransportConnected = function(transport) {
   this.transport = transport;
+
+  // Reset transport recovery counter
+  this.transportRecoverAttempts = 0;
 
   transport.server.status = JsSIP.c.WS_SERVER_READY;
   console.log(JsSIP.c.LOG_UA +'connection status set to: '+ JsSIP.c.WS_SERVER_READY);
@@ -569,6 +568,36 @@ JsSIP.UA.prototype.closeSessionsOnTransportError = function() {
   }
 };
 
+JsSIP.UA.prototype.recoverTransport = function(ua) {
+  var idx, k, nextRetry, count, server;
+
+  ua = ua || this;
+  count = ua.transportRecoverAttempts;
+
+  for (idx in ua.configuration.outbound_proxy_set) {
+    ua.configuration.outbound_proxy_set[idx].status = 0;
+  }
+
+  server = ua.getNextWsServer();
+
+  k = Math.floor((Math.random() * Math.pow(2,count)) +1);
+  nextRetry = k * ua.configuration.connection_recovery_min_interval;
+
+  if (nextRetry > ua.configuration.connection_recovery_max_interval) {
+    console.log(JsSIP.c.LOG_UA + 'Time for next connection attempt exceeds connection_recovery_max_interval. Resetting counter');
+    nextRetry = ua.configuration.connection_recovery_min_interval;
+    count = 0;
+  }
+
+  console.log(JsSIP.c.LOG_UA + 'Next connection attempt in: '+ nextRetry +' seconds');
+
+  window.setTimeout(
+    function(){
+      ua.transportRecoverAttempts = count + 1;
+      new JsSIP.Transport(ua, server);
+    }, nextRetry * 1000);
+};
+
 /**
  * Configuration load.
  * @private
@@ -592,8 +621,11 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       register: true,
 
       // Transport related parameters
-      max_reconnection: 3,
-      reconnection_timeout: 4,
+      ws_server_max_reconnection: 3,
+      ws_server_reconnection_timeout: 4,
+
+      connection_recovery_min_interval: 2,
+      connection_recovery_max_interval: 30,
 
       // Session parameters
       no_answer_timeout: 60,
@@ -652,6 +684,14 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
         return false;
       }
     }
+  }
+
+  // Sanity Checks
+
+  // Connection recovery intervals
+  if(settings.connection_recovery_max_interval < settings.connection_recovery_min_interval) {
+    console.error('"connection_recovery_max_interval" parameter is lower than "connection_recovery_min_interval"');
+    return false;
   }
 
   // Post Configuration Process
@@ -731,9 +771,13 @@ JsSIP.UA.configuration_skeleton = (function() {
       // Internal parameters
       "instance_id",
       "jssip_id",
-      "max_reconnection",
 
-      "reconnection_timeout",
+      "ws_server_max_reconnection",
+      "ws_server_reconnection_timeout",
+
+      "connection_recovery_min_interval",
+      "connection_recovery_max_interval",
+
       "register_min_expires",
 
       // Mandatory user configurable parameters
@@ -889,6 +933,24 @@ JsSIP.UA.configuration_check = {
       if(!Number(no_answer_timeout)) {
         return false;
       } else if(no_answer_timeout < 0 || no_answer_timeout > 600) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    connection_recovery_min_interval: function(connection_recovery_min_interval) {
+      if(!Number(connection_recovery_min_interval)) {
+        return false;
+      } else if(connection_recovery_min_interval < 0) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    connection_recovery_max_interval: function(connection_recovery_max_interval) {
+      if(!Number(connection_recovery_max_interval)) {
+        return false;
+      } else if(connection_recovery_max_interval < 0) {
         return false;
       } else {
         return true;
