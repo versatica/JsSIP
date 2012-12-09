@@ -886,12 +886,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     register: function(register) {
-      if(typeof register !== 'boolean') {
-        console.log(JsSIP.c.LOG_UA +'register must be true or false');
-        return false;
-      } else {
-        return true;
-      }
+      return typeof register === 'boolean';
     },
     display_name: function(display_name) {
       if(JsSIP.grammar.parse('"' + display_name + '"', 'display_name') === -1) {
@@ -908,11 +903,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     trace_sip: function(trace_sip) {
-      if(typeof trace_sip !== 'boolean') {
-        return false;
-      } else {
-        return true;
-      }
+      return typeof trace_sip === 'boolean';
     },
     password: function(password) {
       if(JsSIP.grammar.parse(password, 'password') === -1) {
@@ -961,25 +952,13 @@ JsSIP.UA.configuration_check = {
       }
     },
     use_preloaded_route: function(use_preloaded_route) {
-      if(typeof use_preloaded_route !== 'boolean') {
-        return false;
-      } else {
-        return true;
-      }
+      return typeof use_preloaded_route === 'boolean';
     },
     hack_via_tcp: function(hack_via_tcp) {
-      if(typeof hack_via_tcp !== 'boolean') {
-        return false;
-      } else {
-        return true;
-      }
+      return typeof hack_via_tcp === 'boolean';
     },
     hack_ip_in_contact: function(hack_ip_in_contact) {
-      if(typeof hack_ip_in_contact !== 'boolean') {
-        return false;
-      } else {
-        return true;
-      }
+      return typeof hack_ip_in_contact === 'boolean';
     }
   }
 };
