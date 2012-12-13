@@ -688,6 +688,37 @@ header_value      = (TEXT_UTF8char / UTF8_CONT / LWS)*
 
 message_body      = OCTET*
 
+
+// STUN URI (draft-nandakumar-rtcweb-stun-uri)
+
+stun_URI          = stun_scheme ":" stun_host_port
+
+stun_scheme       = scheme: ("stuns" / "stun") {
+                      data.scheme = scheme; }
+
+stun_host_port    = stun_host ( ":" port )?
+
+stun_host         = host: (reg_name / IPv4address / IPv6reference) {
+                      data.host = host.join(''); }
+
+reg_name          = ( stun_unreserved / escaped / sub_delims )*
+
+stun_unreserved   = ALPHA / DIGIT / "-" / "." / "_" / "~"
+
+sub_delims        = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
+
+
+// TURN URI (draft-petithuguenin-behave-turn-uris)
+
+turn_URI          = turn_scheme ":" stun_host_port ( "?transport=" transport )?
+
+turn_scheme       = scheme: ("turns" / "turn") {
+                      data.scheme = scheme; }
+
+turn_transport    = transport ("udp" / "tcp" / unreserved*) {
+                      data.transport = transport; }
+
+
 // Lazy uri
 
 lazy_uri  = (uri_scheme ':')? user ('@' hostport)? uri_parameters

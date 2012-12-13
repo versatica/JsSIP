@@ -105,8 +105,14 @@ JsSIP.MediaSession.prototype = {
     var
       session = this,
       sent = false,
-      stun_config = 'stun:'+this.session.ua.configuration.stun_server,
-      servers = [{"url": stun_config}];
+      stun_uri = this.session.ua.configuration.stun_server,
+      turn_uri = this.session.ua.configuration.turn_uri,
+      turn_password = this.session.ua.configuration.turn_password,
+      servers = [ {"url": stun_uri} ];
+
+      if (turn_uri) {
+        servers.push({"url": turn_uri, "credential": turn_password});
+      }
 
     this.peerConnection = new webkitRTCPeerConnection({"iceServers": servers});
 

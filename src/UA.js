@@ -631,7 +631,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
       // Session parameters
       no_answer_timeout: 60,
-      stun_server: 'stun.l.google.com:19302',
+      stun_server: 'stun:stun.l.google.com:19302',
 
       // Loggin parameters
       trace_sip: false,
@@ -696,6 +696,14 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     return false;
   }
 
+  // Turn
+  if (settings.turn_server) {
+    if (!settings.turn_username || !settings.turn_password) {
+      console.error('TURN username and password must be specified');
+      return false;
+    }
+  }
+
   // Post Configuration Process
 
   // Instance-id for GRUU
@@ -739,6 +747,14 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     settings.outbound_proxy_set[idx].status = 0;
     settings.outbound_proxy_set[idx].scheme = ws_uri.scheme.toUpperCase();
 
+  }
+
+  // TURN URI
+  if (settings.turn_server) {
+    uri = JsSIP.grammar.parse(settings.turn_server, 'turn_URI');
+    settings.turn_uri  = uri.scheme + ':';
+    settings.turn_uri += settings.turn_username + '@';
+    settings.turn_uri += settings.turn_server.substr(uri.scheme.length + 1);
   }
 
   contact = {
@@ -795,6 +811,10 @@ JsSIP.UA.configuration_skeleton = (function() {
       "hack_ip_in_contact", //false
       "password",
       "stun_server",
+      "turn_server",
+      "turn_username",
+      "turn_password",
+      "turn_uri",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
       "trace_sip",
@@ -913,12 +933,28 @@ JsSIP.UA.configuration_check = {
       }
     },
     stun_server: function(stun_server) {
-      var parsed;
-
-      parsed = JsSIP.grammar.parse(stun_server, 'hostport');
-
-      if(parsed === -1) {
-        console.log(JsSIP.c.LOG_UA +'Invalid stun_server: ' + stun_server);
+      if(JsSIP.grammar.parse(stun_server, 'stun_URI') === -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    turn_server: function(turn_server) {
+      if(JsSIP.grammar.parse(turn_server, 'turn_URI') === -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    turn_username: function(turn_username) {
+      if(JsSIP.grammar.parse(turn_username, 'user') === -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    turn_password: function(turn_password) {
+      if(JsSIP.grammar.parse(turn_password, 'password') === -1) {
         return false;
       } else {
         return true;
