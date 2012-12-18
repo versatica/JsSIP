@@ -605,7 +605,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var name, parameter, attribute, idx, uri, host, ws_uri, contact,
+  var parameter, attribute, idx, uri, host, ws_uri, contact,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -660,29 +660,25 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   }
 
   // Check Mandatory parameters
-  for(name in JsSIP.UA.configuration_check.mandatory) {
-    parameter = configuration[name];
-
-    if(!parameter) {
-      console.error('Missing config parameter: ' + name);
+  for(parameter in JsSIP.UA.configuration_check.mandatory) {
+    if(!configuration.hasOwnProperty(parameter)) {
+      console.error('Missing config parameter: ' + parameter);
       return false;
-    } else if(JsSIP.UA.configuration_check.mandatory[name](parameter)) {
-      settings[name]= parameter;
+    } else if(JsSIP.UA.configuration_check.mandatory[parameter](configuration[parameter])) {
+      settings[parameter] = configuration[parameter];
     } else {
-      console.error('Bad configuration parameter: ' + name);
+      console.error('Bad configuration parameter: ' + parameter);
       return false;
     }
   }
 
   // Check Optional parameters
-  for(name in JsSIP.UA.configuration_check.optional) {
-    parameter = configuration[name];
-
-    if(parameter) {
-      if(JsSIP.UA.configuration_check.optional[name](parameter)) {
-        settings[name] = parameter;
+  for(parameter in JsSIP.UA.configuration_check.optional) {
+    if(configuration.hasOwnProperty(parameter)) {
+      if(JsSIP.UA.configuration_check.optional[parameter](configuration[parameter])) {
+        settings[parameter] = configuration[parameter];
       } else {
-        console.error('Bad configuration parameter: ' + name);
+        console.error('Bad configuration parameter: ' + parameter);
         return false;
       }
     }
