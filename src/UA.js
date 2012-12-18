@@ -337,6 +337,10 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
     return;
   }
 
+  this.status = JsSIP.c.UA_STATUS_READY;
+  this.error = null;
+  this.emit('connected', this);
+
   if(this.configuration.register) {
     if(this.registrator) {
       this.registrator.onTransportConnected();
@@ -344,9 +348,6 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
       this.registrator = new JsSIP.Registrator(this, transport);
     }
   }
-  this.status = JsSIP.c.UA_STATUS_READY;
-  this.error = null;
-  this.emit('connected', this);
 };
 
 //=========================
