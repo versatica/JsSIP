@@ -109,12 +109,12 @@ JsSIP.DigestAuthentication.prototype.toString = function() {
   authorization += 'realm="' + this.realm + '",';
   authorization += 'nonce="' + this.nonce + '",';
   authorization += 'uri="' + this.uri + '",';
-  authorization += this.qop ? 'qop=' + this.qop + ',' : '';
   authorization += 'response="' + this.response + '",';
-  authorization += 'algorithm=MD5,';
   authorization += this.opaque ? 'opaque="' + this.opaque + '",': '';
+  authorization += this.qop ? 'qop=' + this.qop + ',' : '';
   authorization += this.qop ? 'cnonce="' + this.cnonce + '",' : '';
-  authorization += this.qop ? 'nc=' + this.decimalToHex(this.nc) : '';
+  authorization += this.qop ? 'nc=' + this.decimalToHex(this.nc) + ',': '';
+  authorization += 'algorithm=MD5';
 
   return authorization;
 };
