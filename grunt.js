@@ -30,8 +30,6 @@ module.exports = function(grunt) {
           "src/Session.js",
           "src/MediaSession.js",
           "src/Message.js",
-          "src/Subscriber.js",
-          "src/dialog-info.js",
           "src/UA.js",
           "src/utils.js",
           "src/SanityCheck.js",

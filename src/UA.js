@@ -42,6 +42,8 @@ JsSIP.UA = function(configuration) {
     ict: {}
   };
 
+  this.transportRecoverAttempts = 0;
+
   /**
    * Load configuration
    *
@@ -60,17 +62,6 @@ JsSIP.UA.prototype = new JsSIP.EventEmitter();
 //=================
 //  High Level API
 //=================
-
-/**
- * Notify the UA about network availability.
- */
-JsSIP.UA.prototype.networkIsReady = function() {
-  console.log('Network Ready notification received');
-  // Stablish connection if needed.
-  if(this.status === JsSIP.c.UA_STATUS_NOT_READY && this.error === JsSIP.c.UA_NETWORK_ERROR) {
-    this.transport.connect();
-  }
-};
 
 /**
  * Register.
@@ -316,9 +307,14 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
     new JsSIP.Transport(this, server);
   }else {
     this.closeSessionsOnTransportError();
-    this.status = JsSIP.c.UA_STATUS_NOT_READY;
-    this.error = JsSIP.c.UA_NETWORK_ERROR;
-    this.emit('disconnected');
+    if (!this.error || this.error !== JsSIP.c.UA_NETWORK_ERROR) {
+      this.status = JsSIP.c.UA_STATUS_NOT_READY;
+      this.error = JsSIP.c.UA_NETWORK_ERROR;
+      this.emit('disconnected');
+    }
+
+    // Transport Recovery process
+    this.recoverTransport();
   }
 };
 
@@ -331,12 +327,19 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
 JsSIP.UA.prototype.onTransportConnected = function(transport) {
   this.transport = transport;
 
+  // Reset transport recovery counter
+  this.transportRecoverAttempts = 0;
+
   transport.server.status = JsSIP.c.WS_SERVER_READY;
   console.log(JsSIP.c.LOG_UA +'connection status set to: '+ JsSIP.c.WS_SERVER_READY);
 
   if(this.status === JsSIP.c.UA_STATUS_USER_CLOSED) {
     return;
   }
+
+  this.status = JsSIP.c.UA_STATUS_READY;
+  this.error = null;
+  this.emit('connected', this);
 
   if(this.configuration.register) {
     if(this.registrator) {
@@ -345,9 +348,6 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
       this.registrator = new JsSIP.Registrator(this, transport);
     }
   }
-  this.status = JsSIP.c.UA_STATUS_READY;
-  this.error = null;
-  this.emit('connected', this);
 };
 
 //=========================
@@ -569,6 +569,36 @@ JsSIP.UA.prototype.closeSessionsOnTransportError = function() {
   }
 };
 
+JsSIP.UA.prototype.recoverTransport = function(ua) {
+  var idx, k, nextRetry, count, server;
+
+  ua = ua || this;
+  count = ua.transportRecoverAttempts;
+
+  for (idx in ua.configuration.outbound_proxy_set) {
+    ua.configuration.outbound_proxy_set[idx].status = 0;
+  }
+
+  server = ua.getNextWsServer();
+
+  k = Math.floor((Math.random() * Math.pow(2,count)) +1);
+  nextRetry = k * ua.configuration.connection_recovery_min_interval;
+
+  if (nextRetry > ua.configuration.connection_recovery_max_interval) {
+    console.log(JsSIP.c.LOG_UA + 'Time for next connection attempt exceeds connection_recovery_max_interval. Resetting counter');
+    nextRetry = ua.configuration.connection_recovery_min_interval;
+    count = 0;
+  }
+
+  console.log(JsSIP.c.LOG_UA + 'Next connection attempt in: '+ nextRetry +' seconds');
+
+  window.setTimeout(
+    function(){
+      ua.transportRecoverAttempts = count + 1;
+      new JsSIP.Transport(ua, server);
+    }, nextRetry * 1000);
+};
+
 /**
  * Configuration load.
  * @private
@@ -576,7 +606,7 @@ JsSIP.UA.prototype.closeSessionsOnTransportError = function() {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var name, parameter, attribute, idx, uri, host, ws_uri, contact,
+  var parameter, attribute, idx, uri, host, ws_uri, contact,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -592,12 +622,17 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       register: true,
 
       // Transport related parameters
-      max_reconnection: 3,
-      reconnection_timeout: 4,
+      ws_server_max_reconnection: 3,
+      ws_server_reconnection_timeout: 4,
+
+      connection_recovery_min_interval: 2,
+      connection_recovery_max_interval: 30,
+
+      use_preloaded_route: false,
 
       // Session parameters
       no_answer_timeout: 60,
-      stun_server: 'stun.l.google.com:19302',
+      stun_server: 'stun:stun.l.google.com:19302',
 
       // Loggin parameters
       trace_sip: false,
@@ -627,31 +662,43 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   }
 
   // Check Mandatory parameters
-  for(name in JsSIP.UA.configuration_check.mandatory) {
-    parameter = configuration[name];
-
-    if(!parameter) {
-      console.error('Missing config parameter: ' + name);
+  for(parameter in JsSIP.UA.configuration_check.mandatory) {
+    if(!configuration.hasOwnProperty(parameter)) {
+      console.error('Missing config parameter: ' + parameter);
       return false;
-    } else if(JsSIP.UA.configuration_check.mandatory[name](parameter)) {
-      settings[name]= parameter;
+    } else if(JsSIP.UA.configuration_check.mandatory[parameter](configuration[parameter])) {
+      settings[parameter] = configuration[parameter];
     } else {
-      console.error('Bad configuration parameter: ' + name);
+      console.error('Bad configuration parameter: ' + parameter);
       return false;
     }
   }
 
   // Check Optional parameters
-  for(name in JsSIP.UA.configuration_check.optional) {
-    parameter = configuration[name];
-
-    if(parameter) {
-      if(JsSIP.UA.configuration_check.optional[name](parameter)) {
-        settings[name] = parameter;
+  for(parameter in JsSIP.UA.configuration_check.optional) {
+    if(configuration.hasOwnProperty(parameter)) {
+      if(JsSIP.UA.configuration_check.optional[parameter](configuration[parameter])) {
+        settings[parameter] = configuration[parameter];
       } else {
-        console.error('Bad configuration parameter: ' + name);
+        console.error('Bad configuration parameter: ' + parameter);
         return false;
       }
+    }
+  }
+
+  // Sanity Checks
+
+  // Connection recovery intervals
+  if(settings.connection_recovery_max_interval < settings.connection_recovery_min_interval) {
+    console.error('"connection_recovery_max_interval" parameter is lower than "connection_recovery_min_interval"');
+    return false;
+  }
+
+  // Turn
+  if (settings.turn_server) {
+    if (!settings.turn_username || !settings.turn_password) {
+      console.error('TURN username and password must be specified');
+      return false;
     }
   }
 
@@ -700,6 +747,14 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   }
 
+  // TURN URI
+  if (settings.turn_server) {
+    uri = JsSIP.grammar.parse(settings.turn_server, 'turn_URI');
+    settings.turn_uri  = uri.scheme + ':';
+    settings.turn_uri += settings.turn_username + '@';
+    settings.turn_uri += settings.turn_server.substr(uri.scheme.length + 1);
+  }
+
   contact = {
     uri: {value: 'sip:' + uri.user + '@' + settings.via_host + ';transport=ws', writable: false, configurable: false}
   };
@@ -732,9 +787,15 @@ JsSIP.UA.configuration_skeleton = (function() {
       // Internal parameters
       "instance_id",
       "jssip_id",
-      "max_reconnection",
 
-      "reconnection_timeout",
+      "ws_server_max_reconnection",
+      "ws_server_reconnection_timeout",
+
+      "connection_recovery_min_interval",
+      "connection_recovery_max_interval",
+
+      "use_preloaded_route",
+
       "register_min_expires",
 
       // Mandatory user configurable parameters
@@ -749,6 +810,10 @@ JsSIP.UA.configuration_skeleton = (function() {
       "hack_asterisk_single_crypto", //false
       "password",
       "stun_server",
+      "turn_server",
+      "turn_username",
+      "turn_password",
+      "turn_uri",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
       "trace_sip",
@@ -840,12 +905,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     register: function(register) {
-      if(typeof register !== 'boolean') {
-        console.log(JsSIP.c.LOG_UA +'register must be true or false');
-        return false;
-      } else {
-        return true;
-      }
+      return typeof register === 'boolean';
     },
     display_name: function(display_name) {
       if(JsSIP.grammar.parse('"' + display_name + '"', 'display_name') === -1) {
@@ -862,11 +922,7 @@ JsSIP.UA.configuration_check = {
       }
     },
     trace_sip: function(trace_sip) {
-      if(typeof trace_sip !== 'boolean') {
-        return false;
-      } else {
-        return true;
-      }
+      return typeof trace_sip === 'boolean';
     },
     password: function(password) {
       if(JsSIP.grammar.parse(password, 'password') === -1) {
@@ -876,12 +932,28 @@ JsSIP.UA.configuration_check = {
       }
     },
     stun_server: function(stun_server) {
-      var parsed;
-
-      parsed = JsSIP.grammar.parse(stun_server, 'hostport');
-
-      if(parsed === -1) {
-        console.log(JsSIP.c.LOG_UA +'Invalid stun_server: ' + stun_server);
+      if(JsSIP.grammar.parse(stun_server, 'stun_URI') === -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    turn_server: function(turn_server) {
+      if(JsSIP.grammar.parse(turn_server, 'turn_URI') === -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    turn_username: function(turn_username) {
+      if(JsSIP.grammar.parse(turn_username, 'user') === -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    turn_password: function(turn_password) {
+      if(JsSIP.grammar.parse(turn_password, 'password') === -1) {
         return false;
       } else {
         return true;
@@ -896,15 +968,19 @@ JsSIP.UA.configuration_check = {
         return true;
       }
     },
-    hack_via_tcp: function(hack_via_tcp) {
-      if(typeof hack_via_tcp !== 'boolean') {
+    connection_recovery_min_interval: function(connection_recovery_min_interval) {
+      if(!Number(connection_recovery_min_interval)) {
+        return false;
+      } else if(connection_recovery_min_interval < 0) {
         return false;
       } else {
         return true;
       }
     },
-    hack_ip_in_contact: function(hack_ip_in_contact) {
-      if(typeof hack_ip_in_contact !== 'boolean') {
+    connection_recovery_max_interval: function(connection_recovery_max_interval) {
+      if(!Number(connection_recovery_max_interval)) {
+        return false;
+      } else if(connection_recovery_max_interval < 0) {
         return false;
       } else {
         return true;
@@ -916,6 +992,15 @@ JsSIP.UA.configuration_check = {
       } else {
         return true;
       }
+    },
+    use_preloaded_route: function(use_preloaded_route) {
+      return typeof use_preloaded_route === 'boolean';
+    },
+    hack_via_tcp: function(hack_via_tcp) {
+      return typeof hack_via_tcp === 'boolean';
+    },
+    hack_ip_in_contact: function(hack_ip_in_contact) {
+      return typeof hack_ip_in_contact === 'boolean';
     }
   }
 };

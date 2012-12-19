@@ -239,16 +239,14 @@ JsSIP.Transport.prototype = {
 
     this.reconnection_attempts += 1;
 
-    if(this.reconnection_attempts > this.ua.configuration.max_reconnection) {
+    if(this.reconnection_attempts > this.ua.configuration.ws_server_max_reconnection) {
       console.log(JsSIP.c.LOG_TRANSPORT +'Maximum reconnection attempts for: ' + this.server.ws_uri);
       this.ua.onTransportError(this);
     } else {
       console.log(JsSIP.c.LOG_TRANSPORT +'Trying to reconnect to: ' + this.server.ws_uri + '. Reconnection attempt number ' + this.reconnection_attempts);
 
       this.reconnectTimer = window.setTimeout(function() {
-        transport.reConnect();}, this.ua.configuration.reconnection_timeout * 1000);
-
-      this.connect();
+        transport.connect();}, this.ua.configuration.ws_server_reconnection_timeout * 1000);
     }
   }
 };

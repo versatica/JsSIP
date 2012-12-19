@@ -47,7 +47,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   //ROUTE
   if (params.route_set) {
     this.setHeader('route', params.route_set);
-  } else {
+  } else if (ua.configuration.use_preloaded_route){
     this.setHeader('route', ua.transport.server.sip_uri);
   }
 
