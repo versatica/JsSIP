@@ -32,7 +32,7 @@ JsSIP.RequestSender = function(applicant, ua) {
 */
 JsSIP.RequestSender.prototype = {
   send: function() {
-    if (this.credentials) {
+    if (this.credentials && !this.challenged) {
       if (this.request.method === JsSIP.c.REGISTER) {
         this.request.setHeader('authorization', this.credentials.authenticate());
       } else if (this.request.method !== JsSIP.c.CANCEL) {
@@ -115,6 +115,13 @@ JsSIP.RequestSender.prototype = {
 
         this.request.setHeader('cseq', cseq +' '+ this.method);
         this.challenged = true;
+
+        if (status_code === 401) {
+          this.request.setHeader('authorization', this.credentials.authenticate());
+        } else {
+          this.request.setHeader('proxy-authorization', this.credentials.authenticate());
+        }
+
         this.send();
       }
     } else {
