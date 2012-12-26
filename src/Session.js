@@ -206,7 +206,7 @@ JsSIP.Session.prototype.createEarlyDialog = function(message, type) {
     earlyDialog = new JsSIP.Dialog(this, message, type, JsSIP.c.DIALOG_EARLY);
 
     // Dialog has been successfully created.
-    if(earlyDialog) {
+    if(earlyDialog.id) {
       this.earlyDialogs[id] = earlyDialog;
       return true;
     }
@@ -239,7 +239,7 @@ JsSIP.Session.prototype.createConfirmedDialog = function(message, type) {
   // Otherwise, create a _confirmed_ dialog
   dialog = new JsSIP.Dialog(this, message, type);
 
-  if(dialog) {
+  if(dialog.id) {
     this.to_tag = message.to_tag;
     this.dialog = dialog;
     return true;
@@ -659,7 +659,7 @@ JsSIP.Session.prototype.userNoAnswerTimeout = function(request) {
 */
 JsSIP.Session.prototype.acceptAndTerminate = function(response, reason) {
   // Send ACK and BYE
-  if (this.createConfirmedDialog(response, 'UAC')) {
+  if (this.dialog || this.createConfirmedDialog(response, 'UAC')) {
     this.sendACK();
     this.sendBye(reason);
   }
