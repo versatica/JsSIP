@@ -403,7 +403,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
 
   // Initial Request
   if(!request.to_tag) {
-    if(!this.registrator || (this.registrator && !this.registrator.registered)) {
+    if(!this.isRegistered()) {
       // High user does not want to be contacted
       request.reply(410);
       return;

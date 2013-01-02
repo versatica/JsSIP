@@ -49,8 +49,8 @@ JsSIP.MediaSession.prototype = {
     }
 
     /** @private */
-    function onGetUserMediaFailure() {
-      onFailure();
+    function onGetUserMediaFailure(e) {
+      onFailure(e);
     }
 
     this.getUserMedia(mediaType, onGetUserMediaSuccess, onGetUserMediaFailure);
@@ -82,16 +82,22 @@ JsSIP.MediaSession.prototype = {
       // add stream to peerConnection
       self.peerConnection.addStream(stream);
 
-      self.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'offer', sdp:sdp}));
-
-      // Set local description and start Ice.
-      self.peerConnection.createAnswer(function(sessionDescription){
-        self.peerConnection.setLocalDescription(sessionDescription);
-      });
+      self.peerConnection.setRemoteDescription(
+        new window.RTCSessionDescription({type:'offer', sdp:sdp}),
+        function() {
+          self.peerConnection.createAnswer(
+            function(sessionDescription){
+              self.peerConnection.setLocalDescription(sessionDescription);
+            },
+            onSdpFailure
+          );
+        },
+        onSdpFailure
+      );
     }
 
-    function onGetUserMediaFailure() {
-      onMediaFailure();
+    function onGetUserMediaFailure(e) {
+      onMediaFailure(e);
     }
 
     self.getUserMedia({'audio':true, 'video':true}, onGetUserMediaSuccess, onGetUserMediaFailure);
@@ -185,8 +191,8 @@ JsSIP.MediaSession.prototype = {
       onSuccess(stream);
     }
 
-    function getFailure() {
-      onFailure();
+    function getFailure(e) {
+      onFailure(e);
     }
 
     // Get User Media
@@ -206,12 +212,8 @@ JsSIP.MediaSession.prototype = {
     if (type === 'offer') {
       console.log(JsSIP.c.LOG_MEDIA_SESSION +'re-Invite received');
     } else if (type === 'answer') {
-      try {
-        this.peerConnection.setRemoteDescription(new window.RTCSessionDescription({type:'answer', sdp:sdp}));
-        onSuccess();
-      } catch (e) {
-        onFailure(e);
-      }
+      this.peerConnection.setRemoteDescription(
+        new window.RTCSessionDescription({type:'answer', sdp:sdp}), onSuccess, onFailure);
     }
   }
 };

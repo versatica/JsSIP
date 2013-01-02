@@ -206,7 +206,7 @@ JsSIP.Session.prototype.createEarlyDialog = function(message, type) {
     earlyDialog = new JsSIP.Dialog(this, message, type, JsSIP.c.DIALOG_EARLY);
 
     // Dialog has been successfully created.
-    if(earlyDialog) {
+    if(earlyDialog.id) {
       this.earlyDialogs[id] = earlyDialog;
       return true;
     }
@@ -239,7 +239,7 @@ JsSIP.Session.prototype.createConfirmedDialog = function(message, type) {
   // Otherwise, create a _confirmed_ dialog
   dialog = new JsSIP.Dialog(this, message, type);
 
-  if(dialog) {
+  if(dialog.id) {
     this.to_tag = message.to_tag;
     this.dialog = dialog;
     return true;
@@ -373,7 +373,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     * @param {HTMLVideoElement} remoteView
     */
     this.answer = function(selfView, remoteView) {
-      var offer, onMediaSuccess, onMediaFailure, onSdpFailure;
+      var offer, onSuccess, onMediaFailure, onSdpFailure;
 
       // Check UA Status
       JsSIP.utils.checkUAStatus(this.ua);
@@ -385,7 +385,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
 
       offer = request.body;
 
-      onMediaSuccess = function() {
+      onSuccess = function() {
         var sdp = session.mediaSession.peerConnection.localDescription.sdp;
 
         if(!session.createConfirmedDialog(request, 'UAS')) {
@@ -435,7 +435,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
 
       //Initialize Media Session
       session.mediaSession = new JsSIP.MediaSession(session, selfView, remoteView);
-      session.mediaSession.startCallee(onMediaSuccess, onMediaFailure, onSdpFailure, offer);
+      session.mediaSession.startCallee(onSuccess, onMediaFailure, onSdpFailure, offer);
     };
 
     // Fire 'call' event callback
@@ -526,7 +526,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
           return;
         }
 
-        this.acceptAndTerminate(response,'SIP ;cause= 400 ;text= "Missing session description"');
+        this.acceptAndTerminate(response,'SIP ;cause=400 ;text= "Missing session description"');
         this.failed('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
 
         break;
@@ -561,7 +561,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
            */
           function(e) {
             console.warn(e);
-            session.acceptAndTerminate(response, 'SIP ;cause= 488 ;text= "Not Acceptable Here"');
+            session.acceptAndTerminate(response, 'SIP ;cause=488 ;text="Not Acceptable Here"');
             session.failed('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
           }
         );
@@ -659,7 +659,7 @@ JsSIP.Session.prototype.userNoAnswerTimeout = function(request) {
 */
 JsSIP.Session.prototype.acceptAndTerminate = function(response, reason) {
   // Send ACK and BYE
-  if (this.createConfirmedDialog(response, 'UAC')) {
+  if (this.dialog || this.createConfirmedDialog(response, 'UAC')) {
     this.sendACK();
     this.sendBye(reason);
   }
@@ -959,7 +959,7 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
     request_sender.send();
   }
 
-  function onMediaFailure(fail,e) {
+  function onMediaFailure(e) {
     if (self.status !== JsSIP.c.SESSION_TERMINATED) {
       console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'Media Access denied');
       self.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
