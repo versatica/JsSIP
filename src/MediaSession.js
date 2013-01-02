@@ -1,5 +1,5 @@
 
-/*global SessionDescription: false, webkitURL: false, webkitRTCPeerConnection: false*/
+/*global webkitURL: false, webkitRTCPeerConnection: false*/
 
 /**
  * @fileoverview SIP User Agent
@@ -72,8 +72,7 @@ JsSIP.MediaSession.prototype = {
   * @param {String} sdp
   */
   startCallee: function(onSuccess, onMediaFailure, onSdpFailure, sdp) {
-    var offer, mediaType,
-      self = this;
+    var self = this;
 
     function onGetUserMediaSuccess(stream) {
       // Start peerConnection

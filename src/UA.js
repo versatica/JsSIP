@@ -606,7 +606,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, attribute, idx, uri, host, ws_uri, contact,
+  var parameter, attribute, idx, uri, ws_uri, contact,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -639,7 +639,8 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
       // Hacks
       hack_via_tcp: false,
-      hack_ip_in_contact: false
+      hack_ip_in_contact: false,
+      hack_asterisk_single_crypto: false
     };
 
   // Pre-Configuration
@@ -806,6 +807,7 @@ JsSIP.UA.configuration_skeleton = (function() {
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
+      "hack_asterisk_single_crypto", //false
       "password",
       "stun_server",
       "turn_server",
@@ -979,6 +981,13 @@ JsSIP.UA.configuration_check = {
       if(!Number(connection_recovery_max_interval)) {
         return false;
       } else if(connection_recovery_max_interval < 0) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    hack_asterisk_single_crypto: function(hack_asterisk_single_crypto) {
+      if(typeof hack_asterisk_single_crypto !== 'boolean') {
         return false;
       } else {
         return true;
