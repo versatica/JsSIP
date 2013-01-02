@@ -606,7 +606,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, attribute, idx, uri, host, ws_uri, contact,
+  var parameter, attribute, idx, uri, ws_uri, contact,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
