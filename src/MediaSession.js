@@ -72,8 +72,7 @@ JsSIP.MediaSession.prototype = {
   * @param {String} sdp
   */
   startCallee: function(onSuccess, onMediaFailure, onSdpFailure, sdp) {
-    var offer, mediaType,
-      self = this;
+    var self = this;
 
     function onGetUserMediaSuccess(stream) {
       // Start peerConnection
