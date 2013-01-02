@@ -464,7 +464,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
   var cause, label,
     session = this;
 
-  // Proceed to cancelation if the user requested.
+  // Proceed to cancellation if the user requested.
   if(this.isCanceled) {
     if(response.status_code >= 100 && response.status_code < 200) {
       this.request.cancel(this.cancelReason);
@@ -965,7 +965,7 @@ JsSIP.Session.RequestSender = function(session, request, onReceiveResponse) {
   this.session = session;
   this.request = request;
   this.onReceiveResponse = onReceiveResponse;
-  this.reatempt = false;
+  this.reattempt = false;
   this.reatemptTimer = null;
   this.request_sender = new JsSIP.InDialogRequestSender(this);
 
@@ -978,14 +978,14 @@ JsSIP.Session.RequestSender.prototype = {
       status_code = response.status_code;
 
     if (this.session.status !== JsSIP.c.SESSION_TERMINATED) {
-      if (response.method === JsSIP.c.INVITE && status_code === 491 && !this.reatempt) {
+      if (response.method === JsSIP.c.INVITE && status_code === 491 && !this.reattempt) {
             this.request.cseq.value = this.request.dialog.local_seqnum += 1;
             this.reatemptTimer = window.setTimeout(
               function() {
-                self.reatempt = true;
+                self.reattempt = true;
                 self.request_sender.send();
               },
-              this.getReatempTimeout()
+              this.getReattemptTimeout()
             );
       } else {
         this.onReceiveResponse.call(this.session, response);
@@ -998,7 +998,7 @@ JsSIP.Session.RequestSender.prototype = {
   },
 
   // RFC3261 14.1
-  getReatempTimeout: function() {
+  getReattemptTimeout: function() {
     if(this.session.direction === 'outgoing') {
       return (Math.random() * (4 - 2.1) + 2.1).toFixed(2);
     } else {

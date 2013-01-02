@@ -634,7 +634,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       no_answer_timeout: 60,
       stun_server: 'stun:stun.l.google.com:19302',
 
-      // Loggin parameters
+      // Logging parameters
       trace_sip: false,
 
       // Hacks
