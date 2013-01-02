@@ -12,7 +12,7 @@ JsSIP.EventEmitter = function(){};
 
 JsSIP.EventEmitter.prototype = {
   /**
-   * Initialice events dictionary.
+   * Initialize events dictionary.
    * @param {Array} events
    */
   initEvents: function(events) {

@@ -17,7 +17,7 @@ JsSIP.Parser = {
       start = headerStart,
       // 'end' position of the header.
       end = 0,
-      // 'partial end' possition of the header.
+      // 'partial end' position of the header.
       partialEnd = 0;
 
     //End of message.
