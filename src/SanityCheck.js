@@ -101,6 +101,7 @@ JsSIP.sanityCheck = (function() {
   // Sanity Check functions for responses
   function rfc3261_8_1_3_3() {
     if(message.countHeader('via') > 1) {
+      console.warn(JsSIP.c.LOG_SANITY_CHECK +'More than one Via header field present in the response. Dropping the response');
       return false;
     }
   }
@@ -108,6 +109,7 @@ JsSIP.sanityCheck = (function() {
   function rfc3261_18_1_2() {
     var via_host = ua.configuration.via_host;
     if(message.via.host !== via_host) {
+      console.warn(JsSIP.c.LOG_SANITY_CHECK +'Via host in the response does not match UA Via host value. Dropping the response');
       return false;
     }
   }
@@ -118,6 +120,7 @@ JsSIP.sanityCheck = (function() {
       contentLength = message.getHeader('content-length');
 
       if(len < contentLength) {
+        console.warn(JsSIP.c.LOG_SANITY_CHECK +'Message body length is lower than the value in Content-Length header field. Dropping the response');
         return false;
       }
   }
@@ -130,6 +133,7 @@ JsSIP.sanityCheck = (function() {
 
     while(idx--) {
       if(!message.hasHeader(mandatoryHeaders[idx])) {
+        console.warn(JsSIP.c.LOG_SANITY_CHECK +'Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
         return false;
       }
     }
