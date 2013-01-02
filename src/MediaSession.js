@@ -1,5 +1,5 @@
 
-/*global SessionDescription: false, webkitURL: false, webkitRTCPeerConnection: false*/
+/*global webkitURL: false, webkitRTCPeerConnection: false*/
 
 /**
  * @fileoverview SIP User Agent
