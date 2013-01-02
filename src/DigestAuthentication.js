@@ -52,7 +52,7 @@ JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
 
   // nc-value = 8LHEX. Max value = 'FFFFFFFF'
   if (this.nc === 4294967296) {
-    console.log('Maximum "nc" value has been reached. Reseting "nc"');
+    console.log('Maximum "nc" value has been reached. Resetting "nc"');
     this.nc = 1;
   }
 

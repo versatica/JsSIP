@@ -137,7 +137,7 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onopen = function() {
-      console.log(JsSIP.c.LOG_MEDIA_SESSION +'Media session oppened');
+      console.log(JsSIP.c.LOG_MEDIA_SESSION +'Media session opened');
     };
 
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
@@ -149,7 +149,7 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onremovestream = function(stream) {
-      console.log(JsSIP.c.LOG_MEDIA_SESSION +'Stream rmeoved: '+ stream);
+      console.log(JsSIP.c.LOG_MEDIA_SESSION +'Stream removed: '+ stream);
     };
 
     this.peerConnection.onstatechange = function() {
