@@ -942,7 +942,19 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
       }
     }
     // End of Hack
-
+    
+    if (ua.configuration.hack_asterisk_single_crypto) {
+      var line_re = /.*crypto:[0-9].*(\r\n|\n|\r)/g;
+      var aes_80 = /.*AES_CM_128_HMAC_SHA1_80.*/g;
+      var crypto = request.body.match(line_re);
+      request.body = request.body.replace(line_re, "");
+      crypto.forEach(function (element, index, array) {
+        if (aes_80.test(element)) {
+          request.body += element;
+        } 
+      });
+    }
+    
     self.status = JsSIP.c.SESSION_INVITE_SENT;
     request_sender.send();
   }
@@ -956,8 +968,6 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
 
   self.mediaSession.startCaller(mediaType, onMediaSuccess, onMediaFailure);
 };
-
-
 
 /**
  * Session Request Sender

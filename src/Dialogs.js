@@ -102,7 +102,7 @@ JsSIP.Dialog.prototype = {
 
   // RFC 3261 12.2.1.1
   createRequest: function(method, extraHeaders) {
-    var cseq, request, length, idx;
+    var cseq, request;
     extraHeaders = extraHeaders || [];
 
     if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }

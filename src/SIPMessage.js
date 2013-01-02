@@ -26,8 +26,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
     from_tag,
     from,
     call_id,
-    cseq,
-    header;
+    cseq;
 
   params = params || {};
 
@@ -343,7 +342,7 @@ JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
 * @param {Function} [onFailure] onFailure callback
 */
 JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
-  var rr, vias, header, length, idx, response,
+  var rr, vias, length, idx, response,
     to = this.getHeader('To'),
     r = 0,
     v = 0;
