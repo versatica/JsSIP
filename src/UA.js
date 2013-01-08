@@ -639,8 +639,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
       // Hacks
       hack_via_tcp: false,
-      hack_ip_in_contact: false,
-      hack_single_crypto: false
+      hack_ip_in_contact: false
     };
 
   // Pre-Configuration
@@ -807,7 +806,6 @@ JsSIP.UA.configuration_skeleton = (function() {
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
-      "hack_single_crypto", // false
       "password",
       "stun_server",
       "turn_server",
@@ -994,9 +992,6 @@ JsSIP.UA.configuration_check = {
     },
     hack_ip_in_contact: function(hack_ip_in_contact) {
       return typeof hack_ip_in_contact === 'boolean';
-    },
-    hack_single_crypto: function(hack_single_crypto) {
-      return typeof hack_single_crypto === 'boolean';
     }
   }
 };

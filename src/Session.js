@@ -934,9 +934,14 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
     // Set the body to the request and send it.
     self.request.body = self.mediaSession.peerConnection.localDescription.sdp;
 
-    if (self.ua.configuration.hack_single_crypto) {
-      self.request.body = self.request.body.replace(/a=crypto:0.+\s+/g,'');
+    // Hack to quit m=video section from sdp defined in http://code.google.com/p/webrtc/issues/detail?id=935
+    // To be deleted when the fix arrives to chrome stable version
+    if (!mediaType.video) {
+      if (self.request.body.indexOf('m=video') !== -1){
+        self.request.body = self.request.body.substring(0, self.request.body.indexOf('m=video'));
+      }
     }
+    // End of Hack
 
     self.status = JsSIP.c.SESSION_INVITE_SENT;
     request_sender.send();
