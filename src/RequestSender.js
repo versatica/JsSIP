@@ -123,6 +123,8 @@ JsSIP.RequestSender.prototype = {
         }
 
         this.send();
+      } else {
+        this.applicant.receiveResponse(response);
       }
     } else {
         if (this.challenged && response.status_code >= 200) {
