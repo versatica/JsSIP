@@ -84,8 +84,8 @@ JsSIP.Transport.prototype = {
 
     this.ws.binaryType = 'arraybuffer';
 
-    this.ws.onopen = function(e) {
-      transport.onOpen(e);
+    this.ws.onopen = function() {
+      transport.onOpen();
     };
 
     this.ws.onclose = function(e) {
@@ -107,7 +107,7 @@ JsSIP.Transport.prototype = {
   * @event
   * @param {event} e
   */
-  onOpen: function(e) {
+  onOpen: function() {
     this.connected = true;
 
     console.log(JsSIP.c.LOG_TRANSPORT +'WebSocket connected: ' + this.server.ws_uri);
@@ -167,8 +167,8 @@ JsSIP.Transport.prototype = {
     // WebSocket binary message.
     else if (typeof data !== 'string') {
       try {
-        data = String.fromCharCode.apply(null, new Uint8Array(e.data));
-      } catch(e) {
+        data = String.fromCharCode.apply(null, new Uint8Array(data));
+      } catch(evt) {
         console.warn(JsSIP.c.LOG_TRANSPORT +'Received WebSocket binary message failed to be converted into String, message ignored');
         return;
       }
@@ -228,6 +228,7 @@ JsSIP.Transport.prototype = {
   */
   onError: function(e) {
     console.log(JsSIP.c.LOG_TRANSPORT +'WebSocket connection error');
+    console.log(e);
   },
 
   /**
