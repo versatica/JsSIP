@@ -58,6 +58,11 @@ Want to see more? Check the full [Getting Started](http://jssip.net/documentatio
 * [jssip.net](http://jssip.net/)
 
 
+## Download
+
+* [jssip.net/download](http://jssip.net/download/)
+
+
 ## Authors
 
 ### Main Author
