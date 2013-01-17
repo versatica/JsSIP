@@ -35,7 +35,7 @@ TEXT_UTF8_TRIM  = TEXT_UTF8char+ ( LWS* TEXT_UTF8char)* {
 
 TEXT_UTF8char   = [\x21-\x7E] / UTF8_NONASCII
 
-UTF8_NONASCII   = [\x80-\xFF] //Changed from RFC3261
+UTF8_NONASCII   = [\u0080-\uFFFF]
 
 UTF8_CONT       = [\x80-\xBF]
 

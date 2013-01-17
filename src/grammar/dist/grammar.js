@@ -932,13 +932,13 @@ JsSIP.grammar = (function(){
       function parse_UTF8_NONASCII() {
         var result0;
         
-        if (/^[\x80-\xFF]/.test(input.charAt(pos))) {
+        if (/^[\x80-\uFFFF]/.test(input.charAt(pos))) {
           result0 = input.charAt(pos);
           pos++;
         } else {
           result0 = null;
           if (reportFailures === 0) {
-            matchFailed("[\\x80-\\xFF]");
+            matchFailed("[\\x80-\\uFFFF]");
           }
         }
         return result0;
