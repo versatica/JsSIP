@@ -154,7 +154,7 @@ JsSIP.Session.prototype.connect = function(target, options) {
 /**
 * @private
 */
-JsSIP.Session.prototype.close = function(event, sender, data) {
+JsSIP.Session.prototype.close = function() {
   if(this.status !== JsSIP.c.SESSION_TERMINATED) {
     var session = this;
 
@@ -419,7 +419,8 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
       };
 
       onMediaFailure = function(e) {
-        // Unable to get User Media
+        console.log(JsSIP.c.LOG_INVITE_SESSION +'Unable to get user media');
+        console.log(e);
         request.reply(486);
         session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
       };
@@ -428,7 +429,8 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
         /* Bad SDP Offer
         * peerConnection.setRemoteDescription throws an exception
         */
-        console.log(JsSIP.c.LOG_SERVER_INVITE_SESSION +'PeerConnection Creation Failed: --'+e+'--');
+        console.log(JsSIP.c.LOG_INVITE_SESSION +'Invalid media description');
+        console.log(e);
         request.reply(488);
         session.failed('remote', request, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
       };
@@ -949,7 +951,8 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
 
   function onMediaFailure(e) {
     if (self.status !== JsSIP.c.SESSION_TERMINATED) {
-      console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'Media Access denied');
+      console.log(JsSIP.c.LOG_INVITE_SESSION +'Unable to get user media');
+      console.log(e);
       self.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
     }
   }
