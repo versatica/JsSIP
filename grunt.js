@@ -86,6 +86,5 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('default', 'concat:dist lint min');
-  grunt.registerTask('post', 'concat:post concat:post_min' );
+  grunt.registerTask('default', 'concat:dist lint min concat:post concat:post_min' );
 };

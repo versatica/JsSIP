@@ -28,7 +28,7 @@ grunt -version
 
 Finally, to get a complete version of JsSIP, type the following:
 ```
-grunt && grunt post
+grunt
 ```
 
 The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal and minified. Both linted (with JSHint).
