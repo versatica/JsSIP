@@ -47,18 +47,19 @@ JsSIP.Registrator = function(ua, transport) {
 };
 
 JsSIP.Registrator.prototype = {
-  register: function() {
+  register: function(extraHeaders) {
     var request_sender, cause,
       self = this;
+
+    extraHeaders = extraHeaders || [];
+    extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
+    extraHeaders.push('Allow: '+ JsSIP.utils.getAllowedMethods(this.ua));
 
     this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
         'to_uri': this.from_uri,
         'call_id': this.call_id,
         'cseq': (this.cseq += 1)
-      }, [
-        'Contact: '+ this.contact + ';expires=' + this.expires,
-        'Allow: '+ JsSIP.utils.getAllowedMethods(this.ua)
-      ]);
+      }, extraHeaders);
 
     request_sender = new JsSIP.RequestSender(this, this.ua);
 
@@ -176,7 +177,7 @@ JsSIP.Registrator.prototype = {
   /**
   * @param {Boolean} [all=false]
   */
-  unregister: function(all) {
+  unregister: function(all, extraHeaders) {
     /* Parameters:
     *
     * - all: If true, then perform a "unregister all" action ("Contact: *");
@@ -186,6 +187,8 @@ JsSIP.Registrator.prototype = {
       return;
     }
 
+    extraHeaders = extraHeaders || [];
+
     this.registered = false;
     this.ua.emit('unregistered', this.ua);
 
@@ -193,22 +196,22 @@ JsSIP.Registrator.prototype = {
     window.clearTimeout(this.registrationTimer);
 
     if(all) {
+      extraHeaders.push('Contact: *');
+      extraHeaders.push('Expires: 0');
+
       this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
-        }, [
-          'Contact: *',
-          'Expires : 0'
-        ]);
+        }, extraHeaders);
     } else {
+      extraHeaders.push('Contact: '+ this.contact + ';expires=0');
+
       this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
-        }, [
-          'Contact: '+ this.contact + ';expires=0'
-        ]);
+        }, extraHeaders);
     }
 
     var request_sender = new JsSIP.RequestSender(this, this.ua);

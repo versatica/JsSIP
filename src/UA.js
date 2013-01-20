@@ -68,10 +68,10 @@ JsSIP.UA.prototype = new JsSIP.EventEmitter();
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
-JsSIP.UA.prototype.register = function() {
+JsSIP.UA.prototype.register = function(extraHeaders) {
   if(this.status === JsSIP.c.UA_STATUS_READY) {
     this.configuration.register = true;
-    this.registrator.register();
+    this.registrator.register(extraHeaders);
   } else {
       throw new JsSIP.exceptions.NotReadyError();
   }
@@ -83,10 +83,10 @@ JsSIP.UA.prototype.register = function() {
  *
  * @throws {JsSIP.exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
-JsSIP.UA.prototype.unregister = function(all) {
+JsSIP.UA.prototype.unregister = function(all, extraHeaders) {
   if(this.status === JsSIP.c.UA_STATUS_READY) {
     this.configuration.register = false;
-    this.registrator.unregister(all);
+    this.registrator.unregister(all, extraHeaders);
   } else {
     throw new JsSIP.exceptions.NotReadyError();
   }
