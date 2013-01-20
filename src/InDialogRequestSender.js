@@ -22,20 +22,19 @@ JsSIP.InDialogRequestSender.prototype = {
 
   onRequestTimeout: function() {
     this.applicant.session.onRequestTimeout();
+    this.applicant.onRequestTimeout();
   },
 
   onTransportError: function() {
     this.applicant.session.onTransportError();
+    this.applicant.onTransportError();
   },
 
   receiveResponse: function(response) {
-    var status_code = response.status_code;
-
     // RFC3261 14.1. Terminate the dialog if a 408 or 481 is received from a re-Invite.
-    if (status_code === 408 || status_code === 481) {
-      this.applicant.ended('remote', response, JsSIP.c.causes.IN_DIALOG_408_OR_481);
-    } else {
-      this.applicant.receiveResponse(response);
+    if (response.status_code === 408 || response.status_code === 481) {
+      this.applicant.session.ended('remote', response, JsSIP.c.causes.IN_DIALOG_408_OR_481);
     }
+    this.applicant.receiveResponse(response);
   }
 };

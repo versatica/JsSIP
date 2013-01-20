@@ -688,13 +688,19 @@ JsSIP.Session.prototype.sendBye = function(reason) {
 };
 
 
-JsSIP.Session.prototype.sendRequest = function(request, receiveResponse) {
-  var request_sender;
+JsSIP.Session.prototype.sendRequest = function(request) {
+  var applicant, request_sender,
+    self = this;
 
-  receiveResponse = receiveResponse || function(){};
+  applicant = {
+    session: self,
+    request: request,
+    receiveResponse: function(){},
+    onRequestTimeout: function(){},
+    onTransportError: function(){}
+  };
 
-  request_sender = new JsSIP.Session.RequestSender(this, request, receiveResponse);
-
+  request_sender = new JsSIP.Session.RequestSender(this, applicant);
   request_sender.send();
 };
 
@@ -969,10 +975,10 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
 /**
  * @private
  */
-JsSIP.Session.RequestSender = function(session, request, onReceiveResponse) {
+JsSIP.Session.RequestSender = function(session, applicant) {
   this.session = session;
-  this.request = request;
-  this.onReceiveResponse = onReceiveResponse;
+  this.request = applicant.request;
+  this.applicant = applicant;
   this.reattempt = false;
   this.reatemptTimer = null;
   this.request_sender = new JsSIP.InDialogRequestSender(this);
@@ -985,24 +991,36 @@ JsSIP.Session.RequestSender.prototype = {
       self = this,
       status_code = response.status_code;
 
-    if (this.session.status !== JsSIP.c.SESSION_TERMINATED) {
-      if (response.method === JsSIP.c.INVITE && status_code === 491 && !this.reattempt) {
-            this.request.cseq.value = this.request.dialog.local_seqnum += 1;
-            this.reatemptTimer = window.setTimeout(
-              function() {
-                self.reattempt = true;
-                self.request_sender.send();
-              },
-              this.getReattemptTimeout()
-            );
+    if (response.method === JsSIP.c.INVITE && status_code === 491) {
+      if (!this.reattempt) {
+        this.request.cseq.value = this.request.dialog.local_seqnum += 1;
+        this.reatemptTimer = window.setTimeout(
+          function() {
+            if (self.session.status !== JsSIP.c.SESSION_TERMINATED) {
+              self.reattempt = true;
+              self.request_sender.send();
+            }
+          },
+          this.getReattemptTimeout()
+        );
       } else {
-        this.onReceiveResponse.call(this.session, response);
+        this.applicant.receiveResponse(response);
       }
+    } else {
+      this.applicant.receiveResponse(response);
     }
   },
 
   send: function() {
     this.request_sender.send();
+  },
+
+  onRequestTimeout: function() {
+    this.applicant.onRequestTimeout();
+  },
+
+  onTransportError: function() {
+    this.applicant.onTransportError();
   },
 
   // RFC3261 14.1
