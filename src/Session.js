@@ -14,7 +14,8 @@ JsSIP.Session = function(ua) {
   'progress',
   'failed',
   'started',
-  'ended'
+  'ended',
+  'newDTMF'
   ];
 
   this.ua = ua;
@@ -289,6 +290,8 @@ JsSIP.Session.prototype.terminateEarlyDialogs = function() {
 * @private
 */
 JsSIP.Session.prototype.receiveRequest = function(request) {
+  var contentType;
+
   if(request.method === JsSIP.C.CANCEL) {
     /* RFC3261 15 States that a UAS may have accepted an invitation while a CANCEL
     * was in progress and that the UAC MAY continue with the session established by
@@ -331,6 +334,13 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
           console.log(JsSIP.C.LOG_INVITE_SESSION +'Re-INVITE received');
         }
         break;
+      case JsSIP.C.INFO:
+        if(this.status === JsSIP.C.SESSION_CONFIRMED || this.status === JsSIP.C.SESSION_WAITING_FOR_ACK) {
+          contentType = request.getHeader('content-type');
+          if (contentType && (contentType.match(/^application\/dtmf-relay/i))) {
+            new JsSIP.Session.DTMF(this).init_incoming(request);
+          }
+        }
     }
   }
 };
@@ -918,7 +928,73 @@ JsSIP.Session.prototype.cancel = function(reason) {
   this.failed('local', null, JsSIP.C.causes.CANCELED);
 };
 
+/**
+ * Send a DTMF
+ *
+ * @param {String|Number} tones
+ * @param {Object} [options]
+ */
+JsSIP.Session.prototype.sendDTMF = function(tones, options) {
+  var timer, interToneGap,
+    possition = 0,
+    self = this,
+    ready = true;
 
+  options = options || {};
+  interToneGap = options.interToneGap || null;
+
+
+  // Check Session Status
+  if (this.status !== JsSIP.C.SESSION_CONFIRMED && this.status !== JsSIP.C.SESSION_WAITING_FOR_ACK) {
+    throw new JsSIP.Exceptions.InvalidStateError();
+  }
+
+  // Check tones
+  if (!tones || (typeof tones !== 'string' && typeof tones !== 'number') || !tones.toString().match(/^[0-9A-D#*]+$/i)) {
+    throw new JsSIP.Exceptions.InvalidValueError();
+  }
+
+  tones = tones.toString();
+
+  // Check interToneGap
+  if (interToneGap && !JsSIP.Utils.isDecimal(interToneGap)) {
+    throw new JsSIP.Exceptions.InvalidValueError();
+  } else if (!interToneGap) {
+    interToneGap = JsSIP.C.DTMF_DEFAULT_INTER_TONE_GAP;
+  } else if (interToneGap < JsSIP.C.DTMF_MIN_INTER_TONE_GAP) {
+    console.log(JsSIP.C.LOG_INVITE_SESSION +'"interToneGap" value is lower than the minimum allowed. Setting to: '+ JsSIP.C.DTMF_MIN_INTER_TONE_GAP +' milliseconds');
+    interToneGap = JsSIP.C.DTMF_MIN_INTER_TONE_GAP;
+  } else {
+    interToneGap = Math.abs(interToneGap);
+  }
+
+  function sendDTMF() {
+    var tone,
+      dtmf = new JsSIP.Session.DTMF(self);
+
+    dtmf.on('failed', function(){ready = false;});
+
+    tone = tones[possition];
+    possition += 1;
+
+    dtmf.send(tone, options);
+  }
+
+  // Send the first tone
+  sendDTMF();
+
+  // Send the following tones
+  timer = window.setInterval(
+    function() {
+      if (self.status !== JsSIP.C.SESSION_TERMINATED && ready && tones.length > possition) {
+          sendDTMF();
+      } else {
+        window.clearInterval(timer);
+      }
+    },
+    interToneGap
+  );
+};
 
 /**
  * Initial Request Sender
@@ -1029,5 +1105,195 @@ JsSIP.Session.RequestSender.prototype = {
     } else {
       return (Math.random() * 2).toFixed(2);
     }
+  }
+};
+
+/**
+ * Session DTMF
+ */
+
+/**
+ * @private
+ */
+
+JsSIP.Session.DTMF = function(session) {
+  var events = [
+  'sending',
+  'succeeded',
+  'failed'
+  ];
+
+  this.session = session;
+  this.direction = null;
+  this.tone = null;
+  this.duration = null;
+
+  this.initEvents(events);
+};
+JsSIP.Session.DTMF.prototype = new JsSIP.EventEmitter();
+
+
+JsSIP.Session.DTMF.prototype.send = function(tone, options) {
+  var request_sender, event, eventHandlers, extraHeaders;
+
+  this.direction = 'outgoing';
+
+  // Check Session Status
+  if (this.session.status !== JsSIP.C.SESSION_CONFIRMED && this.session.status !== JsSIP.C.SESSION_WAITING_FOR_ACK) {
+    throw new JsSIP.Exceptions.InvalidStateError();
+  }
+
+  // Get DTMF options
+  options = options || {};
+  extraHeaders = options.extraHeaders ? options.extraHeaders.slice() : [];
+  eventHandlers = options.eventHandlers || {};
+
+  // Check tone type
+  if (typeof tone === 'string' ) {
+    tone = tone.toUpperCase();
+  } else if (typeof tone === 'number') {
+    tone = tone.toString();
+  } else {
+    throw new JsSIP.Exceptions.InvalidValueError();
+  }
+
+  // Check tone value
+  if (!tone.match(/^[0-9A-D#*]$/)) {
+    throw new JsSIP.Exceptions.InvalidValueError();
+  } else {
+    this.tone = tone;
+  }
+
+  // Check duration
+  if (options.duration && !JsSIP.Utils.isDecimal(options.duration)) {
+    throw new JsSIP.Exceptions.InvalidValueError();
+  } else if (!options.duration) {
+    options.duration = JsSIP.C.DTMF_DEFAULT_DURATION;
+  } else if (options.duration < JsSIP.C.DTMF_MIN_DURATION) {
+    console.log(JsSIP.C.LOG_INVITE_SESSION +'"duration" value is lower than the minimum allowed. Setting to: '+ JsSIP.C.DTMF_MIN_DURATION+ ' milliseconds');
+    options.duration = JsSIP.C.DTMF_MIN_DURATION;
+  } else if (options.duration > JsSIP.C.DTMF_MAX_DURATION) {
+    console.log(JsSIP.C.LOG_INVITE_SESSION +'"duration" value is greater than the maximum allowed. Setting to: '+ JsSIP.C.DTMF_MAX_DURATION +' milliseconds');
+    options.duration = JsSIP.C.DTMF_MAX_DURATION;
+  } else {
+    options.duration = Math.abs(options.duration);
+  }
+  this.duration = options.duration;
+
+  // Check extraHeaders
+  if (!extraHeaders instanceof Array) {
+    throw new JsSIP.Exceptions.InvalidValueError();
+  }
+
+  // Set event handlers
+  for (event in eventHandlers) {
+    this.on(event, eventHandlers[event]);
+  }
+
+  extraHeaders.push('Content-Type: application/dtmf-relay');
+
+  this.request = this.session.dialog.createRequest(JsSIP.C.INFO, extraHeaders);
+
+  this.request.body = "Signal= " + this.tone + "\r\n";
+  this.request.body += "Duration= " + this.duration;
+
+  request_sender = new JsSIP.Session.RequestSender(this.session, this);
+
+  this.session.emit('newDTMF', this.session, {
+    originator: 'local',
+    dtmf: this,
+    request: this.request
+  });
+
+  this.emit('sending', this, {
+    originator: 'local',
+    request: this.request
+  });
+
+  request_sender.send();
+};
+
+/**
+ * @private
+ */
+JsSIP.Session.DTMF.prototype.receiveResponse = function(response) {
+  var cause;
+
+  switch(true) {
+    case /^1[0-9]{2}$/.test(response.status_code):
+      // Ignore provisional responses.
+      break;
+
+    case /^2[0-9]{2}$/.test(response.status_code):
+      this.emit('succeeded', this, {
+        originator: 'remote',
+        response: response
+      });
+      break;
+
+    default:
+      cause = JsSIP.Utils.sipErrorCause(response.status_code);
+      this.emit('failed', this, {
+        originator: 'remote',
+        response: response,
+        cause: cause
+      });
+      break;
+  }
+};
+
+/**
+ * @private
+ */
+JsSIP.Session.DTMF.prototype.onRequestTimeout = function() {
+  this.emit('failed', this, {
+    originator: 'system',
+    cause: JsSIP.C.causes.REQUEST_TIMEOUT
+  });
+};
+
+/**
+ * @private
+ */
+JsSIP.Session.DTMF.prototype.onTransportError = function() {
+  this.emit('failed', this, {
+    originator: 'system',
+    cause: JsSIP.C.causes.CONNECTION_ERROR
+  });
+};
+
+/**
+ * @private
+ */
+JsSIP.Session.DTMF.prototype.init_incoming = function(request) {
+  var body,
+    reg_tone = /^(Signal\s*?=\s*?)([0-9A-D#*]{1})(\s)?.*/,
+    reg_duration = /^(Duration\s?=\s?)([0-9]{1,4})(\s)?.*/;
+
+  this.direction = 'incoming';
+  this.request = request;
+
+  request.reply(200);
+
+  if (request.body) {
+    body = request.body.split('\r\n');
+    if (body.length === 2) {
+      if (reg_tone.test(body[0])) {
+        this.tone = body[0].replace(reg_tone,"$2");
+      }
+      if (reg_duration.test(body[1])) {
+        this.duration = parseInt(body[1].replace(reg_duration,"$2"), 10);
+      }
+    }
+  }
+
+  if (!this.tone || !this.duration) {
+    console.log(JsSIP.C.LOG_INVITE_SESSION +'Invalid INFO DTMF received');
+  } else {
+    this.session.emit('newDTMF', this.session, {
+      originator: 'remote',
+      dtmf: this,
+      request: request
+    });
   }
 };

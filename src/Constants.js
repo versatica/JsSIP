@@ -212,11 +212,18 @@ JsSIP.C= {
     606: 'Not Acceptable'
   },
 
+  // DTMF
+  DTMF_DEFAULT_DURATION:        100,
+  DTMF_MIN_DURATION:            70,
+  DTMF_MAX_DURATION:            6000,
+  DTMF_DEFAULT_INTER_TONE_GAP:  500,
+  DTMF_MIN_INTER_TONE_GAP:      50,
+
   // SIP Attributes
   MAX_FORWARDS: 69,
   ALLOWED_METHODS: 'INVITE, ACK, CANCEL, BYE, OPTIONS, MESSAGE, SUBSCRIBE',
   SUPPORTED: 'path, outbound, gruu',
-  ACCEPTED_BODY_TYPES: 'application/sdp',
+  ACCEPTED_BODY_TYPES: 'application/sdp, application/dtmf-relay',
   TAG_LENGTH: 10,
 
   // User Agent EVENT METHODS
