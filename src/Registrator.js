@@ -187,7 +187,7 @@ JsSIP.Registrator.prototype = {
     }
 
     this.registered = false;
-    this.ua.emit('unregistered');
+    this.ua.emit('unregistered', this.ua);
 
     // Clear the registration timer.
     window.clearTimeout(this.registrationTimer);
