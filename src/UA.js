@@ -632,7 +632,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
       // Session parameters
       no_answer_timeout: 60,
-      stun_server: 'stun:stun.l.google.com:19302',
+      stun_servers: ['stun:stun.l.google.com:19302'],
 
       // Logging parameters
       trace_sip: false,
@@ -693,14 +693,6 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     return false;
   }
 
-  // Turn
-  if (settings.turn_server) {
-    if (!settings.turn_username || !settings.turn_password) {
-      console.error('TURN username and password must be specified');
-      return false;
-    }
-  }
-
   // Post Configuration Process
 
   // Instance-id for GRUU
@@ -746,18 +738,18 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   }
 
-  // TURN URI
-  if (settings.turn_server) {
-    uri = JsSIP.grammar.parse(settings.turn_server, 'turn_URI');
-    settings.turn_uri  = uri.scheme + ':';
-    settings.turn_uri += settings.turn_username + '@';
-    settings.turn_uri += settings.turn_server.substr(uri.scheme.length + 1);
-  }
-
   contact = {
     uri: {value: 'sip:' + uri.user + '@' + settings.via_host + ';transport=ws', writable: false, configurable: false}
   };
   Object.defineProperties(this.contact, contact);
+
+  // Stun  servers
+  for (idx in configuration.stun_servers) {
+    uri = configuration.stun_servers[idx];
+    if (!(/^stuns?:/.test(uri))){
+      configuration.stun_servers[idx] = 'stun:' + uri;
+    }
+  }
 
   // Fill the value of the configuration_skeleton
   for(attribute in settings) {
@@ -807,11 +799,8 @@ JsSIP.UA.configuration_skeleton = (function() {
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
       "password",
-      "stun_server",
-      "turn_server",
-      "turn_username",
-      "turn_password",
-      "turn_uri",
+      "stun_servers",
+      "turn_servers",
       "no_answer_timeout", // 30 seconds.
       "register_expires", // 600 seconds.
       "trace_sip",
@@ -929,33 +918,41 @@ JsSIP.UA.configuration_check = {
         return true;
       }
     },
-    stun_server: function(stun_server) {
-      if(JsSIP.grammar.parse(stun_server, 'stun_URI') === -1) {
-        return false;
-      } else {
-        return true;
+    stun_servers: function(stun_servers) {
+      var idx, stun_server;
+
+      for (idx in stun_servers) {
+        stun_server = stun_servers[idx];
+        if (!(/^stuns?:/.test(stun_server))){
+          stun_server = 'stun:' + stun_server;
+        }
+
+        if(JsSIP.grammar.parse(stun_server, 'stun_URI') === -1) {
+          return false;
+        }
       }
+      return true;
     },
-    turn_server: function(turn_server) {
-      if(JsSIP.grammar.parse(turn_server, 'turn_URI') === -1) {
-        return false;
-      } else {
-        return true;
+    turn_servers: function(turn_servers) {
+      var idx, turn_server;
+
+      for (idx in turn_servers) {
+        turn_server = turn_servers[idx];
+        if (!turn_server.server || !turn_server.username || !turn_server.password) {
+          return false;
+        } else if (!(/^turns?:/.test(turn_server.server))){
+          turn_server.server = 'turn:' + turn_server.server;
+        }
+
+        if(JsSIP.grammar.parse(turn_server.server, 'turn_URI') === -1) {
+          return false;
+        } else if(JsSIP.grammar.parse(turn_server.username, 'user') === -1) {
+          return false;
+        } else if(JsSIP.grammar.parse(turn_server.password, 'password') === -1) {
+          return false;
+        }
       }
-    },
-    turn_username: function(turn_username) {
-      if(JsSIP.grammar.parse(turn_username, 'user') === -1) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    turn_password: function(turn_password) {
-      if(JsSIP.grammar.parse(turn_password, 'password') === -1) {
-        return false;
-      } else {
-        return true;
-      }
+      return true;
     },
     no_answer_timeout: function(no_answer_timeout) {
       if(!Number(no_answer_timeout)) {
