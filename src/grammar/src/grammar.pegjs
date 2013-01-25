@@ -99,10 +99,10 @@ SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
 uri_scheme      = uri_scheme:  "sip" {
                     data.scheme = uri_scheme; }
 
-userinfo        = user  "@"
+userinfo        = user (":" password)? "@" {
+                    data.user = input.substring(pos-1, offset); }
 
-user            = ( unreserved / escaped / user_unreserved )+ {
-                    data.user = input.substring(pos, offset); }
+user            = ( unreserved / escaped / user_unreserved )+
 
 user_unreserved = "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
 

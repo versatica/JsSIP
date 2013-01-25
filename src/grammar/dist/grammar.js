@@ -2992,29 +2992,65 @@ JsSIP.grammar = (function(){
       }
       
       function parse_userinfo() {
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
+        pos1 = pos;
         result0 = parse_user();
         if (result0 !== null) {
-          if (input.charCodeAt(pos) === 64) {
-            result1 = "@";
+          pos2 = pos;
+          if (input.charCodeAt(pos) === 58) {
+            result1 = ":";
             pos++;
           } else {
             result1 = null;
             if (reportFailures === 0) {
-              matchFailed("\"@\"");
+              matchFailed("\":\"");
             }
           }
           if (result1 !== null) {
-            result0 = [result0, result1];
+            result2 = parse_password();
+            if (result2 !== null) {
+              result1 = [result1, result2];
+            } else {
+              result1 = null;
+              pos = pos2;
+            }
+          } else {
+            result1 = null;
+            pos = pos2;
+          }
+          result1 = result1 !== null ? result1 : "";
+          if (result1 !== null) {
+            if (input.charCodeAt(pos) === 64) {
+              result2 = "@";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"@\"");
+              }
+            }
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                            data.user = input.substring(pos-1, offset); })(pos0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -3022,9 +3058,7 @@ JsSIP.grammar = (function(){
       
       function parse_user() {
         var result0, result1;
-        var pos0;
         
-        pos0 = pos;
         result1 = parse_unreserved();
         if (result1 === null) {
           result1 = parse_escaped();
@@ -3046,13 +3080,6 @@ JsSIP.grammar = (function(){
           }
         } else {
           result0 = null;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset) {
-                            data.user = input.substring(pos, offset); })(pos0);
-        }
-        if (result0 === null) {
-          pos = pos0;
         }
         return result0;
       }
