@@ -3058,7 +3058,9 @@ JsSIP.grammar = (function(){
       
       function parse_user() {
         var result0, result1;
+        var pos0;
         
+        pos0 = pos;
         result1 = parse_unreserved();
         if (result1 === null) {
           result1 = parse_escaped();
@@ -3080,6 +3082,13 @@ JsSIP.grammar = (function(){
           }
         } else {
           result0 = null;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                            data.user = input.substring(pos, offset); })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
@@ -3178,7 +3187,9 @@ JsSIP.grammar = (function(){
       
       function parse_password() {
         var result0, result1;
+        var pos0;
         
+        pos0 = pos;
         result0 = [];
         result1 = parse_unreserved();
         if (result1 === null) {
@@ -3300,6 +3311,13 @@ JsSIP.grammar = (function(){
               }
             }
           }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                            data.password = input.substring(pos, offset); })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
@@ -11871,11 +11889,12 @@ JsSIP.grammar = (function(){
       }
       
       function parse_lazy_uri() {
-        var result0, result1, result2, result3;
-        var pos0, pos1;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
         pos1 = pos;
+        pos2 = pos;
         result0 = parse_uri_scheme();
         if (result0 !== null) {
           if (input.charCodeAt(pos) === 58) {
@@ -11891,57 +11910,94 @@ JsSIP.grammar = (function(){
             result0 = [result0, result1];
           } else {
             result0 = null;
+            pos = pos2;
+          }
+        } else {
+          result0 = null;
+          pos = pos2;
+        }
+        result0 = result0 !== null ? result0 : "";
+        if (result0 !== null) {
+          result1 = parse_user();
+          if (result1 !== null) {
+            pos2 = pos;
+            if (input.charCodeAt(pos) === 58) {
+              result2 = ":";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\":\"");
+              }
+            }
+            if (result2 !== null) {
+              result3 = parse_password();
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+            result2 = result2 !== null ? result2 : "";
+            if (result2 !== null) {
+              pos2 = pos;
+              if (input.charCodeAt(pos) === 64) {
+                result3 = "@";
+                pos++;
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\"@\"");
+                }
+              }
+              if (result3 !== null) {
+                result4 = parse_hostport();
+                if (result4 !== null) {
+                  result3 = [result3, result4];
+                } else {
+                  result3 = null;
+                  pos = pos2;
+                }
+              } else {
+                result3 = null;
+                pos = pos2;
+              }
+              result3 = result3 !== null ? result3 : "";
+              if (result3 !== null) {
+                result4 = parse_uri_parameters();
+                if (result4 !== null) {
+                  result0 = [result0, result1, result2, result3, result4];
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
             pos = pos1;
           }
         } else {
           result0 = null;
           pos = pos1;
         }
-        result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
-          result1 = parse_user();
-          if (result1 !== null) {
-            pos1 = pos;
-            if (input.charCodeAt(pos) === 64) {
-              result2 = "@";
-              pos++;
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\"@\"");
-              }
-            }
-            if (result2 !== null) {
-              result3 = parse_hostport();
-              if (result3 !== null) {
-                result2 = [result2, result3];
-              } else {
-                result2 = null;
-                pos = pos1;
-              }
-            } else {
-              result2 = null;
-              pos = pos1;
-            }
-            result2 = result2 !== null ? result2 : "";
-            if (result2 !== null) {
-              result3 = parse_uri_parameters();
-              if (result3 !== null) {
-                result0 = [result0, result1, result2, result3];
-              } else {
-                result0 = null;
-                pos = pos0;
-              }
-            } else {
-              result0 = null;
-              pos = pos0;
-            }
-          } else {
-            result0 = null;
-            pos = pos0;
-          }
-        } else {
-          result0 = null;
+          result0 = (function(offset) {
+                    if (data.password) {
+                      data.user = data.user +':'+ data.password;
+                    }})(pos0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;

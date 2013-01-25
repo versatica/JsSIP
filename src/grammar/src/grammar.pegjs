@@ -102,11 +102,13 @@ uri_scheme      = uri_scheme:  "sip" {
 userinfo        = user (":" password)? "@" {
                     data.user = input.substring(pos-1, offset); }
 
-user            = ( unreserved / escaped / user_unreserved )+
+user            = ( unreserved / escaped / user_unreserved )+ {
+                    data.user = input.substring(pos, offset); }
 
 user_unreserved = "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
 
-password        = ( unreserved / escaped / "&" / "=" / "+" / "$" / "," )*
+password        = ( unreserved / escaped / "&" / "=" / "+" / "$" / "," )* {
+                    data.password = input.substring(pos, offset); }
 
 hostport        = host ( ":" port )?
 
@@ -721,4 +723,7 @@ turn_transport    = transport ("udp" / "tcp" / unreserved*) {
 
 // Lazy uri
 
-lazy_uri  = (uri_scheme ':')? user ('@' hostport)? uri_parameters
+lazy_uri  = (uri_scheme ':')? user (':' password)? ('@' hostport)? uri_parameters {
+            if (data.password) {
+              data.user = data.user +':'+ data.password;
+            }}
