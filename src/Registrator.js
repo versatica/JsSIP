@@ -106,10 +106,6 @@ JsSIP.Registrator.prototype = {
 
           if(!expires) {
             expires = this.expires;
-          } else if(expires < this.min_expires) {
-            // Set the expires value to min_expires in case it is slower
-            console.log(JsSIP.c.LOG_REGISTRATOR +'Received expires value: ' + expires + ' is smaller than the minimum expires time: ' + this.min_expires);
-            expires = this.min_expires;
           }
 
           // Re-Register before the expiration interval has elapsed.
