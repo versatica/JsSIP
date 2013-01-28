@@ -2972,8 +2972,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 3) === "sip") {
-          result0 = "sip";
+        if (input.substr(pos, 3).toLowerCase() === "sip") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -5629,8 +5629,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 10) === "transport=") {
-          result0 = "transport=";
+        if (input.substr(pos, 10).toLowerCase() === "transport=") {
+          result0 = input.substr(pos, 10);
           pos += 10;
         } else {
           result0 = null;
@@ -5639,8 +5639,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 !== null) {
-          if (input.substr(pos, 3) === "udp") {
-            result1 = "udp";
+          if (input.substr(pos, 3).toLowerCase() === "udp") {
+            result1 = input.substr(pos, 3);
             pos += 3;
           } else {
             result1 = null;
@@ -5649,8 +5649,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result1 === null) {
-            if (input.substr(pos, 3) === "tcp") {
-              result1 = "tcp";
+            if (input.substr(pos, 3).toLowerCase() === "tcp") {
+              result1 = input.substr(pos, 3);
               pos += 3;
             } else {
               result1 = null;
@@ -5659,8 +5659,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result1 === null) {
-              if (input.substr(pos, 4) === "sctp") {
-                result1 = "sctp";
+              if (input.substr(pos, 4).toLowerCase() === "sctp") {
+                result1 = input.substr(pos, 4);
                 pos += 4;
               } else {
                 result1 = null;
@@ -5669,8 +5669,8 @@ JsSIP.grammar = (function(){
                 }
               }
               if (result1 === null) {
-                if (input.substr(pos, 3) === "tls") {
-                  result1 = "tls";
+                if (input.substr(pos, 3).toLowerCase() === "tls") {
+                  result1 = input.substr(pos, 3);
                   pos += 3;
                 } else {
                   result1 = null;
@@ -5711,8 +5711,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 5) === "user=") {
-          result0 = "user=";
+        if (input.substr(pos, 5).toLowerCase() === "user=") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -5721,8 +5721,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 !== null) {
-          if (input.substr(pos, 5) === "phone") {
-            result1 = "phone";
+          if (input.substr(pos, 5).toLowerCase() === "phone") {
+            result1 = input.substr(pos, 5);
             pos += 5;
           } else {
             result1 = null;
@@ -5731,8 +5731,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result1 === null) {
-            if (input.substr(pos, 2) === "ip") {
-              result1 = "ip";
+            if (input.substr(pos, 2).toLowerCase() === "ip") {
+              result1 = input.substr(pos, 2);
               pos += 2;
             } else {
               result1 = null;
@@ -5771,8 +5771,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 7) === "method=") {
-          result0 = "method=";
+        if (input.substr(pos, 7).toLowerCase() === "method=") {
+          result0 = input.substr(pos, 7);
           pos += 7;
         } else {
           result0 = null;
@@ -5809,8 +5809,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 4) === "ttl=") {
-          result0 = "ttl=";
+        if (input.substr(pos, 4).toLowerCase() === "ttl=") {
+          result0 = input.substr(pos, 4);
           pos += 4;
         } else {
           result0 = null;
@@ -5847,8 +5847,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 6) === "maddr=") {
-          result0 = "maddr=";
+        if (input.substr(pos, 6).toLowerCase() === "maddr=") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -5884,8 +5884,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 2) === "lr") {
-          result0 = "lr";
+        if (input.substr(pos, 2).toLowerCase() === "lr") {
+          result0 = input.substr(pos, 2);
           pos += 2;
         } else {
           result0 = null;
@@ -7325,8 +7325,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 3) === "SIP") {
-          result0 = "SIP";
+        if (input.substr(pos, 3).toLowerCase() === "sip") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -8056,8 +8056,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.charCodeAt(pos) === 113) {
-          result0 = "q";
+        if (input.substr(pos, 1).toLowerCase() === "q") {
+          result0 = input.substr(pos, 1);
           pos++;
         } else {
           result0 = null;
@@ -8100,8 +8100,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 7) === "expires") {
-          result0 = "expires";
+        if (input.substr(pos, 7).toLowerCase() === "expires") {
+          result0 = input.substr(pos, 7);
           pos += 7;
         } else {
           result0 = null;
@@ -8374,8 +8374,8 @@ JsSIP.grammar = (function(){
       function parse_disp_type() {
         var result0;
         
-        if (input.substr(pos, 6) === "render") {
-          result0 = "render";
+        if (input.substr(pos, 6).toLowerCase() === "render") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -8384,8 +8384,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 7) === "session") {
-            result0 = "session";
+          if (input.substr(pos, 7).toLowerCase() === "session") {
+            result0 = input.substr(pos, 7);
             pos += 7;
           } else {
             result0 = null;
@@ -8394,8 +8394,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result0 === null) {
-            if (input.substr(pos, 4) === "icon") {
-              result0 = "icon";
+            if (input.substr(pos, 4).toLowerCase() === "icon") {
+              result0 = input.substr(pos, 4);
               pos += 4;
             } else {
               result0 = null;
@@ -8404,8 +8404,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result0 === null) {
-              if (input.substr(pos, 5) === "alert") {
-                result0 = "alert";
+              if (input.substr(pos, 5).toLowerCase() === "alert") {
+                result0 = input.substr(pos, 5);
                 pos += 5;
               } else {
                 result0 = null;
@@ -8437,8 +8437,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 8) === "handling") {
-          result0 = "handling";
+        if (input.substr(pos, 8).toLowerCase() === "handling") {
+          result0 = input.substr(pos, 8);
           pos += 8;
         } else {
           result0 = null;
@@ -8449,8 +8449,8 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result1 = parse_EQUAL();
           if (result1 !== null) {
-            if (input.substr(pos, 8) === "optional") {
-              result2 = "optional";
+            if (input.substr(pos, 8).toLowerCase() === "optional") {
+              result2 = input.substr(pos, 8);
               pos += 8;
             } else {
               result2 = null;
@@ -8459,8 +8459,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result2 === null) {
-              if (input.substr(pos, 8) === "required") {
-                result2 = "required";
+              if (input.substr(pos, 8).toLowerCase() === "required") {
+                result2 = input.substr(pos, 8);
                 pos += 8;
               } else {
                 result2 = null;
@@ -8659,8 +8659,8 @@ JsSIP.grammar = (function(){
       function parse_discrete_type() {
         var result0;
         
-        if (input.substr(pos, 4) === "text") {
-          result0 = "text";
+        if (input.substr(pos, 4).toLowerCase() === "text") {
+          result0 = input.substr(pos, 4);
           pos += 4;
         } else {
           result0 = null;
@@ -8669,8 +8669,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 5) === "image") {
-            result0 = "image";
+          if (input.substr(pos, 5).toLowerCase() === "image") {
+            result0 = input.substr(pos, 5);
             pos += 5;
           } else {
             result0 = null;
@@ -8679,8 +8679,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result0 === null) {
-            if (input.substr(pos, 5) === "audio") {
-              result0 = "audio";
+            if (input.substr(pos, 5).toLowerCase() === "audio") {
+              result0 = input.substr(pos, 5);
               pos += 5;
             } else {
               result0 = null;
@@ -8689,8 +8689,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result0 === null) {
-              if (input.substr(pos, 5) === "video") {
-                result0 = "video";
+              if (input.substr(pos, 5).toLowerCase() === "video") {
+                result0 = input.substr(pos, 5);
                 pos += 5;
               } else {
                 result0 = null;
@@ -8699,8 +8699,8 @@ JsSIP.grammar = (function(){
                 }
               }
               if (result0 === null) {
-                if (input.substr(pos, 11) === "application") {
-                  result0 = "application";
+                if (input.substr(pos, 11).toLowerCase() === "application") {
+                  result0 = input.substr(pos, 11);
                   pos += 11;
                 } else {
                   result0 = null;
@@ -8721,8 +8721,8 @@ JsSIP.grammar = (function(){
       function parse_composite_type() {
         var result0;
         
-        if (input.substr(pos, 7) === "message") {
-          result0 = "message";
+        if (input.substr(pos, 7).toLowerCase() === "message") {
+          result0 = input.substr(pos, 7);
           pos += 7;
         } else {
           result0 = null;
@@ -8731,8 +8731,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 9) === "multipart") {
-            result0 = "multipart";
+          if (input.substr(pos, 9).toLowerCase() === "multipart") {
+            result0 = input.substr(pos, 9);
             pos += 9;
           } else {
             result0 = null;
@@ -8762,8 +8762,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 2) === "x-") {
-          result0 = "x-";
+        if (input.substr(pos, 2).toLowerCase() === "x-") {
+          result0 = input.substr(pos, 2);
           pos += 2;
         } else {
           result0 = null;
@@ -9121,8 +9121,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 3) === "tag") {
-          result0 = "tag";
+        if (input.substr(pos, 3).toLowerCase() === "tag") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -9209,8 +9209,8 @@ JsSIP.grammar = (function(){
         var pos0, pos1;
         
         pos0 = pos;
-        if (input.substr(pos, 6) === "Digest") {
-          result0 = "Digest";
+        if (input.substr(pos, 6).toLowerCase() === "digest") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -9406,8 +9406,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 5) === "realm") {
-          result0 = "realm";
+        if (input.substr(pos, 5).toLowerCase() === "realm") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -9456,8 +9456,8 @@ JsSIP.grammar = (function(){
         var pos0, pos1;
         
         pos0 = pos;
-        if (input.substr(pos, 6) === "domain") {
-          result0 = "domain";
+        if (input.substr(pos, 6).toLowerCase() === "domain") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -9568,8 +9568,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 5) === "nonce") {
-          result0 = "nonce";
+        if (input.substr(pos, 5).toLowerCase() === "nonce") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -9619,8 +9619,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 6) === "opaque") {
-          result0 = "opaque";
+        if (input.substr(pos, 6).toLowerCase() === "opaque") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -9662,8 +9662,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 5) === "stale") {
-          result0 = "stale";
+        if (input.substr(pos, 5).toLowerCase() === "stale") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -9674,8 +9674,8 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result1 = parse_EQUAL();
           if (result1 !== null) {
-            if (input.substr(pos, 4) === "true") {
-              result2 = "true";
+            if (input.substr(pos, 4).toLowerCase() === "true") {
+              result2 = input.substr(pos, 4);
               pos += 4;
             } else {
               result2 = null;
@@ -9684,8 +9684,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result2 === null) {
-              if (input.substr(pos, 5) === "false") {
-                result2 = "false";
+              if (input.substr(pos, 5).toLowerCase() === "false") {
+                result2 = input.substr(pos, 5);
                 pos += 5;
               } else {
                 result2 = null;
@@ -9724,8 +9724,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 9) === "algorithm") {
-          result0 = "algorithm";
+        if (input.substr(pos, 9).toLowerCase() === "algorithm") {
+          result0 = input.substr(pos, 9);
           pos += 9;
         } else {
           result0 = null;
@@ -9736,8 +9736,8 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result1 = parse_EQUAL();
           if (result1 !== null) {
-            if (input.substr(pos, 3) === "MD5") {
-              result2 = "MD5";
+            if (input.substr(pos, 3).toLowerCase() === "md5") {
+              result2 = input.substr(pos, 3);
               pos += 3;
             } else {
               result2 = null;
@@ -9746,8 +9746,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result2 === null) {
-              if (input.substr(pos, 8) === "MD5-sess") {
-                result2 = "MD5-sess";
+              if (input.substr(pos, 8).toLowerCase() === "md5-sess") {
+                result2 = input.substr(pos, 8);
                 pos += 8;
               } else {
                 result2 = null;
@@ -9789,8 +9789,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 3) === "qop") {
-          result0 = "qop";
+        if (input.substr(pos, 3).toLowerCase() === "qop") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -9901,8 +9901,8 @@ JsSIP.grammar = (function(){
       function parse_qop_value() {
         var result0;
         
-        if (input.substr(pos, 8) === "auth-int") {
-          result0 = "auth-int";
+        if (input.substr(pos, 8).toLowerCase() === "auth-int") {
+          result0 = input.substr(pos, 8);
           pos += 8;
         } else {
           result0 = null;
@@ -9911,8 +9911,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 4) === "auth") {
-            result0 = "auth";
+          if (input.substr(pos, 4).toLowerCase() === "auth") {
+            result0 = input.substr(pos, 4);
             pos += 4;
           } else {
             result0 = null;
@@ -10296,8 +10296,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 6) === "active") {
-          result0 = "active";
+        if (input.substr(pos, 6).toLowerCase() === "active") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -10306,8 +10306,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 7) === "pending") {
-            result0 = "pending";
+          if (input.substr(pos, 7).toLowerCase() === "pending") {
+            result0 = input.substr(pos, 7);
             pos += 7;
           } else {
             result0 = null;
@@ -10316,8 +10316,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result0 === null) {
-            if (input.substr(pos, 10) === "terminated") {
-              result0 = "terminated";
+            if (input.substr(pos, 10).toLowerCase() === "terminated") {
+              result0 = input.substr(pos, 10);
               pos += 10;
             } else {
               result0 = null;
@@ -10346,8 +10346,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 6) === "reason") {
-          result0 = "reason";
+        if (input.substr(pos, 6).toLowerCase() === "reason") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -10383,8 +10383,8 @@ JsSIP.grammar = (function(){
         if (result0 === null) {
           pos0 = pos;
           pos1 = pos;
-          if (input.substr(pos, 7) === "expires") {
-            result0 = "expires";
+          if (input.substr(pos, 7).toLowerCase() === "expires") {
+            result0 = input.substr(pos, 7);
             pos += 7;
           } else {
             result0 = null;
@@ -10420,8 +10420,8 @@ JsSIP.grammar = (function(){
           if (result0 === null) {
             pos0 = pos;
             pos1 = pos;
-            if (input.substr(pos, 11) === "retry_after") {
-              result0 = "retry_after";
+            if (input.substr(pos, 11).toLowerCase() === "retry_after") {
+              result0 = input.substr(pos, 11);
               pos += 11;
             } else {
               result0 = null;
@@ -10477,8 +10477,8 @@ JsSIP.grammar = (function(){
       function parse_event_reason_value() {
         var result0;
         
-        if (input.substr(pos, 11) === "deactivated") {
-          result0 = "deactivated";
+        if (input.substr(pos, 11).toLowerCase() === "deactivated") {
+          result0 = input.substr(pos, 11);
           pos += 11;
         } else {
           result0 = null;
@@ -10487,8 +10487,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 9) === "probation") {
-            result0 = "probation";
+          if (input.substr(pos, 9).toLowerCase() === "probation") {
+            result0 = input.substr(pos, 9);
             pos += 9;
           } else {
             result0 = null;
@@ -10497,8 +10497,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result0 === null) {
-            if (input.substr(pos, 8) === "rejected") {
-              result0 = "rejected";
+            if (input.substr(pos, 8).toLowerCase() === "rejected") {
+              result0 = input.substr(pos, 8);
               pos += 8;
             } else {
               result0 = null;
@@ -10507,8 +10507,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result0 === null) {
-              if (input.substr(pos, 7) === "timeout") {
-                result0 = "timeout";
+              if (input.substr(pos, 7).toLowerCase() === "timeout") {
+                result0 = input.substr(pos, 7);
                 pos += 7;
               } else {
                 result0 = null;
@@ -10517,8 +10517,8 @@ JsSIP.grammar = (function(){
                 }
               }
               if (result0 === null) {
-                if (input.substr(pos, 6) === "giveup") {
-                  result0 = "giveup";
+                if (input.substr(pos, 6).toLowerCase() === "giveup") {
+                  result0 = input.substr(pos, 6);
                   pos += 6;
                 } else {
                   result0 = null;
@@ -10527,8 +10527,8 @@ JsSIP.grammar = (function(){
                   }
                 }
                 if (result0 === null) {
-                  if (input.substr(pos, 10) === "noresource") {
-                    result0 = "noresource";
+                  if (input.substr(pos, 10).toLowerCase() === "noresource") {
+                    result0 = input.substr(pos, 10);
                     pos += 10;
                   } else {
                     result0 = null;
@@ -10537,8 +10537,8 @@ JsSIP.grammar = (function(){
                     }
                   }
                   if (result0 === null) {
-                    if (input.substr(pos, 9) === "invariant") {
-                      result0 = "invariant";
+                    if (input.substr(pos, 9).toLowerCase() === "invariant") {
+                      result0 = input.substr(pos, 9);
                       pos += 9;
                     } else {
                       result0 = null;
@@ -10828,8 +10828,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 3) === "ttl") {
-          result0 = "ttl";
+        if (input.substr(pos, 3).toLowerCase() === "ttl") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -10871,8 +10871,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 5) === "maddr") {
-          result0 = "maddr";
+        if (input.substr(pos, 5).toLowerCase() === "maddr") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -10914,8 +10914,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 8) === "received") {
-          result0 = "received";
+        if (input.substr(pos, 8).toLowerCase() === "received") {
+          result0 = input.substr(pos, 8);
           pos += 8;
         } else {
           result0 = null;
@@ -10960,8 +10960,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 6) === "branch") {
-          result0 = "branch";
+        if (input.substr(pos, 6).toLowerCase() === "branch") {
+          result0 = input.substr(pos, 6);
           pos += 6;
         } else {
           result0 = null;
@@ -11003,8 +11003,8 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        if (input.substr(pos, 5) === "rport") {
-          result0 = "rport";
+        if (input.substr(pos, 5).toLowerCase() === "rport") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -11098,8 +11098,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 3) === "SIP") {
-          result0 = "SIP";
+        if (input.substr(pos, 3).toLowerCase() === "sip") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -11125,8 +11125,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 3) === "UDP") {
-          result0 = "UDP";
+        if (input.substr(pos, 3).toLowerCase() === "udp") {
+          result0 = input.substr(pos, 3);
           pos += 3;
         } else {
           result0 = null;
@@ -11135,8 +11135,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 3) === "TCP") {
-            result0 = "TCP";
+          if (input.substr(pos, 3).toLowerCase() === "tcp") {
+            result0 = input.substr(pos, 3);
             pos += 3;
           } else {
             result0 = null;
@@ -11145,8 +11145,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result0 === null) {
-            if (input.substr(pos, 3) === "TLS") {
-              result0 = "TLS";
+            if (input.substr(pos, 3).toLowerCase() === "tls") {
+              result0 = input.substr(pos, 3);
               pos += 3;
             } else {
               result0 = null;
@@ -11155,8 +11155,8 @@ JsSIP.grammar = (function(){
               }
             }
             if (result0 === null) {
-              if (input.substr(pos, 4) === "SCTP") {
-                result0 = "SCTP";
+              if (input.substr(pos, 4).toLowerCase() === "sctp") {
+                result0 = input.substr(pos, 4);
                 pos += 4;
               } else {
                 result0 = null;
@@ -11436,8 +11436,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 5) === "stuns") {
-          result0 = "stuns";
+        if (input.substr(pos, 5).toLowerCase() === "stuns") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -11446,8 +11446,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 4) === "stun") {
-            result0 = "stun";
+          if (input.substr(pos, 4).toLowerCase() === "stun") {
+            result0 = input.substr(pos, 4);
             pos += 4;
           } else {
             result0 = null;
@@ -11802,8 +11802,8 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 5) === "turns") {
-          result0 = "turns";
+        if (input.substr(pos, 5).toLowerCase() === "turns") {
+          result0 = input.substr(pos, 5);
           pos += 5;
         } else {
           result0 = null;
@@ -11812,8 +11812,8 @@ JsSIP.grammar = (function(){
           }
         }
         if (result0 === null) {
-          if (input.substr(pos, 4) === "turn") {
-            result0 = "turn";
+          if (input.substr(pos, 4).toLowerCase() === "turn") {
+            result0 = input.substr(pos, 4);
             pos += 4;
           } else {
             result0 = null;
@@ -11840,8 +11840,8 @@ JsSIP.grammar = (function(){
         pos1 = pos;
         result0 = parse_transport();
         if (result0 !== null) {
-          if (input.substr(pos, 3) === "udp") {
-            result1 = "udp";
+          if (input.substr(pos, 3).toLowerCase() === "udp") {
+            result1 = input.substr(pos, 3);
             pos += 3;
           } else {
             result1 = null;
@@ -11850,8 +11850,8 @@ JsSIP.grammar = (function(){
             }
           }
           if (result1 === null) {
-            if (input.substr(pos, 3) === "tcp") {
-              result1 = "tcp";
+            if (input.substr(pos, 3).toLowerCase() === "tcp") {
+              result1 = input.substr(pos, 3);
               pos += 3;
             } else {
               result1 = null;

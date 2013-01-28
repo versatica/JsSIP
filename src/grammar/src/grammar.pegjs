@@ -96,7 +96,7 @@ SIP_URI_simple  = uri_scheme ":" userinfo ? hostport {
 SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
                     data.uri = input.substring(pos, offset); }
 
-uri_scheme      = uri_scheme:  "sip" {
+uri_scheme      = uri_scheme:  "sip"i {
                     data.scheme = uri_scheme; }
 
 userinfo        = user (":" password)? "@" {
@@ -174,32 +174,32 @@ uri_parameters    = ( ";" uri_parameter)*
 uri_parameter     = transport_param / user_param / method_param
                     / ttl_param / maddr_param / lr_param / other_param
 
-transport_param   = "transport=" transport: ( "udp" / "tcp" / "sctp"
-                    / "tls" / other_transport) {
+transport_param   = "transport="i transport: ( "udp"i / "tcp"i / "sctp"i
+                    / "tls"i / other_transport) {
                       if(!data.params) data.params={};
                       data.params['transport'] = transport; }
 
 other_transport   = token
 
-user_param        = "user=" user:( "phone" / "ip" / other_user) {
+user_param        = "user="i user:( "phone"i / "ip"i / other_user) {
                       if(!data.params) data.params={};
                       data.params['user'] = user; }
 
 other_user        = token
 
-method_param      = "method=" method: Method {
+method_param      = "method="i method: Method {
                       if(!data.params) data.params={};
                       data.params['method'] = method; }
 
-ttl_param         = "ttl=" ttl: ttl {
+ttl_param         = "ttl="i ttl: ttl {
                       if(!data.params) data.params={};
                       data.params['ttl'] = ttl; }
 
-maddr_param       = "maddr=" maddr: host {
+maddr_param       = "maddr="i maddr: host {
                       if(!data.params) data.params={};
                       data.params['maddr'] = maddr; }
 
-lr_param          = lr: "lr" {
+lr_param          = lr: "lr"i {
                       if(!data.params) data.params={};
                       data.params['lr'] = true; }
 
@@ -281,7 +281,7 @@ reg_name          = ( unreserved / escaped / "$" / ","
 
 query             = uric *
 
-SIP_Version       = "SIP" "/" DIGIT + "." DIGIT + {
+SIP_Version       = "SIP"i "/" DIGIT + "." DIGIT + {
                     data.sip_version = input.substring(pos, offset); }
 
 // SIP METHODS
@@ -355,11 +355,11 @@ display_name        = display_name: (token ( LWS token )* / quoted_string) {
 
 contact_params      = c_p_q / c_p_expires / contact_extension
 
-c_p_q               = "q" EQUAL q: qvalue {
+c_p_q               = "q"i EQUAL q: qvalue {
                         if(!data.params) data.params = {};
                         data.params['q'] = q; }
 
-c_p_expires         = "expires" EQUAL expires: delta_seconds {
+c_p_expires         = "expires"i EQUAL expires: delta_seconds {
                         if(!data.params) data.params = {};
                         data.params['expires'] = expires; }
 
@@ -392,11 +392,11 @@ gen_value           = token / host / quoted_string
 
 Content_Disposition     = disp_type ( SEMI disp_param )*
 
-disp_type               = "render" / "session" / "icon" / "alert" / disp_extension_token
+disp_type               = "render"i / "session"i / "icon"i / "alert"i / disp_extension_token
 
 disp_param              = handling_param / generic_param
 
-handling_param          = "handling" EQUAL ( "optional" / "required" / other_handling )
+handling_param          = "handling"i EQUAL ( "optional"i / "required"i / other_handling )
 
 other_handling          = token
 
@@ -424,16 +424,16 @@ media_type          = m_type SLASH m_subtype (SEMI m_parameter)*
 
 m_type              = discrete_type / composite_type
 
-discrete_type       = "text" / "image" / "audio" / "video" / "application"
+discrete_type       = "text"i / "image"i / "audio"i / "video"i / "application"i
                     / extension_token
 
-composite_type      = "message" / "multipart" / extension_token
+composite_type      = "message"i / "multipart"i / extension_token
 
 extension_token     = ietf_token / x_token
 
 ietf_token          = token
 
-x_token             = "x-" token
+x_token             = "x-"i token
 
 m_subtype           = extension_token / iana_token
 
@@ -486,7 +486,7 @@ From        = ( addr_spec_simple / name_addr ) ( SEMI from_param )*
 
 from_param  = tag_param / generic_param
 
-tag_param   = "tag" EQUAL tag: token {data.tag = tag; }
+tag_param   = "tag"i EQUAL tag: token {data.tag = tag; }
 
 
 //MAX-FORWARDS
@@ -504,7 +504,7 @@ Min_Expires  = min_expires: delta_seconds {data = min_expires; }
 
 Proxy_Authenticate  = proxy_authenticate: challenge
 
-challenge           = ("Digest" LWS digest_cln (COMMA digest_cln)*)
+challenge           = ("Digest"i LWS digest_cln (COMMA digest_cln)*)
                       / other_challenge
 
 other_challenge     = auth_scheme LWS auth_param (COMMA auth_param)*
@@ -518,33 +518,33 @@ auth_param_name     = token
 digest_cln          = realm / domain / nonce / opaque / stale / algorithm
                       / qop_options / auth_param
 
-realm               = "realm" EQUAL realm_value
+realm               = "realm"i EQUAL realm_value
 
 realm_value         = realm: quoted_string {data.realm = realm; }
 
-domain              = "domain" EQUAL LDQUOT URI ( SP+ URI )* RDQUOT
+domain              = "domain"i EQUAL LDQUOT URI ( SP+ URI )* RDQUOT
 
 URI                 = absoluteURI / abs_path
 
-nonce               = "nonce" EQUAL nonce_value
+nonce               = "nonce"i EQUAL nonce_value
 
 nonce_value         = nonce: quoted_string {data.nonce=nonce; }
 
-opaque              = "opaque" EQUAL opaque: quoted_string {
+opaque              = "opaque"i EQUAL opaque: quoted_string {
                         data.opaque=opaque; }
 
-stale               = "stale" EQUAL stale: ( "true" / "false" ) {
+stale               = "stale"i EQUAL stale: ( "true"i / "false"i ) {
                         data.stale=stale; }
 
-algorithm           = "algorithm" EQUAL algorithm: ( "MD5" / "MD5-sess"
+algorithm           = "algorithm"i EQUAL algorithm: ( "MD5"i / "MD5-sess"i
                       / token ) {
                       data.algorithm=algorithm; }
 
-qop_options         = "qop" EQUAL LDQUOT qop: (qop_value
+qop_options         = "qop"i EQUAL LDQUOT qop: (qop_value
                       ("," qop_value)*) RDQUOT {
                       data.qop= input.substring(pos-1, offset+5); }
 
-qop_value           = "auth-int" / "auth" / token
+qop_value           = "auth-int"i / "auth"i / token
 
 
 // PROXY-REQUIRE
@@ -579,17 +579,17 @@ route_param  = name_addr ( SEMI rr_param )*
 
 Subscription_State   = substate_value ( SEMI subexp_params )*
 
-substate_value       = ( "active" / "pending" / "terminated"
+substate_value       = ( "active"i / "pending"i / "terminated"i
                        / extension_substate ) {
                         data.state = input.substring(pos, offset); }
 
 extension_substate   = token
 
-subexp_params        = ("reason" EQUAL reason: event_reason_value) {
+subexp_params        = ("reason"i EQUAL reason: event_reason_value) {
                         if (typeof reason !== 'undefined') data.reason = reason; }
-                       / ("expires" EQUAL expires: delta_seconds) {
+                       / ("expires"i EQUAL expires: delta_seconds) {
                         if (typeof expires !== 'undefined') data.expires = expires; }
-                       / ("retry_after" EQUAL retry_after: delta_seconds) {
+                       / ("retry_after"i EQUAL retry_after: delta_seconds) {
                         if (typeof retry_after !== 'undefined') data.retry_after = retry_after; }
                        / g_p: generic_param {
                         if (typeof g_p !== 'undefined') {
@@ -598,13 +598,13 @@ subexp_params        = ("reason" EQUAL reason: event_reason_value) {
                           else data.params[g_p[0]] = true;
                        }; }
 
-event_reason_value   = "deactivated"
-                       / "probation"
-                       / "rejected"
-                       / "timeout"
-                       / "giveup"
-                       / "noresource"
-                       / "invariant"
+event_reason_value   = "deactivated"i
+                       / "probation"i
+                       / "rejected"i
+                       / "timeout"i
+                       / "giveup"i
+                       / "noresource"i
+                       / "invariant"i
                        / event_reason_extension
 
 event_reason_extension = token
@@ -635,19 +635,19 @@ via_parm          = sent_protocol LWS sent_by ( SEMI via_params )*
 
 via_params        = via_ttl / via_maddr / via_received / via_branch / response_port / via_extension
 
-via_ttl           = "ttl" EQUAL via_ttl_value: ttl {
+via_ttl           = "ttl"i EQUAL via_ttl_value: ttl {
                       data.ttl = via_ttl_value; }
 
-via_maddr         = "maddr" EQUAL via_maddr: host {
+via_maddr         = "maddr"i EQUAL via_maddr: host {
                       data.maddr = via_maddr; }
 
-via_received      = "received" EQUAL via_received: (IPv4address / IPv6address) {
+via_received      = "received"i EQUAL via_received: (IPv4address / IPv6address) {
                       data.received = via_received; }
 
-via_branch        = "branch" EQUAL via_branch: token {
+via_branch        = "branch"i EQUAL via_branch: token {
                       data.branch = via_branch; }
 
-response_port     = "rport" (EQUAL response_port: (DIGIT*) )? {
+response_port     = "rport"i (EQUAL response_port: (DIGIT*) )? {
                       if(typeof response_port !== 'undefined')
                         data.rport = response_port.join(""); }
 
@@ -655,12 +655,12 @@ via_extension     = generic_param
 
 sent_protocol     = protocol_name SLASH protocol_version SLASH transport
 
-protocol_name     = via_protocol: ( "SIP" / token ) {
+protocol_name     = via_protocol: ( "SIP"i / token ) {
                       data.protocol = via_protocol; }
 
 protocol_version  = token
 
-transport         = via_transport: ("UDP" / "TCP" / "TLS" / "SCTP" / other_transport) {
+transport         = via_transport: ("UDP"i / "TCP"i / "TLS"i / "SCTP"i / other_transport) {
                       data.transport = via_transport; }
 
 sent_by           = via_host ( COLON via_port )?
@@ -695,7 +695,7 @@ message_body      = OCTET*
 
 stun_URI          = stun_scheme ":" stun_host_port
 
-stun_scheme       = scheme: ("stuns" / "stun") {
+stun_scheme       = scheme: ("stuns"i / "stun"i) {
                       data.scheme = scheme; }
 
 stun_host_port    = stun_host ( ":" port )?
@@ -714,10 +714,10 @@ sub_delims        = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / 
 
 turn_URI          = turn_scheme ":" stun_host_port ( "?transport=" transport )?
 
-turn_scheme       = scheme: ("turns" / "turn") {
+turn_scheme       = scheme: ("turns"i / "turn"i) {
                       data.scheme = scheme; }
 
-turn_transport    = transport ("udp" / "tcp" / unreserved*) {
+turn_transport    = transport ("udp"i / "tcp"i / unreserved*) {
                       data.transport = transport; }
 
 
