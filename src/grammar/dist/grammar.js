@@ -161,7 +161,6 @@ JsSIP.grammar = (function(){
         "contact_params": parse_contact_params,
         "c_p_q": parse_c_p_q,
         "c_p_expires": parse_c_p_expires,
-        "contact_extension": parse_contact_extension,
         "delta_seconds": parse_delta_seconds,
         "qvalue": parse_qvalue,
         "generic_param": parse_generic_param,
@@ -187,7 +186,6 @@ JsSIP.grammar = (function(){
         "Expires": parse_Expires,
         "Event": parse_Event,
         "event_type": parse_event_type,
-        "event_param": parse_event_param,
         "From": parse_From,
         "from_param": parse_from_param,
         "tag_param": parse_tag_param,
@@ -8044,7 +8042,7 @@ JsSIP.grammar = (function(){
         if (result0 === null) {
           result0 = parse_c_p_expires();
           if (result0 === null) {
-            result0 = parse_contact_extension();
+            result0 = parse_generic_param();
           }
         }
         return result0;
@@ -8131,28 +8129,6 @@ JsSIP.grammar = (function(){
           result0 = (function(offset, expires) {
                                 if(!data.params) data.params = {};
                                 data.params['expires'] = expires; })(pos0, result0[2]);
-        }
-        if (result0 === null) {
-          pos = pos0;
-        }
-        return result0;
-      }
-      
-      function parse_contact_extension() {
-        var result0;
-        var pos0;
-        
-        pos0 = pos;
-        result0 = parse_generic_param();
-        if (result0 !== null) {
-          result0 = (function(offset, c_e) {
-                                if(!data.params) data.params = {};
-                                if(c_e[1]) {
-                                  data.params[c_e[0]] = c_e[1];
-                                }
-                                else {
-                                  data.params[c_e[0]] = true;
-                                }; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -8294,11 +8270,16 @@ JsSIP.grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, param, value) {
-                                if(typeof value === 'undefined')
-                                  var value = null;
-                                else
+                                if(!data.params) data.params = {};
+                                if (typeof value === 'undefined'){
+                                  value = undefined;
+                                }
+                                else {
                                   value = value[1];
-                                return [ param, value ]; })(pos0, result0[0], result0[1]);
+                                }
+        
+                                data.params[param] = value;
+                                })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -8912,7 +8893,7 @@ JsSIP.grammar = (function(){
           pos2 = pos;
           result2 = parse_SEMI();
           if (result2 !== null) {
-            result3 = parse_event_param();
+            result3 = parse_generic_param();
             if (result3 !== null) {
               result2 = [result2, result3];
             } else {
@@ -8928,7 +8909,7 @@ JsSIP.grammar = (function(){
             pos2 = pos;
             result2 = parse_SEMI();
             if (result2 !== null) {
-              result3 = parse_event_param();
+              result3 = parse_generic_param();
               if (result3 !== null) {
                 result2 = [result2, result3];
               } else {
@@ -9023,28 +9004,6 @@ JsSIP.grammar = (function(){
           }
         } else {
           result0 = null;
-          pos = pos0;
-        }
-        return result0;
-      }
-      
-      function parse_event_param() {
-        var result0;
-        var pos0;
-        
-        pos0 = pos;
-        result0 = parse_generic_param();
-        if (result0 !== null) {
-          result0 = (function(offset, e_v) {
-                              if(!data.params) data.params = {};
-                              if(e_v[1]) {
-                                data.params[e_v[0]] = e_v[1];
-                              }
-                              else {
-                                data.params[e_v[0]] = true;
-                              }; })(pos0, result0);
-        }
-        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -10455,19 +10414,7 @@ JsSIP.grammar = (function(){
               pos = pos0;
             }
             if (result0 === null) {
-              pos0 = pos;
               result0 = parse_generic_param();
-              if (result0 !== null) {
-                result0 = (function(offset, g_p) {
-                                      if (typeof g_p !== 'undefined') {
-                                        if(!data.params) data.params = {};
-                                        if(g_p[1]) data.params[g_p[0]] = g_p[1];
-                                        else data.params[g_p[0]] = true;
-                                     }; })(pos0, result0);
-              }
-              if (result0 === null) {
-                pos = pos0;
-              }
             }
           }
         }

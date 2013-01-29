@@ -363,14 +363,7 @@ c_p_expires         = "expires"i EQUAL expires: delta_seconds {
                         if(!data.params) data.params = {};
                         data.params['expires'] = expires; }
 
-contact_extension   = c_e: generic_param {
-                        if(!data.params) data.params = {};
-                        if(c_e[1]) {
-                          data.params[c_e[0]] = c_e[1];
-                        }
-                        else {
-                          data.params[c_e[0]] = true;
-                        }; }
+contact_extension   = generic_param
 
 delta_seconds       = delta_seconds: DIGIT+ {
                         return parseInt(delta_seconds.join("")); }
@@ -379,11 +372,16 @@ qvalue              = "0" ( "." DIGIT? DIGIT? DIGIT? )? {
                         return parseFloat(input.substring(pos, offset)); }
 
 generic_param       = param: token  value: ( EQUAL gen_value )? {
-                        if(typeof value === 'undefined')
-                          var value = null;
-                        else
+                        if(!data.params) data.params = {};
+                        if (typeof value === 'undefined'){
+                          value = undefined;
+                        }
+                        else {
                           value = value[1];
-                        return [ param, value ]; }
+                        }
+
+                        data.params[param] = value;
+                        }
 
 gen_value           = token / host / quoted_string
 
@@ -470,15 +468,7 @@ event_package     = token_nodot
 
 event_template    = token_nodot
 
-event_param       = e_v: generic_param {
-                      if(!data.params) data.params = {};
-                      if(e_v[1]) {
-                        data.params[e_v[0]] = e_v[1];
-                      }
-                      else {
-                        data.params[e_v[0]] = true;
-                      }; }
-
+event_param       = generic_param
 
 // FROM
 
@@ -591,12 +581,7 @@ subexp_params        = ("reason"i EQUAL reason: event_reason_value) {
                         if (typeof expires !== 'undefined') data.expires = expires; }
                        / ("retry_after"i EQUAL retry_after: delta_seconds) {
                         if (typeof retry_after !== 'undefined') data.retry_after = retry_after; }
-                       / g_p: generic_param {
-                        if (typeof g_p !== 'undefined') {
-                          if(!data.params) data.params = {};
-                          if(g_p[1]) data.params[g_p[0]] = g_p[1];
-                          else data.params[g_p[0]] = true;
-                       }; }
+                       / generic_param
 
 event_reason_value   = "deactivated"i
                        / "probation"i
