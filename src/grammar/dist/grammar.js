@@ -2972,7 +2972,7 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 3).toLowerCase() === "sip") {
+        if (input.substr(pos, 4).toLowerCase() === "sip:") {
           result0 = input.substr(pos, 3);
           pos += 3;
         } else {
