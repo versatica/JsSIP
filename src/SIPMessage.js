@@ -398,7 +398,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
     response += 'Content-Length: ' + length + '\r\n\r\n';
     response += body;
   } else {
-    response += '\r\n';
+    response += 'Content-Length: ' + 0 + '\r\n\r\n';
   }
 
   this.server_transaction.receiveResponse(code, response, onSuccess, onFailure);
@@ -442,7 +442,8 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
   response += 'To: ' + to + '\r\n';
   response += 'From: ' + this.getHeader('From') + '\r\n';
   response += 'Call-ID: ' + this.call_id + '\r\n';
-  response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n\r\n';
+  response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
+  response += 'Content-Length: ' + 0 + '\r\n\r\n';
 
   this.transport.send(response);
 };
