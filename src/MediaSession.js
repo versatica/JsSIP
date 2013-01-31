@@ -107,17 +107,20 @@ JsSIP.MediaSession.prototype = {
   * @param {Function} onSuccess Fired when there are no more ICE candidates
   */
   start: function(onSuccess) {
-    var
+    var idx, server,
       session = this,
       sent = false,
-      stun_uri = this.session.ua.configuration.stun_server,
-      turn_uri = this.session.ua.configuration.turn_uri,
-      turn_password = this.session.ua.configuration.turn_password,
-      servers = [ {"url": stun_uri} ];
+      servers = [];
 
-      if (turn_uri) {
-        servers.push({"url": turn_uri, "credential": turn_password});
-      }
+    for (idx in this.session.ua.configuration.stun_servers) {
+      server = this.session.ua.configuration.stun_server[idx];
+      servers.push({'url': server});
+    }
+
+    for (idx in this.session.ua.configuration.turn_servers) {
+      server = this.session.ua.configuration.turn_servers[idx];
+      servers.push({'url': server.username +'@'+ server.server, 'credential': server.password});
+    }
 
     this.peerConnection = new webkitRTCPeerConnection({"iceServers": servers});
 
