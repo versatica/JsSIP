@@ -94,7 +94,7 @@ JsSIP.Registrator.prototype = {
           while(contacts--) {
             contact = response.parseHeader('contact', contacts);
             if(contact.uri === this.ua.contact.uri) {
-              expires = contact.params.expires;
+              expires = contact.getParam('expires');
               break;
             }
           }
@@ -115,11 +115,11 @@ JsSIP.Registrator.prototype = {
           }, (expires * 1000) - 3000);
 
           //Save gruu values
-          if (contact.params['temp-gruu']) {
-            this.ua.contact.temp_gruu = contact.params['temp-gruu'].replace(/"/g,'');
+          if (contact.hasParam('temp-gruu')) {
+            this.ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g,'');
           }
-          if (contact.params['pub-gruu']) {
-            this.ua.contact.pub_gruu = contact.params['pub-gruu'].replace(/"/g,'');
+          if (contact.hasParam('pub-gruu')) {
+            this.ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g,'');
           }
 
           this.registered = true;

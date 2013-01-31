@@ -73,7 +73,7 @@ JsSIP.Parser = {
         parsed = message.parseHeader('from');
         if(parsed) {
           message.from = parsed;
-          message.from_tag = parsed.tag;
+          message.from_tag = parsed.getParam('tag');
         }
         break;
       case 'to':
@@ -82,7 +82,7 @@ JsSIP.Parser = {
         parsed = message.parseHeader('to');
         if(parsed) {
           message.to = parsed;
-          message.to_tag = parsed.tag;
+          message.to_tag = parsed.getParam('tag');
         }
         break;
       case 'record-route':
@@ -191,7 +191,7 @@ JsSIP.Parser = {
     } else if(!parsed.status_code) {
       message = new JsSIP.IncomingRequest();
       message.method = parsed.method;
-      message.ruri = parsed;
+      message.ruri = parsed.uri;
     } else {
       message = new JsSIP.IncomingResponse();
       message.status_code = parsed.status_code;

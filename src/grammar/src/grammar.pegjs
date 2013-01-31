@@ -91,19 +91,33 @@ quoted_pair = "\\" ( [\x00-\x09] / [\x0B-\x0C] / [\x0E-\x7F] )
 //=======================
 
 SIP_URI_simple  = uri_scheme ":" userinfo ? hostport {
-                    data.uri = input.substring(pos, offset); }
+                    data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port);
+                    delete data.scheme;
+                    delete data.user;
+                    delete data.host;
+                    delete data.host_type;
+                    delete data.port;
+                    delete data.uri_params;
+                    if (startRule === 'SIP_URI_simple') { data = data.uri;};}
 
 SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
-                    data.uri = input.substring(pos, offset); }
+                    data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
+                    delete data.scheme;
+                    delete data.user;
+                    delete data.host;
+                    delete data.host_type;
+                    delete data.port;
+                    delete data.uri_params;
+                    if (startRule === 'SIP_URI') { data = data.uri;};}
 
 uri_scheme      = uri_scheme:  "sip"i {
-                    data.scheme = uri_scheme; }
+                    data.scheme = uri_scheme.toLowerCase(); }
 
 userinfo        = user (":" password)? "@" {
-                    data.user = input.substring(pos-1, offset); }
+                    data.user = window.decodeURIComponent(input.substring(pos-1, offset));}
 
 user            = ( unreserved / escaped / user_unreserved )+ {
-                    data.user = input.substring(pos, offset); }
+                    data.user = window.decodeURIComponent(input.substring(pos, offset));}
 
 user_unreserved = "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
 
@@ -113,7 +127,7 @@ password        = ( unreserved / escaped / "&" / "=" / "+" / "$" / "," )* {
 hostport        = host ( ":" port )?
 
 host            = ( hostname / IPv4address / IPv6reference ) {
-                    data.host = input.substring(pos, offset); }
+                    data.host = input.substring(pos, offset).toLowerCase(); }
 
 hostname        = ( domainlabel "." )* toplabel  "." ? {
                   data.host_type = 'domain';
@@ -176,41 +190,42 @@ uri_parameter     = transport_param / user_param / method_param
 
 transport_param   = "transport="i transport: ( "udp"i / "tcp"i / "sctp"i
                     / "tls"i / other_transport) {
-                      if(!data.params) data.params={};
-                      data.params['transport'] = transport; }
+                      if(!data.uri_params) data.uri_params={};
+                      data.uri_params['transport'] = transport.toLowerCase(); }
 
 other_transport   = token
 
 user_param        = "user="i user:( "phone"i / "ip"i / other_user) {
-                      if(!data.params) data.params={};
-                      data.params['user'] = user; }
+                      if(!data.uri_params) data.uri_params={};
+                      data.uri_params['user'] = user.toLowerCase(); }
 
 other_user        = token
 
 method_param      = "method="i method: Method {
-                      if(!data.params) data.params={};
-                      data.params['method'] = method; }
+                      if(!data.uri_params) data.uri_params={};
+                      data.uri_params['method'] = method.toLowerCase(); }
 
 ttl_param         = "ttl="i ttl: ttl {
                       if(!data.params) data.params={};
                       data.params['ttl'] = ttl; }
 
 maddr_param       = "maddr="i maddr: host {
-                      if(!data.params) data.params={};
-                      data.params['maddr'] = maddr; }
+                      if(!data.uri_params) data.uri_params={};
+                      data.uri_params['maddr'] = maddr.toLowerCase(); }
 
 lr_param          = lr: "lr"i {
-                      if(!data.params) data.params={};
-                      data.params['lr'] = true; }
+                      if(!data.uri_params) data.uri_params={};
+                      data.uri_params['lr'] = undefined; }
 
-other_param       = param_name: pname ( "=" pvalue )? {
-                      if(!data.params) data.params={};
-                      if(param_name.length === (pos - offset)) {
-                        data.params[param_name] = true;
+other_param       = param: pname value: ( "=" pvalue )? {
+                      if(!data.uri_params) data.uri_params = {};
+                      if (typeof value === 'undefined'){
+                        value = undefined;
                       }
                       else {
-                        data.params[param_name] = input.substring(pos, offset+param_name.length+1);
-                      }; }
+                        value = value[1];
+                      }
+                      data.uri_params[param.toLowerCase()] = value && value.toLowerCase();}
 
 pname             = pname: paramchar + {return pname.join(""); }
 
@@ -339,7 +354,8 @@ Call_ID  =  word ( "@" word )? {
 
 // CONTACT
 
-Contact             = ( STAR / (contact_param (COMMA contact_param)*) )
+Contact             = ( STAR / (contact_param (COMMA contact_param)*) ) {
+                        data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);}
 
 contact_param       = (addr_spec / name_addr) (SEMI contact_params)*
 
@@ -350,8 +366,12 @@ addr_spec           = SIP_URI / absoluteURI
 addr_spec_simple    = SIP_URI_simple / absoluteURI
 
 display_name        = display_name: (token ( LWS token )* / quoted_string) {
+                        display_name = input.substring(pos, offset).trim();
+                        if (display_name[0] === '\"') {
+                          display_name = display_name.substring(1, display_name.length-1);
+                        }
                         data.display_name = display_name; }
-                        // The previous is corrected from RFC3261
+                        // The previous rule is corrected from RFC3261
 
 contact_params      = c_p_q / c_p_expires / contact_extension
 
@@ -379,9 +399,7 @@ generic_param       = param: token  value: ( EQUAL gen_value )? {
                         else {
                           value = value[1];
                         }
-
-                        data.params[param] = value;
-                        }
+                        data.params[param.toLowerCase()] = value && value.toLowerCase();}
 
 gen_value           = token / host / quoted_string
 
@@ -472,7 +490,10 @@ event_param       = generic_param
 
 // FROM
 
-From        = ( addr_spec_simple / name_addr ) ( SEMI from_param )*
+From        = ( addr_spec_simple / name_addr ) ( SEMI from_param )* {
+                var tag = data.tag;
+                data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                if (tag) {data.setParam('tag',tag)}}
 
 from_param  = tag_param / generic_param
 
@@ -607,10 +628,12 @@ Supported  = ( option_tag (COMMA option_tag)* )?
 
 // TO
 
-To         = ( addr_spec_simple / name_addr ) ( SEMI to_param )*
+To         = ( addr_spec_simple / name_addr ) ( SEMI to_param )* {
+              var tag = data.tag;
+              data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+              if (tag) {data.setParam('tag',tag)}}
 
 to_param   = tag_param / generic_param
-
 
 // VIA
 
@@ -708,7 +731,7 @@ turn_transport    = transport ("udp"i / "tcp"i / unreserved*) {
 
 // Lazy uri
 
-lazy_uri  = (uri_scheme ':')? user (':' password)? ('@' hostport)? uri_parameters {
+lazy_uri  = (uri_scheme ':')? user (':' password)? ('@' hostport)? {
             if (data.password) {
               data.user = data.user +':'+ data.password;
             }}

@@ -378,7 +378,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
 
   if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
-  } else if(this.to_tag && !this.s('to').tag) {
+  } else if(this.to_tag && !this.s('to').hasParam('tag')) {
     to += ';tag=' + this.to_tag;
   }
 
@@ -435,7 +435,7 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
 
   if(!this.to_tag) {
     to += ';tag=' + JsSIP.utils.newTag();
-  } else if(this.to_tag && !this.s('to').tag) {
+  } else if(this.to_tag && !this.s('to').hasParam('tag')) {
     to += ';tag=' + this.to_tag;
   }
 

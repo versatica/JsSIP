@@ -27,13 +27,28 @@ JsSIP.utils = {
     return UUID;
   },
 
-  checkUri: function(target) {
-    if (!target) {
-      return false;
-    } else if(JsSIP.grammar.parse(target, 'lazy_uri') === -1) {
-      return false;
+  createURI: function(uri) {
+    var parsed;
+
+    if (!/^sip:/.test(uri)) {
+      uri = JsSIP.c.SIP +':'+ uri;
+    }
+
+    uri = JsSIP.grammar.parse(uri,'SIP_URI');
+
+    if (parsed !== -1) {
+      return uri;
+    }
+  },
+
+  hostType: function(host) {
+    if (!host) {
+      return;
     } else {
-      return true;
+      host = JsSIP.grammar.parse(host,'host');
+      if (host !== -1) {
+        return host.host_type;
+      }
     }
   },
 
@@ -43,31 +58,33 @@ JsSIP.utils = {
   * @param {String} target
   * @param {String} [domain]
   */
-  normalizeUri: function(target, domain) {
+  normalizeURI: function(target, domain) {
     var uri, parameter, string;
 
-    if (!JsSIP.utils.checkUri(target)) {
-      console.log('Invalid target: '+ target);
-      return;
+    if (target) {
+      uri = JsSIP.grammar.parse(target, 'lazy_uri');
+
+      if (uri === -1) {
+        console.log('Invalid target: '+ target);
+        return;
+      }
+
+      if (!uri.host && !domain) {
+        console.log('No domain specified in target nor as function parameter');
+        return;
+      }
+
+      string = (uri.scheme || JsSIP.c.SIP) + ':';
+      string += uri.user;
+      string += '@' + (uri.host || domain);
+      string += (uri.port)? ':' + uri.port : '';
+
+      for (parameter in uri.params) {
+        string += ';'+ parameter;
+        string += (uri.params[parameter] === undefined)? '' : '='+ uri.params[parameter];
+      }
+      return string;
     }
-
-    uri = JsSIP.grammar.parse(target, 'lazy_uri');
-
-    if (!uri.host && !domain) {
-      console.log('No domain specified in target nor as function parameter');
-      return;
-    }
-
-    string = (uri.scheme)? uri.scheme +':' : 'sip:';
-    string += uri.user;
-    string += '@' + (uri.host? uri.host : domain);
-    string += (uri.port)? ':' + uri.port : '';
-
-    for (parameter in uri.params) {
-      string += ';'+ parameter;
-      string += (uri.params[parameter] === true)? '' : '='+ uri.params[parameter];
-    }
-    return string;
   },
 
   headerize: function(string) {

@@ -103,7 +103,7 @@ JsSIP.Session.prototype.connect = function(target, options) {
   }
 
   // Check target validity
-  target = JsSIP.utils.normalizeUri(target, this.ua.configuration.domain);
+  target = JsSIP.utils.normalizeURI(target, this.ua.configuration.domain);
   if (!target) {
     throw new JsSIP.exceptions.InvalidTargetError();
   }
@@ -746,10 +746,10 @@ JsSIP.Session.prototype.newSession = function(originator, request, target) {
   session.direction = (originator === 'local') ? 'outgoing' : 'incoming';
 
   if (originator === 'remote') {
-    session.local_identity = request.s('to').uri;
-    session.remote_identity = request.s('from').uri;
+    session.local_identity = request.s('to').uri.toAor();
+    session.remote_identity = request.s('from').uri.toAor();
   } else if (originator === 'local'){
-    session.local_identity = session.ua.configuration.user;
+    session.local_identity = session.ua.configuration.from_uri;
     session.remote_identity = target;
   }
 
