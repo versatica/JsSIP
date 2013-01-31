@@ -4,9 +4,10 @@
  *
  * @param {String} [scheme]
  * @param {String} [user]
- * @param {String} [host]
+ * @param {String} host
  * @param {String} [port]
  * @param {Object} [parameters]
+ * @param {Object} [headers]
  *
  */
 JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
