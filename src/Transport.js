@@ -20,6 +20,7 @@ JsSIP.Transport = function(ua, server) {
   this.closed = false;
   this.connected = false;
   this.reconnectTimer = null;
+  this.lastTransportError = {};
 
   this.ua.transport = this;
 
@@ -127,6 +128,8 @@ JsSIP.Transport.prototype = {
     var connected_before = this.connected;
 
     this.connected = false;
+    this.lastTransportError.code = e.code;
+    this.lastTransportError.reason = e.reason;
     console.warn(JsSIP.c.LOG_TRANSPORT +'WebSocket disconnected: code=' + e.code + (e.reason? ', reason=' + e.reason : ''));
 
     if(e.wasClean === false) {
@@ -140,6 +143,12 @@ JsSIP.Transport.prototype = {
         // Reset reconnection_attempts
         this.reconnection_attempts = 0;
         this.reConnect();
+      } else {
+        this.ua.emit('disconnected', this.ua, {
+          transport: this,
+          code: this.lastTransportError.code,
+          reason: this.lastTransportError.reason
+        });
       }
     } else {
       // This is the first connection attempt

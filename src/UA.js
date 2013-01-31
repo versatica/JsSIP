@@ -301,6 +301,12 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
   transport.server.status = JsSIP.c.WS_SERVER_ERROR;
   console.log(JsSIP.c.LOG_UA +'connection status set to: '+ JsSIP.c.WS_SERVER_ERROR);
 
+  this.emit('disconnected', this, {
+    transport: transport,
+    code: transport.lastTransportError.code,
+    reason: transport.lastTransportError.reason
+  });
+
   server = this.getNextWsServer();
 
   if(server) {
@@ -310,9 +316,7 @@ JsSIP.UA.prototype.onTransportError = function(transport) {
     if (!this.error || this.error !== JsSIP.c.UA_NETWORK_ERROR) {
       this.status = JsSIP.c.UA_STATUS_NOT_READY;
       this.error = JsSIP.c.UA_NETWORK_ERROR;
-      this.emit('disconnected');
     }
-
     // Transport Recovery process
     this.recoverTransport();
   }
@@ -339,7 +343,9 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
 
   this.status = JsSIP.c.UA_STATUS_READY;
   this.error = null;
-  this.emit('connected', this);
+  this.emit('connected', this, {
+    transport: transport
+  });
 
   if(this.configuration.register) {
     if(this.registrator) {

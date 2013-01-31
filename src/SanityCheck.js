@@ -36,7 +36,7 @@ JsSIP.sanityCheck = (function() {
 
   // Sanity Check functions for requests
   function rfc3261_8_2_2_1() {
-    if(message.s('to').scheme !== 'sip') {
+    if(message.s('to').uri.scheme !== 'sip') {
       reply(416);
       return false;
     }

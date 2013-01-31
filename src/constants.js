@@ -39,6 +39,9 @@ JsSIP.c = {
   LOG_MESSAGE_SUMMARY:        JsSIP.name() +' | '+ 'MESSAGE_SUMMARY' +' | ',
 
 
+  // SIP schemes
+  SIP: 'sip',
+
   // Transaction states
   TRANSACTION_TRYING:     1,
   TRANSACTION_PROCEEDING: 2,

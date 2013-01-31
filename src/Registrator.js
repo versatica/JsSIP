@@ -94,7 +94,7 @@ JsSIP.Registrator.prototype = {
           while(contacts--) {
             contact = response.parseHeader('contact', contacts);
             if(contact.uri === this.ua.contact.uri) {
-              expires = contact.params.expires;
+              expires = contact.getParam('expires');
               break;
             }
           }
@@ -106,10 +106,6 @@ JsSIP.Registrator.prototype = {
 
           if(!expires) {
             expires = this.expires;
-          } else if(expires < this.min_expires) {
-            // Set the expires value to min_expires in case it is slower
-            console.log(JsSIP.c.LOG_REGISTRATOR +'Received expires value: ' + expires + ' is smaller than the minimum expires time: ' + this.min_expires);
-            expires = this.min_expires;
           }
 
           // Re-Register before the expiration interval has elapsed.
@@ -119,11 +115,11 @@ JsSIP.Registrator.prototype = {
           }, (expires * 1000) - 3000);
 
           //Save gruu values
-          if (contact.params['temp-gruu']) {
-            this.ua.contact.temp_gruu = contact.params['temp-gruu'].replace(/"/g,'');
+          if (contact.hasParam('temp-gruu')) {
+            this.ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g,'');
           }
-          if (contact.params['pub-gruu']) {
-            this.ua.contact.pub_gruu = contact.params['pub-gruu'].replace(/"/g,'');
+          if (contact.hasParam('pub-gruu')) {
+            this.ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g,'');
           }
 
           this.registered = true;
