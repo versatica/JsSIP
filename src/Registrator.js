@@ -142,13 +142,6 @@ JsSIP.Registrator.prototype = {
           break;
         default:
           cause = JsSIP.Utils.sipErrorCause(response.status_code);
-
-          if (cause) {
-            cause = JsSIP.C.causes[cause];
-          } else {
-            cause = JsSIP.C.causes.SIP_FAILURE_CODE;
-          }
-
           this.registrationFailure(response, cause);
       }
     };
@@ -226,12 +219,6 @@ JsSIP.Registrator.prototype = {
           break;
         default:
           cause = JsSIP.Utils.sipErrorCause(response.status_code);
-
-          if (cause) {
-            cause = JsSIP.C.causes[cause];
-          } else {
-            cause = JsSIP.C.causes.SIP_FAILURE_CODE;
-          }
           this.unregistered(response, cause);
       }
     };

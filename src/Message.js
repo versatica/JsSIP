@@ -102,15 +102,7 @@ JsSIP.Message.prototype.receiveResponse = function(response) {
 
     default:
       delete this.ua.applicants[this];
-
       cause = JsSIP.Utils.sipErrorCause(response.status_code);
-
-      if (cause) {
-        cause = JsSIP.C.causes[cause];
-      } else {
-        cause = JsSIP.C.causes.SIP_FAILURE_CODE;
-      }
-
       this.emit('failed', this, {
         originator: 'remote',
         response: response,
