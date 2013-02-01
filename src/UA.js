@@ -666,6 +666,14 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     }
   }
 
+  if (!(configuration.stun_servers instanceof Array)){
+    configuration.stun_servers = [configuration.stun_servers];
+  }
+
+  if (!(configuration.turn_servers instanceof Array)){
+    configuration.turn_servers = [configuration.turn_servers];
+  }
+
   // Check Mandatory parameters
   for(parameter in JsSIP.UA.configuration_check.mandatory) {
     if(!configuration.hasOwnProperty(parameter)) {
