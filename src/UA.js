@@ -708,7 +708,8 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   //for this instance.
   settings.jssip_id = Math.random().toString(36).substr(2, 5);
 
-  uri = JsSIP.grammar.parse(settings.uri, 'lazy_uri');
+  uri = JsSIP.Utils.createURI(settings.uri);
+  settings.from_uri = uri.toAor();
 
   settings.user = uri.user;
   settings.domain = uri.host;
@@ -717,9 +718,6 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   if (!settings.authorization_user) {
     settings.authorization_user = settings.user;
   }
-
-  // Create the From uri
-  settings.from_uri = (uri.scheme ? '':'sip:') + settings.uri;
 
   // User no_answer_timeout
   settings.no_answer_timeout = settings.no_answer_timeout * 1000;
