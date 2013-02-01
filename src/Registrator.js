@@ -257,6 +257,11 @@ JsSIP.Registrator.prototype = {
   * @private
   */
   registrationFailure: function(response, cause) {
+    this.ua.emit('registrationFailed', this.ua, {
+      response: response || null,
+      cause: cause
+    });
+
     if (this.registered) {
       this.registered = false;
       this.ua.emit('unregistered', this.ua, {
@@ -264,10 +269,6 @@ JsSIP.Registrator.prototype = {
         cause: cause
       });
     }
-    this.ua.emit('registrationFailed', this.ua, {
-      response: response || null,
-      cause: cause
-    });
   },
 
   /**
