@@ -242,7 +242,7 @@ JsSIP.UA.prototype.saveCredentials = function(credentials) {
 JsSIP.UA.prototype.getCredentials = function(request) {
   var realm, credentials;
 
-  realm = JsSIP.grammar.parse(request.headers['To'].toString(), 'To').host;
+  realm = JsSIP.grammar.parse(request.headers['To'].toString(), 'To').uri.host;
 
   if (this.cache.credentials[realm] && this.cache.credentials[realm][request.ruri]) {
     credentials = this.cache.credentials[realm][request.ruri];
