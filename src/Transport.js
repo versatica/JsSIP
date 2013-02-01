@@ -9,7 +9,7 @@
  * @augments JsSIP
  * @class Transport
  * @param {JsSIP.UA} ua
- * @param {Object} server outbound_proxy_set Object
+ * @param {Object} server ws_server Object
  */
 
 JsSIP.Transport = function(ua, server) {
