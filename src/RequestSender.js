@@ -20,7 +20,7 @@ JsSIP.RequestSender = function(applicant, ua) {
   this.staled = false;
 
   // If ua is in closing process or even closed just allow sending Bye and ACK
-  if (ua.status === JsSIP.c.UA_STATUS_USER_CLOSED && (this.method !== JsSIP.c.BYE || this.method !== JsSIP.c.ACK)) {
+  if (ua.status === JsSIP.C.UA_STATUS_USER_CLOSED && (this.method !== JsSIP.C.BYE || this.method !== JsSIP.C.ACK)) {
     this.onTransportError();
   }
 
@@ -33,9 +33,9 @@ JsSIP.RequestSender = function(applicant, ua) {
 JsSIP.RequestSender.prototype = {
   send: function() {
     if (this.credentials && !this.challenged) {
-      if (this.request.method === JsSIP.c.REGISTER) {
+      if (this.request.method === JsSIP.C.REGISTER) {
         this.request.setHeader('authorization', this.credentials.authenticate());
-      } else if (this.request.method !== JsSIP.c.CANCEL) {
+      } else if (this.request.method !== JsSIP.C.CANCEL) {
         this.request.setHeader('proxy-authorization', this.credentials.authenticate());
       }
     }
@@ -104,7 +104,7 @@ JsSIP.RequestSender.prototype = {
         }
 
 
-        if (response.method === JsSIP.c.REGISTER) {
+        if (response.method === JsSIP.C.REGISTER) {
           cseq = this.applicant.cseq += 1;
         } else if (this.request.dialog){
           cseq = this.request.dialog.local_seqnum += 1;

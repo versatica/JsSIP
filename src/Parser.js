@@ -177,7 +177,7 @@ JsSIP.Parser = {
       headerEnd = data.indexOf('\r\n');
 
     if(headerEnd === -1) {
-      console.log(JsSIP.c.LOG_PARSER +'No CRLF found. Not a SIP message.');
+      console.log(JsSIP.C.LOG_PARSER +'No CRLF found. Not a SIP message.');
       return;
     }
 
@@ -186,7 +186,7 @@ JsSIP.Parser = {
     parsed = JsSIP.grammar.parse(firstLine, 'Request_Response');
 
     if(parsed === -1) {
-      console.log(JsSIP.c.LOG_PARSER +'Error parsing first line of SIP message: "' + firstLine + '"');
+      console.log(JsSIP.C.LOG_PARSER +'Error parsing first line of SIP message: "' + firstLine + '"');
       return;
     } else if(!parsed.status_code) {
       message = new JsSIP.IncomingRequest();

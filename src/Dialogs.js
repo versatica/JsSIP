@@ -9,7 +9,7 @@
  * @param {JsSIP.Session} session
  * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} msg
  * @param {Enum} type UAC / UAS
- * @param {Enum} state JsSIP.c.DIALOG_EARLY / JsSIP.c.DIALOG_CONFIRMED
+ * @param {Enum} state JsSIP.C.DIALOG_EARLY / JsSIP.C.DIALOG_CONFIRMED
  */
 
 // RFC 3261 12.1
@@ -17,17 +17,17 @@ JsSIP.Dialog = function(session, msg, type, state) {
   var contact;
 
   if(msg.countHeader('contact') === 0) {
-    console.log(JsSIP.c.LOG_DIALOG + 'No contact header field. Silently discarded');
+    console.log(JsSIP.C.LOG_DIALOG + 'No contact header field. Silently discarded');
     return false;
   }
 
   if(msg instanceof JsSIP.IncomingResponse) {
-    state = (msg.status_code < 200) ? JsSIP.c.DIALOG_EARLY : JsSIP.c.DIALOG_CONFIRMED;
+    state = (msg.status_code < 200) ? JsSIP.C.DIALOG_EARLY : JsSIP.C.DIALOG_CONFIRMED;
   } else if (msg instanceof JsSIP.IncomingRequest) {
     // Create confirmed dialog if state is not defined
-    state = state || JsSIP.c.DIALOG_CONFIRMED;
+    state = state || JsSIP.C.DIALOG_CONFIRMED;
   } else {
-    console.log(JsSIP.c.LOG_DIALOG + 'Received message is not a request neither a response');
+    console.log(JsSIP.C.LOG_DIALOG + 'Received message is not a request neither a response');
     return false;
   }
 
@@ -70,7 +70,7 @@ JsSIP.Dialog = function(session, msg, type, state) {
 
   this.session = session;
   session.ua.dialogs[this.id.toString()] = this;
-  console.log(JsSIP.c.LOG_DIALOG +'New ' + type + ' dialog created: ' + this.state);
+  console.log(JsSIP.C.LOG_DIALOG +'New ' + type + ' dialog created: ' + this.state);
 };
 
 JsSIP.Dialog.prototype = {
@@ -79,9 +79,9 @@ JsSIP.Dialog.prototype = {
    * @param {Enum} UAC/UAS
    */
   update: function(message, type) {
-    this.state = JsSIP.c.DIALOG_CONFIRMED;
+    this.state = JsSIP.C.DIALOG_CONFIRMED;
 
-    console.log(JsSIP.c.LOG_DIALOG +'dialog state changed to \'CONFIRMED\' state');
+    console.log(JsSIP.C.LOG_DIALOG +'dialog state changed to \'CONFIRMED\' state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -90,7 +90,7 @@ JsSIP.Dialog.prototype = {
   },
 
   terminate: function() {
-    console.log(JsSIP.c.LOG_DIALOG +'dialog state: ' + this.id.toString() + ' deleted');
+    console.log(JsSIP.C.LOG_DIALOG +'dialog state: ' + this.id.toString() + ' deleted');
     delete this.session.ua.dialogs[this.id.toString()];
   },
 
@@ -107,7 +107,7 @@ JsSIP.Dialog.prototype = {
 
     if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }
 
-    cseq = (method === JsSIP.c.CANCEL || method === JsSIP.c.ACK) ? this.local_seqnum : this.local_seqnum += 1;
+    cseq = (method === JsSIP.C.CANCEL || method === JsSIP.C.ACK) ? this.local_seqnum : this.local_seqnum += 1;
 
     request = new JsSIP.OutgoingRequest(
       method,
@@ -136,9 +136,9 @@ JsSIP.Dialog.prototype = {
   checkInDialogRequest: function(request) {
     if(!this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
-    } else if(request.method !== JsSIP.c.INVITE && request.cseq < this.remote_seqnum) {
+    } else if(request.method !== JsSIP.C.INVITE && request.cseq < this.remote_seqnum) {
         //Do not try to reply to an ACK request.
-        if (request.method !== JsSIP.c.ACK) {
+        if (request.method !== JsSIP.C.ACK) {
           request.reply(500);
         }
         return false;
@@ -148,9 +148,9 @@ JsSIP.Dialog.prototype = {
 
     switch(request.method) {
       // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
-      case JsSIP.c.INVITE:
+      case JsSIP.C.INVITE:
         if(request.cseq < this.remote_seqnum) {
-          if(this.state === JsSIP.c.DIALOG_EARLY) {
+          if(this.state === JsSIP.C.DIALOG_EARLY) {
             var retryAfter = (Math.random() * 10 | 0) + 1;
             request.reply(500, null, ['Retry-After:'+ retryAfter]);
           } else {
@@ -159,7 +159,7 @@ JsSIP.Dialog.prototype = {
           return false;
         }
         // RFC3261 14.2
-        if(this.state === JsSIP.c.DIALOG_EARLY) {
+        if(this.state === JsSIP.C.DIALOG_EARLY) {
           request.reply(491);
           return false;
         }
@@ -168,7 +168,7 @@ JsSIP.Dialog.prototype = {
           this.remote_target = request.parseHeader('contact').uri;
         }
         break;
-      case JsSIP.c.NOTIFY:
+      case JsSIP.C.NOTIFY:
         // RFC6655 3.2 Replace the dialog`s remote target URI
         if(request.hasHeader('contact')) {
           this.remote_target = request.parseHeader('contact').uri;

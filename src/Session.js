@@ -18,7 +18,7 @@ JsSIP.Session = function(ua) {
   ];
 
   this.ua = ua;
-  this.status = JsSIP.c.SESSION_NULL;
+  this.status = JsSIP.C.SESSION_NULL;
   this.dialog = null;
   this.earlyDialogs = [];
   this.mediaSession = null;
@@ -62,7 +62,7 @@ JsSIP.Session.prototype = new JsSIP.EventEmitter();
 JsSIP.Session.prototype.init_incoming = function(request) {
   // Session parameter initialization
   this.from_tag = request.from_tag;
-  this.status = JsSIP.c.SESSION_INVITE_RECEIVED;
+  this.status = JsSIP.C.SESSION_INVITE_RECEIVED;
   this.id = request.call_id + this.from_tag;
   this.request = request;
 
@@ -76,17 +76,17 @@ JsSIP.Session.prototype.connect = function(target, options) {
   var event, eventHandlers, request, selfView, remoteView, mediaType, extraHeaders, requestParams;
 
   // Check UA Status
-  JsSIP.utils.checkUAStatus(this.ua);
+  JsSIP.Utils.checkUAStatus(this.ua);
 
   // Check WebRTC support
-  if(!JsSIP.utils.isWebRtcSupported()) {
-    console.log(JsSIP.c.LOG_UA +'rtcweb not supported.');
-    throw new JsSIP.exceptions.WebRtcNotSupportedError();
+  if(!JsSIP.Utils.isWebRtcSupported()) {
+    console.log(JsSIP.C.LOG_UA +'rtcweb not supported.');
+    throw new JsSIP.Exceptions.WebRtcNotSupportedError();
   }
 
   // Check Session Status
-  if (this.status !== JsSIP.c.SESSION_NULL) {
-    throw new JsSIP.exceptions.InvalidStateError();
+  if (this.status !== JsSIP.C.SESSION_NULL) {
+    throw new JsSIP.Exceptions.InvalidStateError();
   }
 
   // Get call options
@@ -103,14 +103,14 @@ JsSIP.Session.prototype.connect = function(target, options) {
   }
 
   // Check target validity
-  target = JsSIP.utils.normalizeURI(target, this.ua.configuration.domain);
+  target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
   if (!target) {
-    throw new JsSIP.exceptions.InvalidTargetError();
+    throw new JsSIP.Exceptions.InvalidTargetError();
   }
 
   // Session parameter initialization
-  this.from_tag = JsSIP.utils.newTag();
-  this.status = JsSIP.c.SESSION_NULL;
+  this.from_tag = JsSIP.Utils.newTag();
+  this.status = JsSIP.C.SESSION_NULL;
   this.mediaSession = new JsSIP.MediaSession(this, selfView, remoteView);
 
   // Set anonymous property
@@ -135,10 +135,10 @@ JsSIP.Session.prototype.connect = function(target, options) {
   }
 
   extraHeaders.push('Contact: <'+ this.contact + ';ob>');
-  extraHeaders.push('Allow: '+ JsSIP.utils.getAllowedMethods(this.ua));
+  extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
   extraHeaders.push('Content-Type: application/sdp');
 
-  request = new JsSIP.OutgoingRequest(JsSIP.c.INVITE, target, this.ua, requestParams, extraHeaders);
+  request = new JsSIP.OutgoingRequest(JsSIP.C.INVITE, target, this.ua, requestParams, extraHeaders);
 
   this.id = request.headers['Call-ID'] + this.from_tag;
   this.request = request;
@@ -155,10 +155,10 @@ JsSIP.Session.prototype.connect = function(target, options) {
 * @private
 */
 JsSIP.Session.prototype.close = function() {
-  if(this.status !== JsSIP.c.SESSION_TERMINATED) {
+  if(this.status !== JsSIP.C.SESSION_TERMINATED) {
     var session = this;
 
-    console.log(JsSIP.c.LOG_INVITE_SESSION +'Closing Invite Session ' + this.id);
+    console.log(JsSIP.C.LOG_INVITE_SESSION +'Closing Invite Session ' + this.id);
 
     // 1st Step. Terminate media.
     if (this.mediaSession){
@@ -175,7 +175,7 @@ JsSIP.Session.prototype.close = function() {
 
     this.terminateEarlyDialogs();
     this.terminateConfirmedDialog();
-    this.status = JsSIP.c.SESSION_TERMINATED;
+    this.status = JsSIP.C.SESSION_TERMINATED;
     this.closeTimer = window.setTimeout(
       function() {
         if (session && session.ua.sessions[session.id]) {
@@ -203,7 +203,7 @@ JsSIP.Session.prototype.createEarlyDialog = function(message, type) {
   if (this.earlyDialogs[id]) {
     return true;
   } else {
-    earlyDialog = new JsSIP.Dialog(this, message, type, JsSIP.c.DIALOG_EARLY);
+    earlyDialog = new JsSIP.Dialog(this, message, type, JsSIP.C.DIALOG_EARLY);
 
     // Dialog has been successfully created.
     if(earlyDialog.id) {
@@ -283,7 +283,7 @@ JsSIP.Session.prototype.terminateEarlyDialogs = function() {
 * @private
 */
 JsSIP.Session.prototype.receiveRequest = function(request) {
-  if(request.method === JsSIP.c.CANCEL) {
+  if(request.method === JsSIP.C.CANCEL) {
     /* RFC3261 15 States that a UAS may have accepted an invitation while a CANCEL
     * was in progress and that the UAC MAY continue with the session established by
     * any 2xx response, or MAY terminate with BYE. JsSIP does continue with the
@@ -300,29 +300,29 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
     * Terminate the whole session in case the user didn't accept nor reject the
     *request opening the session.
     */
-    if(this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-      this.status = JsSIP.c.SESSION_CANCELED;
-      this.failed('remote', request, JsSIP.c.causes.CANCELED);
+    if(this.status === JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
+      this.status = JsSIP.C.SESSION_CANCELED;
+      this.failed('remote', request, JsSIP.C.causes.CANCELED);
     }
   } else {
     // Requests arriving here are in-dialog requests.
     switch(request.method) {
-      case JsSIP.c.ACK:
-        if(this.status === JsSIP.c.SESSION_WAITING_FOR_ACK) {
+      case JsSIP.C.ACK:
+        if(this.status === JsSIP.C.SESSION_WAITING_FOR_ACK) {
           window.clearTimeout(this.ackTimer);
           window.clearTimeout(this.invite2xxTimer);
-          this.status = JsSIP.c.SESSION_CONFIRMED;
+          this.status = JsSIP.C.SESSION_CONFIRMED;
         }
         break;
-      case JsSIP.c.BYE:
-        if(this.status === JsSIP.c.SESSION_CONFIRMED) {
+      case JsSIP.C.BYE:
+        if(this.status === JsSIP.C.SESSION_CONFIRMED) {
           request.reply(200);
-          this.ended('remote', request, JsSIP.c.causes.BYE);
+          this.ended('remote', request, JsSIP.C.causes.BYE);
         }
         break;
-      case JsSIP.c.INVITE:
-        if(this.status === JsSIP.c.SESSION_CONFIRMED) {
-          console.log(JsSIP.c.LOG_INVITE_SESSION +'Re-INVITE received');
+      case JsSIP.C.INVITE:
+        if(this.status === JsSIP.C.SESSION_CONFIRMED) {
+          console.log(JsSIP.C.LOG_INVITE_SESSION +'Re-INVITE received');
         }
         break;
     }
@@ -354,13 +354,13 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
   // Request with sdp Offer
   if(body && (contentType === 'application/sdp')) {
     // ** Set the to_tag before replying a response code that will create a dialog
-    request.to_tag = JsSIP.utils.newTag();
+    request.to_tag = JsSIP.Utils.newTag();
 
     if(!this.createEarlyDialog(request, 'UAS')) {
       return;
     }
 
-    this.status = JsSIP.c.SESSION_WAITING_FOR_ANSWER;
+    this.status = JsSIP.C.SESSION_WAITING_FOR_ANSWER;
 
     this.userNoAnswerTimer = window.setTimeout(
       function() { session.userNoAnswerTimeout(request); },
@@ -376,11 +376,11 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
       var offer, onSuccess, onMediaFailure, onSdpFailure;
 
       // Check UA Status
-      JsSIP.utils.checkUAStatus(this.ua);
+      JsSIP.Utils.checkUAStatus(this.ua);
 
       // Check Session Status
-      if (this.status !== JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-        throw new JsSIP.exceptions.InvalidStateError();
+      if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
+        throw new JsSIP.Exceptions.InvalidStateError();
       }
 
       offer = request.body;
@@ -396,7 +396,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
           sdp,
           // onSuccess
           function(){
-            session.status = JsSIP.c.SESSION_WAITING_FOR_ACK;
+            session.status = JsSIP.C.SESSION_WAITING_FOR_ACK;
 
             session.invite2xxTimer = window.setTimeout(
               function() {session.invite2xxRetransmission(1, request,sdp);},JsSIP.Timers.T1
@@ -413,26 +413,26 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
           },
           // onFailure
           function() {
-            session.failed('system', null, JsSIP.c.causes.CONNECTION_ERROR);
+            session.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
           }
         );
       };
 
       onMediaFailure = function(e) {
-        console.log(JsSIP.c.LOG_INVITE_SESSION +'Unable to get user media');
+        console.log(JsSIP.C.LOG_INVITE_SESSION +'Unable to get user media');
         console.log(e);
         request.reply(486);
-        session.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
+        session.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
       };
 
       onSdpFailure = function(e) {
         /* Bad SDP Offer
         * peerConnection.setRemoteDescription throws an exception
         */
-        console.log(JsSIP.c.LOG_INVITE_SESSION +'Invalid media description');
+        console.log(JsSIP.C.LOG_INVITE_SESSION +'Invalid media description');
         console.log(e);
         request.reply(488);
-        session.failed('remote', request, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
+        session.failed('remote', request, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
       };
 
       //Initialize Media Session
@@ -444,7 +444,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     this.newSession('remote', request);
 
     // Reply with 180 if the session is not closed. It may be closed in the newSession event.
-    if (this.status !== JsSIP.c.SESSION_TERMINATED) {
+    if (this.status !== JsSIP.C.SESSION_TERMINATED) {
       this.progress('local');
 
       request.reply(180, null, ['Contact: <' + this.contact + '>']);
@@ -503,7 +503,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
   }
 
   // Process the response otherwise.
-  if(this.status === JsSIP.c.SESSION_INVITE_SENT || this.status === JsSIP.c.SESSION_1XX_RECEIVED) {
+  if(this.status === JsSIP.C.SESSION_INVITE_SENT || this.status === JsSIP.C.SESSION_1XX_RECEIVED) {
     switch(label) {
       case 100:
         this.received_100 = true;
@@ -513,7 +513,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
       case '1xx_answer':
         // Create Early Dialog
         if (this.createEarlyDialog(response, 'UAC')) {
-          this.status = JsSIP.c.SESSION_1XX_RECEIVED;
+          this.status = JsSIP.C.SESSION_1XX_RECEIVED;
           this.progress('remote', response);
         }
         break;
@@ -521,24 +521,24 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
         // Dialog confirmed already
         if (this.dialog) {
           if (response.to_tag === this.to_tag) {
-            console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx retransmission received');
+            console.log(JsSIP.C.LOG_CLIENT_INVITE_SESSION +'2xx retransmission received');
           } else {
-            console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx received from an endpoint not establishing the dialog');
+            console.log(JsSIP.C.LOG_CLIENT_INVITE_SESSION +'2xx received from an endpoint not establishing the dialog');
           }
           return;
         }
 
         this.acceptAndTerminate(response,'SIP ;cause=400 ;text= "Missing session description"');
-        this.failed('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
+        this.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
 
         break;
       case '2xx_answer':
         // Dialog confirmed already
         if (this.dialog) {
           if (response.to_tag === this.to_tag) {
-            console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx_answer retransmission received');
+            console.log(JsSIP.C.LOG_CLIENT_INVITE_SESSION +'2xx_answer retransmission received');
           } else {
-            console.log(JsSIP.c.LOG_CLIENT_INVITE_SESSION +'2xx_answer received from an endpoint not establishing the dialog');
+            console.log(JsSIP.C.LOG_CLIENT_INVITE_SESSION +'2xx_answer received from an endpoint not establishing the dialog');
           }
           return;
         }
@@ -553,7 +553,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
           function() {
             if (session.createConfirmedDialog(response, 'UAC')) {
               session.sendACK();
-              session.status = JsSIP.c.SESSION_CONFIRMED;
+              session.status = JsSIP.C.SESSION_CONFIRMED;
               session.started('remote', response);
             }
           },
@@ -564,17 +564,17 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
           function(e) {
             console.warn(e);
             session.acceptAndTerminate(response, 'SIP ;cause=488 ;text="Not Acceptable Here"');
-            session.failed('remote', response, JsSIP.c.causes.BAD_MEDIA_DESCRIPTION);
+            session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
           }
         );
         break;
       case 'failure':
-        cause = JsSIP.utils.sipErrorCause(response.status_code);
+        cause = JsSIP.Utils.sipErrorCause(response.status_code);
 
         if (cause) {
-          cause = JsSIP.c.causes[cause];
+          cause = JsSIP.C.causes[cause];
         } else {
-          cause = JsSIP.c.causes.SIP_FAILURE_CODE;
+          cause = JsSIP.C.causes.SIP_FAILURE_CODE;
         }
 
         this.failed('remote', response, cause);
@@ -595,12 +595,12 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
 * @private
 */
 JsSIP.Session.prototype.ackTimeout = function() {
-  if(this.status === JsSIP.c.SESSION_WAITING_FOR_ACK) {
-    console.log(JsSIP.c.LOG_INVITE_SESSION + 'No ACK received. Call will be terminated');
+  if(this.status === JsSIP.C.SESSION_WAITING_FOR_ACK) {
+    console.log(JsSIP.C.LOG_INVITE_SESSION + 'No ACK received. Call will be terminated');
     window.clearTimeout(this.invite2xxTimer);
     this.sendBye();
 
-    this.ended('remote', null, JsSIP.c.causes.NO_ACK);
+    this.ended('remote', null, JsSIP.C.causes.NO_ACK);
   }
 };
 
@@ -609,10 +609,10 @@ JsSIP.Session.prototype.ackTimeout = function() {
 * @private
 */
 JsSIP.Session.prototype.expiresTimeout = function(request) {
-  if(this.status === JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
+  if(this.status === JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
     request.reply(487);
 
-    this.failed('system', null, JsSIP.c.causes.EXPIRES);
+    this.failed('system', null, JsSIP.C.causes.EXPIRES);
   }
 };
 
@@ -649,7 +649,7 @@ JsSIP.Session.prototype.invite2xxRetransmission = function(retransmissions, requ
 JsSIP.Session.prototype.userNoAnswerTimeout = function(request) {
   request.reply(408);
 
-  this.failed('local',null, JsSIP.c.causes.NO_ANSWER);
+  this.failed('local',null, JsSIP.C.causes.NO_ANSWER);
 };
 
 /*
@@ -671,7 +671,7 @@ JsSIP.Session.prototype.acceptAndTerminate = function(response, reason) {
 * @private
 */
 JsSIP.Session.prototype.sendACK = function() {
-  var request = this.dialog.createRequest(JsSIP.c.ACK);
+  var request = this.dialog.createRequest(JsSIP.C.ACK);
 
   this.sendRequest(request);
 };
@@ -682,7 +682,7 @@ JsSIP.Session.prototype.sendACK = function() {
 JsSIP.Session.prototype.sendBye = function(reason) {
   var
     extraHeaders = (reason) ? ['Reason: '+ reason] : [],
-    request = this.dialog.createRequest(JsSIP.c.BYE, extraHeaders);
+    request = this.dialog.createRequest(JsSIP.C.BYE, extraHeaders);
 
   this.sendRequest(request);
 };
@@ -713,11 +713,11 @@ JsSIP.Session.prototype.sendRequest = function(request) {
 * @private
 */
 JsSIP.Session.prototype.onTransportError = function() {
-  if(this.status !== JsSIP.c.SESSION_TERMINATED) {
-    if (this.status === JsSIP.c.SESSION_CONFIRMED) {
-      this.ended('system', null, JsSIP.c.causes.CONNECTION_ERROR);
+  if(this.status !== JsSIP.C.SESSION_TERMINATED) {
+    if (this.status === JsSIP.C.SESSION_CONFIRMED) {
+      this.ended('system', null, JsSIP.C.causes.CONNECTION_ERROR);
     } else {
-      this.failed('system', null, JsSIP.c.causes.CONNECTION_ERROR);
+      this.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
     }
   }
 };
@@ -727,11 +727,11 @@ JsSIP.Session.prototype.onTransportError = function() {
 * @private
 */
 JsSIP.Session.prototype.onRequestTimeout = function() {
-  if(this.status !== JsSIP.c.SESSION_TERMINATED) {
-    if (this.status === JsSIP.c.SESSION_CONFIRMED) {
-      this.ended('system', null, JsSIP.c.causes.REQUEST_TIMEOUT);
+  if(this.status !== JsSIP.C.SESSION_TERMINATED) {
+    if (this.status === JsSIP.C.SESSION_CONFIRMED) {
+      this.ended('system', null, JsSIP.C.causes.REQUEST_TIMEOUT);
     } else {
-      this.failed('system', null, JsSIP.c.causes.CONNECTION_ERROR);
+      this.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
     }
   }
 };
@@ -830,30 +830,30 @@ JsSIP.Session.prototype.failed = function(originator, response, cause) {
 */
 JsSIP.Session.prototype.terminate = function() {
   // Check UA Status
-  JsSIP.utils.checkUAStatus(this.ua);
+  JsSIP.Utils.checkUAStatus(this.ua);
 
   // Check Session Status
-  if (this.status === JsSIP.c.SESSION_TERMINATED) {
-    throw new JsSIP.exceptions.InvalidStateError();
+  if (this.status === JsSIP.C.SESSION_TERMINATED) {
+    throw new JsSIP.Exceptions.InvalidStateError();
   }
 
   switch(this.status) {
     // - UAC -
-    case JsSIP.c.SESSION_NULL:
-    case JsSIP.c.SESSION_INVITE_SENT:
-    case JsSIP.c.SESSION_1XX_RECEIVED:
+    case JsSIP.C.SESSION_NULL:
+    case JsSIP.C.SESSION_INVITE_SENT:
+    case JsSIP.C.SESSION_1XX_RECEIVED:
       this.cancel();
       break;
       // - UAS -
-    case JsSIP.c.SESSION_WAITING_FOR_ANSWER:
+    case JsSIP.C.SESSION_WAITING_FOR_ANSWER:
       this.reject();
       break;
-    case JsSIP.c.SESSION_WAITING_FOR_ACK:
-    case JsSIP.c.SESSION_CONFIRMED:
+    case JsSIP.C.SESSION_WAITING_FOR_ACK:
+    case JsSIP.C.SESSION_CONFIRMED:
       // Send Bye
       this.sendBye();
 
-      this.ended('local', null, JsSIP.c.causes.BYE);
+      this.ended('local', null, JsSIP.C.causes.BYE);
       break;
   }
 
@@ -870,14 +870,14 @@ JsSIP.Session.prototype.terminate = function() {
 JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
-    throw new JsSIP.exceptions.InvalidMethodError();
-  } else if (this.status !== JsSIP.c.SESSION_WAITING_FOR_ANSWER) {
-    throw new JsSIP.exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidMethodError();
+  } else if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
+    throw new JsSIP.Exceptions.InvalidStateError();
   }
 
   if (status_code) {
     if ((status_code < 300 || status_code >= 700)) {
-      throw new JsSIP.exceptions.InvalidValueError();
+      throw new JsSIP.Exceptions.InvalidValueError();
     } else {
       this.request.reply(status_code, reason_phrase);
     }
@@ -885,7 +885,7 @@ JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
     this.request.reply(480);
   }
 
-  this.failed('local', null, JsSIP.c.causes.REJECTED);
+  this.failed('local', null, JsSIP.C.causes.REJECTED);
 };
 
 /**
@@ -896,27 +896,27 @@ JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
 JsSIP.Session.prototype.cancel = function(reason) {
   // Check Session Direction
   if (this.direction !== 'outgoing') {
-    throw new JsSIP.exceptions.InvalidMethodError();
+    throw new JsSIP.Exceptions.InvalidMethodError();
   }
 
   // Check Session Status
-  if (this.status === JsSIP.c.SESSION_NULL) {
+  if (this.status === JsSIP.C.SESSION_NULL) {
     this.isCanceled = true;
     this.cancelReason = reason;
-  } else if (this.status === JsSIP.c.SESSION_INVITE_SENT) {
+  } else if (this.status === JsSIP.C.SESSION_INVITE_SENT) {
     if(this.received_100) {
       this.request.cancel(reason);
     } else {
       this.isCanceled = true;
       this.cancelReason = reason;
     }
-  } else if(this.status === JsSIP.c.SESSION_1XX_RECEIVED) {
+  } else if(this.status === JsSIP.C.SESSION_1XX_RECEIVED) {
     this.request.cancel(reason);
   } else {
-    throw new JsSIP.exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError();
   }
 
-  this.failed('local', null, JsSIP.c.causes.CANCELED);
+  this.failed('local', null, JsSIP.C.causes.CANCELED);
 };
 
 
@@ -934,7 +934,7 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
     request_sender = new JsSIP.RequestSender(self, this.ua);
 
   function onMediaSuccess() {
-    if (self.isCanceled || self.status === JsSIP.c.SESSION_TERMINATED) {
+    if (self.isCanceled || self.status === JsSIP.C.SESSION_TERMINATED) {
       self.mediaSession.close();
       return;
     }
@@ -951,15 +951,15 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
     }
     // End of Hack
 
-    self.status = JsSIP.c.SESSION_INVITE_SENT;
+    self.status = JsSIP.C.SESSION_INVITE_SENT;
     request_sender.send();
   }
 
   function onMediaFailure(e) {
-    if (self.status !== JsSIP.c.SESSION_TERMINATED) {
-      console.log(JsSIP.c.LOG_INVITE_SESSION +'Unable to get user media');
+    if (self.status !== JsSIP.C.SESSION_TERMINATED) {
+      console.log(JsSIP.C.LOG_INVITE_SESSION +'Unable to get user media');
       console.log(e);
-      self.failed('local', null, JsSIP.c.causes.USER_DENIED_MEDIA_ACCESS);
+      self.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
     }
   }
 
@@ -991,12 +991,12 @@ JsSIP.Session.RequestSender.prototype = {
       self = this,
       status_code = response.status_code;
 
-    if (response.method === JsSIP.c.INVITE && status_code === 491) {
+    if (response.method === JsSIP.C.INVITE && status_code === 491) {
       if (!this.reattempt) {
         this.request.cseq.value = this.request.dialog.local_seqnum += 1;
         this.reatemptTimer = window.setTimeout(
           function() {
-            if (self.session.status !== JsSIP.c.SESSION_TERMINATED) {
+            if (self.session.status !== JsSIP.C.SESSION_TERMINATED) {
               self.reattempt = true;
               self.request_sender.send();
             }

@@ -16,8 +16,8 @@ module.exports = function(grunt) {
         src: [
           "src/head.js",
           "src/EventEmitter.js",
-          "src/constants.js",
-          "src/exceptions.js",
+          "src/Constants.js",
+          "src/Exceptions.js",
           "src/timers.js",
           "src/Transport.js",
           "src/Parser.js",
@@ -33,7 +33,7 @@ module.exports = function(grunt) {
           "src/MediaSession.js",
           "src/Message.js",
           "src/UA.js",
-          "src/utils.js",
+          "src/Utils.js",
           "src/SanityCheck.js",
           "src/DigestAuthentication.js",
           "src/tail.js"

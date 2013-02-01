@@ -16,7 +16,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
   // Checks
   if(!host) {
     console.warn('Missing "host" in URI');
-    throw new JsSIP.exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError();
   }
 
   // Initialize parameters
@@ -91,12 +91,12 @@ JsSIP.URI.prototype = {
   },
 
   setHeader: function(name, value) {
-    this.headers[JsSIP.utils.headerize(name)] = (value instanceof Array) ? value : [value];
+    this.headers[JsSIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
   },
 
   getHeader: function(name) {
     if(name) {
-      return this.headers[JsSIP.utils.headerize(name)];
+      return this.headers[JsSIP.Utils.headerize(name)];
     }
   },
 
@@ -107,7 +107,7 @@ JsSIP.URI.prototype = {
   },
 
   deleteHeader: function(header) {
-    header = JsSIP.utils.headerize(header);
+    header = JsSIP.Utils.headerize(header);
     if(this.headers.hasOwnProperty(header)) {
       delete this.headers[header];
     }
@@ -134,11 +134,11 @@ JsSIP.URI.prototype = {
       uri = '';
 
     if(!this.host) {
-      console.warn(JsSIP.c.LOG_UA +'No domain specified');
+      console.warn(JsSIP.C.LOG_UA +'No domain specified');
       return;
     }
 
-    uri  = this.scheme || JsSIP.c.SIP;
+    uri  = this.scheme || JsSIP.C.SIP;
     uri += ':';
     uri += this.user ? window.encodeURIComponent(this.user) + '@' : '';
     uri += this.host;
@@ -164,7 +164,7 @@ JsSIP.URI.prototype = {
   toAor: function(){
       var aor = '';
 
-      aor += this.scheme || JsSIP.c.SIP;
+      aor += this.scheme || JsSIP.C.SIP;
       aor += ':';
       aor += this.user ? window.encodeURIComponent(this.user) + '@' : '';
       aor += this.host;

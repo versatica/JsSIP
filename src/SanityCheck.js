@@ -52,7 +52,7 @@ JsSIP.sanityCheck = (function() {
   }
 
   function rfc3261_18_3_request() {
-    var len = JsSIP.utils.str_utf8_length(message.body),
+    var len = JsSIP.Utils.str_utf8_length(message.body),
     contentLength = message.getHeader('content-length');
 
     if(len < contentLength) {
@@ -68,7 +68,7 @@ JsSIP.sanityCheck = (function() {
       cseq = message.cseq;
 
     if(!message.to_tag) {
-      if(message.method === JsSIP.c.INVITE) {
+      if(message.method === JsSIP.C.INVITE) {
         tr = ua.transactions.ist[message.via_branch];
         if(!tr) {
           return;
@@ -101,7 +101,7 @@ JsSIP.sanityCheck = (function() {
   // Sanity Check functions for responses
   function rfc3261_8_1_3_3() {
     if(message.countHeader('via') > 1) {
-      console.warn(JsSIP.c.LOG_SANITY_CHECK +'More than one Via header field present in the response. Dropping the response');
+      console.warn(JsSIP.C.LOG_SANITY_CHECK +'More than one Via header field present in the response. Dropping the response');
       return false;
     }
   }
@@ -109,18 +109,18 @@ JsSIP.sanityCheck = (function() {
   function rfc3261_18_1_2() {
     var via_host = ua.configuration.via_host;
     if(message.via.host !== via_host) {
-      console.warn(JsSIP.c.LOG_SANITY_CHECK +'Via host in the response does not match UA Via host value. Dropping the response');
+      console.warn(JsSIP.C.LOG_SANITY_CHECK +'Via host in the response does not match UA Via host value. Dropping the response');
       return false;
     }
   }
 
   function rfc3261_18_3_response() {
     var
-      len = JsSIP.utils.str_utf8_length(message.body),
+      len = JsSIP.Utils.str_utf8_length(message.body),
       contentLength = message.getHeader('content-length');
 
       if(len < contentLength) {
-        console.warn(JsSIP.c.LOG_SANITY_CHECK +'Message body length is lower than the value in Content-Length header field. Dropping the response');
+        console.warn(JsSIP.C.LOG_SANITY_CHECK +'Message body length is lower than the value in Content-Length header field. Dropping the response');
         return false;
       }
   }
@@ -133,7 +133,7 @@ JsSIP.sanityCheck = (function() {
 
     while(idx--) {
       if(!message.hasHeader(mandatoryHeaders[idx])) {
-        console.warn(JsSIP.c.LOG_SANITY_CHECK +'Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
+        console.warn(JsSIP.C.LOG_SANITY_CHECK +'Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
         return false;
       }
     }
@@ -142,7 +142,7 @@ JsSIP.sanityCheck = (function() {
   // Reply
   function reply(status_code) {
     var to,
-      response = "SIP/2.0 " + status_code + " " + JsSIP.c.REASON_PHRASE[status_code] + "\r\n",
+      response = "SIP/2.0 " + status_code + " " + JsSIP.C.REASON_PHRASE[status_code] + "\r\n",
       via_length = message.countHeader('via'),
       idx = 0;
 
@@ -153,7 +153,7 @@ JsSIP.sanityCheck = (function() {
     to = message.getHeader('To');
 
     if(!message.to_tag) {
-      to += ';tag=' + JsSIP.utils.newTag();
+      to += ';tag=' + JsSIP.Utils.newTag();
     }
 
     response += "To: " + to + "\r\n";

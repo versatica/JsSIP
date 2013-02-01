@@ -8,7 +8,7 @@
  * @augments JsSIP
  */
 
-JsSIP.c = {
+JsSIP.C= {
   USER_AGENT: JsSIP.name() +' '+ JsSIP.version(),
 
   // Modules and Classes names for logging purposes

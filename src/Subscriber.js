@@ -33,7 +33,7 @@ JsSIP.Subscriber.prototype = {
     var subscription;
 
     if (this.state !== 'terminated') {
-      console.log(JsSIP.c.LOG_SUBSCRIBER,'Terminating Subscriber');
+      console.log(JsSIP.C.LOG_SUBSCRIBER,'Terminating Subscriber');
 
       this.state = 'terminated';
       window.clearTimeout(this.N);
@@ -65,12 +65,12 @@ JsSIP.Subscriber.prototype = {
     var subscriber, from_tag, expires;
 
     if (['notify_wait', 'pending', 'active', 'terminated'].indexOf(this.state) !== -1) {
-      console.log(JsSIP.c.LOG_SUBSCRIBER,'Subscription is already on');
+      console.log(JsSIP.C.LOG_SUBSCRIBER,'Subscription is already on');
       return;
     }
 
     subscriber = this;
-    from_tag = JsSIP.utils.newTag();
+    from_tag = JsSIP.Utils.newTag();
 
     new function() {
       this.request = subscriber.createSubscribeRequest(null,{from_tag:from_tag});
@@ -98,11 +98,11 @@ JsSIP.Subscriber.prototype = {
               subscriber.close();
 
               if (!expires) {
-                console.log(JsSIP.c.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
-                subscriber.onFailure(null, JsSIP.c.EXPIRES_HEADER_MISSING);
+                console.log(JsSIP.C.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
+                subscriber.onFailure(null, JsSIP.C.EXPIRES_HEADER_MISSING);
               } else {
-                console.log(JsSIP.c.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
-                subscriber.onFailure(null, JsSIP.c.INVALID_EXPIRES_HEADER);
+                console.log(JsSIP.C.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
+                subscriber.onFailure(null, JsSIP.C.INVALID_EXPIRES_HEADER);
               }
             }
             break;
@@ -114,11 +114,11 @@ JsSIP.Subscriber.prototype = {
       };
 
       this.onRequestTimeout = function() {
-        subscriber.onFailure(null, JsSIP.c.REQUEST_TIMEOUT);
+        subscriber.onFailure(null, JsSIP.C.REQUEST_TIMEOUT);
       };
 
       this.onTransportError = function() {
-        subscriber.onFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
+        subscriber.onFailure(null, JsSIP.C.causes.CONNECTION_ERROR);
       };
 
       this.send = function() {
@@ -179,7 +179,7 @@ JsSIP.Subscriber.prototype = {
         break;
       case 'terminated':
         if (subscription_state.reason) {
-          console.log(JsSIP.c.LOG_SUBSCRIBER,'Terminating subscription with reason: '+ subscription_state.reason);
+          console.log(JsSIP.C.LOG_SUBSCRIBER,'Terminating subscription with reason: '+ subscription_state.reason);
         }
         window.clearTimeout(this.N);
         this.close();
@@ -195,12 +195,12 @@ JsSIP.Subscriber.prototype = {
 
     // Check mandatory header Event
     if (!request.hasHeader('Event')) {
-      console.log(JsSIP.c.LOG_SUBSCRIBER,'Missing "Event" header');
+      console.log(JsSIP.C.LOG_SUBSCRIBER,'Missing "Event" header');
       return false;
     }
     // Check mandatory header Subscription-State
     if (!request.hasHeader('Subscription-State')) {
-      console.log(JsSIP.c.LOG_SUBSCRIBER,'Missing "Subscription-State" header');
+      console.log(JsSIP.C.LOG_SUBSCRIBER,'Missing "Subscription-State" header');
       return false;
     }
 
@@ -208,7 +208,7 @@ JsSIP.Subscriber.prototype = {
     event = request.s('event').event;
 
     if (this.event !== event) {
-      console.log(JsSIP.c.LOG_SUBSCRIBER,'Event match failed');
+      console.log(JsSIP.C.LOG_SUBSCRIBER,'Event match failed');
       request.reply(481, 'Event match failed');
       return false;
     } else {
@@ -316,11 +316,11 @@ JsSIP.Subscription.prototype = {
       subscription = this;
 
     if (!initial && !this.subscriber.matchEvent(request)) {
-      console.log(JsSIP.c.LOG_SUBSCRIBER,'Notify request does not match event');
+      console.log(JsSIP.C.LOG_SUBSCRIBER,'Notify request does not match event');
       return;
     }
 
-    request.reply(200, JsSIP.c.REASON_200, [
+    request.reply(200, JsSIP.C.REASON_200, [
       'Contact: <'+ this.subscriber.contact +'>'
     ]);
 
@@ -341,7 +341,7 @@ JsSIP.Subscription.prototype = {
         break;
       case 'terminated':
         if (subscription_state.reason) {
-          console.log(JsSIP.c.LOG_SUBSCRIBER,'Terminating subscription with reason: '+ subscription_state.reason);
+          console.log(JsSIP.C.LOG_SUBSCRIBER,'Terminating subscription with reason: '+ subscription_state.reason);
         }
         this.close();
         this.subscriber.receiveInfo(request);
@@ -379,11 +379,11 @@ JsSIP.Subscription.prototype = {
                 subscription.close();
 
                 if (!expires) {
-                  console.log(JsSIP.c.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
-                  subscription.subscriber.onFailure(null, JsSIP.c.EXPIRES_HEADER_MISSING);
+                  console.log(JsSIP.C.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
+                  subscription.subscriber.onFailure(null, JsSIP.C.EXPIRES_HEADER_MISSING);
                 } else {
-                  console.log(JsSIP.c.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
-                  subscription.subscriber.onFailure(null, JsSIP.c.INVALID_EXPIRES_HEADER);
+                  console.log(JsSIP.C.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
+                  subscription.subscriber.onFailure(null, JsSIP.C.INVALID_EXPIRES_HEADER);
                 }
               }
               break;
@@ -405,11 +405,11 @@ JsSIP.Subscription.prototype = {
       };
 
       this.onRequestTimeout = function() {
-        subscription.subscriber.onFailure(null, JsSIP.c.REQUEST_TIMEOUT);
+        subscription.subscriber.onFailure(null, JsSIP.C.REQUEST_TIMEOUT);
       };
 
       this.onTransportError = function() {
-        subscription.subscriber.onFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
+        subscription.subscriber.onFailure(null, JsSIP.C.causes.CONNECTION_ERROR);
       };
 
       this.send();
@@ -440,10 +440,10 @@ JsSIP.Subscription.prototype = {
       };
 
       this.onRequestTimeout = function() {
-        subscription.subscriber.onFailure(null, JsSIP.c.REQUEST_TIMEOUT);
+        subscription.subscriber.onFailure(null, JsSIP.C.REQUEST_TIMEOUT);
       };
       this.onTransportError = function() {
-        subscription.subscriber.onFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
+        subscription.subscriber.onFailure(null, JsSIP.C.causes.CONNECTION_ERROR);
       };
 
       this.send();

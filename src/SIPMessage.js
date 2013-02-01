@@ -55,7 +55,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   this.setHeader('via', '');
 
   //MAX-FORWARDS
-  this.setHeader('max-forwards', JsSIP.c.MAX_FORWARDS);
+  this.setHeader('max-forwards', JsSIP.C.MAX_FORWARDS);
 
   //TO
   to_display_name = params.to_display_name ? '"' + params.to_display_name + '" ' : '';
@@ -68,7 +68,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   //FROM
   from_display_name = params.from_display_name || ua.configuration.display_name || '';
   from_uri = params.from_uri || ua.configuration.from_uri;
-  from_tag = params.from_tag || JsSIP.utils.newTag();
+  from_tag = params.from_tag || JsSIP.Utils.newTag();
   from = from_display_name ? '"' + from_display_name + '" ' : '';
   from += from_display_name ? '<' + from_uri + '>' : from_uri;
   from += ';tag=' + from_tag;
@@ -95,7 +95,7 @@ JsSIP.OutgoingRequest.prototype = {
    * @param {String | Array} value header value
    */
   setHeader: function(name, value) {
-    this.headers[JsSIP.utils.headerize(name)] = (value instanceof Array) ? value : [value];
+    this.headers[JsSIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
   },
   toString: function() {
     var msg = '', header, length, idx;
@@ -113,11 +113,11 @@ JsSIP.OutgoingRequest.prototype = {
       msg += this.extraHeaders[idx] +'\r\n';
     }
 
-    msg += 'Supported: ' +  JsSIP.c.SUPPORTED +'\r\n';
-    msg += 'User-Agent: ' + JsSIP.c.USER_AGENT +'\r\n';
+    msg += 'Supported: ' +  JsSIP.C.SUPPORTED +'\r\n';
+    msg += 'User-Agent: ' + JsSIP.C.USER_AGENT +'\r\n';
 
     if(this.body) {
-      length = JsSIP.utils.str_utf8_length(this.body);
+      length = JsSIP.Utils.str_utf8_length(this.body);
       msg += 'Content-Length: ' + length + '\r\n\r\n';
       msg += this.body;
     } else {
@@ -157,7 +157,7 @@ JsSIP.IncomingMessage.prototype = {
   addHeader: function(name, value) {
     var header = { raw: value };
 
-    name = JsSIP.utils.headerize(name);
+    name = JsSIP.Utils.headerize(name);
 
     if(this.headers[name]) {
       this.headers[name].push(header);
@@ -172,7 +172,7 @@ JsSIP.IncomingMessage.prototype = {
    * @returns {Number} Number of headers with the given name
    */
   countHeader: function(name) {
-    var header = this.headers[JsSIP.utils.headerize(name)];
+    var header = this.headers[JsSIP.Utils.headerize(name)];
 
     if(header) {
       return header.length;
@@ -188,7 +188,7 @@ JsSIP.IncomingMessage.prototype = {
    * @returns {String|undefined} Returns the specified header, null if header doesn't exist.
    */
   getHeader: function(name, idx) {
-    var header = this.headers[JsSIP.utils.headerize(name)];
+    var header = this.headers[JsSIP.Utils.headerize(name)];
 
     idx = idx || 0;
 
@@ -208,7 +208,7 @@ JsSIP.IncomingMessage.prototype = {
    */
   getHeaderAll: function(name) {
     var idx,
-      header = this.headers[JsSIP.utils.headerize(name)],
+      header = this.headers[JsSIP.Utils.headerize(name)],
       result = [];
 
     if(!header) {
@@ -229,7 +229,7 @@ JsSIP.IncomingMessage.prototype = {
    * @returns {String|undefined} uri attribute of the header. null if header or uri doesn't exist.
    */
   getHeaderUri: function(name, idx) {
-    var header = this.headers[JsSIP.utils.headerize(name)];
+    var header = this.headers[JsSIP.Utils.headerize(name)];
 
     idx = idx || 0;
 
@@ -248,7 +248,7 @@ JsSIP.IncomingMessage.prototype = {
    * @returns {boolean} true if header with given name exists, false otherwise
    */
   hasHeader: function(name) {
-    return(this.headers[JsSIP.utils.headerize(name)]) ? true : false;
+    return(this.headers[JsSIP.Utils.headerize(name)]) ? true : false;
   },
 
   /**
@@ -260,15 +260,15 @@ JsSIP.IncomingMessage.prototype = {
   parseHeader: function(name, idx) {
     var header, value, parsed;
 
-    name = JsSIP.utils.headerize(name);
+    name = JsSIP.Utils.headerize(name);
 
     idx = idx || 0;
 
     if(!this.headers[name]) {
-      console.info(JsSIP.c.LOG_MESSAGE +'Header "' + name + '" not present');
+      console.info(JsSIP.C.LOG_MESSAGE +'Header "' + name + '" not present');
       return;
     } else if(idx >= this.headers[name].length) {
-      console.info(JsSIP.c.LOG_MESSAGE +'Not so many "' + name + '" headers present');
+      console.info(JsSIP.C.LOG_MESSAGE +'Not so many "' + name + '" headers present');
       return;
     }
 
@@ -284,7 +284,7 @@ JsSIP.IncomingMessage.prototype = {
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      console.error(JsSIP.c.LOG_MESSAGE +'Error parsing "' + name + '" header field with value: "' + value + '"');
+      console.error(JsSIP.C.LOG_MESSAGE +'Error parsing "' + name + '" header field with value: "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
@@ -312,7 +312,7 @@ JsSIP.IncomingMessage.prototype = {
   */
   setHeader: function(name, value) {
     var header = { raw: value };
-    this.headers[JsSIP.utils.headerize(name)] = [header];
+    this.headers[JsSIP.Utils.headerize(name)] = [header];
   },
 
   toString: function() {
@@ -352,17 +352,17 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
 
   // Validate code and reason values
   if (!code || (code < 100 || code > 699)) {
-    throw new JsSIP.exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError();
   } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
-    throw new JsSIP.exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError();
   }
 
-  reason = reason || JsSIP.c.REASON_PHRASE[code] || '';
+  reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
   extraHeaders = extraHeaders || [];
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
-  if(this.method === JsSIP.c.INVITE && code > 100 && code <= 200) {
+  if(this.method === JsSIP.C.INVITE && code > 100 && code <= 200) {
     rr = this.countHeader('record-route');
 
     for(r; r < rr; r++) {
@@ -377,7 +377,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
   }
 
   if(!this.to_tag) {
-    to += ';tag=' + JsSIP.utils.newTag();
+    to += ';tag=' + JsSIP.Utils.newTag();
   } else if(this.to_tag && !this.s('to').hasParam('tag')) {
     to += ';tag=' + this.to_tag;
   }
@@ -393,7 +393,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
   }
 
   if(body) {
-    length = JsSIP.utils.str_utf8_length(body);
+    length = JsSIP.Utils.str_utf8_length(body);
     response += 'Content-Type: application/sdp\r\n';
     response += 'Content-Length: ' + length + '\r\n\r\n';
     response += body;
@@ -418,12 +418,12 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
 
   // Validate code and reason values
   if (!code || (code < 100 || code > 699)) {
-    throw new JsSIP.exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError();
   } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
-    throw new JsSIP.exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError();
   }
 
-  reason = reason || JsSIP.c.REASON_PHRASE[code] || '';
+  reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
@@ -434,7 +434,7 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
   to = this.getHeader('To');
 
   if(!this.to_tag) {
-    to += ';tag=' + JsSIP.utils.newTag();
+    to += ';tag=' + JsSIP.Utils.newTag();
   } else if(this.to_tag && !this.s('to').hasParam('tag')) {
     to += ';tag=' + this.to_tag;
   }

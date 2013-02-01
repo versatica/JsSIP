@@ -53,9 +53,9 @@ JsSIP.Registrator.prototype = {
 
     extraHeaders = extraHeaders || [];
     extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
-    extraHeaders.push('Allow: '+ JsSIP.utils.getAllowedMethods(this.ua));
+    extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
 
-    this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
+    this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
         'to_uri': this.from_uri,
         'call_id': this.call_id,
         'cseq': (this.cseq += 1)
@@ -87,7 +87,7 @@ JsSIP.Registrator.prototype = {
           // Search the contact pointing to us and update the expires value
           //accordingly
           if (!contacts) {
-            console.log(JsSIP.c.LOG_REGISTRATOR +'No Contact header positive response to Register. Ignore response');
+            console.log(JsSIP.C.LOG_REGISTRATOR +'No Contact header positive response to Register. Ignore response');
             break;
           }
 
@@ -100,7 +100,7 @@ JsSIP.Registrator.prototype = {
           }
 
           if (!contact) {
-            console.log(JsSIP.c.LOG_REGISTRATOR +'No Contact header pointing to us. Ignore response');
+            console.log(JsSIP.C.LOG_REGISTRATOR +'No Contact header pointing to us. Ignore response');
             break;
           }
 
@@ -136,17 +136,17 @@ JsSIP.Registrator.prototype = {
               self.register();
             }, this.expires * 1000);
           } else { //This response MUST contain a Min-Expires header field
-          console.log(JsSIP.c.LOG_REGISTRATOR +'423 response code received to a REGISTER without min-expires. Unregister');
-          this.registrationFailure(response, JsSIP.c.causes.SIP_FAILURE_CODE);
+          console.log(JsSIP.C.LOG_REGISTRATOR +'423 response code received to a REGISTER without min-expires. Unregister');
+          this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
           }
           break;
         default:
-          cause = JsSIP.utils.sipErrorCause(response.status_code);
+          cause = JsSIP.Utils.sipErrorCause(response.status_code);
 
           if (cause) {
-            cause = JsSIP.c.causes[cause];
+            cause = JsSIP.C.causes[cause];
           } else {
-            cause = JsSIP.c.causes.SIP_FAILURE_CODE;
+            cause = JsSIP.C.causes.SIP_FAILURE_CODE;
           }
 
           this.registrationFailure(response, cause);
@@ -157,14 +157,14 @@ JsSIP.Registrator.prototype = {
     * @private
     */
     this.onRequestTimeout = function() {
-      this.registrationFailure(null, JsSIP.c.causes.REQUEST_TIMEOUT);
+      this.registrationFailure(null, JsSIP.C.causes.REQUEST_TIMEOUT);
     };
 
     /**
     * @private
     */
     this.onTransportError = function() {
-      this.registrationFailure(null, JsSIP.c.causes.CONNECTION_ERROR);
+      this.registrationFailure(null, JsSIP.C.causes.CONNECTION_ERROR);
     };
 
     request_sender.send();
@@ -179,7 +179,7 @@ JsSIP.Registrator.prototype = {
     * - all: If true, then perform a "unregister all" action ("Contact: *");
     */
     if(!this.registered) {
-      console.log(JsSIP.c.LOG_REGISTRATOR +"Already unregistered");
+      console.log(JsSIP.C.LOG_REGISTRATOR +"Already unregistered");
       return;
     }
 
@@ -195,7 +195,7 @@ JsSIP.Registrator.prototype = {
       extraHeaders.push('Contact: *');
       extraHeaders.push('Expires: 0');
 
-      this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
+      this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
@@ -203,7 +203,7 @@ JsSIP.Registrator.prototype = {
     } else {
       extraHeaders.push('Contact: '+ this.contact + ';expires=0');
 
-      this.request = new JsSIP.OutgoingRequest(JsSIP.c.REGISTER, this.registrar, this.ua, {
+      this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
           'to_uri': this.from_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
@@ -216,21 +216,21 @@ JsSIP.Registrator.prototype = {
     * @private
     */
     this.receiveResponse = function(response) {
-      console.log(JsSIP.c.LOG_REGISTRATOR +response.status_code + ' ' + response.reason_phrase + ' received to unregister request');
+      console.log(JsSIP.C.LOG_REGISTRATOR +response.status_code + ' ' + response.reason_phrase + ' received to unregister request');
     };
 
     /**
     * @private
     */
     this.onRequestTimeout = function() {
-      console.log(JsSIP.c.LOG_REGISTRATOR +'Request Timeout received for unregister request');
+      console.log(JsSIP.C.LOG_REGISTRATOR +'Request Timeout received for unregister request');
     };
 
     /**
     * @private
     */
     this.onTransportError = function() {
-      console.log(JsSIP.c.LOG_REGISTRATOR +'Transport Error received for unregister request');
+      console.log(JsSIP.C.LOG_REGISTRATOR +'Transport Error received for unregister request');
     };
 
     request_sender.send();
