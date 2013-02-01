@@ -186,7 +186,6 @@ JsSIP.Registrator.prototype = {
     extraHeaders = extraHeaders || [];
 
     this.registered = false;
-    this.ua.emit('unregistered', this.ua);
 
     // Clear the registration timer.
     window.clearTimeout(this.registrationTimer);
@@ -216,21 +215,39 @@ JsSIP.Registrator.prototype = {
     * @private
     */
     this.receiveResponse = function(response) {
-      console.log(JsSIP.C.LOG_REGISTRATOR +response.status_code + ' ' + response.reason_phrase + ' received to unregister request');
+      var cause;
+
+      switch(true) {
+        case /^1[0-9]{2}$/.test(response.status_code):
+          // Ignore provisional responses.
+          break;
+        case /^2[0-9]{2}$/.test(response.status_code):
+          this.unregistered(response);
+          break;
+        default:
+          cause = JsSIP.Utils.sipErrorCause(response.status_code);
+
+          if (cause) {
+            cause = JsSIP.C.causes[cause];
+          } else {
+            cause = JsSIP.C.causes.SIP_FAILURE_CODE;
+          }
+          this.unregistered(response, cause);
+      }
     };
 
     /**
     * @private
     */
     this.onRequestTimeout = function() {
-      console.log(JsSIP.C.LOG_REGISTRATOR +'Request Timeout received for unregister request');
+      this.unregistered(null, JsSIP.C.causes.REQUEST_TIMEOUT);
     };
 
     /**
     * @private
     */
     this.onTransportError = function() {
-      console.log(JsSIP.C.LOG_REGISTRATOR +'Transport Error received for unregister request');
+      this.unregistered(null, JsSIP.C.causes.CONNECTION_ERROR);
     };
 
     request_sender.send();
@@ -242,11 +259,25 @@ JsSIP.Registrator.prototype = {
   registrationFailure: function(response, cause) {
     if (this.registered) {
       this.registered = false;
-      this.ua.emit('unregistered', this.ua);
+      this.ua.emit('unregistered', this.ua, {
+        response: response || null,
+        cause: cause
+      });
     }
     this.ua.emit('registrationFailed', this.ua, {
       response: response || null,
       cause: cause
+    });
+  },
+
+  /**
+   * @private
+   */
+  unregistered: function(response, cause) {
+    this.registered = false;
+    this.ua.emit('unregistered', this.ua, {
+      response: response || null,
+      cause: cause || null
     });
   },
 
