@@ -665,11 +665,11 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     }
   }
 
-  if (!(configuration.stun_servers instanceof Array)){
+  if (configuration.stun_servers && !(configuration.stun_servers instanceof Array)){
     configuration.stun_servers = [configuration.stun_servers];
   }
 
-  if (!(configuration.turn_servers instanceof Array)){
+  if (configuration.turn_servers && !(configuration.turn_servers instanceof Array)){
     configuration.turn_servers = [configuration.turn_servers];
   }
 
