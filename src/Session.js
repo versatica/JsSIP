@@ -74,7 +74,7 @@ JsSIP.Session.prototype.init_incoming = function(request) {
 };
 
 JsSIP.Session.prototype.connect = function(target, views, options) {
-  var event, eventHandlers, request, selfView, remoteView, mediaType, extraHeaders, requestParams;
+  var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams;
 
   // Check UA Status
   JsSIP.Utils.checkUAStatus(this.ua);
@@ -100,7 +100,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   options = options || {};
   selfView = views.selfView || null;
   remoteView = views.remoteView || null;
-  mediaType = options.mediaType || {audio: true, video: true};
+  mediaTypes = options.mediaTypes || {audio: true, video: true};
   extraHeaders = options.extraHeaders || [];
   eventHandlers = options.eventHandlers || {};
 
@@ -155,7 +155,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
 
   this.newSession('local', request, target);
   this.connecting('local', request, target);
-  this.sendInitialRequest(mediaType);
+  this.sendInitialRequest(mediaTypes);
 };
 
 /**
@@ -1003,7 +1003,7 @@ JsSIP.Session.prototype.sendDTMF = function(tones, options) {
 /**
  * @private
  */
-JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
+JsSIP.Session.prototype.sendInitialRequest = function(mediaTypes) {
   var
     self = this,
     request_sender = new JsSIP.RequestSender(self, this.ua);
@@ -1019,7 +1019,7 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
 
     // Hack to quit m=video section from sdp defined in http://code.google.com/p/webrtc/issues/detail?id=935
     // To be deleted when the fix arrives to chrome stable version
-    if (!mediaType.video) {
+    if (!mediaTypes.video) {
       if (self.request.body.indexOf('m=video') !== -1){
         self.request.body = self.request.body.substring(0, self.request.body.indexOf('m=video'));
       }
@@ -1038,7 +1038,7 @@ JsSIP.Session.prototype.sendInitialRequest = function(mediaType) {
     }
   }
 
-  self.mediaSession.startCaller(mediaType, onMediaSuccess, onMediaFailure);
+  self.mediaSession.startCaller(mediaTypes, onMediaSuccess, onMediaFailure);
 };
 
 

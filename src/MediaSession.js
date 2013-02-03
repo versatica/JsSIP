@@ -27,11 +27,11 @@ JsSIP.MediaSession.prototype = {
    * <br> -- If the user consents, create a peerConnection.
    * <br> -- If the user doesn't consent, fire onFailure callback.
    *
-   * @param {Object} mediaType {audio:true/false, video:true/false}
+   * @param {Object} mediaTypes {audio:true/false, video:true/false}
    * @param {Function} onSuccess
    * @param {Function} onFailure
    */
-  startCaller: function(mediaType, onSuccess, onFailure) {
+  startCaller: function(mediaTypes, onSuccess, onFailure) {
     var self = this;
 
     /** @private */
@@ -53,7 +53,7 @@ JsSIP.MediaSession.prototype = {
       onFailure(e);
     }
 
-    this.getUserMedia(mediaType, onGetUserMediaSuccess, onGetUserMediaFailure);
+    this.getUserMedia(mediaTypes, onGetUserMediaSuccess, onGetUserMediaFailure);
   },
 
   /**
@@ -177,11 +177,11 @@ JsSIP.MediaSession.prototype = {
   },
 
   /**
-  * @param {Object} mediaType
+  * @param {Object} mediaTypes
   * @param {Function} onSuccess
   * @param {Function} onFailure
   */
-  getUserMedia: function(mediaType, onSuccess, onFailure) {
+  getUserMedia: function(mediaTypes, onSuccess, onFailure) {
     var self = this;
 
     function getSuccess(stream) {
@@ -204,7 +204,7 @@ JsSIP.MediaSession.prototype = {
 
     // Get User Media
     console.log(JsSIP.C.LOG_MEDIA_SESSION +"Requesting access to local media.");
-    navigator.webkitGetUserMedia(mediaType, getSuccess, getFailure);
+    navigator.webkitGetUserMedia(mediaTypes, getSuccess, getFailure);
 
   },
 
