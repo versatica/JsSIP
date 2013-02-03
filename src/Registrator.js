@@ -47,11 +47,15 @@ JsSIP.Registrator = function(ua, transport) {
 };
 
 JsSIP.Registrator.prototype = {
-  register: function(extraHeaders) {
-    var request_sender, cause,
+  /**
+   * @param {Object} [options]
+   */
+  register: function(options) {
+    var request_sender, cause, extraHeaders,
       self = this;
 
-    extraHeaders = extraHeaders || [];
+    options = options || {};
+    extraHeaders = options.extraHeaders || [];
     extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
     extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
 
@@ -164,26 +168,25 @@ JsSIP.Registrator.prototype = {
   },
 
   /**
-  * @param {Boolean} [all=false]
+  * @param {Object} [options]
   */
-  unregister: function(all, extraHeaders) {
-    /* Parameters:
-    *
-    * - all: If true, then perform a "unregister all" action ("Contact: *");
-    */
+  unregister: function(options) {
+    var extraHeaders;
+
     if(!this.registered) {
       console.log(JsSIP.C.LOG_REGISTRATOR +"Already unregistered");
       return;
     }
 
-    extraHeaders = extraHeaders || [];
+    options = options || {};
+    extraHeaders = options.extraHeaders || [];
 
     this.registered = false;
 
     // Clear the registration timer.
     window.clearTimeout(this.registrationTimer);
 
-    if(all) {
+    if(options.all) {
       extraHeaders.push('Contact: *');
       extraHeaders.push('Expires: 0');
 

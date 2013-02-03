@@ -68,10 +68,10 @@ JsSIP.UA.prototype = new JsSIP.EventEmitter();
  *
  * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
-JsSIP.UA.prototype.register = function(extraHeaders) {
+JsSIP.UA.prototype.register = function(options) {
   if(this.status === JsSIP.C.UA_STATUS_READY) {
     this.configuration.register = true;
-    this.registrator.register(extraHeaders);
+    this.registrator.register(options);
   } else {
       throw new JsSIP.Exceptions.NotReadyError();
   }
@@ -83,10 +83,10 @@ JsSIP.UA.prototype.register = function(extraHeaders) {
  *
  * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
-JsSIP.UA.prototype.unregister = function(all, extraHeaders) {
+JsSIP.UA.prototype.unregister = function(options) {
   if(this.status === JsSIP.C.UA_STATUS_READY) {
     this.configuration.register = false;
-    this.registrator.unregister(all, extraHeaders);
+    this.registrator.unregister(options);
   } else {
     throw new JsSIP.Exceptions.NotReadyError();
   }
@@ -130,18 +130,11 @@ JsSIP.UA.prototype.isConnected = function() {
  * @throws {JsSIP.Exceptions.InvalidTargetError} If the calling target is invalid.
  *
  */
-JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, videoViews) {
-  var session, options;
-
-  // Call Options
-  options = {
-    views: videoViews,
-    mediaType: {audio: useAudio, video: useVideo},
-    eventHandlers: eventHandlers
-  };
+JsSIP.UA.prototype.call = function(target, views, options) {
+  var session;
 
   session = new JsSIP.Session(this);
-  session.connect(target, options);
+  session.connect(target, views, options);
 };
 
 /**
@@ -155,16 +148,11 @@ JsSIP.UA.prototype.call = function(target, useAudio, useVideo, eventHandlers, vi
  * @throws {JsSIP.Exceptions.InvalidTargetError} If the calling target is invalid.
  *
  */
-JsSIP.UA.prototype.sendMessage = function(target, body, contentType, eventHandlers) {
-  var message, options;
-
-  // Message Options
-  options = {
-    eventHandlers: eventHandlers
-  };
+JsSIP.UA.prototype.sendMessage = function(target, body, options) {
+  var message;
 
   message = new JsSIP.Message(this);
-  message.send(target, body, contentType, options);
+  message.send(target, body, options);
 };
 
 /**

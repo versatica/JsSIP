@@ -72,7 +72,7 @@ JsSIP.Session.prototype.init_incoming = function(request) {
   this.receiveInitialRequest(this.ua, request);
 };
 
-JsSIP.Session.prototype.connect = function(target, options) {
+JsSIP.Session.prototype.connect = function(target, views, options) {
   var event, eventHandlers, request, selfView, remoteView, mediaType, extraHeaders, requestParams;
 
   // Check UA Status
@@ -89,10 +89,16 @@ JsSIP.Session.prototype.connect = function(target, options) {
     throw new JsSIP.Exceptions.InvalidStateError();
   }
 
+  // Check views
+  if (!views || (views &&  !views.remoteView)) {
+    console.log(JsSIP.C.LOG_INVITE_SESSION +'Missing "views" or "views.remoteView"');
+    throw new JsSIP.Exceptions.InvalidValueError();
+  }
+
   // Get call options
   options = options || {};
-  selfView = options.views ? options.views.selfView : null;
-  remoteView = options.views ? options.views.remoteView : null;
+  selfView = views.selfView || null;
+  remoteView = views.remoteView || null;
   mediaType = options.mediaType || {audio: true, video: true};
   extraHeaders = options.extraHeaders || [];
   eventHandlers = options.eventHandlers || {};
