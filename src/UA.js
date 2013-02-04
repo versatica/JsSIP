@@ -719,7 +719,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   // Via Host
   if (settings.hack_ip_in_contact) {
-    settings.via_host = JsSIP.Utils.getRandomIP();
+    settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
 
   // Transports
