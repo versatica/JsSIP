@@ -42,8 +42,6 @@ JsSIP.Registrator = function(ua, transport) {
   } else {
     this.contact = '<' + this.ua.contact.uri + '>';
   }
-
-  this.register();
 };
 
 JsSIP.Registrator.prototype = {
