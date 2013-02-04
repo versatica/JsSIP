@@ -599,7 +599,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, attribute, idx, uri, ws_uri, contact,
+  var parameter, attribute, idx, uri, ws_uri, contact, value,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -677,10 +677,18 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Check Optional parameters
   for(parameter in JsSIP.UA.configuration_check.optional) {
     if(configuration.hasOwnProperty(parameter)) {
-      if(JsSIP.UA.configuration_check.optional[parameter](configuration[parameter])) {
-        settings[parameter] = configuration[parameter];
+      value = configuration[parameter];
+
+      // If the parameter value is null, empty string or undefined then apply its default value.
+      if(value === null || value === "" || value === undefined) { continue; }
+      // If it's a number with NaN value then also apply its default value.
+      // NOTE: JS does not allow "value === NaN", the following does the work:
+      else if(typeof(value) === 'number' && window.isNaN(value)) { continue; }
+
+      if(JsSIP.UA.configuration_check.optional[parameter](value)) {
+        settings[parameter] = value;
       } else {
-        console.error('Bad configuration parameter: ' + parameter);
+        console.error('Bad configuration parameter ' + parameter + ' with value ' + window.String(value));
         return false;
       }
     }
@@ -751,7 +759,10 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   }
 
   // Fill the value of the configuration_skeleton
+  console.log('configuration parameters after validation:');
   for(attribute in settings) {
+    value = settings[attribute];
+    console.log('· ' + attribute + ': ' + window.String(settings[attribute]));
     JsSIP.UA.configuration_skeleton[attribute].value = settings[attribute];
   }
 
