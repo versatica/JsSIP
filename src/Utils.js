@@ -32,15 +32,18 @@ JsSIP.Utils= {
   },
 
   createURI: function(uri) {
-    var parsed;
-
     if (!/^sip:/.test(uri)) {
       uri = JsSIP.C.SIP +':'+ uri;
     }
 
+    if (uri.indexOf('@') === -1) {
+      console.log('Invalid uri. Missing uri domain.');
+      return;
+    }
+
     uri = JsSIP.grammar.parse(uri,'SIP_URI');
 
-    if (parsed !== -1) {
+    if (uri !== -1) {
       return uri;
     }
   },

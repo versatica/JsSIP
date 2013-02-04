@@ -80,7 +80,6 @@ JsSIP.grammar = (function(){
         "quoted_string": parse_quoted_string,
         "qdtext": parse_qdtext,
         "quoted_pair": parse_quoted_pair,
-        "SIP_URI_simple": parse_SIP_URI_simple,
         "SIP_URI": parse_SIP_URI,
         "uri_scheme": parse_uri_scheme,
         "userinfo": parse_userinfo,
@@ -156,7 +155,6 @@ JsSIP.grammar = (function(){
         "contact_param": parse_contact_param,
         "name_addr": parse_name_addr,
         "addr_spec": parse_addr_spec,
-        "addr_spec_simple": parse_addr_spec_simple,
         "display_name": parse_display_name,
         "contact_params": parse_contact_params,
         "c_p_q": parse_c_p_q,
@@ -2852,63 +2850,6 @@ JsSIP.grammar = (function(){
         return result0;
       }
       
-      function parse_SIP_URI_simple() {
-        var result0, result1, result2, result3;
-        var pos0, pos1;
-        
-        pos0 = pos;
-        pos1 = pos;
-        result0 = parse_uri_scheme();
-        if (result0 !== null) {
-          if (input.charCodeAt(pos) === 58) {
-            result1 = ":";
-            pos++;
-          } else {
-            result1 = null;
-            if (reportFailures === 0) {
-              matchFailed("\":\"");
-            }
-          }
-          if (result1 !== null) {
-            result2 = parse_userinfo();
-            result2 = result2 !== null ? result2 : "";
-            if (result2 !== null) {
-              result3 = parse_hostport();
-              if (result3 !== null) {
-                result0 = [result0, result1, result2, result3];
-              } else {
-                result0 = null;
-                pos = pos1;
-              }
-            } else {
-              result0 = null;
-              pos = pos1;
-            }
-          } else {
-            result0 = null;
-            pos = pos1;
-          }
-        } else {
-          result0 = null;
-          pos = pos1;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset) {
-                            data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port);
-                            delete data.scheme;
-                            delete data.user;
-                            delete data.host;
-                            delete data.host_type;
-                            delete data.port;
-                            delete data.uri_params;
-                            if (startRule === 'SIP_URI_simple') { data = data.uri;};})(pos0);
-        }
-        if (result0 === null) {
-          pos = pos0;
-        }
-        return result0;
-      }
-      
       function parse_SIP_URI() {
         var result0, result1, result2, result3, result4, result5;
         var pos0, pos1;
@@ -2964,14 +2905,18 @@ JsSIP.grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                            data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
-                            delete data.scheme;
-                            delete data.user;
-                            delete data.host;
-                            delete data.host_type;
-                            delete data.port;
-                            delete data.uri_params;
-                            if (startRule === 'SIP_URI') { data = data.uri;};})(pos0);
+                            try {
+                                data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port);
+                                delete data.scheme;
+                                delete data.user;
+                                delete data.host;
+                                delete data.host_type;
+                                delete data.port;
+                                delete data.uri_params;
+                                if (startRule === 'SIP_URI') { data = data.uri;}
+                              } catch(e) {
+                                data = -1;
+                              }})(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -7878,7 +7823,11 @@ JsSIP.grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                                data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);})(pos0);
+                                try {
+                                  data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                                } catch(e) {
+                                  data = -1;
+                                }})(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -7979,16 +7928,6 @@ JsSIP.grammar = (function(){
         var result0;
         
         result0 = parse_SIP_URI();
-        if (result0 === null) {
-          result0 = parse_absoluteURI();
-        }
-        return result0;
-      }
-      
-      function parse_addr_spec_simple() {
-        var result0;
-        
-        result0 = parse_SIP_URI_simple();
         if (result0 === null) {
           result0 = parse_absoluteURI();
         }
@@ -9040,7 +8979,7 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_addr_spec_simple();
+        result0 = parse_addr_spec();
         if (result0 === null) {
           result0 = parse_name_addr();
         }
@@ -9090,8 +9029,12 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset) {
                         var tag = data.tag;
-                        data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
-                        if (tag) {data.setParam('tag',tag)}})(pos0);
+                        try {
+                          data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                          if (tag) {data.setParam('tag',tag)}
+                        } catch(e) {
+                          data = -1;
+                        }})(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -10607,7 +10550,7 @@ JsSIP.grammar = (function(){
         
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_addr_spec_simple();
+        result0 = parse_addr_spec();
         if (result0 === null) {
           result0 = parse_name_addr();
         }
@@ -10657,8 +10600,12 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset) {
                       var tag = data.tag;
-                      data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
-                      if (tag) {data.setParam('tag',tag)}})(pos0);
+                      try {
+                        data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                        if (tag) {data.setParam('tag',tag)}
+                      } catch(e) {
+                        data = -1;
+                      }})(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -11506,11 +11453,11 @@ JsSIP.grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        result0 = parse_reg_name();
+        result0 = parse_IPv4address();
         if (result0 === null) {
-          result0 = parse_IPv4address();
+          result0 = parse_IPv6reference();
           if (result0 === null) {
-            result0 = parse_IPv6reference();
+            result0 = parse_reg_name();
           }
         }
         if (result0 !== null) {

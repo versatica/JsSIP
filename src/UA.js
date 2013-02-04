@@ -602,7 +602,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, attribute, idx, uri, ws_uri, contact, value,
+  var parameter, value, checked_value, contact,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -640,40 +640,20 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   // Pre-Configuration
 
-  /* Allow defining ws_servers parameter as:
-   *  String: "host"
-   *  Array of Strings: ["host1", "host2"]
-   *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
-   *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
-   */
-  if (typeof configuration.ws_servers === 'string'){
-    configuration.ws_servers = [{ws_uri:configuration.ws_servers}];
-  } else if (configuration.ws_servers instanceof Array) {
-    for(idx in configuration.ws_servers) {
-      if (typeof configuration.ws_servers[idx] === 'string'){
-        configuration.ws_servers[idx] = {ws_uri:configuration.ws_servers[idx]};
-      }
-    }
-  }
-
-  if (configuration.stun_servers && !(configuration.stun_servers instanceof Array)){
-    configuration.stun_servers = [configuration.stun_servers];
-  }
-
-  if (configuration.turn_servers && !(configuration.turn_servers instanceof Array)){
-    configuration.turn_servers = [configuration.turn_servers];
-  }
-
   // Check Mandatory parameters
   for(parameter in JsSIP.UA.configuration_check.mandatory) {
     if(!configuration.hasOwnProperty(parameter)) {
       console.error('Missing config parameter: ' + parameter);
       return false;
-    } else if(JsSIP.UA.configuration_check.mandatory[parameter](configuration[parameter])) {
-      settings[parameter] = configuration[parameter];
     } else {
-      console.error('Bad configuration parameter: ' + parameter);
-      return false;
+      value = configuration[parameter];
+      checked_value = JsSIP.UA.configuration_check.mandatory[parameter](value);
+      if (checked_value !== undefined) {
+        settings[parameter] = checked_value;
+      } else {
+        console.error('Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
+        return false;
+      }
     }
   }
 
@@ -688,10 +668,11 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       // NOTE: JS does not allow "value === NaN", the following does the work:
       else if(typeof(value) === 'number' && window.isNaN(value)) { continue; }
 
-      if(JsSIP.UA.configuration_check.optional[parameter](value)) {
-        settings[parameter] = value;
+      checked_value = JsSIP.UA.configuration_check.optional[parameter](value);
+      if (checked_value !== undefined) {
+        settings[parameter] = checked_value;
       } else {
-        console.error('Bad configuration parameter ' + parameter + ' with value ' + window.String(value));
+        console.error('Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
         return false;
       }
     }
@@ -701,7 +682,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   // Connection recovery intervals
   if(settings.connection_recovery_max_interval < settings.connection_recovery_min_interval) {
-    console.error('"connection_recovery_max_interval" parameter is lower than "connection_recovery_min_interval"');
+    console.error('"connection_recovery_max_interval" value is lower than "connection_recovery_min_interval"');
     return false;
   }
 
@@ -710,17 +691,20 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Instance-id for GRUU
   settings.instance_id = JsSIP.Utils.newUUID();
 
-  // Create a jssip_id parameter which is a static random tag of length 5
-  //for this instance.
+  // jssip_id instance parameter. Static random tag of length 5
   settings.jssip_id = Math.random().toString(36).substr(2, 5);
 
-  uri = JsSIP.Utils.createURI(settings.uri);
-  settings.from_uri = uri.toAor();
+  settings.from_uri = settings.uri.toAor();
 
-  settings.user = uri.user;
-  settings.domain = uri.host;
+  settings.user = settings.uri.user;
 
-  // Check whether authorization_user is explicitly defined and take user value otherwise.
+  settings.domain = settings.uri.host;
+
+  settings.uri = settings.uri.toString();
+
+  /* Check whether authorization_user is explicitly defined.
+   * Take 'settings.user' value if not.
+   */
   if (!settings.authorization_user) {
     settings.authorization_user = settings.user;
   }
@@ -733,47 +717,27 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
 
-  // Transports
-  for (idx in configuration.ws_servers) {
-    ws_uri = JsSIP.grammar.parse(settings.ws_servers[idx].ws_uri, 'absoluteURI');
-
-    settings.ws_servers[idx].sip_uri = '<sip:' + ws_uri.host + (ws_uri.port ? ':' + ws_uri.port : '') + ';transport=ws;lr>';
-
-    if (!settings.ws_servers[idx].weight) {
-      settings.ws_servers[idx].weight = 0;
-    }
-
-    settings.ws_servers[idx].status = 0;
-    settings.ws_servers[idx].scheme = ws_uri.scheme.toUpperCase();
-
-  }
-
   contact = {
-    uri: {value: 'sip:' + uri.user + '@' + settings.via_host + ';transport=ws', writable: false, configurable: false}
+    uri: {
+      value: 'sip:' + settings.user + '@' + settings.via_host + ';transport=ws',
+      writable: false,
+      configurable: false
+    }
   };
   Object.defineProperties(this.contact, contact);
 
-  // Stun  servers
-  for (idx in configuration.stun_servers) {
-    uri = configuration.stun_servers[idx];
-    if (!(/^stuns?:/.test(uri))){
-      configuration.stun_servers[idx] = 'stun:' + uri;
-    }
-  }
-
   // Fill the value of the configuration_skeleton
-  console.log('configuration parameters after validation:');
-  for(attribute in settings) {
-    value = settings[attribute];
-    console.log('· ' + attribute + ': ' + window.String(settings[attribute]));
-    JsSIP.UA.configuration_skeleton[attribute].value = settings[attribute];
+  console.log(JsSIP.C.LOG_UA + 'configuration parameters after validation:');
+  for(parameter in settings) {
+    console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+    JsSIP.UA.configuration_skeleton[parameter].value = settings[parameter];
   }
 
   Object.defineProperties(this.configuration, JsSIP.UA.configuration_skeleton);
 
   // Clean JsSIP.UA.configuration_skeleton
-  for(attribute in settings) {
-    JsSIP.UA.configuration_skeleton[attribute].value = '';
+  for(parameter in settings) {
+    JsSIP.UA.configuration_skeleton[parameter].value = '';
   }
 
   return true;
@@ -791,39 +755,35 @@ JsSIP.UA.configuration_skeleton = (function() {
       // Internal parameters
       "instance_id",
       "jssip_id",
-
+      "register_min_expires",
       "ws_server_max_reconnection",
       "ws_server_reconnection_timeout",
 
-      "connection_recovery_min_interval",
-      "connection_recovery_max_interval",
-
-      "use_preloaded_route",
-
-      "register_min_expires",
-
       // Mandatory user configurable parameters
-      "ws_servers",
       "uri",
+      "ws_servers",
 
       // Optional user configurable parameters
       "authorization_user",
+      "connection_recovery_max_interval",
+      "connection_recovery_min_interval",
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
-      "password",
-      "stun_servers",
-      "turn_servers",
       "no_answer_timeout", // 30 seconds.
+      "password",
       "register_expires", // 600 seconds.
+      "stun_servers",
       "trace_sip",
-      "via_host", // random.
+      "turn_servers",
+      "use_preloaded_route",
 
       // Post-configuration generated parameters
       "domain",
       "from_uri",
       "via_core_value",
-      "user"
+      "user",
+      "via_host"
     ];
 
   for(idx in parameters) {
@@ -851,8 +811,40 @@ JsSIP.UA.configuration_skeleton = (function() {
  */
 JsSIP.UA.configuration_check = {
   mandatory: {
+
+    uri: function(uri) {
+      var parsed;
+
+      parsed = JsSIP.Utils.createURI(uri);
+
+      if(!parsed) {
+        console.log(JsSIP.C.LOG_UA +'Invalid uri: ' + uri);
+        return;
+      } else {
+        return parsed;
+      }
+    },
+
     ws_servers: function(ws_servers) {
       var idx, url;
+
+      /* Allow defining ws_servers parameter as:
+       *  String: "host"
+       *  Array of Strings: ["host1", "host2"]
+       *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
+       *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
+       */
+      if (typeof ws_servers === 'string') {
+        ws_servers = [{ws_uri: ws_servers}];
+      } else if (ws_servers instanceof Array) {
+        for(idx in ws_servers) {
+          if (typeof ws_servers[idx] === 'string'){
+            ws_servers[idx] = {ws_uri: ws_servers[idx]};
+          }
+        }
+      } else {
+        return;
+      }
 
       if (ws_servers.length === 0) {
         return false;
@@ -861,147 +853,182 @@ JsSIP.UA.configuration_check = {
       for (idx in ws_servers) {
         if (!ws_servers[idx].ws_uri) {
           console.log(JsSIP.C.LOG_UA +'Missing "ws_uri" attribute in ws_servers parameter');
-          return false;
+          return;
         }
         if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
           console.log(JsSIP.C.LOG_UA +'"weight" attribute in ws_servers parameter must be a Number');
-          return false;
+          return;
         }
 
         url = JsSIP.grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
           console.log(JsSIP.C.LOG_UA +'Invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
-          return false;
+          return;
         } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
           console.log(JsSIP.C.LOG_UA +'Invalid url scheme: ' + url.scheme);
-          return false;
+          return;
+        } else {
+          ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
+
+          if (!ws_servers[idx].weight) {
+            ws_servers[idx].weight = 0;
+          }
+
+          ws_servers[idx].status = 0;
+          ws_servers[idx].scheme = url.scheme.toUpperCase();
         }
       }
-      return true;
-    },
-    uri: function(uri) {
-      var parsed;
-
-      parsed = JsSIP.grammar.parse(uri, 'lazy_uri');
-
-      if(parsed === -1) {
-        console.log(JsSIP.C.LOG_UA +'Invalid uri: ' + uri);
-        return false;
-      } else if (!parsed.host) {
-        console.log(JsSIP.C.LOG_UA +'Invalid uri. Missing uri domain.');
-        return false;
-      } else {
-        return true;
-      }
+      return ws_servers;
     }
   },
+
   optional: {
+
     authorization_user: function(authorization_user) {
       if(JsSIP.grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
-        return false;
+        return;
       } else {
-        return true;
+        return authorization_user;
       }
     },
-    register: function(register) {
-      return typeof register === 'boolean';
+
+    connection_recovery_max_interval: function(connection_recovery_max_interval) {
+      var value;
+      if(JsSIP.Utils.isDecimal(connection_recovery_max_interval)) {
+        value = window.Number(connection_recovery_max_interval);
+        if(value > 0) {
+          return value;
+        }
+      }
     },
+
+    connection_recovery_min_interval: function(connection_recovery_min_interval) {
+      var value;
+      if(JsSIP.Utils.isDecimal(connection_recovery_min_interval)) {
+        value = window.Number(connection_recovery_min_interval);
+        if(value > 0) {
+          return value;
+        }
+      }
+    },
+
     display_name: function(display_name) {
       if(JsSIP.grammar.parse('"' + display_name + '"', 'display_name') === -1) {
-        return false;
+        return;
       } else {
-        return true;
+        return display_name;
       }
     },
-    register_expires: function(register_expires) {
-      if(!Number(register_expires)) {
-        return false;
-      } else {
-        return true;
+
+    hack_via_tcp: function(hack_via_tcp) {
+      if (typeof hack_via_tcp === 'boolean') {
+        return hack_via_tcp;
       }
     },
-    trace_sip: function(trace_sip) {
-      return typeof trace_sip === 'boolean';
+
+    hack_ip_in_contact: function(hack_ip_in_contact) {
+      if (typeof hack_ip_in_contact === 'boolean') {
+        return hack_ip_in_contact;
+      }
     },
+
+    no_answer_timeout: function(no_answer_timeout) {
+      var value;
+      if (JsSIP.Utils.isDecimal(no_answer_timeout)) {
+        value = window.Number(no_answer_timeout);
+        if (value > 0) {
+          return value;
+        }
+      }
+    },
+
     password: function(password) {
       if(JsSIP.grammar.parse(password, 'password') === -1) {
-        return false;
+        return;
       } else {
-        return true;
+        return password;
       }
     },
+
+    register: function(register) {
+      if (typeof register === 'boolean') {
+        return register;
+      }
+    },
+
+    register_expires: function(register_expires) {
+      var value;
+      if (JsSIP.Utils.isDecimal(register_expires)) {
+        value = window.Number(register_expires);
+        if (value > 0) {
+          return value;
+        }
+      }
+    },
+
     stun_servers: function(stun_servers) {
       var idx, stun_server;
 
+      if (typeof stun_servers === 'string') {
+        stun_servers = [stun_servers];
+      } else if (!(stun_servers instanceof Array)) {
+        return;
+      }
+
       for (idx in stun_servers) {
         stun_server = stun_servers[idx];
-        if (!(/^stuns?:/.test(stun_server))){
+        if (!(/^stuns?:/.test(stun_server))) {
           stun_server = 'stun:' + stun_server;
         }
 
         if(JsSIP.grammar.parse(stun_server, 'stun_URI') === -1) {
-          return false;
+          return;
+        } else {
+          stun_servers[idx] = stun_server;
         }
       }
-      return true;
+      return stun_servers;
     },
+
+    trace_sip: function(trace_sip) {
+      if (typeof trace_sip === 'boolean') {
+        return trace_sip;
+      }
+    },
+
     turn_servers: function(turn_servers) {
       var idx, turn_server;
+
+      if (typeof turn_servers === 'string') {
+        turn_servers = [turn_servers];
+      } else if (!(turn_servers instanceof Array)) {
+        return;
+      }
 
       for (idx in turn_servers) {
         turn_server = turn_servers[idx];
         if (!turn_server.server || !turn_server.username || !turn_server.password) {
-          return false;
-        } else if (!(/^turns?:/.test(turn_server.server))){
+          return;
+        } else if (!(/^turns?:/.test(turn_server.server))) {
           turn_server.server = 'turn:' + turn_server.server;
         }
 
         if(JsSIP.grammar.parse(turn_server.server, 'turn_URI') === -1) {
-          return false;
+          return;
         } else if(JsSIP.grammar.parse(turn_server.username, 'user') === -1) {
-          return false;
+          return;
         } else if(JsSIP.grammar.parse(turn_server.password, 'password') === -1) {
-          return false;
+          return;
         }
       }
-      return true;
+      return turn_servers;
     },
-    no_answer_timeout: function(no_answer_timeout) {
-      if(!Number(no_answer_timeout)) {
-        return false;
-      } else if(no_answer_timeout < 0 || no_answer_timeout > 600) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    connection_recovery_min_interval: function(connection_recovery_min_interval) {
-      if(!Number(connection_recovery_min_interval)) {
-        return false;
-      } else if(connection_recovery_min_interval < 0) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    connection_recovery_max_interval: function(connection_recovery_max_interval) {
-      if(!Number(connection_recovery_max_interval)) {
-        return false;
-      } else if(connection_recovery_max_interval < 0) {
-        return false;
-      } else {
-        return true;
-      }
-    },
+
     use_preloaded_route: function(use_preloaded_route) {
-      return typeof use_preloaded_route === 'boolean';
-    },
-    hack_via_tcp: function(hack_via_tcp) {
-      return typeof hack_via_tcp === 'boolean';
-    },
-    hack_ip_in_contact: function(hack_ip_in_contact) {
-      return typeof hack_ip_in_contact === 'boolean';
+      if (typeof use_preloaded_route === 'boolean') {
+        return use_preloaded_route;
+      }
     }
   }
 };

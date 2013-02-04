@@ -90,25 +90,19 @@ quoted_pair = "\\" ( [\x00-\x09] / [\x0B-\x0C] / [\x0E-\x7F] )
 // SIP URI
 //=======================
 
-SIP_URI_simple  = uri_scheme ":" userinfo ? hostport {
-                    data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port);
-                    delete data.scheme;
-                    delete data.user;
-                    delete data.host;
-                    delete data.host_type;
-                    delete data.port;
-                    delete data.uri_params;
-                    if (startRule === 'SIP_URI_simple') { data = data.uri;};}
-
 SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
-                    data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
-                    delete data.scheme;
-                    delete data.user;
-                    delete data.host;
-                    delete data.host_type;
-                    delete data.port;
-                    delete data.uri_params;
-                    if (startRule === 'SIP_URI') { data = data.uri;};}
+                    try {
+                        data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port);
+                        delete data.scheme;
+                        delete data.user;
+                        delete data.host;
+                        delete data.host_type;
+                        delete data.port;
+                        delete data.uri_params;
+                        if (startRule === 'SIP_URI') { data = data.uri;}
+                      } catch(e) {
+                        data = -1;
+                      }}
 
 uri_scheme      = uri_scheme:  "sip"i {
                     data.scheme = uri_scheme.toLowerCase(); }
@@ -355,15 +349,17 @@ Call_ID  =  word ( "@" word )? {
 // CONTACT
 
 Contact             = ( STAR / (contact_param (COMMA contact_param)*) ) {
-                        data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);}
+                        try {
+                          data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                        } catch(e) {
+                          data = -1;
+                        }}
 
 contact_param       = (addr_spec / name_addr) (SEMI contact_params)*
 
 name_addr           = ( display_name )? LAQUOT addr_spec RAQUOT
 
 addr_spec           = SIP_URI / absoluteURI
-
-addr_spec_simple    = SIP_URI_simple / absoluteURI
 
 display_name        = display_name: (token ( LWS token )* / quoted_string) {
                         display_name = input.substring(pos, offset).trim();
@@ -490,10 +486,14 @@ event_param       = generic_param
 
 // FROM
 
-From        = ( addr_spec_simple / name_addr ) ( SEMI from_param )* {
+From        = ( addr_spec / name_addr ) ( SEMI from_param )* {
                 var tag = data.tag;
-                data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
-                if (tag) {data.setParam('tag',tag)}}
+                try {
+                  data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                  if (tag) {data.setParam('tag',tag)}
+                } catch(e) {
+                  data = -1;
+                }}
 
 from_param  = tag_param / generic_param
 
@@ -628,10 +628,14 @@ Supported  = ( option_tag (COMMA option_tag)* )?
 
 // TO
 
-To         = ( addr_spec_simple / name_addr ) ( SEMI to_param )* {
+To         = ( addr_spec / name_addr ) ( SEMI to_param )* {
               var tag = data.tag;
-              data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
-              if (tag) {data.setParam('tag',tag)}}
+              try {
+                data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                if (tag) {data.setParam('tag',tag)}
+              } catch(e) {
+                data = -1;
+              }}
 
 to_param   = tag_param / generic_param
 
@@ -708,7 +712,7 @@ stun_scheme       = scheme: ("stuns"i / "stun"i) {
 
 stun_host_port    = stun_host ( ":" port )?
 
-stun_host         = host: (reg_name / IPv4address / IPv6reference) {
+stun_host         = host: (IPv4address / IPv6reference / reg_name) {
                       data.host = host.join(''); }
 
 reg_name          = ( stun_unreserved / escaped / sub_delims )*
