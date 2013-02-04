@@ -340,7 +340,10 @@ JsSIP.UA.prototype.onTransportConnected = function(transport) {
       this.registrator.onTransportConnected();
     } else {
       this.registrator = new JsSIP.Registrator(this, transport);
+      this.register();
     }
+  } else {
+    this.registrator = new JsSIP.Registrator(this, transport);
   }
 };
 
