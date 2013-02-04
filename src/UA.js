@@ -1000,10 +1000,10 @@ JsSIP.UA.configuration_check = {
     turn_servers: function(turn_servers) {
       var idx, turn_server;
 
-      if (typeof turn_servers === 'string') {
+      if (turn_servers instanceof Array) {
+        // Do nothing
+      } else {
         turn_servers = [turn_servers];
-      } else if (!(turn_servers instanceof Array)) {
-        return;
       }
 
       for (idx in turn_servers) {
