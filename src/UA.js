@@ -126,7 +126,7 @@ JsSIP.UA.prototype.isConnected = function() {
  * @param {Object} videoViews
  *
  * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
- * @throws {JsSIP.Exceptions.WebRtcNotSupportedError} If rtcweb is not supported by the client.
+ * @throws {JsSIP.Exceptions.WebRtcNotSupportedError} If WebRTC is not supported by the client.
  * @throws {JsSIP.Exceptions.InvalidTargetError} If the calling target is invalid.
  *
  */
@@ -408,11 +408,12 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
 
     switch(method) {
       case JsSIP.C.INVITE:
-        if(!JsSIP.Utils.isWebRtcSupported()) {
-          console.warn(JsSIP.C.LOG_UA +'Call invitation received but rtcweb is not supported');
-        } else {
+        if(JsSIP.Utils.isWebRtcSupported()) {
           session = new JsSIP.Session(this);
           session.init_incoming(request);
+        } else {
+          console.warn(JsSIP.C.LOG_UA +'INVITE received but WebRTC is not supported');
+          request.reply(488);
         }
         break;
       case JsSIP.C.BYE:

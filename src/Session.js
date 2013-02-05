@@ -81,7 +81,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
 
   // Check WebRTC support
   if(!JsSIP.Utils.isWebRtcSupported()) {
-    console.log(JsSIP.C.LOG_UA +'rtcweb not supported.');
+    console.log(JsSIP.C.LOG_UA +'WebRTC not supported.');
     throw new JsSIP.Exceptions.WebRtcNotSupportedError();
   }
 
