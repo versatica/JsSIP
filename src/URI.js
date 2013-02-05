@@ -16,7 +16,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
   // Checks
   if(!host) {
     console.warn('Missing "host" in URI');
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('host', host);
   }
 
   // Initialize parameters

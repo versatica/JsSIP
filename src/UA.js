@@ -48,13 +48,20 @@ JsSIP.UA = function(configuration) {
    * Load configuration
    *
    * @throws {JsSIP.Exceptions.ConfigurationError}
+   * @throws {JsSIP.Exceptions.InvalidValueError}
    */
-  if(!configuration || !this.loadConfig(configuration)) {
+
+  if(!configuration) {
+    throw new JsSIP.Exceptions.InvalidValueError('configuration');
+  }
+
+  try {
+    this.loadConfig(configuration);
+    this.initEvents(events);
+  } catch(e) {
     this.status = JsSIP.C.UA_STATUS_NOT_READY;
     this.error = JsSIP.C.UA_CONFIGURATION_ERROR;
-    throw new JsSIP.Exceptions.ConfigurationError();
-  } else {
-    this.initEvents(events);
+    throw e;
   }
 };
 JsSIP.UA.prototype = new JsSIP.EventEmitter();
@@ -73,7 +80,7 @@ JsSIP.UA.prototype.register = function(options) {
     this.configuration.register = true;
     this.registrator.register(options);
   } else {
-      throw new JsSIP.Exceptions.NotReadyError();
+      throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
   }
 };
 
@@ -88,7 +95,7 @@ JsSIP.UA.prototype.unregister = function(options) {
     this.configuration.register = false;
     this.registrator.unregister(options);
   } else {
-    throw new JsSIP.Exceptions.NotReadyError();
+    throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
   }
 };
 
@@ -165,7 +172,7 @@ JsSIP.UA.prototype.stop = function() {
     ua = this;
 
   if(this.status !== JsSIP.C.UA_STATUS_READY) {
-    throw new JsSIP.Exceptions.NotReadyError();
+    throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
   }
 
   console.log(JsSIP.C.LOG_UA +'User requested closure.');
@@ -213,7 +220,7 @@ JsSIP.UA.prototype.start = function() {
   } else if (this.status === JsSIP.C.UA_STATUS_READY) {
     console.log(JsSIP.C.LOG_UA +'UA is in ready status. Not resuming');
   } else {
-    throw new JsSIP.Exceptions.NotReadyError();
+    throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
   }
 };
 
@@ -645,7 +652,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   for(parameter in JsSIP.UA.configuration_check.mandatory) {
     if(!configuration.hasOwnProperty(parameter)) {
       console.error('Missing config parameter: ' + parameter);
-      return false;
+      throw new JsSIP.Exceptions.ConfigurationError(parameter);
     } else {
       value = configuration[parameter];
       checked_value = JsSIP.UA.configuration_check.mandatory[parameter](value);
@@ -653,7 +660,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
         settings[parameter] = checked_value;
       } else {
         console.error('Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
-        return false;
+        throw new JsSIP.Exceptions.ConfigurationError(parameter, value);
       }
     }
   }
@@ -674,7 +681,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
         settings[parameter] = checked_value;
       } else {
         console.error('Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
-        return false;
+        throw new JsSIP.Exceptions.ConfigurationError(parameter, value);
       }
     }
   }
@@ -684,7 +691,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Connection recovery intervals
   if(settings.connection_recovery_max_interval < settings.connection_recovery_min_interval) {
     console.error('"connection_recovery_max_interval" value is lower than "connection_recovery_min_interval"');
-    return false;
+    throw new JsSIP.Exceptions.ConfigurationError('connection_recovery_max_interval', settings.connection_recovery_max_interval);
   }
 
   // Post Configuration Process
@@ -741,7 +748,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     JsSIP.UA.configuration_skeleton[parameter].value = '';
   }
 
-  return true;
+  return;
 };
 
 

@@ -153,7 +153,7 @@ JsSIP.Utils= {
 
   checkUAStatus: function(ua) {
     if(ua.status !== JsSIP.C.UA_STATUS_READY) {
-      throw new JsSIP.Exceptions.NotReadyError();
+      throw new JsSIP.Exceptions.NotReadyError(ua.status, ua.error);
     }
   },
 

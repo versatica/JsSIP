@@ -74,7 +74,8 @@ JsSIP.Session.prototype.init_incoming = function(request) {
 };
 
 JsSIP.Session.prototype.connect = function(target, views, options) {
-  var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams;
+  var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams,
+    original_target = target;
 
   // Check UA Status
   JsSIP.Utils.checkUAStatus(this.ua);
@@ -87,13 +88,13 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
 
   // Check Session Status
   if (this.status !== JsSIP.C.SESSION_NULL) {
-    throw new JsSIP.Exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   // Check views
   if (!views || (views &&  !views.remoteView)) {
     console.log(JsSIP.C.LOG_INVITE_SESSION +'Missing "views" or "views.remoteView"');
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('views', views);
   }
 
   // Get call options
@@ -112,7 +113,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   // Check target validity
   target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
   if (!target) {
-    throw new JsSIP.Exceptions.InvalidTargetError();
+    throw new JsSIP.Exceptions.InvalidTargetError(original_target);
   }
 
   // Session parameter initialization
@@ -396,7 +397,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
 
       // Check Session Status
       if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
-        throw new JsSIP.Exceptions.InvalidStateError();
+        throw new JsSIP.Exceptions.InvalidStateError(this.status);
       }
 
       offer = request.body;
@@ -843,7 +844,7 @@ JsSIP.Session.prototype.terminate = function() {
 
   // Check Session Status
   if (this.status === JsSIP.C.SESSION_TERMINATED) {
-    throw new JsSIP.Exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   switch(this.status) {
@@ -879,14 +880,14 @@ JsSIP.Session.prototype.terminate = function() {
 JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.InvalidMethodError();
+    throw new JsSIP.Exceptions.InvalidMethodError('reject');
   } else if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
-    throw new JsSIP.Exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   if (status_code) {
     if ((status_code < 300 || status_code >= 700)) {
-      throw new JsSIP.Exceptions.InvalidValueError();
+      throw new JsSIP.Exceptions.InvalidValueError('status_code', status_code);
     } else {
       this.request.reply(status_code, reason_phrase);
     }
@@ -905,7 +906,7 @@ JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
 JsSIP.Session.prototype.cancel = function(reason) {
   // Check Session Direction
   if (this.direction !== 'outgoing') {
-    throw new JsSIP.Exceptions.InvalidMethodError();
+    throw new JsSIP.Exceptions.InvalidMethodError('cancel');
   }
 
   // Check Session Status
@@ -922,7 +923,7 @@ JsSIP.Session.prototype.cancel = function(reason) {
   } else if(this.status === JsSIP.C.SESSION_1XX_RECEIVED) {
     this.request.cancel(reason);
   } else {
-    throw new JsSIP.Exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   this.failed('local', null, JsSIP.C.causes.CANCELED);
@@ -946,19 +947,19 @@ JsSIP.Session.prototype.sendDTMF = function(tones, options) {
 
   // Check Session Status
   if (this.status !== JsSIP.C.SESSION_CONFIRMED && this.status !== JsSIP.C.SESSION_WAITING_FOR_ACK) {
-    throw new JsSIP.Exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   // Check tones
   if (!tones || (typeof tones !== 'string' && typeof tones !== 'number') || !tones.toString().match(/^[0-9A-D#*]+$/i)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('tones', tones);
   }
 
   tones = tones.toString();
 
   // Check interToneGap
   if (interToneGap && !JsSIP.Utils.isDecimal(interToneGap)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('interToneGap', interToneGap);
   } else if (!interToneGap) {
     interToneGap = JsSIP.C.DTMF_DEFAULT_INTER_TONE_GAP;
   } else if (interToneGap < JsSIP.C.DTMF_MIN_INTER_TONE_GAP) {
@@ -1140,7 +1141,7 @@ JsSIP.Session.DTMF.prototype.send = function(tone, options) {
 
   // Check Session Status
   if (this.session.status !== JsSIP.C.SESSION_CONFIRMED && this.session.status !== JsSIP.C.SESSION_WAITING_FOR_ACK) {
-    throw new JsSIP.Exceptions.InvalidStateError();
+    throw new JsSIP.Exceptions.InvalidStateError(this.session.status);
   }
 
   // Get DTMF options
@@ -1154,19 +1155,19 @@ JsSIP.Session.DTMF.prototype.send = function(tone, options) {
   } else if (typeof tone === 'number') {
     tone = tone.toString();
   } else {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('tone', tone);
   }
 
   // Check tone value
   if (!tone.match(/^[0-9A-D#*]$/)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('tone', tone);
   } else {
     this.tone = tone;
   }
 
   // Check duration
   if (options.duration && !JsSIP.Utils.isDecimal(options.duration)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('duration', options.duration);
   } else if (!options.duration) {
     options.duration = JsSIP.C.DTMF_DEFAULT_DURATION;
   } else if (options.duration < JsSIP.C.DTMF_MIN_DURATION) {
@@ -1182,7 +1183,7 @@ JsSIP.Session.DTMF.prototype.send = function(tone, options) {
 
   // Check extraHeaders
   if (!extraHeaders instanceof Array) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('extraHeaders', extraHeaders);
   }
 
   // Set event handlers

@@ -20,6 +20,7 @@ JsSIP.Message.prototype = new JsSIP.EventEmitter();
 
 JsSIP.Message.prototype.send = function(target, body, options) {
   var request_sender, event, contentType, eventHandlers, extraHeaders,
+    original_target = target,
     events = [
       'sending',
       'succeeded',
@@ -44,7 +45,7 @@ JsSIP.Message.prototype.send = function(target, body, options) {
   // Check target validity
   target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
   if (!target) {
-    throw new JsSIP.Exceptions.InvalidTargetError();
+    throw new JsSIP.Exceptions.InvalidTargetError(original_target);
   }
 
   // Message parameter initialization
@@ -183,7 +184,7 @@ JsSIP.Message.prototype.init_incoming = function(request) {
  */
 JsSIP.Message.prototype.accept = function() {
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.InvalidMethodError();
+    throw new JsSIP.Exceptions.InvalidMethodError('accept');
   }
 
   this.request.reply(200);
@@ -198,12 +199,12 @@ JsSIP.Message.prototype.accept = function() {
  */
 JsSIP.Message.prototype.reject = function(status_code, reason_phrase) {
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.InvalidMethodError();
+    throw new JsSIP.Exceptions.InvalidMethodError('reject');
   }
 
   if (status_code) {
     if ((status_code < 300 || status_code >= 700)) {
-      throw new JsSIP.Exceptions.InvalidValueError();
+      throw new JsSIP.Exceptions.InvalidValueError('status_code');
     } else {
       this.request.reply(status_code, reason_phrase);
     }

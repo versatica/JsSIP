@@ -352,9 +352,9 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
 
   // Validate code and reason values
   if (!code || (code < 100 || code > 699)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('code', code);
   } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('reason', reason);
   }
 
   reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
@@ -418,9 +418,9 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
 
   // Validate code and reason values
   if (!code || (code < 100 || code > 699)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('code', code);
   } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
-    throw new JsSIP.Exceptions.InvalidValueError();
+    throw new JsSIP.Exceptions.InvalidValueError('reason', reason);
   }
 
   reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
