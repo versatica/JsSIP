@@ -90,9 +90,21 @@ quoted_pair = "\\" ( [\x00-\x09] / [\x0B-\x0C] / [\x0E-\x7F] )
 // SIP URI
 //=======================
 
-SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
+SIP_URI_noparams  = uri_scheme ":"  userinfo ? hostport {
                     try {
                         data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port);
+                        delete data.scheme;
+                        delete data.user;
+                        delete data.host;
+                        delete data.host_type;
+                        delete data.port;
+                      } catch(e) {
+                        data = -1;
+                      }}
+
+SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
+                    try {
+                        data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
                         delete data.scheme;
                         delete data.user;
                         delete data.host;
@@ -357,9 +369,9 @@ Contact             = ( STAR / (contact_param (COMMA contact_param)*) ) {
 
 contact_param       = (addr_spec / name_addr) (SEMI contact_params)*
 
-name_addr           = ( display_name )? LAQUOT addr_spec RAQUOT
+name_addr           = ( display_name )? LAQUOT SIP_URI RAQUOT
 
-addr_spec           = SIP_URI / absoluteURI
+addr_spec           = SIP_URI_noparams
 
 display_name        = display_name: (token ( LWS token )* / quoted_string) {
                         display_name = input.substring(pos, offset).trim();
