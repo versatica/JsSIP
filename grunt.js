@@ -36,6 +36,7 @@ module.exports = function(grunt) {
           "src/Utils.js",
           "src/SanityCheck.js",
           "src/DigestAuthentication.js",
+          "src/WebRTC.js",
           "src/tail.js"
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'

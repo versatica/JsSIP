@@ -415,7 +415,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
 
     switch(method) {
       case JsSIP.C.INVITE:
-        if(JsSIP.Utils.isWebRtcSupported()) {
+        if(JsSIP.WebRTC.isSupported()) {
           session = new JsSIP.Session(this);
           session.init_incoming(request);
         } else {
