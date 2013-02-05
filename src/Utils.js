@@ -37,7 +37,7 @@ JsSIP.Utils= {
     }
 
     if (uri.indexOf('@') === -1) {
-      console.log('Invalid uri. Missing uri domain.');
+      console.log(JsSIP.C.LOG_UTILS + 'Invalid URI. Missing URI domain.');
       return;
     }
 
@@ -72,12 +72,12 @@ JsSIP.Utils= {
       uri = JsSIP.grammar.parse(target, 'lazy_uri');
 
       if (uri === -1) {
-        console.log('Invalid target: '+ target);
+        console.log(JsSIP.C.LOG_UTILS + 'Invalid target: '+ target);
         return;
       }
 
       if (!uri.host && !domain) {
-        console.log('No domain specified in target nor as function parameter');
+        console.log(JsSIP.C.LOG_UTILS + 'No domain specified in target nor as function parameter');
         return;
       }
 

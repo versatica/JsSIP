@@ -651,7 +651,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Check Mandatory parameters
   for(parameter in JsSIP.UA.configuration_check.mandatory) {
     if(!configuration.hasOwnProperty(parameter)) {
-      console.error('Missing config parameter: ' + parameter);
+      console.error(JsSIP.C.LOG_UA + 'Missing config parameter: ' + parameter);
       throw new JsSIP.Exceptions.ConfigurationError(parameter);
     } else {
       value = configuration[parameter];
@@ -659,7 +659,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
       } else {
-        console.error('Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
+        console.error(JsSIP.C.LOG_UA + 'Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
         throw new JsSIP.Exceptions.ConfigurationError(parameter, value);
       }
     }
@@ -680,7 +680,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
       } else {
-        console.error('Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
+        console.error(JsSIP.C.LOG_UA + 'Bad configuration parameter ' + parameter + ' with value ' + window.JSON.stringify(value));
         throw new JsSIP.Exceptions.ConfigurationError(parameter, value);
       }
     }
@@ -690,7 +690,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   // Connection recovery intervals
   if(settings.connection_recovery_max_interval < settings.connection_recovery_min_interval) {
-    console.error('"connection_recovery_max_interval" value is lower than "connection_recovery_min_interval"');
+    console.error(JsSIP.C.LOG_UA + '"connection_recovery_max_interval" value is lower than "connection_recovery_min_interval"');
     throw new JsSIP.Exceptions.ConfigurationError('connection_recovery_max_interval', settings.connection_recovery_max_interval);
   }
 

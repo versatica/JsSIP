@@ -148,7 +148,7 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
-      console.warn('stream added');
+      console.warn(JsSIP.C.LOG_MEDIA_SESSION +'stream added');
 
       if (session.remoteView && this.remoteStreams.length > 0) {
         session.remoteView.src = webkitURL.createObjectURL(mediaStreamEvent.stream);
@@ -160,8 +160,8 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onstatechange = function() {
-      console.warn('Status changed to: '+ this.readyState);
-      console.warn('ICE state is: '+ this.iceState);
+      console.warn(JsSIP.C.LOG_MEDIA_SESSION +'Status changed to: '+ this.readyState);
+      console.warn(JsSIP.C.LOG_MEDIA_SESSION +'ICE state is: '+ this.iceState);
     };
   },
 

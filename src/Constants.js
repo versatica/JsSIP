@@ -24,6 +24,8 @@ JsSIP.C= {
   LOG_TRANSACTION:            JsSIP.name() +' | '+ 'TRANSACTION' +' | ',
   LOG_DIALOG:                 JsSIP.name() +' | '+ 'DIALOG' +' | ',
   LOG_UA:                     JsSIP.name() +' | '+ 'UA' +' | ',
+  LOG_URI:                    JsSIP.name() +' | '+ 'URI' +' | ',
+  LOG_NAME_ADDR_HEADER:       JsSIP.name() +' | '+ 'NAME ADDR HEADER' +' | ',
   LOG_INVITE_SESSION:         JsSIP.name() +' | '+ 'INVITE SESSION' +' | ',
   LOG_CLIENT_INVITE_SESSION:  JsSIP.name() +' | '+ 'CLIENT INVITE SESSION' +' | ',
   LOG_SERVER_INVITE_SESSION:  JsSIP.name() +' | '+ 'SERVER INVITE SESSION' +' | ',
