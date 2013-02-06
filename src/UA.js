@@ -512,16 +512,13 @@ JsSIP.UA.prototype.findDialog = function(request) {
     dialog = this.dialogs[id];
 
   if(dialog) {
-    console.log(JsSIP.C.LOG_UA +'dialogs', 'dialog found');
     return dialog;
   } else {
     id = request.call_id + request.to_tag + request.from_tag;
     dialog = this.dialogs[id];
     if(dialog) {
-      console.log(JsSIP.C.LOG_UA +'dialogs', 'dialog found');
       return dialog;
     } else {
-      console.log(JsSIP.C.LOG_UA +'dialogs', 'No dialog found');
       return null;
     }
   }
