@@ -247,8 +247,7 @@ JsSIP.grammar = (function(){
         "sub_delims": parse_sub_delims,
         "turn_URI": parse_turn_URI,
         "turn_scheme": parse_turn_scheme,
-        "turn_transport": parse_turn_transport,
-        "lazy_uri": parse_lazy_uri
+        "turn_transport": parse_turn_transport
       };
       
       if (startRule !== undefined) {
@@ -11513,7 +11512,7 @@ JsSIP.grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, host) {
-                              data.host = host.join(''); })(pos0, result0);
+                              data.host = host; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -11523,7 +11522,9 @@ JsSIP.grammar = (function(){
       
       function parse_reg_name() {
         var result0, result1;
+        var pos0;
         
+        pos0 = pos;
         result0 = [];
         result1 = parse_stun_unreserved();
         if (result1 === null) {
@@ -11541,6 +11542,13 @@ JsSIP.grammar = (function(){
               result1 = parse_sub_delims();
             }
           }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                              return input.substring(pos, offset); })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
@@ -11871,115 +11879,6 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset) {
                               data.transport = transport; })(pos0);
-        }
-        if (result0 === null) {
-          pos = pos0;
-        }
-        return result0;
-      }
-      
-      function parse_lazy_uri() {
-        var result0, result1, result2, result3, result4;
-        var pos0, pos1, pos2;
-        
-        pos0 = pos;
-        pos1 = pos;
-        pos2 = pos;
-        result0 = parse_uri_scheme();
-        if (result0 !== null) {
-          if (input.charCodeAt(pos) === 58) {
-            result1 = ":";
-            pos++;
-          } else {
-            result1 = null;
-            if (reportFailures === 0) {
-              matchFailed("\":\"");
-            }
-          }
-          if (result1 !== null) {
-            result0 = [result0, result1];
-          } else {
-            result0 = null;
-            pos = pos2;
-          }
-        } else {
-          result0 = null;
-          pos = pos2;
-        }
-        result0 = result0 !== null ? result0 : "";
-        if (result0 !== null) {
-          result1 = parse_user();
-          if (result1 !== null) {
-            pos2 = pos;
-            if (input.charCodeAt(pos) === 58) {
-              result2 = ":";
-              pos++;
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\":\"");
-              }
-            }
-            if (result2 !== null) {
-              result3 = parse_password();
-              if (result3 !== null) {
-                result2 = [result2, result3];
-              } else {
-                result2 = null;
-                pos = pos2;
-              }
-            } else {
-              result2 = null;
-              pos = pos2;
-            }
-            result2 = result2 !== null ? result2 : "";
-            if (result2 !== null) {
-              pos2 = pos;
-              if (input.charCodeAt(pos) === 64) {
-                result3 = "@";
-                pos++;
-              } else {
-                result3 = null;
-                if (reportFailures === 0) {
-                  matchFailed("\"@\"");
-                }
-              }
-              if (result3 !== null) {
-                result4 = parse_hostport();
-                if (result4 !== null) {
-                  result3 = [result3, result4];
-                } else {
-                  result3 = null;
-                  pos = pos2;
-                }
-              } else {
-                result3 = null;
-                pos = pos2;
-              }
-              result3 = result3 !== null ? result3 : "";
-              if (result3 !== null) {
-                result0 = [result0, result1, result2, result3];
-              } else {
-                result0 = null;
-                pos = pos1;
-              }
-            } else {
-              result0 = null;
-              pos = pos1;
-            }
-          } else {
-            result0 = null;
-            pos = pos1;
-          }
-        } else {
-          result0 = null;
-          pos = pos1;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset) {
-                    if (data.password) {
-                      data.user = data.user +':'+ data.password;
-                    }})(pos0);
         }
         if (result0 === null) {
           pos = pos0;

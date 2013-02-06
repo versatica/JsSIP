@@ -727,9 +727,10 @@ stun_scheme       = scheme: ("stuns"i / "stun"i) {
 stun_host_port    = stun_host ( ":" port )?
 
 stun_host         = host: (IPv4address / IPv6reference / reg_name) {
-                      data.host = host.join(''); }
+                      data.host = host; }
 
-reg_name          = ( stun_unreserved / escaped / sub_delims )*
+reg_name          = ( stun_unreserved / escaped / sub_delims )* {
+                      return input.substring(pos, offset); }
 
 stun_unreserved   = ALPHA / DIGIT / "-" / "." / "_" / "~"
 
