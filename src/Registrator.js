@@ -95,9 +95,11 @@ JsSIP.Registrator.prototype = {
 
           while(contacts--) {
             contact = response.parseHeader('contact', contacts);
-            if(contact.uri === this.ua.contact.uri) {
+            if(contact.uri.toString() === this.ua.contact.uri) {
               expires = contact.getParam('expires');
               break;
+            } else {
+              contact = null;
             }
           }
 
