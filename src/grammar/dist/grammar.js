@@ -3395,7 +3395,8 @@ JsSIP.grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                            data.host = input.substring(pos, offset).toLowerCase(); })(pos0);
+                            data.host = input.substring(pos, offset).toLowerCase();
+                            return data.host; })(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -5811,7 +5812,7 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset, method) {
                               if(!data.uri_params) data.uri_params={};
-                              data.uri_params['method'] = method.toLowerCase(); })(pos0, result0[1]);
+                              data.uri_params['method'] = method; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -5887,7 +5888,7 @@ JsSIP.grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset, maddr) {
                               if(!data.uri_params) data.uri_params={};
-                              data.uri_params['maddr'] = maddr.toLowerCase(); })(pos0, result0[1]);
+                              data.uri_params['maddr'] = maddr; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -7577,7 +7578,8 @@ JsSIP.grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                            data.method = input.substring(pos, offset); })(pos0);
+                            data.method = input.substring(pos, offset);
+                            return data.method; })(pos0);
         }
         if (result0 === null) {
           pos = pos0;

@@ -133,7 +133,8 @@ password        = ( unreserved / escaped / "&" / "=" / "+" / "$" / "," )* {
 hostport        = host ( ":" port )?
 
 host            = ( hostname / IPv4address / IPv6reference ) {
-                    data.host = input.substring(pos, offset).toLowerCase(); }
+                    data.host = input.substring(pos, offset).toLowerCase();
+                    return data.host; }
 
 hostname        = ( domainlabel "." )* toplabel  "." ? {
                   data.host_type = 'domain';
@@ -209,7 +210,7 @@ other_user        = token
 
 method_param      = "method="i method: Method {
                       if(!data.uri_params) data.uri_params={};
-                      data.uri_params['method'] = method.toLowerCase(); }
+                      data.uri_params['method'] = method; }
 
 ttl_param         = "ttl="i ttl: ttl {
                       if(!data.params) data.params={};
@@ -217,7 +218,7 @@ ttl_param         = "ttl="i ttl: ttl {
 
 maddr_param       = "maddr="i maddr: host {
                       if(!data.uri_params) data.uri_params={};
-                      data.uri_params['maddr'] = maddr.toLowerCase(); }
+                      data.uri_params['maddr'] = maddr; }
 
 lr_param          = lr: "lr"i {
                       if(!data.uri_params) data.uri_params={};
@@ -325,7 +326,8 @@ NOTIFYm           = "\x4E\x4F\x54\x49\x46\x59" // NOTIFY in caps
 
 Method            = ( INVITEm / ACKm / OPTIONSm / BYEm / CANCELm / REGISTERm
                     / SUBSCRIBEm / NOTIFYm / extension_method ){
-                    data.method = input.substring(pos, offset); }
+                    data.method = input.substring(pos, offset);
+                    return data.method; }
 
 extension_method  = token
 
