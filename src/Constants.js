@@ -17,7 +17,6 @@ JsSIP.C= {
   LOG_DIGEST_AUTHENTICATION:  JsSIP.name() +' | '+ 'DIGEST AUTHENTICATION' +' | ',
   LOG_SANITY_CHECK:           JsSIP.name() +' | '+ 'SANITY CHECK' +' | ',
   LOG_UTILS:                  JsSIP.name() +' | '+ 'UTILS' +' | ',
-  LOG_EXCEPTION:              JsSIP.name() +' | '+ 'EXCEPTION' +' | ',
 
   // Classes
   LOG_TRANSPORT:              JsSIP.name() +' | '+ 'TRANSPORT' +' | ',

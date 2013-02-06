@@ -15,7 +15,7 @@ JsSIP.Exceptions= {
       this.name = 'CONFIGURATION_ERROR';
       this.parameter = parameter;
       this.value = value;
-      this.message = (!this.value)? 'Missing parameter: '+ this.parameter : 'Invalid parameter '+ this.parameter +' with value '+ this.value;
+      this.message = (!this.value)? 'Missing parameter: '+ this.parameter : 'Invalid value '+ window.JSON.stringify(this.value) +' for parameter "'+ this.parameter +'"';
     };
     exception.prototype = new Error();
     return exception;
@@ -67,7 +67,7 @@ JsSIP.Exceptions= {
       this.code = 6;
       this.name = 'INVALID_METHOD_ERROR';
       this.method = method;
-      this.message = 'Invalid method: '+ this.method;
+      this.message = 'Invalid method: "'+ this.method +'"';
     };
     exception.prototype = new Error();
     return exception;
@@ -79,7 +79,7 @@ JsSIP.Exceptions= {
       this.name = 'INVALID_VALUE_ERROR';
       this.argument = argument;
       this.value = value;
-      this.message = 'Invalid argument '+ this.argument +' with value '+ this.value;
+      this.message = 'Invalid value '+ window.JSON.stringify(this.value) +' for argument "'+ this.argument +'"';
     };
     exception.prototype = new Error();
     return exception;
