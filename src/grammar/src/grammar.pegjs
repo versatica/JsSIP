@@ -745,11 +745,3 @@ turn_scheme       = scheme: ("turns"i / "turn"i) {
 
 turn_transport    = transport ("udp"i / "tcp"i / unreserved*) {
                       data.transport = transport; }
-
-
-// Lazy uri
-
-lazy_uri  = (uri_scheme ':')? user (':' password)? ('@' hostport)? {
-            if (data.password) {
-              data.user = data.user +':'+ data.password;
-            }}

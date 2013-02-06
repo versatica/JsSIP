@@ -823,7 +823,7 @@ JsSIP.UA.configuration_check = {
     uri: function(uri) {
       var parsed;
 
-      parsed = JsSIP.Utils.createURI(uri);
+      parsed = JsSIP.Utils.parseURI(uri);
 
       if(!parsed) {
         console.log(JsSIP.C.LOG_UA +'Invalid uri: ' + uri);

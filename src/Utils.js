@@ -31,7 +31,7 @@ JsSIP.Utils= {
     return UUID;
   },
 
-  createURI: function(uri) {
+  parseURI: function(uri) {
     if (!/^sip:/.test(uri)) {
       uri = JsSIP.C.SIP +':'+ uri;
     }
@@ -66,31 +66,21 @@ JsSIP.Utils= {
   * @param {String} [domain]
   */
   normalizeURI: function(target, domain) {
-    var uri, parameter, string;
 
-    if (target) {
-      uri = JsSIP.grammar.parse(target, 'lazy_uri');
-
-      if (uri === -1) {
-        console.log(JsSIP.C.LOG_UTILS + 'Invalid target: '+ target);
-        return;
+    if (!target) {
+      return;
+    } else if (target instanceof JsSIP.URI) {
+      return target;
+    } else if (typeof target === 'string') {
+      if (target.indexOf('@') === -1) {
+        if (domain) {
+          target += '@'+ domain;
+        } else {
+          return;
+        }
       }
 
-      if (!uri.host && !domain) {
-        console.log(JsSIP.C.LOG_UTILS + 'No domain specified in target nor as function parameter');
-        return;
-      }
-
-      string = (uri.scheme || JsSIP.C.SIP) + ':';
-      string += uri.user;
-      string += '@' + (uri.host || domain);
-      string += (uri.port)? ':' + uri.port : '';
-
-      for (parameter in uri.params) {
-        string += ';'+ parameter;
-        string += (uri.params[parameter] === undefined)? '' : '='+ uri.params[parameter];
-      }
-      return string;
+      return  JsSIP.Utils.parseURI(target);
     }
   },
 
