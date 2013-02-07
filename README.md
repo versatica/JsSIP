@@ -53,7 +53,7 @@ coolPhone.call('sip:bob@example.com', useAudio, useVideo, eventHandlers, views);
 Want to see more? Check the full [Getting Started](http://jssip.net/documentation/0.2.x/getting_started/) section in the project website.
 
 
-## Demo Online
+## Online Demo
 
 Check our **Tryit JsSIP** online demo:
 
