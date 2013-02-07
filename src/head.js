@@ -1,3 +1,9 @@
+/*
+ * JsSIP
+ * Copyright (c) 2012-2013 José Luis Millán - Versatica <http://www.versatica.com>
+ * MIT License
+ */
+
 /*global console: false*/
 
 /**
