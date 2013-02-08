@@ -41,7 +41,7 @@ JsSIP.Utils= {
       return;
     }
 
-    uri = JsSIP.grammar.parse(uri,'SIP_URI');
+    uri = JsSIP.Grammar.parse(uri,'SIP_URI');
 
     if (uri !== -1) {
       return uri;
@@ -52,7 +52,7 @@ JsSIP.Utils= {
     if (!host) {
       return;
     } else {
-      host = JsSIP.grammar.parse(host,'host');
+      host = JsSIP.Grammar.parse(host,'host');
       if (host !== -1) {
         return host.host_type;
       }

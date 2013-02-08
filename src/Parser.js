@@ -183,7 +183,7 @@ JsSIP.Parser = {
 
     // Parse first line. Check if it is a Request or a Reply.
     firstLine = data.substring(0, headerEnd);
-    parsed = JsSIP.grammar.parse(firstLine, 'Request_Response');
+    parsed = JsSIP.Grammar.parse(firstLine, 'Request_Response');
 
     if(parsed === -1) {
       console.log(JsSIP.C.LOG_PARSER +'Error parsing first line of SIP message: "' + firstLine + '"');

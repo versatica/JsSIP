@@ -280,7 +280,7 @@ JsSIP.IncomingMessage.prototype = {
     }
 
     //substitute '-' by '_' for grammar rule matching.
-    parsed = JsSIP.grammar.parse(value, name.replace(/-/g, '_'));
+    parsed = JsSIP.Grammar.parse(value, name.replace(/-/g, '_'));
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers

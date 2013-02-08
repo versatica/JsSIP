@@ -237,7 +237,7 @@ JsSIP.UA.prototype.saveCredentials = function(credentials) {
 JsSIP.UA.prototype.getCredentials = function(request) {
   var realm, credentials;
 
-  realm = JsSIP.grammar.parse(request.headers['To'].toString(), 'To').uri.host;
+  realm = JsSIP.Grammar.parse(request.headers['To'].toString(), 'To').uri.host;
 
   if (this.cache.credentials[realm] && this.cache.credentials[realm][request.ruri]) {
     credentials = this.cache.credentials[realm][request.ruri];
@@ -860,7 +860,7 @@ JsSIP.UA.configuration_check = {
           return;
         }
 
-        url = JsSIP.grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
+        url = JsSIP.Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
           console.log(JsSIP.C.LOG_UA +'Invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
@@ -886,7 +886,7 @@ JsSIP.UA.configuration_check = {
   optional: {
 
     authorization_user: function(authorization_user) {
-      if(JsSIP.grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
+      if(JsSIP.Grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
         return;
       } else {
         return authorization_user;
@@ -914,7 +914,7 @@ JsSIP.UA.configuration_check = {
     },
 
     display_name: function(display_name) {
-      if(JsSIP.grammar.parse('"' + display_name + '"', 'display_name') === -1) {
+      if(JsSIP.Grammar.parse('"' + display_name + '"', 'display_name') === -1) {
         return;
       } else {
         return display_name;
@@ -944,7 +944,7 @@ JsSIP.UA.configuration_check = {
     },
 
     password: function(password) {
-      if(JsSIP.grammar.parse(password, 'password') === -1) {
+      if(JsSIP.Grammar.parse(password, 'password') === -1) {
         return;
       } else {
         return password;
@@ -982,7 +982,7 @@ JsSIP.UA.configuration_check = {
           stun_server = 'stun:' + stun_server;
         }
 
-        if(JsSIP.grammar.parse(stun_server, 'stun_URI') === -1) {
+        if(JsSIP.Grammar.parse(stun_server, 'stun_URI') === -1) {
           return;
         } else {
           stun_servers[idx] = stun_server;
@@ -1014,11 +1014,11 @@ JsSIP.UA.configuration_check = {
           turn_server.server = 'turn:' + turn_server.server;
         }
 
-        if(JsSIP.grammar.parse(turn_server.server, 'turn_URI') === -1) {
+        if(JsSIP.Grammar.parse(turn_server.server, 'turn_URI') === -1) {
           return;
-        } else if(JsSIP.grammar.parse(turn_server.username, 'user') === -1) {
+        } else if(JsSIP.Grammar.parse(turn_server.username, 'user') === -1) {
           return;
-        } else if(JsSIP.grammar.parse(turn_server.password, 'password') === -1) {
+        } else if(JsSIP.Grammar.parse(turn_server.password, 'password') === -1) {
           return;
         }
       }
