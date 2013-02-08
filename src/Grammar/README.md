@@ -36,7 +36,7 @@ The changes to be done in `dist/Grammar.js` file are located at the end of the `
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = computeErrorPosition();
 
--       throw new this.SyntaxError(`
+-       throw new this.SyntaxError(
 +       new this.SyntaxError(
           cleanupExpected(rightmostFailuresExpected),
           found,
