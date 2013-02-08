@@ -44,3 +44,15 @@ else if (window.mozRTCSessionDescription) {
 else if (window.RTCSessionDescription) {
   JsSIP.WebRTC.RTCSessionDescription = window.RTCSessionDescription;
 }
+
+// New syntax for getting streams in Chrome M26.
+if (JsSIP.WebRTC.RTCPeerConnection) {
+  if (!JsSIP.WebRTC.RTCPeerConnection.prototype.getLocalStreams) {
+    JsSIP.WebRTC.RTCPeerConnection.prototype.getLocalStreams = function() {
+      return this.localStreams;
+    };
+    JsSIP.WebRTC.RTCPeerConnection.prototype.getRemoteStreams = function() {
+      return this.remoteStreams;
+    };
+  }
+}

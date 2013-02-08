@@ -148,7 +148,7 @@ JsSIP.MediaSession.prototype = {
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
       console.warn(JsSIP.C.LOG_MEDIA_SESSION +'stream added');
 
-      if (session.remoteView && this.remoteStreams.length > 0) {
+      if (session.remoteView && this.getRemoteStreams().length > 0) {
         session.remoteView.src = window.URL.createObjectURL(mediaStreamEvent.stream);
       }
     };
