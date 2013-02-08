@@ -18,7 +18,7 @@ module.exports = function(grunt) {
           "src/EventEmitter.js",
           "src/Constants.js",
           "src/Exceptions.js",
-          "src/timers.js",
+          "src/Timers.js",
           "src/Transport.js",
           "src/Parser.js",
           "src/SIPMessage.js",
