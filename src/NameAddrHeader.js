@@ -1,3 +1,4 @@
+
 /**
  * @augments JsSIP
  * @class Class creating a Name Address SIP header.

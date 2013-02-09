@@ -81,7 +81,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   JsSIP.Utils.checkUAStatus(this.ua);
 
   // Check WebRTC support
-  if(!JsSIP.WebRTC.isSupported()) {
+  if(!JsSIP.WebRTC.isSupported) {
     console.log(JsSIP.C.LOG_UA +'WebRTC not supported.');
     throw new JsSIP.Exceptions.WebRtcNotSupportedError();
   }

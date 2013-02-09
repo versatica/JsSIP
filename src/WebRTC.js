@@ -1,16 +1,5 @@
-JsSIP.WebRTC = {
 
-  isSupported: function() {
-    if (JsSIP.WebRTC.getUserMedia && JsSIP.WebRTC.RTCPeerConnection && JsSIP.WebRTC.RTCSessionDescription) {
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
-
-};
-
+JsSIP.WebRTC = {};
 
 // getUserMedia
 if (window.navigator.webkitGetUserMedia) {
@@ -46,7 +35,7 @@ else if (window.RTCSessionDescription) {
 }
 
 // New syntax for getting streams in Chrome M26.
-if (JsSIP.WebRTC.RTCPeerConnection) {
+if (JsSIP.WebRTC.RTCPeerConnection && JsSIP.WebRTC.RTCPeerConnection.prototype) {
   if (!JsSIP.WebRTC.RTCPeerConnection.prototype.getLocalStreams) {
     JsSIP.WebRTC.RTCPeerConnection.prototype.getLocalStreams = function() {
       return this.localStreams;
@@ -55,4 +44,12 @@ if (JsSIP.WebRTC.RTCPeerConnection) {
       return this.remoteStreams;
     };
   }
+}
+
+// isSupported attribute.
+if (JsSIP.WebRTC.getUserMedia && JsSIP.WebRTC.RTCPeerConnection && JsSIP.WebRTC.RTCSessionDescription) {
+  JsSIP.WebRTC.isSupported = true;
+}
+else {
+  JsSIP.WebRTC.isSupported = false;
 }
