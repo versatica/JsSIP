@@ -103,6 +103,7 @@ SIP_URI_noparams  = uri_scheme ":"  userinfo ? hostport {
                       }}
 
 SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
+                    var header;
                     try {
                         data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
                         delete data.scheme;
@@ -111,6 +112,11 @@ SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
                         delete data.host_type;
                         delete data.port;
                         delete data.uri_params;
+
+                        for (header in data.uri_headers) {
+                          data.uri.setHeader(header, data.uri_headers[header]);
+                        };
+
                         if (startRule === 'SIP_URI') { data = data.uri;}
                       } catch(e) {
                         data = -1;
@@ -247,7 +253,12 @@ param_unreserved  = "[" / "]" / "/" / ":" / "&" / "+" / "$"
 
 headers           = "?" header ( "&" header )*
 
-header            = hname "=" hvalue
+header            = hname: hname "=" hvalue: hvalue  {
+                      hname = hname.join('');
+                      hvalue = hvalue.join('');
+                      if(!data.uri_headers) data.uri_headers = {};
+                      data.uri_headers[hname] = hvalue;
+                      }
 
 hname             = ( hnv_unreserved / unreserved / escaped )+
 

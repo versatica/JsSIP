@@ -2963,6 +2963,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
+                            var header;
                             try {
                                 data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
                                 delete data.scheme;
@@ -2971,6 +2972,11 @@ JsSIP.Grammar = (function(){
                                 delete data.host_type;
                                 delete data.port;
                                 delete data.uri_params;
+        
+                                for (header in data.uri_headers) {
+                                  data.uri.setHeader(header, data.uri_headers[header]);
+                                };
+        
                                 if (startRule === 'SIP_URI') { data = data.uri;}
                               } catch(e) {
                                 data = -1;
@@ -6239,9 +6245,10 @@ JsSIP.Grammar = (function(){
       
       function parse_header() {
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = pos;
+        pos1 = pos;
         result0 = parse_hname();
         if (result0 !== null) {
           if (input.charCodeAt(pos) === 61) {
@@ -6259,14 +6266,25 @@ JsSIP.Grammar = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = pos0;
+              pos = pos1;
             }
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, hname, hvalue) {
+                              hname = hname.join('');
+                              hvalue = hvalue.join('');
+                              if(!data.uri_headers) data.uri_headers = {};
+                              data.uri_headers[hname] = hvalue;
+                              })(pos0, result0[0], result0[2]);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
