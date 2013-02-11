@@ -47,7 +47,7 @@ JsSIP.Parser = {
 
   /** @private */
   parseHeader: function(message, data, headerStart, headerEnd) {
-    var header, length, idx, parsed, count,
+    var header, idx, parsed,
       hcolonIndex = data.indexOf(':', headerStart),
       headerName = data.substring(headerStart, hcolonIndex).trim(),
       headerValue = data.substring(hcolonIndex + 1, headerEnd).trim();
@@ -86,14 +86,16 @@ JsSIP.Parser = {
         }
         break;
       case 'record-route':
-        header = headerValue.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
-        length = header.length;
-        parsed = 0;
+        parsed = JsSIP.Grammar.parse(headerValue, 'Record_Route');
 
-        for(idx=0; idx < length; idx++) {
-          if (header[idx].length > 0) {
-            message.addHeader('record-route', header[idx]);
-          }
+        if (parsed === -1) {
+          parsed = undefined;
+        }
+
+        for(idx in parsed) {
+          header = parsed[idx];
+          message.addHeader('record-route', headerValue.substring(header.possition, header.offset));
+          message.headers['Record-Route'][message.countHeader('record-route')-1].parsed = header.parsed;
         }
         break;
       case 'call-id':
@@ -106,19 +108,16 @@ JsSIP.Parser = {
         break;
       case 'contact':
       case 'm':
-        header = headerValue.match(/([^\"\',]*((\'[^\']*\')*||(\"[^\"]*\")*))+/gm);
-        length = header.length;
-        count = 0;
+        parsed = JsSIP.Grammar.parse(headerValue, 'Contact');
 
-        for(idx=0; idx < length; idx++) {
-          if (header[idx].length > 0) {
-            message.addHeader('contact', header[idx]);
-            parsed = message.parseHeader('contact', count);
-            count += 1;
-            if (parsed === undefined) {
-              break;
-            }
-          }
+        if (parsed === -1) {
+          parsed = undefined;
+        }
+
+        for(idx in parsed) {
+          header = parsed[idx];
+          message.addHeader('contact', headerValue.substring(header.possition, header.offset));
+          message.headers['Contact'][message.countHeader('contact')-1].parsed = header.parsed;
         }
         break;
       case 'content-length':

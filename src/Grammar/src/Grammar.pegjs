@@ -220,7 +220,7 @@ maddr_param       = "maddr="i maddr: host {
                       if(!data.uri_params) data.uri_params={};
                       data.uri_params['maddr'] = maddr; }
 
-lr_param          = lr: "lr"i {
+lr_param          = "lr"i ('=' token)? {
                       if(!data.uri_params) data.uri_params={};
                       data.uri_params['lr'] = undefined; }
 
@@ -363,13 +363,34 @@ Call_ID  =  word ( "@" word )? {
 // CONTACT
 
 Contact             = ( STAR / (contact_param (COMMA contact_param)*) ) {
-                        try {
-                          data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
-                        } catch(e) {
+                        var idx;
+                        for (idx in data.multi_header) {
+                          if (data.multi_header[idx].parsed === null) {
+                            data = null;
+                            break;
+                          }
+                        }
+                        if (data !== null) {
+                          data = data.multi_header;
+                        } else {
                           data = -1;
                         }}
 
-contact_param       = (addr_spec / name_addr) (SEMI contact_params)*
+contact_param       = (addr_spec / name_addr) (SEMI contact_params)* {
+                        var header;
+                        if(!data.multi_header) data.multi_header = [];
+                        try {
+                          header = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                          delete data.uri;
+                          delete data.display_name;
+                          delete data.params;
+                        } catch(e) {
+                          header = null;
+                        }
+                        data.multi_header.push( { 'possition': pos,
+                                                  'offset': offset,
+                                                  'parsed': header
+                                                });}
 
 name_addr           = ( display_name )? LAQUOT SIP_URI RAQUOT
 
@@ -581,9 +602,35 @@ option_tag     = token
 
 // RECORD-ROUTE
 
-Record_Route  = rec_route (COMMA rec_route)*
+Record_Route  = rec_route (COMMA rec_route)* {
+                  var idx;
+                  for (idx in data.multi_header) {
+                    if (data.multi_header[idx].parsed === null) {
+                      data = null;
+                      break;
+                    }
+                  }
+                  if (data !== null) {
+                    data = data.multi_header;
+                  } else {
+                    data = -1;
+                  }}
 
-rec_route     = name_addr ( SEMI rr_param )*
+rec_route     = name_addr ( SEMI rr_param )* {
+                  var header;
+                  if(!data.multi_header) data.multi_header = [];
+                  try {
+                    header = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                    delete data.uri;
+                    delete data.display_name;
+                    delete data.params;
+                  } catch(e) {
+                    header = null;
+                  }
+                  data.multi_header.push( { 'possition': pos,
+                                            'offset': offset,
+                                            'parsed': header
+                                          });}
 
 rr_param      = generic_param
 
