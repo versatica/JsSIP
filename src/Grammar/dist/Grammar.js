@@ -5896,10 +5896,11 @@ JsSIP.Grammar = (function(){
       }
       
       function parse_lr_param() {
-        var result0;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
+        pos1 = pos;
         if (input.substr(pos, 2).toLowerCase() === "lr") {
           result0 = input.substr(pos, 2);
           pos += 2;
@@ -5910,9 +5911,43 @@ JsSIP.Grammar = (function(){
           }
         }
         if (result0 !== null) {
-          result0 = (function(offset, lr) {
+          pos2 = pos;
+          if (input.charCodeAt(pos) === 61) {
+            result1 = "=";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"=\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_token();
+            if (result2 !== null) {
+              result1 = [result1, result2];
+            } else {
+              result1 = null;
+              pos = pos2;
+            }
+          } else {
+            result1 = null;
+            pos = pos2;
+          }
+          result1 = result1 !== null ? result1 : "";
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
                               if(!data.uri_params) data.uri_params={};
-                              data.uri_params['lr'] = undefined; })(pos0, result0);
+                              data.uri_params['lr'] = undefined; })(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -7883,9 +7918,16 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                                try {
-                                  data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
-                                } catch(e) {
+                                var idx;
+                                for (idx in data.multi_header) {
+                                  if (data.multi_header[idx].parsed === null) {
+                                    data = null;
+                                    break;
+                                  }
+                                }
+                                if (data !== null) {
+                                  data = data.multi_header;
+                                } else {
                                   data = -1;
                                 }})(pos0);
         }
@@ -7897,16 +7939,17 @@ JsSIP.Grammar = (function(){
       
       function parse_contact_param() {
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
+        pos1 = pos;
         result0 = parse_SIP_URI_noparams();
         if (result0 === null) {
           result0 = parse_name_addr();
         }
         if (result0 !== null) {
           result1 = [];
-          pos1 = pos;
+          pos2 = pos;
           result2 = parse_SEMI();
           if (result2 !== null) {
             result3 = parse_contact_params();
@@ -7914,15 +7957,15 @@ JsSIP.Grammar = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = pos1;
+              pos = pos2;
             }
           } else {
             result2 = null;
-            pos = pos1;
+            pos = pos2;
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = pos;
+            pos2 = pos;
             result2 = parse_SEMI();
             if (result2 !== null) {
               result3 = parse_contact_params();
@@ -7930,21 +7973,41 @@ JsSIP.Grammar = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = pos1;
+                pos = pos2;
               }
             } else {
               result2 = null;
-              pos = pos1;
+              pos = pos2;
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                                var header;
+                                if(!data.multi_header) data.multi_header = [];
+                                try {
+                                  header = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                                  delete data.uri;
+                                  delete data.display_name;
+                                  delete data.params;
+                                } catch(e) {
+                                  header = null;
+                                }
+                                data.multi_header.push( { 'possition': pos,
+                                                          'offset': offset,
+                                                          'parsed': header
+                                                        });})(pos0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -9968,13 +10031,14 @@ JsSIP.Grammar = (function(){
       
       function parse_Record_Route() {
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
+        pos1 = pos;
         result0 = parse_rec_route();
         if (result0 !== null) {
           result1 = [];
-          pos1 = pos;
+          pos2 = pos;
           result2 = parse_COMMA();
           if (result2 !== null) {
             result3 = parse_rec_route();
@@ -9982,15 +10046,15 @@ JsSIP.Grammar = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = pos1;
+              pos = pos2;
             }
           } else {
             result2 = null;
-            pos = pos1;
+            pos = pos2;
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = pos;
+            pos2 = pos;
             result2 = parse_COMMA();
             if (result2 !== null) {
               result3 = parse_rec_route();
@@ -9998,21 +10062,39 @@ JsSIP.Grammar = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = pos1;
+                pos = pos2;
               }
             } else {
               result2 = null;
-              pos = pos1;
+              pos = pos2;
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                          var idx;
+                          for (idx in data.multi_header) {
+                            if (data.multi_header[idx].parsed === null) {
+                              data = null;
+                              break;
+                            }
+                          }
+                          if (data !== null) {
+                            data = data.multi_header;
+                          } else {
+                            data = -1;
+                          }})(pos0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -10020,13 +10102,14 @@ JsSIP.Grammar = (function(){
       
       function parse_rec_route() {
         var result0, result1, result2, result3;
-        var pos0, pos1;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
+        pos1 = pos;
         result0 = parse_name_addr();
         if (result0 !== null) {
           result1 = [];
-          pos1 = pos;
+          pos2 = pos;
           result2 = parse_SEMI();
           if (result2 !== null) {
             result3 = parse_generic_param();
@@ -10034,15 +10117,15 @@ JsSIP.Grammar = (function(){
               result2 = [result2, result3];
             } else {
               result2 = null;
-              pos = pos1;
+              pos = pos2;
             }
           } else {
             result2 = null;
-            pos = pos1;
+            pos = pos2;
           }
           while (result2 !== null) {
             result1.push(result2);
-            pos1 = pos;
+            pos2 = pos;
             result2 = parse_SEMI();
             if (result2 !== null) {
               result3 = parse_generic_param();
@@ -10050,21 +10133,41 @@ JsSIP.Grammar = (function(){
                 result2 = [result2, result3];
               } else {
                 result2 = null;
-                pos = pos1;
+                pos = pos2;
               }
             } else {
               result2 = null;
-              pos = pos1;
+              pos = pos2;
             }
           }
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                          var header;
+                          if(!data.multi_header) data.multi_header = [];
+                          try {
+                            header = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
+                            delete data.uri;
+                            delete data.display_name;
+                            delete data.params;
+                          } catch(e) {
+                            header = null;
+                          }
+                          data.multi_header.push( { 'possition': pos,
+                                                    'offset': offset,
+                                                    'parsed': header
+                                                  });})(pos0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
