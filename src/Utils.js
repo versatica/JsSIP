@@ -32,7 +32,7 @@ JsSIP.Utils= {
   },
 
   parseURI: function(uri) {
-    if (!/^sip:/.test(uri)) {
+    if (!/^sip:/i.test(uri)) {
       uri = JsSIP.C.SIP +':'+ uri;
     }
 
