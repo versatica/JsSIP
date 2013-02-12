@@ -36,11 +36,6 @@ JsSIP.Utils= {
       uri = JsSIP.C.SIP +':'+ uri;
     }
 
-    if (uri.indexOf('@') === -1) {
-      console.log(JsSIP.C.LOG_UTILS + 'Invalid URI. Missing URI domain.');
-      return;
-    }
-
     uri = JsSIP.Grammar.parse(uri,'SIP_URI');
 
     if (uri !== -1) {
