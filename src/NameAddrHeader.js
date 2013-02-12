@@ -12,8 +12,7 @@ JsSIP.NameAddrHeader = function(uri, display_name, parameters) {
   var param;
 
   // Checks
-  if(!uri || !uri instanceof JsSIP.URI) {
-    console.error(JsSIP.C.LOG_NAME_ADDR_HEADER + 'missing or invalid "uri" parameter');
+  if(!uri || !(uri instanceof JsSIP.URI)) {
     throw new TypeError('missing or invalid "uri" parameter');
   }
 

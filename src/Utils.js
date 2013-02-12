@@ -165,12 +165,6 @@ JsSIP.Utils= {
     return '192.0.2.' + getOctet(1, 254);
   },
 
-  checkUAStatus: function(ua) {
-    if(ua.status !== JsSIP.C.UA_STATUS_READY) {
-      throw new JsSIP.Exceptions.NotReadyError(ua.status, ua.error);
-    }
-  },
-
   getAllowedMethods: function(ua) {
     var event,
       allowed = JsSIP.C.ALLOWED_METHODS.split(', ');

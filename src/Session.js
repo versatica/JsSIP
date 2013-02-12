@@ -76,15 +76,24 @@ JsSIP.Session.prototype.init_incoming = function(request) {
 JsSIP.Session.prototype.connect = function(target, views, options) {
   var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams;
 
-  // Check Session Status
-  if (this.status !== JsSIP.C.SESSION_NULL) {
-    throw new JsSIP.Exceptions.InvalidStateError(this.status);
+  if (target === undefined || views === undefined) {
+    throw new TypeError('Not enough arguments');
   }
 
   // Check views
-  if (!views || (views &&  !views.remoteView)) {
-    console.error(JsSIP.C.LOG_INVITE_SESSION +'missing "views" or "views.remoteView"');
-    throw new JsSIP.Exceptions.InvalidValueError('views', views);
+  if (!(views instanceof Object)) {
+    throw new TypeError('Invalid argument "views"');
+  }
+
+  if (!views.selfView || !(views.selfView instanceof HTMLVideoElement)) {
+    throw new TypeError('Missing or invalid "views.selfView" argument');
+  } else if (views.remoteView && !(views.remoteView instanceof HTMLVideoElement)) {
+    throw new TypeError('Invalid "views.remoteView" argument');
+  }
+
+  // Check Session Status
+  if (this.status !== JsSIP.C.SESSION_NULL) {
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   // Get call options
@@ -389,9 +398,6 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     */
     this.answer = function(selfView, remoteView) {
       var offer, onSuccess, onMediaFailure, onSdpFailure;
-
-      // Check UA Status
-      JsSIP.Utils.checkUAStatus(this.ua);
 
       // Check Session Status
       if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
@@ -835,8 +841,6 @@ JsSIP.Session.prototype.failed = function(originator, response, cause) {
 * @param {String} [reason]
 */
 JsSIP.Session.prototype.terminate = function() {
-  // Check UA Status
-  JsSIP.Utils.checkUAStatus(this.ua);
 
   // Check Session Status
   if (this.status === JsSIP.C.SESSION_TERMINATED) {
@@ -876,14 +880,14 @@ JsSIP.Session.prototype.terminate = function() {
 JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.InvalidMethodError('reject');
+    throw new TypeError('Invalid method "reject" for an outgoing call');
   } else if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
   if (status_code) {
     if ((status_code < 300 || status_code >= 700)) {
-      throw new JsSIP.Exceptions.InvalidValueError('status_code', status_code);
+      throw new TypeError('Invalid status_code: '+ status_code);
     } else {
       this.request.reply(status_code, reason_phrase);
     }
@@ -902,7 +906,7 @@ JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
 JsSIP.Session.prototype.cancel = function(reason) {
   // Check Session Direction
   if (this.direction !== 'outgoing') {
-    throw new JsSIP.Exceptions.InvalidMethodError('cancel');
+    throw new TypeError('Invalid method "cancel" for an incoming call');
   }
 
   // Check Session Status
@@ -940,6 +944,9 @@ JsSIP.Session.prototype.sendDTMF = function(tones, options) {
   options = options || {};
   interToneGap = options.interToneGap || null;
 
+  if (tones === undefined) {
+    throw new TypeError('Not enough arguments');
+  }
 
   // Check Session Status
   if (this.status !== JsSIP.C.SESSION_CONFIRMED && this.status !== JsSIP.C.SESSION_WAITING_FOR_ACK) {
@@ -948,14 +955,14 @@ JsSIP.Session.prototype.sendDTMF = function(tones, options) {
 
   // Check tones
   if (!tones || (typeof tones !== 'string' && typeof tones !== 'number') || !tones.toString().match(/^[0-9A-D#*]+$/i)) {
-    throw new JsSIP.Exceptions.InvalidValueError('tones', tones);
+    throw new TypeError('Invalid tones: '+ tones);
   }
 
   tones = tones.toString();
 
   // Check interToneGap
   if (interToneGap && !JsSIP.Utils.isDecimal(interToneGap)) {
-    throw new JsSIP.Exceptions.InvalidValueError('interToneGap', interToneGap);
+    throw new TypeError('Invalid interToneGap: '+ interToneGap);
   } else if (!interToneGap) {
     interToneGap = JsSIP.C.DTMF_DEFAULT_INTER_TONE_GAP;
   } else if (interToneGap < JsSIP.C.DTMF_MIN_INTER_TONE_GAP) {
@@ -1133,6 +1140,10 @@ JsSIP.Session.DTMF.prototype = new JsSIP.EventEmitter();
 JsSIP.Session.DTMF.prototype.send = function(tone, options) {
   var request_sender, event, eventHandlers, extraHeaders;
 
+  if (tone === undefined) {
+    throw new TypeError('Not enough arguments');
+  }
+
   this.direction = 'outgoing';
 
   // Check Session Status
@@ -1151,19 +1162,19 @@ JsSIP.Session.DTMF.prototype.send = function(tone, options) {
   } else if (typeof tone === 'number') {
     tone = tone.toString();
   } else {
-    throw new JsSIP.Exceptions.InvalidValueError('tone', tone);
+    throw new TypeError('Invalid tone: '+ tone);
   }
 
   // Check tone value
   if (!tone.match(/^[0-9A-D#*]$/)) {
-    throw new JsSIP.Exceptions.InvalidValueError('tone', tone);
+    throw new TypeError('Invalid tone: '+ tone);
   } else {
     this.tone = tone;
   }
 
   // Check duration
   if (options.duration && !JsSIP.Utils.isDecimal(options.duration)) {
-    throw new JsSIP.Exceptions.InvalidValueError('duration', options.duration);
+    throw new TypeError('Invalid tone duration: '+ options.duration);
   } else if (!options.duration) {
     options.duration = JsSIP.C.DTMF_DEFAULT_DURATION;
   } else if (options.duration < JsSIP.C.DTMF_MIN_DURATION) {
@@ -1176,11 +1187,6 @@ JsSIP.Session.DTMF.prototype.send = function(tone, options) {
     options.duration = Math.abs(options.duration);
   }
   this.duration = options.duration;
-
-  // Check extraHeaders
-  if (!extraHeaders instanceof Array) {
-    throw new JsSIP.Exceptions.InvalidValueError('extraHeaders', extraHeaders);
-  }
 
   // Set event handlers
   for (event in eventHandlers) {

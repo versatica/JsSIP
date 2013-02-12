@@ -48,11 +48,11 @@ JsSIP.UA = function(configuration) {
    * Load configuration
    *
    * @throws {JsSIP.Exceptions.ConfigurationError}
-   * @throws {JsSIP.Exceptions.InvalidValueError}
+   * @throws {TypeError}
    */
 
-  if(!configuration) {
-    throw new JsSIP.Exceptions.InvalidValueError('configuration');
+  if(configuration === undefined) {
+    throw new TypeError('Not enough arguments');
   }
 
   try {
@@ -73,29 +73,31 @@ JsSIP.UA.prototype = new JsSIP.EventEmitter();
 /**
  * Register.
  *
- * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
+ * @throws {JsSIP.Exceptions.InvalidStateError}
+ *
  */
 JsSIP.UA.prototype.register = function(options) {
-  if(this.status === JsSIP.C.UA_STATUS_READY) {
+  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
+    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
+  } else {
     this.configuration.register = true;
     this.registrator.register(options);
-  } else {
-      throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
   }
 };
 
 /**
  * Unregister.
+ *
+ * @throws {JsSIP.Exceptions.InvalidStateError}
  * @param {Boolean} [all] unregister all user bindings.
  *
- * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
 JsSIP.UA.prototype.unregister = function(options) {
-  if(this.status === JsSIP.C.UA_STATUS_READY) {
+  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
+    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
+  } else {
     this.configuration.register = false;
     this.registrator.unregister(options);
-  } else {
-    throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
   }
 };
 
@@ -127,52 +129,60 @@ JsSIP.UA.prototype.isConnected = function() {
  * Make an outgoing call.
  *
  * @param {String} target
- * @param {Boolean} useAudio
- * @param {Boolean} useVideo
- * @param {Object} [eventHandlers]
- * @param {Object} videoViews
+ * @param {Object} views
+ * @param {Object} [options]
  *
- * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
+ * @throws {JsSIP.Exceptions.InvalidStateError}
+ * @throws {TypeError}
  *
  */
 JsSIP.UA.prototype.call = function(target, views, options) {
   var session;
 
-  session = new JsSIP.Session(this);
-  session.connect(target, views, options);
+  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
+    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
+  } else {
+    session = new JsSIP.Session(this);
+    session.connect(target, views, options);
+  }
 };
 
 /**
  * Send a message.
+ *
  * @param {String} target
  * @param {String} body
- * @param {String} [contentType]
- * @param {Object} [eventHandlers]
+ * @param {Object} [options]
  *
- * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
+ * @throws {JsSIP.Exceptions.InvalidStateError}
+ * @throws {TypeError}
  *
  */
 JsSIP.UA.prototype.sendMessage = function(target, body, options) {
   var message;
 
-  message = new JsSIP.Message(this);
-  message.send(target, body, options);
+  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
+    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
+  } else {
+    message = new JsSIP.Message(this);
+    message.send(target, body, options);
+  }
 };
 
 /**
  * Gracefully close.
  *
- * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
 JsSIP.UA.prototype.stop = function() {
   var session, applicant,
     ua = this;
 
-  if(this.status !== JsSIP.C.UA_STATUS_READY) {
-    throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
-  }
+  console.log(JsSIP.C.LOG_UA +'user requested closure...');
 
-  console.log(JsSIP.C.LOG_UA +'user requested closure');
+  if(this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
+    console.warn('UA already closed');
+    return;
+  }
 
   // Close registrator
   if(this.registrator) {
@@ -202,14 +212,15 @@ JsSIP.UA.prototype.stop = function() {
  * Connect to the WS server if status = UA_STATUS_INIT.
  * Resume UA after being closed.
  *
- * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
  */
 JsSIP.UA.prototype.start = function() {
   var server;
 
+  console.log(JsSIP.C.LOG_UA +'user requested startup...');
+
   if (this.status === JsSIP.C.UA_STATUS_INIT) {
-      server = this.getNextWsServer();
-      new JsSIP.Transport(this, server);
+    server = this.getNextWsServer();
+    new JsSIP.Transport(this, server);
   } else if(this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
     console.log(JsSIP.C.LOG_UA +'resuming');
     this.status = JsSIP.C.UA_STATUS_READY;
@@ -217,7 +228,7 @@ JsSIP.UA.prototype.start = function() {
   } else if (this.status === JsSIP.C.UA_STATUS_READY) {
     console.log(JsSIP.C.LOG_UA +'UA is in READY status, not resuming');
   } else {
-    throw new JsSIP.Exceptions.NotReadyError(this.status, this.error);
+    console.error('Connection is down. Auto-Recovery system is trying to connect');
   }
 };
 

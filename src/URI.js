@@ -15,8 +15,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
 
   // Checks
   if(!host) {
-    console.error(JsSIP.C.LOG_URI + 'missing or invalid "host" parameter');
-    throw new TypeError('missing "host" parameter');
+    throw new TypeError('missing or invalid "host" parameter');
   }
 
   // Initialize parameters
