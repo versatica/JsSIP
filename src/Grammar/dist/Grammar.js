@@ -3079,9 +3079,7 @@ JsSIP.Grammar = (function(){
       
       function parse_user() {
         var result0, result1;
-        var pos0;
         
-        pos0 = pos;
         result1 = parse_unreserved();
         if (result1 === null) {
           result1 = parse_escaped();
@@ -3103,13 +3101,6 @@ JsSIP.Grammar = (function(){
           }
         } else {
           result0 = null;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset) {
-                            data.user = window.decodeURIComponent(input.substring(pos, offset));})(pos0);
-        }
-        if (result0 === null) {
-          pos = pos0;
         }
         return result0;
       }

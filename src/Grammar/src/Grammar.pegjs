@@ -128,8 +128,7 @@ uri_scheme      = uri_scheme:  "sip"i {
 userinfo        = user (":" password)? "@" {
                     data.user = window.decodeURIComponent(input.substring(pos-1, offset));}
 
-user            = ( unreserved / escaped / user_unreserved )+ {
-                    data.user = window.decodeURIComponent(input.substring(pos, offset));}
+user            = ( unreserved / escaped / user_unreserved )+
 
 user_unreserved = "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
 
