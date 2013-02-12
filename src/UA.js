@@ -642,6 +642,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       // Session parameters
       no_answer_timeout: 60,
       stun_servers: ['stun:stun.l.google.com:19302'],
+      turn_servers: [],
 
       // Logging parameters
       trace_sip: false,
