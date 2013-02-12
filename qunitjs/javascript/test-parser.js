@@ -24,7 +24,7 @@ test('Parse URI', function() {
   uri.user = "Iñaki";
   strictEqual(uri.user, 'Iñaki');
   strictEqual(uri.deleteParam('foo'), '123');
-  strictEqual(uri.deleteHeader('x-header-1'), ['AaA1', 'AAA2']);
+  deepEqual(uri.deleteHeader('x-header-1'), ['AaA1', 'AAA2']);
   strictEqual(uri.toString(), 'sip:I%C3%B1aki@versatica.com:6060;transport=tcp;baz?X-Header-2=BbB');
   strictEqual(uri.toAor(), 'sip:I%C3%B1aki@versatica.com');
   uri.clearParams();
