@@ -73,32 +73,22 @@ JsSIP.UA.prototype = new JsSIP.EventEmitter();
 /**
  * Register.
  *
- * @throws {JsSIP.Exceptions.InvalidStateError}
  *
  */
 JsSIP.UA.prototype.register = function(options) {
-  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
-    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
-  } else {
-    this.configuration.register = true;
-    this.registrator.register(options);
-  }
+  this.configuration.register = true;
+  this.registrator.register(options);
 };
 
 /**
  * Unregister.
  *
- * @throws {JsSIP.Exceptions.InvalidStateError}
  * @param {Boolean} [all] unregister all user bindings.
  *
  */
 JsSIP.UA.prototype.unregister = function(options) {
-  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
-    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
-  } else {
-    this.configuration.register = false;
-    this.registrator.unregister(options);
-  }
+  this.configuration.register = false;
+  this.registrator.unregister(options);
 };
 
 /**
@@ -132,19 +122,14 @@ JsSIP.UA.prototype.isConnected = function() {
  * @param {Object} views
  * @param {Object} [options]
  *
- * @throws {JsSIP.Exceptions.InvalidStateError}
  * @throws {TypeError}
  *
  */
 JsSIP.UA.prototype.call = function(target, views, options) {
   var session;
 
-  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
-    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
-  } else {
-    session = new JsSIP.Session(this);
-    session.connect(target, views, options);
-  }
+  session = new JsSIP.Session(this);
+  session.connect(target, views, options);
 };
 
 /**
@@ -154,19 +139,14 @@ JsSIP.UA.prototype.call = function(target, views, options) {
  * @param {String} body
  * @param {Object} [options]
  *
- * @throws {JsSIP.Exceptions.InvalidStateError}
  * @throws {TypeError}
  *
  */
 JsSIP.UA.prototype.sendMessage = function(target, body, options) {
   var message;
 
-  if (this.status === JsSIP.C.UA_STATUS_USER_CLOSED) {
-    throw new JsSIP.Exceptions.InvalidStateError(JsSIP.C.UA_STATUS_USER_CLOSED);
-  } else {
-    message = new JsSIP.Message(this);
-    message.send(target, body, options);
-  }
+  message = new JsSIP.Message(this);
+  message.send(target, body, options);
 };
 
 /**
