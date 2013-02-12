@@ -22,11 +22,11 @@ JsSIP.EventEmitter.prototype = {
     this.onceNotFired = []; // Array containing events with _once_ defined tat didn't fire yet.
     this.maxListeners = 10;
     this.events.newListener = function(event) { // Default newListener callback
-      console.log(JsSIP.C.LOG_EVENT_EMITTER +'new Listener added to event: '+ event);
+      console.log(JsSIP.C.LOG_EVENT_EMITTER +'new listener added to event '+ event);
     };
 
     while (i--) {
-      console.log(JsSIP.C.LOG_EVENT_EMITTER +'Adding event: '+ events[i]);
+      console.log(JsSIP.C.LOG_EVENT_EMITTER +'adding event '+ events[i]);
       this.events[events[i]] = [];
     }
   },
@@ -38,7 +38,7 @@ JsSIP.EventEmitter.prototype = {
   */
   checkEvent: function(event) {
     if (!this.events[event]) {
-      console.log(JsSIP.C.LOG_EVENT_EMITTER +'No event named: '+ event);
+      console.error(JsSIP.C.LOG_EVENT_EMITTER +'no event named '+ event);
       return false;
     } else {
       return true;
@@ -56,7 +56,7 @@ JsSIP.EventEmitter.prototype = {
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      console.log(JsSIP.C.LOG_EVENT_EMITTER +'Max Listeners exceeded for event: '+ event);
+      console.warn(JsSIP.C.LOG_EVENT_EMITTER +'max listeners exceeded for event '+ event);
     }
 
     this.events[event].push(listener);
@@ -144,7 +144,7 @@ JsSIP.EventEmitter.prototype = {
       return;
     }
 
-    console.log(JsSIP.C.LOG_EVENT_EMITTER +'Emitting event: '+event);
+    console.log(JsSIP.C.LOG_EVENT_EMITTER +'emitting event '+event);
 
     listeners = this.events[event];
     length = listeners.length;

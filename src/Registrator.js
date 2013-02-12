@@ -72,7 +72,7 @@ JsSIP.Registrator.prototype = {
       var contact, expires, min_expires,
         contacts = response.countHeader('contact');
 
-      // Discard responses to older Register/Unregister requests.
+      // Discard responses to older REGISTER/un-REGISTER requests.
       if(response.cseq !== this.cseq) {
         return;
       }
@@ -86,10 +86,9 @@ JsSIP.Registrator.prototype = {
             expires = response.getHeader('expires');
           }
 
-          // Search the contact pointing to us and update the expires value
-          //accordingly
+          // Search the Contact pointing to us and update the expires value accordingly.
           if (!contacts) {
-            console.log(JsSIP.C.LOG_REGISTRATOR +'No Contact header positive response to Register. Ignore response');
+            console.warn(JsSIP.C.LOG_REGISTRATOR +'no Contact header in response to REGISTER, response ignored');
             break;
           }
 
@@ -104,7 +103,7 @@ JsSIP.Registrator.prototype = {
           }
 
           if (!contact) {
-            console.log(JsSIP.C.LOG_REGISTRATOR +'No Contact header pointing to us. Ignore response');
+            console.warn(JsSIP.C.LOG_REGISTRATOR +'no Contact header pointing to us, response ignored');
             break;
           }
 
@@ -140,8 +139,8 @@ JsSIP.Registrator.prototype = {
               self.register();
             }, this.expires * 1000);
           } else { //This response MUST contain a Min-Expires header field
-          console.log(JsSIP.C.LOG_REGISTRATOR +'423 response code received to a REGISTER without min-expires. Unregister');
-          this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
+            console.warn(JsSIP.C.LOG_REGISTRATOR +'423 response received for REGISTER without Min-Expires');
+            this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
           }
           break;
         default:
@@ -174,7 +173,7 @@ JsSIP.Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      console.log(JsSIP.C.LOG_REGISTRATOR +"Already unregistered");
+      console.warn(JsSIP.C.LOG_REGISTRATOR +'already unregistered');
       return;
     }
 

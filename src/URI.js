@@ -15,8 +15,8 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
 
   // Checks
   if(!host) {
-    console.warn(JsSIP.C.LOG_URI + 'Missing "host" in URI');
-    throw new JsSIP.Exceptions.InvalidValueError('host', host);
+    console.error(JsSIP.C.LOG_URI + 'missing or invalid "host" parameter');
+    throw new TypeError('missing "host" parameter');
   }
 
   // Initialize parameters
@@ -139,8 +139,8 @@ JsSIP.URI.prototype = {
       uri = '';
 
     if(!this.host) {
-      console.warn(JsSIP.C.LOG_URI +'No domain specified');
-      return;
+      console.error(JsSIP.C.LOG_URI +'cannot print a SIP URI without host');
+      throw new TypeError('cannot print a SIP URI without host');
     }
 
     uri  = this.scheme || JsSIP.C.SIP;

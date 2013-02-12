@@ -125,15 +125,15 @@ JsSIP.MediaSession.prototype = {
       });
     }
 
-    this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({"iceServers": servers});
+    this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({'iceServers': servers});
 
     this.peerConnection.onicecandidate = function(event) {
       if (event.candidate) {
-        console.log(JsSIP.C.LOG_MEDIA_SESSION +'ICE candidate received: '+ event.candidate.candidate);
+        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE candidate received: '+ event.candidate.candidate);
       } else {
-        console.info(JsSIP.C.LOG_MEDIA_SESSION +'No more ICE candidate');
-        console.log(JsSIP.C.LOG_MEDIA_SESSION +'Peerconnection status: '+ this.readyState);
-        console.log(JsSIP.C.LOG_MEDIA_SESSION +'Ice Status: '+ this.iceState);
+        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'no more ICE candidates');
+        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'PeerConnection state: '+ this.readyState);
+        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE state: '+ this.iceState);
         if (!sent) { // Execute onSuccess just once.
           sent = true;
           onSuccess();
@@ -142,11 +142,11 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onopen = function() {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'Media session opened');
+      console.log(JsSIP.C.LOG_MEDIA_SESSION +'media session opened');
     };
 
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
-      console.warn(JsSIP.C.LOG_MEDIA_SESSION +'stream added');
+      console.log(JsSIP.C.LOG_MEDIA_SESSION +'stream added');
 
       if (session.remoteView && this.getRemoteStreams().length > 0) {
         session.remoteView.src = window.URL.createObjectURL(mediaStreamEvent.stream);
@@ -154,17 +154,17 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onremovestream = function(stream) {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'Stream removed: '+ stream);
+      console.log(JsSIP.C.LOG_MEDIA_SESSION +'stream removed: '+ stream);
     };
 
     this.peerConnection.onstatechange = function() {
-      console.warn(JsSIP.C.LOG_MEDIA_SESSION +'Status changed to: '+ this.readyState);
-      console.warn(JsSIP.C.LOG_MEDIA_SESSION +'ICE state is: '+ this.iceState);
+      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'PeerConnection state changed to '+ this.readyState);
+      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE state: '+ this.iceState);
     };
   },
 
   close: function() {
-    console.log(JsSIP.C.LOG_MEDIA_SESSION +'Closing peerConnection');
+    console.log(JsSIP.C.LOG_MEDIA_SESSION + 'closing PeerConnection');
     if(this.peerConnection) {
       this.peerConnection.close();
 
@@ -183,7 +183,7 @@ JsSIP.MediaSession.prototype = {
     var self = this;
 
     function getSuccess(stream) {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +"Got stream " + stream);
+      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'got stream: ' + stream);
 
       //Save the localMedia in order to revoke access to devices later.
       self.localMedia = stream;
@@ -201,7 +201,7 @@ JsSIP.MediaSession.prototype = {
     }
 
     // Get User Media
-    console.log(JsSIP.C.LOG_MEDIA_SESSION +"Requesting access to local media.");
+    console.log(JsSIP.C.LOG_MEDIA_SESSION + 'requesting access to local media');
     JsSIP.WebRTC.getUserMedia(mediaTypes, getSuccess, getFailure);
 
   },
@@ -215,7 +215,7 @@ JsSIP.MediaSession.prototype = {
   */
   onMessage: function(type, sdp, onSuccess, onFailure) {
     if (type === 'offer') {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'re-Invite received');
+      console.log(JsSIP.C.LOG_MEDIA_SESSION +'new SDP offer received');
     } else if (type === 'answer') {
       this.peerConnection.setRemoteDescription(
         new JsSIP.WebRTC.RTCSessionDescription({type:'answer', sdp:sdp}), onSuccess, onFailure);

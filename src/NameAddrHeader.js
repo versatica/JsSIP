@@ -13,8 +13,8 @@ JsSIP.NameAddrHeader = function(uri, display_name, parameters) {
 
   // Checks
   if(!uri || !uri instanceof JsSIP.URI) {
-    console.warn(JsSIP.C.LOG_NAME_ADDR_HEADER + 'Missing or invalid "uri" in NameAddrHeader');
-    throw new JsSIP.Exceptions.InvalidValueError('uri', uri);
+    console.error(JsSIP.C.LOG_NAME_ADDR_HEADER + 'missing or invalid "uri" parameter');
+    throw new TypeError('missing or invalid "uri" parameter');
   }
 
   // Initialize parameters
@@ -80,11 +80,11 @@ JsSIP.NameAddrHeader.prototype = {
     body  = (this.display_name) ? '"' + this.display_name + '" ' : '';
     body += '<' + this.uri.toString() + '>';
 
-
     for (parameter in this.parameters) {
       body += ';' + parameter;
       body += (this.parameters[parameter] === null)? '' : '=' + this.parameters[parameter];
     }
+
     return body;
   }
 };

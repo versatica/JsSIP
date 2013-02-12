@@ -17,7 +17,7 @@ JsSIP.Dialog = function(session, msg, type, state) {
   var contact;
 
   if(msg.countHeader('contact') === 0) {
-    console.log(JsSIP.C.LOG_DIALOG + 'No contact header field. Silently discarded');
+    console.warn(JsSIP.C.LOG_DIALOG + 'no Contact header field, silently discarded');
     return false;
   }
 
@@ -27,7 +27,7 @@ JsSIP.Dialog = function(session, msg, type, state) {
     // Create confirmed dialog if state is not defined
     state = state || JsSIP.C.DIALOG_CONFIRMED;
   } else {
-    console.log(JsSIP.C.LOG_DIALOG + 'Received message is not a request neither a response');
+    console.warn(JsSIP.C.LOG_DIALOG + 'received message is not a SIP request neither a response, silently discarded');
     return false;
   }
 
@@ -70,7 +70,7 @@ JsSIP.Dialog = function(session, msg, type, state) {
 
   this.session = session;
   session.ua.dialogs[this.id.toString()] = this;
-  console.log(JsSIP.C.LOG_DIALOG +'New ' + type + ' dialog created: ' + this.state);
+  console.log(JsSIP.C.LOG_DIALOG +'new ' + type + ' dialog created: ' + this.state);
 };
 
 JsSIP.Dialog.prototype = {
@@ -81,7 +81,7 @@ JsSIP.Dialog.prototype = {
   update: function(message, type) {
     this.state = JsSIP.C.DIALOG_CONFIRMED;
 
-    console.log(JsSIP.C.LOG_DIALOG +'dialog state changed to \'CONFIRMED\' state');
+    console.log(JsSIP.C.LOG_DIALOG +'dialog state changed to CONFIRMED');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -90,7 +90,7 @@ JsSIP.Dialog.prototype = {
   },
 
   terminate: function() {
-    console.log(JsSIP.C.LOG_DIALOG +'dialog state: ' + this.id.toString() + ' deleted');
+    console.log(JsSIP.C.LOG_DIALOG +'dialog ' + this.id.toString() + ' deleted');
     delete this.session.ua.dialogs[this.id.toString()];
   },
 
