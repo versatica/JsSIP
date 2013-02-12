@@ -55,34 +55,71 @@ JsSIP.Utils= {
   },
 
   /**
-  * Normalize SIP URI
+  * Normalize SIP URI (username required)
   * @private
   * @param {String} target
   * @param {String} [domain]
   */
   normalizeURI: function(target, domain) {
-    var uri,
+    var uri, target_array, target_user, target_domain,
       original_target = target;
 
+    // If no target is given then raise an error.
     if (!target) {
       throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+
+    // If a JsSIP.URI instance is given then return it.
     } else if (target instanceof JsSIP.URI) {
       return target;
+
+    // If a string is given split it by '@':
+    // - Last fragment is the desired domain.
+    // - Otherwise append the given domain argument.
     } else if (typeof target === 'string') {
-      if (target.indexOf('@') === -1) {
-        if (domain) {
-          target += '@'+ domain;
-        } else {
-          throw new JsSIP.Exceptions.InvalidTargetError(original_target);
-        }
+      target_array = target.split('@');
+
+      switch(target_array.length) {
+        case 1:
+          if (!domain) {
+            throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+          }
+          target_user = target;
+          target_domain = domain;
+          break;
+        case 2:
+          target_user = target_array[0];
+          target_domain = target_array[1];
+          break;
+        default:
+          target_user = target_array.slice(0, target_array.length-1).join('@');
+          target_domain = target_array[target_array.length-1];
       }
 
+      // Username could be already hex-escaped (or not and needs it).
+      target = JsSIP.Utils.escapeUser(target_user) + '@' + target_domain;
+
+      // Finally parse the resulting URI.
       if (uri = JsSIP.Utils.parseURI(target)) {
         return uri;
       } else {
         throw new JsSIP.Exceptions.InvalidTargetError(original_target);
       }
     }
+
+    // Otherwise raise an error.
+    else {
+      throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+    }
+  },
+
+  /**
+  * Hex-escape a SIP URI user.
+  * @private
+  * @param {String} user
+  */
+  escapeUser: function(user) {
+    // Don't hex-escape ':' (%3A), '+' (%2B), '?' (%3F"), '/' (%2F).
+    return window.encodeURIComponent(user).replace(/%3A/ig, ':').replace(/%2B/ig, '+').replace(/%3F/ig, '?').replace(/%2F/ig, '/');
   },
 
   headerize: function(string) {

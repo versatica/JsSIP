@@ -145,7 +145,8 @@ JsSIP.URI.prototype = {
 
     uri  = this.scheme || JsSIP.C.SIP;
     uri += ':';
-    uri += this.user ? window.encodeURIComponent(this.user) + '@' : '';
+    // Don't hex-escape ':' (%3A) nor '+' (%2B).
+    uri += this.user ? JsSIP.Utils.escapeUser(this.user) + '@' : '';
     uri += this.host;
     uri += this.port ? ':' + this.port : '';
 
@@ -171,7 +172,8 @@ JsSIP.URI.prototype = {
 
       aor += this.scheme || JsSIP.C.SIP;
       aor += ':';
-      aor += this.user ? window.encodeURIComponent(this.user) + '@' : '';
+      // Don't hex-escape ':' (%3A) nor '+' (%2B).
+      aor += this.user ? JsSIP.Utils.escapeUser(this.user) + '@' : '';
       aor += this.host;
 
       return aor;
