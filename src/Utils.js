@@ -61,9 +61,11 @@ JsSIP.Utils= {
   * @param {String} [domain]
   */
   normalizeURI: function(target, domain) {
+    var uri,
+      original_target = target;
 
     if (!target) {
-      return;
+      throw new JsSIP.Exceptions.InvalidTargetError(original_target);
     } else if (target instanceof JsSIP.URI) {
       return target;
     } else if (typeof target === 'string') {
@@ -71,11 +73,15 @@ JsSIP.Utils= {
         if (domain) {
           target += '@'+ domain;
         } else {
-          return;
+          throw new JsSIP.Exceptions.InvalidTargetError(original_target);
         }
       }
 
-      return  JsSIP.Utils.parseURI(target);
+      if (uri = JsSIP.Utils.parseURI(target)) {
+        return uri;
+      } else {
+        throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+      }
     }
   },
 
