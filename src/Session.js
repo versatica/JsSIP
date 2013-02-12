@@ -76,15 +76,6 @@ JsSIP.Session.prototype.init_incoming = function(request) {
 JsSIP.Session.prototype.connect = function(target, views, options) {
   var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams;
 
-  // Check UA Status
-  JsSIP.Utils.checkUAStatus(this.ua);
-
-  // Check WebRTC support
-  if(!JsSIP.WebRTC.isSupported) {
-    console.log(JsSIP.C.LOG_UA +'WebRTC not supported.');
-    throw new JsSIP.Exceptions.WebRtcNotSupportedError();
-  }
-
   // Check Session Status
   if (this.status !== JsSIP.C.SESSION_NULL) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
@@ -110,7 +101,11 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   }
 
   // Check target validity
-  target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
+  try {
+    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
+  } catch(e) {
+    target = JsSIP.C.INVALID_TARGET;
+  }
 
   // Session parameter initialization
   this.from_tag = JsSIP.Utils.newTag();
@@ -152,7 +147,14 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
 
   this.newSession('local', request, target);
   this.connecting('local', request, target);
-  this.sendInitialRequest(mediaTypes);
+
+  if (target === JsSIP.C.INVALID_TARGET) {
+    this.failed('local', null, JsSIP.C.causes.INVALID_TARGET);
+  } else if (!JsSIP.WebRTC.isSupported) {
+    this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);
+  } else {
+    this.sendInitialRequest(mediaTypes);
+  }
 };
 
 /**

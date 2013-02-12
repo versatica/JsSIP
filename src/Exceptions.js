@@ -43,15 +43,6 @@ JsSIP.Exceptions= {
     return exception;
   }()),
 
-  WebRtcNotSupportedError: (function(){
-    var exception = function(){
-      this.code = 4;
-      this.name = 'WEBRTC_NO_SUPPORTED_ERROR';
-    };
-    exception.prototype = new Error();
-    return exception;
-  }()),
-
   InvalidStateError: (function(){
     var exception = function(status) {
       this.code = 5;

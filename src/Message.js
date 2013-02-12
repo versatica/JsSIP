@@ -26,8 +26,6 @@ JsSIP.Message.prototype.send = function(target, body, options) {
       'failed'
     ];
 
-  JsSIP.Utils.checkUAStatus(this.ua);
-
   this.initEvents(events);
 
   // Get call options
@@ -42,7 +40,11 @@ JsSIP.Message.prototype.send = function(target, body, options) {
   }
 
   // Check target validity
-  target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
+  try {
+    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
+  } catch(e) {
+    target = JsSIP.C.INVALID_TARGET;
+  }
 
   // Message parameter initialization
   this.direction = 'outgoing';
@@ -73,7 +75,14 @@ JsSIP.Message.prototype.send = function(target, body, options) {
     request: this.request
   });
 
-  request_sender.send();
+  if (target === JsSIP.C.INVALID_TARGET) {
+    this.emit('failed', this, {
+      originator: 'local',
+      cause: JsSIP.C.causes.INVALID_TARGET
+    });
+  } else {
+    request_sender.send();
+  }
 };
 
 /**

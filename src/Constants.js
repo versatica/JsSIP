@@ -43,6 +43,9 @@ JsSIP.C= {
   // SIP schemes
   SIP: 'sip',
 
+  // Invalid target
+  INVALID_TARGET: 'sip:invalid@invalid',
+
   // Transaction states
   TRANSACTION_TRYING:     1,
   TRANSACTION_PROCEEDING: 2,
@@ -71,8 +74,14 @@ JsSIP.C= {
   CONNECTION_ERROR:        1,
   REQUEST_TIMEOUT:        2,
 
-  // Invite session end causes
+  // End and failure causes
   causes: {
+
+    // Generic error causes
+    INVALID_TARGET:           'Invalid target',
+    WEBRTC_NOT_SUPPORTED:     'WebRTC not supported',
+
+    // Invite session end causes
     BYE:                      'Terminated',
     CANCELED:                 'Canceled',
     NO_ANSWER:                'No Answer',
@@ -85,7 +94,7 @@ JsSIP.C= {
     IN_DIALOG_408_OR_481:     'In-dialog 408 or 481',
     SIP_FAILURE_CODE:         'SIP Failure Code',
 
-    // SIP ERROR CAUSES
+    // SIP error causes
     BUSY:                     'Busy',
     REJECTED:                 'Rejected',
     REDIRECTED:               'Redirected',

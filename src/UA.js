@@ -133,8 +133,6 @@ JsSIP.UA.prototype.isConnected = function() {
  * @param {Object} videoViews
  *
  * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
- * @throws {JsSIP.Exceptions.WebRtcNotSupportedError} If WebRTC is not supported by the client.
- * @throws {JsSIP.Exceptions.InvalidTargetError} If the calling target is invalid.
  *
  */
 JsSIP.UA.prototype.call = function(target, views, options) {
@@ -152,7 +150,6 @@ JsSIP.UA.prototype.call = function(target, views, options) {
  * @param {Object} [eventHandlers]
  *
  * @throws {JsSIP.Exceptions.NotReadyError} If JsSIP.UA is not ready (see JsSIP.UA.status, JsSIP.UA.error parameters).
- * @throws {JsSIP.Exceptions.InvalidTargetError} If the calling target is invalid.
  *
  */
 JsSIP.UA.prototype.sendMessage = function(target, body, options) {
