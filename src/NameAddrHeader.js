@@ -75,7 +75,7 @@ JsSIP.NameAddrHeader.prototype = {
     var body, parameter;
 
     body  = (this.display_name) ? '"' + this.display_name + '" ' : '';
-    body += (this.display_name) ? '<' + this.uri.toString() + '>' : this.uri.toString();
+    body += '<' + this.uri.toString() + '>';
 
 
     for (parameter in this.parameters) {
