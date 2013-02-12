@@ -95,7 +95,6 @@ JsSIP.Utils= {
           target_domain = target_array[target_array.length-1];
       }
 
-      // Username could be already hex-escaped (or not and needs it).
       target = JsSIP.Utils.escapeUser(target_user) + '@' + target_domain;
 
       // Finally parse the resulting URI.
