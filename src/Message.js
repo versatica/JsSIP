@@ -26,6 +26,10 @@ JsSIP.Message.prototype.send = function(target, body, options) {
       'failed'
     ];
 
+  if (target === undefined || body === undefined) {
+    throw new TypeError('Not enough arguments');
+  }
+
   this.initEvents(events);
 
   // Get call options
@@ -189,7 +193,7 @@ JsSIP.Message.prototype.init_incoming = function(request) {
  */
 JsSIP.Message.prototype.accept = function() {
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.InvalidMethodError('accept');
+    throw new TypeError('Invalid method "accept" for an outgoing message');
   }
 
   this.request.reply(200);
@@ -204,12 +208,12 @@ JsSIP.Message.prototype.accept = function() {
  */
 JsSIP.Message.prototype.reject = function(status_code, reason_phrase) {
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.InvalidMethodError('reject');
+    throw new TypeError('Invalid method "reject" for an outgoing message');
   }
 
   if (status_code) {
     if ((status_code < 300 || status_code >= 700)) {
-      throw new JsSIP.Exceptions.InvalidValueError('status_code');
+      throw new TypeError('Invalid status_code: '+ status_code);
     } else {
       this.request.reply(status_code, reason_phrase);
     }
