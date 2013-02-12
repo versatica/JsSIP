@@ -16,7 +16,7 @@ test('JsSIP.Utils.normalizeURI()', function() {
     );
   };
 
-  test_ok('alice', 'sip:alice@jssip.net');
+  test_ok('%61lice', 'sip:alice@jssip.net');
   test_ok('ALICE', 'sip:ALICE@jssip.net');
   test_ok('alice@DOMAIN.com', 'sip:alice@domain.com');
   test_ok('iñaki', 'sip:i%C3%B1aki@jssip.net');

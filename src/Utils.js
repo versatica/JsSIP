@@ -118,7 +118,7 @@ JsSIP.Utils= {
   */
   escapeUser: function(user) {
     // Don't hex-escape ':' (%3A), '+' (%2B), '?' (%3F"), '/' (%2F).
-    return window.encodeURIComponent(user).replace(/%3A/ig, ':').replace(/%2B/ig, '+').replace(/%3F/ig, '?').replace(/%2F/ig, '/');
+    return window.encodeURIComponent(window.decodeURIComponent(user)).replace(/%3A/ig, ':').replace(/%2B/ig, '+').replace(/%3F/ig, '?').replace(/%2F/ig, '/');
   },
 
   headerize: function(string) {
