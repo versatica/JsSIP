@@ -92,5 +92,8 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('default', 'concat:dist lint min concat:post concat:post_min qunit' );
+  grunt.registerTask('default', 'concat:dist lint min concat:post concat:post_min');
+
+  // Test task.
+  grunt.registerTask('test', 'qunit');
 };
