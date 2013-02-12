@@ -254,11 +254,14 @@ param_unreserved  = "[" / "]" / "/" / ":" / "&" / "+" / "$"
 headers           = "?" header ( "&" header )*
 
 header            = hname: hname "=" hvalue: hvalue  {
-                      hname = hname.join('');
+                      hname = hname.join('').toLowerCase();
                       hvalue = hvalue.join('');
                       if(!data.uri_headers) data.uri_headers = {};
-                      data.uri_headers[hname] = hvalue;
-                      }
+                      if (!data.uri_headers[hname]) {
+                        data.uri_headers[hname] = [hvalue];
+                      } else {
+                        data.uri_headers[hname].push(hvalue);
+                      }}
 
 hname             = ( hnv_unreserved / unreserved / escaped )+
 

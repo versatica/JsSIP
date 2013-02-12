@@ -6278,11 +6278,14 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, hname, hvalue) {
-                              hname = hname.join('');
+                              hname = hname.join('').toLowerCase();
                               hvalue = hvalue.join('');
                               if(!data.uri_headers) data.uri_headers = {};
-                              data.uri_headers[hname] = hvalue;
-                              })(pos0, result0[0], result0[2]);
+                              if (!data.uri_headers[hname]) {
+                                data.uri_headers[hname] = [hvalue];
+                              } else {
+                                data.uri_headers[hname].push(hvalue);
+                              }})(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
