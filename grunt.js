@@ -85,9 +85,12 @@ module.exports = function(grunt) {
       },
       globals: {}
     },
+    qunit: {
+      all: ['qunitjs/*html']
+    },
     uglify: {}
   });
 
   // Default task.
-  grunt.registerTask('default', 'concat:dist lint min concat:post concat:post_min' );
+  grunt.registerTask('default', 'concat:dist lint min concat:post concat:post_min qunit' );
 };
