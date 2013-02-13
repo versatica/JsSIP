@@ -18,24 +18,7 @@ test('UA no WS connection', function() {
     deepEqual(ua.configuration[parameter], TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
   }
 
-  var views = {
-    selfView: document.getElementById('selfView'),
-    remoteView: document.getElementById('remoteView')
-  };
-
-// TODO: This requires running on a WebRTC capable browser by retrieving
-// this web via HTTP protocol.
-//
-//   ua.call('test', views, {
-//     mediaTypes: { audio: false, video: false },
-//     eventHandlers: {
-//       failed: function(e) {
-//         strictEqual(e.data.cause, JsSIP.C.causes.CONNECTION_ERROR);
-//       }
-//     }
-//   });
-
-  ua.sendMessage('test', 'FAIL PLEASE', {
+  ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
     eventHandlers: {
       sending: function(e) {
         var ruri = e.data.request.ruri;
@@ -48,7 +31,7 @@ test('UA no WS connection', function() {
     }
   });
 
-  ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL PLEASE', {
+  ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE', {
     eventHandlers: {
       sending: function(e) {
         var ruri = e.data.request.ruri;
