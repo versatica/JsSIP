@@ -193,12 +193,24 @@ JsSIP.Message.prototype.init_incoming = function(request) {
  * Accept the incoming Message
  * Only valid for incoming Messages
  */
-JsSIP.Message.prototype.accept = function() {
+JsSIP.Message.prototype.accept = function(options) {
+  options = options || {};
+
+  var
+    status_code = options.status_code || 200,
+    reason_phrase = options.reason_phrase,
+    extraHeaders = options.extraHeaders || [],
+    body = options.body;
+
   if (this.direction !== 'incoming') {
     throw new TypeError('Invalid method "accept" for an outgoing message');
   }
 
-  this.request.reply(200);
+  if (status_code < 200 || status_code >= 300) {
+    throw new TypeError('Invalid status_code: '+ status_code);
+  }
+
+  this.request.reply(status_code, reason_phrase, extraHeaders, body);
 };
 
 /**
@@ -208,18 +220,22 @@ JsSIP.Message.prototype.accept = function() {
  * @param {Number} status_code
  * @param {String} [reason_phrase]
  */
-JsSIP.Message.prototype.reject = function(status_code, reason_phrase) {
+JsSIP.Message.prototype.reject = function(options) {
+  options = options || {};
+
+  var
+    status_code = options.status_code || 480,
+    reason_phrase = options.reason_phrase,
+    extraHeaders = options.extraHeaders || [],
+    body = options.body;
+
   if (this.direction !== 'incoming') {
     throw new TypeError('Invalid method "reject" for an outgoing message');
   }
 
-  if (status_code) {
-    if ((status_code < 300 || status_code >= 700)) {
-      throw new TypeError('Invalid status_code: '+ status_code);
-    } else {
-      this.request.reply(status_code, reason_phrase);
-    }
-  } else {
-    this.request.reply(480);
+  if (status_code < 300 || status_code >= 700) {
+    throw new TypeError('Invalid status_code: '+ status_code);
   }
+
+  this.request.reply(status_code, reason_phrase, extraHeaders, body);
 };

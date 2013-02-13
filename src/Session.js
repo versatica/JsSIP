@@ -398,8 +398,17 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
     * @param {HTMLVideoElement} selfView
     * @param {HTMLVideoElement} remoteView
     */
-    this.answer = function(selfView, remoteView) {
-      var offer, onSuccess, onMediaFailure, onSdpFailure;
+    this.answer = function(selfView, remoteView, options) {
+      options = options || {};
+
+      var offer, onSuccess, onMediaFailure, onSdpFailure,
+        status_code = options.status_code || 200,
+        reason_phrase = options.reason_phrase,
+        extraHeaders = options.extraHeaders || [];
+
+      if (status_code < 200 || status_code >= 300) {
+        throw new TypeError('Invalid status_code: '+ status_code);
+      }
 
       // Check Session Status
       if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
@@ -415,7 +424,8 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
           return;
         }
 
-        request.reply(200, null, ['Contact: <' + session.contact + '>'],
+        extraHeaders.push('Contact: <' + session.contact + '>');
+        request.reply(status_code, reason_phrase, extraHeaders,
           sdp,
           // onSuccess
           function(){
@@ -549,7 +559,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
           return;
         }
 
-        this.acceptAndTerminate(response,'SIP ;cause=400 ;text= "Missing session description"');
+        this.acceptAndTerminate(response, 400, 'Missing session description');
         this.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
 
         break;
@@ -584,7 +594,7 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
            */
           function(e) {
             console.warn(e);
-            session.acceptAndTerminate(response, 'SIP ;cause=488 ;text="Not Acceptable Here"');
+            session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
             session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
           }
         );
@@ -673,11 +683,14 @@ JsSIP.Session.prototype.userNoAnswerTimeout = function(request) {
 /**
 * @private
 */
-JsSIP.Session.prototype.acceptAndTerminate = function(response, reason) {
+JsSIP.Session.prototype.acceptAndTerminate = function(response, status_code, reason_phrase) {
   // Send ACK and BYE
   if (this.dialog || this.createConfirmedDialog(response, 'UAC')) {
     this.sendACK();
-    this.sendBye(reason);
+    this.sendBye({
+      status_code: status_code,
+      reason_phrase: reason_phrase
+    });
   }
 };
 
@@ -693,10 +706,24 @@ JsSIP.Session.prototype.sendACK = function() {
 /**
 * @private
 */
-JsSIP.Session.prototype.sendBye = function(reason) {
-  var
-    extraHeaders = (reason) ? ['Reason: '+ reason] : [],
-    request = this.dialog.createRequest(JsSIP.C.BYE, extraHeaders);
+JsSIP.Session.prototype.sendBye = function(options) {
+  options = options || {};
+
+  var request, reason,
+    status_code = options.status_code,
+    reason_phrase = options.reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '',
+    extraHeaders = options.extraHeaders || [],
+    body = options.body;
+
+  if (status_code && (status_code < 200 || status_code >= 700)) {
+    throw new TypeError('Invalid status_code: '+ status_code);
+  } else if (status_code) {
+    reason = 'SIP ;cause=' + status_code + '; text="' + reason_phrase + '"';
+    extraHeaders.push('Reason: '+ reason);
+  }
+
+  request = this.dialog.createRequest(JsSIP.C.BYE, extraHeaders);
+  request.body = body;
 
   this.sendRequest(request);
 };
@@ -842,7 +869,7 @@ JsSIP.Session.prototype.failed = function(originator, response, cause) {
 * Terminate the call.
 * @param {String} [reason]
 */
-JsSIP.Session.prototype.terminate = function() {
+JsSIP.Session.prototype.terminate = function(options) {
 
   // Check Session Status
   if (this.status === JsSIP.C.SESSION_TERMINATED) {
@@ -854,16 +881,16 @@ JsSIP.Session.prototype.terminate = function() {
     case JsSIP.C.SESSION_NULL:
     case JsSIP.C.SESSION_INVITE_SENT:
     case JsSIP.C.SESSION_1XX_RECEIVED:
-      this.cancel();
+      this.cancel(options);
       break;
       // - UAS -
     case JsSIP.C.SESSION_WAITING_FOR_ANSWER:
-      this.reject();
+      this.reject(options);
       break;
     case JsSIP.C.SESSION_WAITING_FOR_ACK:
     case JsSIP.C.SESSION_CONFIRMED:
       // Send Bye
-      this.sendBye();
+      this.sendBye(options);
 
       this.ended('local', null, JsSIP.C.causes.BYE);
       break;
@@ -879,7 +906,15 @@ JsSIP.Session.prototype.terminate = function() {
  * @param {Number} status_code
  * @param {String} [reason_phrase]
  */
-JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
+JsSIP.Session.prototype.reject = function(options) {
+  options = options || {};
+
+  var
+    status_code = options.status_code || 480,
+    reason_phrase = options.reason_phrase,
+    extraHeaders = options.extraHeaders || [],
+    body = options.body;
+
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
     throw new TypeError('Invalid method "reject" for an outgoing call');
@@ -887,15 +922,11 @@ JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
-  if (status_code) {
-    if ((status_code < 300 || status_code >= 700)) {
-      throw new TypeError('Invalid status_code: '+ status_code);
-    } else {
-      this.request.reply(status_code, reason_phrase);
-    }
-  } else {
-    this.request.reply(480);
+  if (status_code < 300 || status_code >= 700) {
+    throw new TypeError('Invalid status_code: '+ status_code);
   }
+
+  this.request.reply(status_code, reason_phrase, extraHeaders, body);
 
   this.failed('local', null, JsSIP.C.causes.REJECTED);
 };
@@ -905,10 +936,22 @@ JsSIP.Session.prototype.reject = function(status_code, reason_phrase) {
  *
  * @param {String} [reason]
  */
-JsSIP.Session.prototype.cancel = function(reason) {
+JsSIP.Session.prototype.cancel = function(options) {
+  options = options || {};
+
+  var reason,
+    status_code = options.status_code,
+    reason_phrase = options.reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '';
+
   // Check Session Direction
   if (this.direction !== 'outgoing') {
     throw new TypeError('Invalid method "cancel" for an incoming call');
+  }
+
+  if (status_code && (status_code < 200 || status_code >= 700)) {
+    throw new TypeError('Invalid status_code: '+ status_code);
+  } else if (status_code) {
+    reason = 'SIP ;cause=' + status_code + ' ;text="' + reason_phrase + '"';
   }
 
   // Check Session Status

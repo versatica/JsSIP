@@ -195,7 +195,7 @@ var InviteClientTransactionPrototype = function() {
     ' CANCEL\r\n';
 
     if(reason) {
-      this.cancel += 'Reason:' + 'SIP ;cause=200 ;text=' + reason + '\r\n';
+      this.cancel += 'Reason: ' + reason + '\r\n';
     }
 
     this.cancel += 'Content-Length: 0\r\n\r\n';
