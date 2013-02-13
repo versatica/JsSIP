@@ -74,7 +74,8 @@ JsSIP.Session.prototype.init_incoming = function(request) {
 };
 
 JsSIP.Session.prototype.connect = function(target, views, options) {
-  var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams;
+  var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams,
+    invalidTarget = false;
 
   if (target === undefined || views === undefined) {
     throw new TypeError('Not enough arguments');
@@ -113,7 +114,8 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   try {
     target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
   } catch(e) {
-    target = JsSIP.C.INVALID_TARGET;
+    target = JsSIP.Utils.parseURI(JsSIP.C.INVALID_TARGET_URI);
+    invalidTarget = true;
   }
 
   // Session parameter initialization
@@ -157,7 +159,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   this.newSession('local', request, target);
   this.connecting('local', request, target);
 
-  if (target === JsSIP.C.INVALID_TARGET) {
+  if (invalidTarget) {
     this.failed('local', null, JsSIP.C.causes.INVALID_TARGET);
   } else if (!JsSIP.WebRTC.isSupported) {
     this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);

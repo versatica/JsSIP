@@ -24,7 +24,8 @@ JsSIP.Message.prototype.send = function(target, body, options) {
       'sending',
       'succeeded',
       'failed'
-    ];
+    ],
+    invalidTarget = false;
 
   if (target === undefined || body === undefined) {
     throw new TypeError('Not enough arguments');
@@ -47,7 +48,8 @@ JsSIP.Message.prototype.send = function(target, body, options) {
   try {
     target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
   } catch(e) {
-    target = JsSIP.C.INVALID_TARGET;
+    target = JsSIP.Utils.parseURI(JsSIP.C.INVALID_TARGET_URI);
+    invalidTarget = true;
   }
 
   // Message parameter initialization
@@ -79,7 +81,7 @@ JsSIP.Message.prototype.send = function(target, body, options) {
     request: this.request
   });
 
-  if (target === JsSIP.C.INVALID_TARGET) {
+  if (invalidTarget) {
     this.emit('failed', this, {
       originator: 'local',
       cause: JsSIP.C.causes.INVALID_TARGET

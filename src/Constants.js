@@ -44,7 +44,7 @@ JsSIP.C= {
   SIP: 'sip',
 
   // Invalid target
-  INVALID_TARGET: 'sip:invalid@invalid',
+  INVALID_TARGET_URI: 'sip:invalid@invalid',
 
   // Transaction states
   TRANSACTION_TRYING:     1,
@@ -78,8 +78,8 @@ JsSIP.C= {
   causes: {
 
     // Generic error causes
-    INVALID_TARGET:           'Invalid target',
-    WEBRTC_NOT_SUPPORTED:     'WebRTC not supported',
+    INVALID_TARGET:           'Invalid Target',
+    WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
 
     // Invite session end causes
     BYE:                      'Terminated',
