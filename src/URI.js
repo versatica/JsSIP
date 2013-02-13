@@ -18,7 +18,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
     throw new TypeError('missing or invalid "host" parameter');
   }
 
-  this.scheme = scheme || JsSIP.C.SIP;
+  scheme = scheme || JsSIP.C.SIP;
 
   // Initialize parameters
   this.parameters = {};
