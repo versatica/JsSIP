@@ -33,10 +33,9 @@ coolPhone.start();
 var useAudio = true;
 var useVideo = true;
 
-// id attribute of existing HTML5 <video> elements in which local and remote video will be shown
 var views = {
-  'localView':  "my-cam",
-  'remoteView': "peer-cam"
+  'selfView':   document.getElementById('my-video'),
+  'remoteView': document.getElementById('peer-video')
 };
 
 var eventHandlers = {
