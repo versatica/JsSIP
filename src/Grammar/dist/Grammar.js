@@ -2965,17 +2965,13 @@ JsSIP.Grammar = (function(){
           result0 = (function(offset) {
                             var header;
                             try {
-                                data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params);
+                                data.uri = new JsSIP.URI(data.scheme, data.user, data.host, data.port, data.uri_params, data.uri_headers);
                                 delete data.scheme;
                                 delete data.user;
                                 delete data.host;
                                 delete data.host_type;
                                 delete data.port;
                                 delete data.uri_params;
-        
-                                for (header in data.uri_headers) {
-                                  data.uri.setHeader(header, data.uri_headers[header]);
-                                };
         
                                 if (startRule === 'SIP_URI') { data = data.uri;}
                               } catch(e) {
