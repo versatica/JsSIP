@@ -8,13 +8,18 @@
     <link rel="stylesheet" href="css/qunit-1.11.0.css">
     <script src="../dist/jssip-0.3.0-devel.js"></script>
     <script src="javascript/qunit-1.11.0.js"></script>
+    <script src="javascript/helpers.js"></script>
+    <script src="javascript/test-parser.js"></script>
+    <script src="javascript/test-normalizeURI.js"></script>
+    <script src="javascript/test-UA.js"></script>
   </head>
 
   <body>
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
-    <script src="javascript/test-parser.js"></script>
-    <script src="javascript/test-normalizeURI.js"></script>
+
+    <video id="selfView" autoplay hidden=false></video>
+    <video id="remoteView" autoplay hidden=false></video>
   </body>
 
 </html>
