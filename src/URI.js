@@ -18,9 +18,8 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
     throw new TypeError('missing or invalid "host" parameter');
   }
 
-  scheme = scheme || JsSIP.C.SIP;
-
   // Initialize parameters
+  scheme = scheme || JsSIP.C.SIP;
   this.parameters = {};
   this.headers = {};
 
@@ -56,7 +55,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
     port: {
       get: function(){ return port; },
       set: function(value){
-        port = parseInt(value,10);
+        port = value === 0 ? value : (parseInt(value,10) || null);
       }
     }
   });
@@ -106,7 +105,7 @@ JsSIP.URI.prototype = {
 
   hasHeader: function(name) {
     if(name) {
-      return (this.headers.hasOwnProperty(name.toLowerCase()) && true) || false;
+      return (this.headers.hasOwnProperty(JsSIP.Utils.headerize(name)) && true) || false;
     }
   },
 
@@ -139,9 +138,13 @@ JsSIP.URI.prototype = {
       headers = [];
 
     uri  = this.scheme + ':';
-    uri += this.user ? JsSIP.Utils.escapeUser(this.user) + '@' : '';
+    if (this.user) {
+      uri += JsSIP.Utils.escapeUser(this.user) + '@';
+    }
     uri += this.host;
-    uri += this.port ? ':' + this.port : '';
+    if (this.port || this.port === 0) {
+      uri += ':' + this.port;
+    }
 
     for (parameter in this.parameters) {
       uri += ';'+ parameter;
@@ -164,7 +167,9 @@ JsSIP.URI.prototype = {
       var aor;
 
       aor  = this.scheme + ':';
-      aor += this.user ? JsSIP.Utils.escapeUser(this.user) + '@' : '';
+      if (this.user) {
+        aor += JsSIP.Utils.escapeUser(this.user) + '@';
+      }
       aor += this.host;
 
       return aor;
