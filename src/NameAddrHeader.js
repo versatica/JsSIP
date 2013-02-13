@@ -48,7 +48,7 @@ JsSIP.NameAddrHeader.prototype = {
 
   hasParam: function(key) {
     if(key) {
-      return this.parameters.hasOwnProperty(key.toLowerCase()) && true || false;
+      return (this.parameters.hasOwnProperty(key.toLowerCase()) && true) || false;
     }
   },
 
@@ -81,7 +81,7 @@ JsSIP.NameAddrHeader.prototype = {
 
     for (parameter in this.parameters) {
       body += ';' + parameter;
-      body += (this.parameters[parameter] === null)? '' : '=' + this.parameters[parameter];
+      body += (this.parameters[parameter] === null) ? '' : '=' + this.parameters[parameter];
     }
 
     return body;
