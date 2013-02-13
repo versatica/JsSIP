@@ -107,3 +107,25 @@ test('Parse multiple Contact', function() {
   strictEqual(c3.toString(), '<sip:domain.com:5;newuriparam=zxcv>;newheaderparam=zxcv');
 });
 
+
+test('Parse Via', function() {
+  var data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;Param1=Foo;paRAM2;param3=Bar';
+  var via = JsSIP.Grammar.parse(data, 'Via');
+
+  strictEqual(via.protocol, 'SIP');
+  strictEqual(via.transport, 'UDP');
+  strictEqual(via.host, '[1:ab::FF]');
+  strictEqual(via.host_type, 'IPv6');
+  strictEqual(via.port, 6060);
+  strictEqual(via.branch, '1234');
+  deepEqual(via.params, {param1: 'foo', param2: undefined, param3: 'bar'});
+});
+
+
+test('Parse CSeq', function() {
+  var data = '123456  CHICKEN';
+  var cseq = JsSIP.Grammar.parse(data, 'CSeq');
+
+  strictEqual(cseq.value, 123456);
+  strictEqual(cseq.method, 'CHICKEN');
+});
