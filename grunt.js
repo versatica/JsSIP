@@ -5,53 +5,53 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: '<json:package.json>',
     meta: {
-      banner: "/*! jsSIP v@<%= pkg.version %> jssip.net | jssip.net/license */"
+      banner: '/*! jsSIP v@<%= pkg.version %> jssip.net | jssip.net/license */'
     },
     lint: {
-      dist: "dist/<%= pkg.name %>-<%= pkg.version %>.js",
-      grunt: "grunt.js"
+      dist: 'dist/<%= pkg.name %>-<%= pkg.version %>.js',
+      grunt: 'grunt.js'
     },
     concat: {
       dist: {
         src: [
-          "src/head.js",
-          "src/EventEmitter.js",
-          "src/Constants.js",
-          "src/Exceptions.js",
-          "src/Timers.js",
-          "src/Transport.js",
-          "src/Parser.js",
-          "src/SIPMessage.js",
-          "src/URI.js",
-          "src/NameAddrHeader.js",
-          "src/Transactions.js",
-          "src/Dialogs.js",
-          "src/RequestSender.js",
-          "src/InDialogRequestSender.js",
-          "src/Registrator.js",
-          "src/Session.js",
-          "src/MediaSession.js",
-          "src/Message.js",
-          "src/UA.js",
-          "src/Utils.js",
-          "src/SanityCheck.js",
-          "src/DigestAuthentication.js",
-          "src/WebRTC.js",
-          "src/tail.js"
+          'src/head.js',
+          'src/EventEmitter.js',
+          'src/Constants.js',
+          'src/Exceptions.js',
+          'src/Timers.js',
+          'src/Transport.js',
+          'src/Parser.js',
+          'src/SIPMessage.js',
+          'src/URI.js',
+          'src/NameAddrHeader.js',
+          'src/Transactions.js',
+          'src/Dialogs.js',
+          'src/RequestSender.js',
+          'src/InDialogRequestSender.js',
+          'src/Registrator.js',
+          'src/Session.js',
+          'src/MediaSession.js',
+          'src/Message.js',
+          'src/UA.js',
+          'src/Utils.js',
+          'src/SanityCheck.js',
+          'src/DigestAuthentication.js',
+          'src/WebRTC.js',
+          'src/tail.js'
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
       },
       post: {
         src: [
           'dist/<%= pkg.name %>-<%= pkg.version %>.js',
-          "src/Grammar/dist/Grammar.js"
+          'src/Grammar/dist/Grammar.js'
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
       },
       post_min: {
         src: [
-        'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
-        "src/Grammar/dist/Grammar.min.js"
+          'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
+          'src/Grammar/dist/Grammar.min.js'
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js'
       }
@@ -86,7 +86,8 @@ module.exports = function(grunt) {
       globals: {}
     },
     qunit: {
-      all: ['qunitjs/*.html']
+      noWebRTC: ['qunitjs/testNoWebRTC.html'],
+      WebRTC:   ['qunitjs/testWebRTC.html']
     },
     uglify: {}
   });
@@ -94,6 +95,8 @@ module.exports = function(grunt) {
   // Default task.
   grunt.registerTask('default', 'concat:dist lint min concat:post concat:post_min');
 
-  // Test task.
-  grunt.registerTask('test', 'qunit');
+  // Test tasks.
+  grunt.registerTask('testNoWebRTC', 'qunit:noWebRTC');
+  grunt.registerTask('testWebRTC', 'qunit:WebRTC');
+  grunt.registerTask('test', 'testNoWebRTC');
 };
