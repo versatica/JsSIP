@@ -189,6 +189,6 @@ JsSIP.URI.parse = function(uri) {
   if (uri !== -1) {
     return uri;
   } else {
-    return null;
+    return undefined;
   }
 };
