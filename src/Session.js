@@ -390,7 +390,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(request) {
 
     this.userNoAnswerTimer = window.setTimeout(
       function() { session.userNoAnswerTimeout(request); },
-      this.ua.configuration.no_answer_timeout
+      session.ua.configuration.no_answer_timeout
     );
 
     /**
