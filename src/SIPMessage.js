@@ -78,7 +78,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   if(params.call_id) {
     call_id = params.call_id;
   } else {
-    call_id = ua.configuration.jssip_id + Math.random().toString(36).substr(2, 15);
+    call_id = ua.configuration.jssip_id + JsSIP.Utils.createRandomToken(15);
   }
   this.setHeader('call-id', call_id);
 

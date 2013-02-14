@@ -19,7 +19,7 @@ JsSIP.Registrator = function(ua, transport) {
   this.min_expires = ua.configuration.register_min_expires;
 
   // Call-ID and CSeq values RFC3261 10.2
-  this.call_id = Math.random().toString(36).substr(2, 22);
+  this.call_id = JsSIP.Utils.createRandomToken(22);
   this.cseq = 80;
 
   this.registrar = 'sip:'+ ua.configuration.domain;

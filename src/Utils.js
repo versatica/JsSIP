@@ -17,8 +17,22 @@ JsSIP.Utils= {
     return !isNaN(num) && (parseFloat(num) === parseInt(num,10));
   },
 
+  createRandomToken: function(size, base) {
+    var i, r,
+    token = '';
+
+    base = base || 32;
+
+    for( i=0; i < size; i++ ) {
+      r = Math.random() * base|0;
+      token += r.toString(base);
+    }
+
+    return token;
+  },
+
   newTag: function() {
-    return Math.random().toString(36).substr(2,JsSIP.C.TAG_LENGTH);
+    return JsSIP.Utils.createRandomToken(JsSIP.C.TAG_LENGTH);
   },
 
   // http://stackoverflow.com/users/109538/broofa

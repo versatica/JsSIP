@@ -600,7 +600,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
       */
-      via_host: Math.random().toString(36).substr(2, 12) + '.invalid',
+      via_host: JsSIP.Utils.createRandomToken(12) + '.invalid',
 
       // Password
       password: null,
@@ -682,7 +682,7 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   settings.instance_id = JsSIP.Utils.newUUID();
 
   // jssip_id instance parameter. Static random tag of length 5
-  settings.jssip_id = Math.random().toString(36).substr(2, 5);
+  settings.jssip_id = JsSIP.Utils.createRandomToken(5);
 
   settings.from_uri = settings.uri.toAor();
 

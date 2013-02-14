@@ -47,7 +47,7 @@ JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
 
   password = password || this.password;
 
-  this.cnonce = Math.random().toString(36).substr(2, 12);
+  this.cnonce = JsSIP.Utils.createRandomToken(12);
   this.nc += 1;
 
   // nc-value = 8LHEX. Max value = 'FFFFFFFF'
