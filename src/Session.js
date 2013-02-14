@@ -114,7 +114,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   try {
     target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
   } catch(e) {
-    target = JsSIP.Utils.parseURI(JsSIP.C.INVALID_TARGET_URI);
+    target = JsSIP.URI.parse(JsSIP.C.INVALID_TARGET_URI);
     invalidTarget = true;
   }
 

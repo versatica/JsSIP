@@ -175,3 +175,20 @@ JsSIP.URI.prototype = {
       return aor;
   }
 };
+
+
+/**
+  * Parse the given string and returns a JsSIP.URI instance or undefined if
+  * it is an invalid URI.
+  * @public
+  * @param {String} uri
+  */
+JsSIP.URI.parse = function(uri) {
+  uri = JsSIP.Grammar.parse(uri,'SIP_URI');
+
+  if (uri !== -1) {
+    return uri;
+  } else {
+    return null;
+  }
+};

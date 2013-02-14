@@ -805,7 +805,10 @@ JsSIP.UA.configuration_check = {
     uri: function(uri) {
       var parsed;
 
-      parsed = JsSIP.Utils.parseURI(uri);
+      if (!/^sip:/i.test(uri)) {
+        uri = JsSIP.C.SIP + ':' + uri;
+      }
+      parsed = JsSIP.URI.parse(uri);
 
       if(!parsed) {
         return;

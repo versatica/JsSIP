@@ -31,18 +31,6 @@ JsSIP.Utils= {
     return UUID;
   },
 
-  parseURI: function(uri) {
-    if (!/^sip:/i.test(uri)) {
-      uri = JsSIP.C.SIP +':'+ uri;
-    }
-
-    uri = JsSIP.Grammar.parse(uri,'SIP_URI');
-
-    if (uri !== -1) {
-      return uri;
-    }
-  },
-
   hostType: function(host) {
     if (!host) {
       return;
@@ -97,8 +85,12 @@ JsSIP.Utils= {
 
       target = JsSIP.Utils.escapeUser(target_user) + '@' + target_domain;
 
+      if (!/^sip:/i.test(target)) {
+        target = JsSIP.C.SIP + ':' + target;
+      }
+
       // Finally parse the resulting URI.
-      if (uri = JsSIP.Utils.parseURI(target)) {
+      if (uri = JsSIP.URI.parse(target)) {
         return uri;
       } else {
         throw new JsSIP.Exceptions.InvalidTargetError(original_target);

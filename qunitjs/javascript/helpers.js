@@ -30,7 +30,7 @@ TestJsSIP.Helpers = {
   },
 
   FAKE_UA_CONFIGURATION: {
-    uri: 'sip:f%61keUA@jssip.net',
+    uri: 'f%61keUA@jssip.net',
     ws_servers:  'ws://localhost:12345',
     display_name: 'Fake UA ð→€ł !!!',
     register: false,

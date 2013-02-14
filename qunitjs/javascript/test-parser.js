@@ -1,6 +1,6 @@
 test('Parse URI', function() {
   var data = 'SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=123;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2';
-  var uri = JsSIP.Utils.parseURI(data);
+  var uri = JsSIP.URI.parse(data);
 
   // Parsed data.
   ok(uri instanceof(JsSIP.URI));
