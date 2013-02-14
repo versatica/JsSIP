@@ -19,7 +19,7 @@ JsSIP.Utils= {
 
   createRandomToken: function(size, base) {
     var i, r,
-    token = '';
+      token = '';
 
     base = base || 32;
 
