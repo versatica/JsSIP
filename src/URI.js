@@ -163,7 +163,7 @@ JsSIP.URI.prototype = {
 
     return uri;
   },
-  toAor: function(){
+  toAor: function(show_port){
       var aor;
 
       aor  = this.scheme + ':';
@@ -171,6 +171,9 @@ JsSIP.URI.prototype = {
         aor += JsSIP.Utils.escapeUser(this.user) + '@';
       }
       aor += this.host;
+      if (show_port && (this.port || this.port === 0)) {
+        aor += ':' + this.port;
+      }
 
       return aor;
   }

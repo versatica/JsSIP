@@ -11,6 +11,8 @@ test('JsSIP.URI', function() {
   deepEqual(uri.headers, {});
   strictEqual(uri.toString(), 'sip:alice@jssip.net:6060');
   strictEqual(uri.toAor(), 'sip:alice@jssip.net');
+  strictEqual(uri.toAor(false), 'sip:alice@jssip.net');
+  strictEqual(uri.toAor(true), 'sip:alice@jssip.net:6060');
 
   uri.scheme = 'SIPS';
   strictEqual(uri.scheme, 'sips');
