@@ -60,7 +60,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   // From
   if (params.from_display_name || params.from_display_name === 0) {
     from = '"' + params.from_display_name + '" ';
-  } else if (ua.configuration.display_name || ua.configuration.display_name === 0) {
+  } else if (ua.configuration.display_name) {
     from = '"' + ua.configuration.display_name + '" ';
   } else {
     from = '';

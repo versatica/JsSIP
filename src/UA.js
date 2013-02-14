@@ -678,6 +678,11 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
 
   // Post Configuration Process
 
+  // Allow passing 0 number as display_name.
+  if (settings.display_name === 0) {
+    settings.display_name = '0';
+  }
+
   // Instance-id for GRUU
   settings.instance_id = JsSIP.Utils.newUUID();
 

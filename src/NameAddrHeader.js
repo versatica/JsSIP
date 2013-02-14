@@ -28,7 +28,7 @@ JsSIP.NameAddrHeader = function(uri, display_name, parameters) {
     display_name: {
       get: function() { return display_name; },
       set: function(value) {
-        display_name = value;
+        display_name = (value === 0) ? '0' : value;
       }
     }
   });
