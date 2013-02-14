@@ -52,6 +52,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
         host = value.toLowerCase();
       }
     },
+
     port: {
       get: function(){ return port; },
       set: function(value){
@@ -163,6 +164,7 @@ JsSIP.URI.prototype = {
 
     return uri;
   },
+
   toAor: function(show_port){
       var aor;
 

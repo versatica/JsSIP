@@ -87,3 +87,20 @@ JsSIP.NameAddrHeader.prototype = {
     return body;
   }
 };
+
+
+/**
+  * Parse the given string and returns a JsSIP.NameAddrHeader instance or undefined if
+  * it is an invalid NameAddrHeader.
+  * @public
+  * @param {String} name_addr_header
+  */
+JsSIP.NameAddrHeader.parse = function(name_addr_header) {
+  name_addr_header = JsSIP.Grammar.parse(name_addr_header,'Name_Addr_Header');
+
+  if (name_addr_header !== -1) {
+    return name_addr_header;
+  } else {
+    return undefined;
+  }
+};
