@@ -356,7 +356,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
     method = request.method;
 
   // Check that Ruri points to us
-  if(request.ruri.user !== this.configuration.user) {
+    if(request.ruri.user !== this.configuration.user && request.ruri.user !== this.contact.uri.user) {
     console.log(JsSIP.C.LOG_UA +'Request-URI does not point to us');
     request.reply_sl(404);
     return;
@@ -595,7 +595,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, value, checked_value, contact,
+  var parameter, value, checked_value, contact, contact_uri,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -707,9 +707,11 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
 
+  contact_uri = new JsSIP.URI(null, JsSIP.Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'});
+
   contact = {
     uri: {
-      value: 'sip:' + settings.user + '@' + settings.via_host + ';transport=ws',
+      value: contact_uri,
       writable: false,
       configurable: false
     }

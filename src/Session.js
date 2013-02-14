@@ -787,11 +787,11 @@ JsSIP.Session.prototype.newSession = function(originator, request, target) {
   session.direction = (originator === 'local') ? 'outgoing' : 'incoming';
 
   if (originator === 'remote') {
-    session.local_identity = request.s('to').uri.toAor();
+    session.local_identity = session.ua.configuration.from_uri;
     session.remote_identity = request.s('from').uri.toAor();
   } else if (originator === 'local'){
     session.local_identity = session.ua.configuration.from_uri;
-    session.remote_identity = target;
+    session.remote_identity = target.toAor();
   }
 
   session.ua.emit(event_name, session.ua, {
