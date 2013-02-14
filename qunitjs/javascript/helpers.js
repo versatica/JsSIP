@@ -23,9 +23,6 @@ TestJsSIP.Helpers = {
     uri: 'sip:fakeUA@jssip.net',
     ws_servers: [{'ws_uri':'ws://localhost:12345','sip_uri':'<sip:localhost:12345;transport=ws;lr>','weight':0,'status':0,'scheme':'WS'}],
     display_name: 'Fake UA ð→€ł !!!',
-    from_uri: 'sip:fakeUA@jssip.net',
-    user: 'fakeUA',
-    domain: 'jssip.net',
     authorization_user: 'fakeUA'
   },
 

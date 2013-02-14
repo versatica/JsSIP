@@ -356,7 +356,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
     method = request.method;
 
   // Check that Ruri points to us
-  if(request.ruri.user !== this.configuration.user && request.ruri.user !== this.contact.uri.user) {
+  if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
     console.log(JsSIP.C.LOG_UA +'Request-URI does not point to us');
     request.reply_sl(404);
     return;
@@ -595,7 +595,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, value, checked_value, contact, contact_uri,
+  var parameter, value, checked_value, contact, contact_uri, hostport_params,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -684,19 +684,16 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // jssip_id instance parameter. Static random tag of length 5
   settings.jssip_id = JsSIP.Utils.createRandomToken(5);
 
-  settings.from_uri = settings.uri.toAor();
-
-  settings.user = settings.uri.user;
-
-  settings.domain = settings.uri.host;
-
-  settings.uri = settings.uri.toString();
+  // String containing settings.uri without scheme and user.
+  hostport_params = settings.uri.clone();
+  hostport_params.user = null;
+  settings.hostport_params = hostport_params.toString().replace(/^sip:/i, '');
 
   /* Check whether authorization_user is explicitly defined.
-   * Take 'settings.user' value if not.
+   * Take 'settings.uri.user' value if not.
    */
   if (!settings.authorization_user) {
-    settings.authorization_user = settings.user;
+    settings.authorization_user = settings.uri.user;
   }
 
   // User no_answer_timeout
@@ -721,7 +718,11 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Fill the value of the configuration_skeleton
   console.log(JsSIP.C.LOG_UA + 'configuration parameters after validation:');
   for(parameter in settings) {
-    console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+    if (parameter !== 'uri') {
+      console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+    } else {
+      console.log('· ' + parameter + ': ' + settings[parameter]);
+    }
     JsSIP.UA.configuration_skeleton[parameter].value = settings[parameter];
   }
 
@@ -750,6 +751,7 @@ JsSIP.UA.configuration_skeleton = (function() {
       "register_min_expires",
       "ws_server_max_reconnection",
       "ws_server_reconnection_timeout",
+      "hostport_params",
 
       // Mandatory user configurable parameters
       "uri",
@@ -771,10 +773,7 @@ JsSIP.UA.configuration_skeleton = (function() {
       "use_preloaded_route",
 
       // Post-configuration generated parameters
-      "domain",
-      "from_uri",
       "via_core_value",
-      "user",
       "via_host"
     ];
 

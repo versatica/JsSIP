@@ -22,9 +22,9 @@ JsSIP.Registrator = function(ua, transport) {
   this.call_id = JsSIP.Utils.createRandomToken(22);
   this.cseq = 80;
 
-  this.registrar = 'sip:'+ ua.configuration.domain;
+  this.registrar = 'sip:'+ ua.configuration.hostport_params;
   // this.to_uri
-  this.from_uri = ua.configuration.from_uri;
+  this.to_uri = ua.configuration.uri;
 
   this.registrationTimer = null;
 
@@ -58,7 +58,7 @@ JsSIP.Registrator.prototype = {
     extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
 
     this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
-        'to_uri': this.from_uri,
+        'to_uri': this.to_uri,
         'call_id': this.call_id,
         'cseq': (this.cseq += 1)
       }, extraHeaders);
@@ -190,7 +190,7 @@ JsSIP.Registrator.prototype = {
       extraHeaders.push('Expires: 0');
 
       this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
-          'to_uri': this.from_uri,
+          'to_uri': this.to_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
         }, extraHeaders);
@@ -198,7 +198,7 @@ JsSIP.Registrator.prototype = {
       extraHeaders.push('Contact: '+ this.contact + ';expires=0');
 
       this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
-          'to_uri': this.from_uri,
+          'to_uri': this.to_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
         }, extraHeaders);

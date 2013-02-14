@@ -17,13 +17,7 @@
  */
 JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   var
-    to_display_name,
-    to_uri,
-    to_tag,
     to,
-    from_display_name,
-    from_uri,
-    from_tag,
     from,
     call_id,
     cseq;
@@ -43,48 +37,44 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
 
   // Fill the Common SIP Request Headers
 
-  //ROUTE
+  // Route
   if (params.route_set) {
     this.setHeader('route', params.route_set);
   } else if (ua.configuration.use_preloaded_route){
     this.setHeader('route', ua.transport.server.sip_uri);
   }
 
-  // VIA
-  // Empty Via header. Will be filled by the client transaction
+  // Via
+  // Empty Via header. Will be filled by the client transaction.
   this.setHeader('via', '');
 
-  //MAX-FORWARDS
+  // Max-Forwards
   this.setHeader('max-forwards', JsSIP.C.MAX_FORWARDS);
 
-  //TO
-  to_display_name = params.to_display_name ? '"' + params.to_display_name + '" ' : '';
-  to_uri = params.to_uri || ruri;
-  to_tag = params.to_tag ? ';tag=' + params.to_tag : '';
-  to = to_display_name ? '<' + to_uri + '>' : to_uri;
-  to += to_tag;
+  // To
+  to = (params.to_display_name || params.to_display_name === 0) ? '"' + params.to_display_name + '" ' : '';
+  to += '<' + (params.to_uri || ruri) + '>';
+  to += params.to_tag ? ';tag=' + params.to_tag : '';
   this.setHeader('to', to);
 
-  //FROM
-  from_display_name = params.from_display_name || ua.configuration.display_name || '';
-  from_uri = params.from_uri || ua.configuration.from_uri;
-  from_tag = params.from_tag || JsSIP.Utils.newTag();
-  from = from_display_name ? '"' + from_display_name + '" ' : '';
-  from += from_display_name ? '<' + from_uri + '>' : from_uri;
-  from += ';tag=' + from_tag;
+  // From
+  if (params.from_display_name || params.from_display_name === 0) {
+    from = '"' + params.from_display_name + '" ';
+  } else if (ua.configuration.display_name || ua.configuration.display_name === 0) {
+    from = '"' + ua.configuration.display_name + '" ';
+  } else {
+    from = '';
+  }  
+  from += '<' + (params.from_uri || ua.configuration.uri) + '>;tag=';
+  from += params.from_tag || JsSIP.Utils.newTag();
   this.setHeader('from', from);
 
-  //CALL-ID
-  if(params.call_id) {
-    call_id = params.call_id;
-  } else {
-    call_id = ua.configuration.jssip_id + JsSIP.Utils.createRandomToken(15);
-  }
+  // Call-ID
+  call_id = params.call_id || (ua.configuration.jssip_id + JsSIP.Utils.createRandomToken(15));
   this.setHeader('call-id', call_id);
 
-  //CSEQ
-  cseq = params.cseq || Math.floor(Math.random() * 10000);
-  cseq = cseq + ' ' + method;
+  // CSeq
+  cseq = (params.cseq || Math.floor(Math.random() * 10000)) + ' ' + method;
   this.setHeader('cseq', cseq);
 };
 
@@ -121,7 +111,7 @@ JsSIP.OutgoingRequest.prototype = {
       msg += 'Content-Length: ' + length + '\r\n\r\n';
       msg += this.body;
     } else {
-      msg += 'Content-Length: ' + 0 + '\r\n\r\n';
+      msg += 'Content-Length: 0\r\n\r\n';
     }
 
     return msg;

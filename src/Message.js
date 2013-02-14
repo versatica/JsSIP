@@ -46,7 +46,7 @@ JsSIP.Message.prototype.send = function(target, body, options) {
 
   // Check target validity
   try {
-    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
+    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.hostport_params);
   } catch(e) {
     target = JsSIP.URI.parse(JsSIP.C.INVALID_TARGET_URI);
     invalidTarget = true;
@@ -54,7 +54,7 @@ JsSIP.Message.prototype.send = function(target, body, options) {
 
   // Message parameter initialization
   this.direction = 'outgoing';
-  this.local_identity = this.ua.configuration.from_uri;
+  this.local_identity = this.ua.configuration.uri;
   this.remote_identity = target;
 
   this.closed = false;
@@ -169,8 +169,8 @@ JsSIP.Message.prototype.init_incoming = function(request) {
 
   this.direction = 'incoming';
   this.request = request;
-  this.local_identity = request.s('to').uri.toAor();
-  this.remote_identity = request.s('from').uri.toAor();
+  this.local_identity = request.to.uri;
+  this.remote_identity = request.from.uri;
 
   if (contentType && (contentType.match(/^text\/plain(\s*;\s*.+)*$/i) || contentType.match(/^text\/html(\s*;\s*.+)*$/i))) {
     this.ua.emit('newMessage', this.ua, {

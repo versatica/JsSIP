@@ -70,7 +70,7 @@ JsSIP.Session.prototype.init_incoming = function(request) {
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
-  this.receiveInitialRequest(this.ua, request);
+  this.receiveInitialRequest(request);
 };
 
 JsSIP.Session.prototype.connect = function(target, views, options) {
@@ -112,7 +112,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
 
   // Check target validity
   try {
-    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.domain);
+    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.hostport_params);
   } catch(e) {
     target = JsSIP.URI.parse(JsSIP.C.INVALID_TARGET_URI);
     invalidTarget = true;
@@ -140,7 +140,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
     requestParams.from_display_name = 'Anonymous';
     requestParams.from_uri = 'sip:anonymous@anonymous.invalid';
 
-    extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.from_uri);
+    extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.uri.toString());
     extraHeaders.push('Privacy: id');
   }
 
@@ -363,7 +363,7 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
 /**
  * @private
  */
-JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
+JsSIP.Session.prototype.receiveInitialRequest = function(request) {
   var body, contentType, expires,
     session = this;
 
@@ -390,7 +390,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(ua, request) {
 
     this.userNoAnswerTimer = window.setTimeout(
       function() { session.userNoAnswerTimeout(request); },
-      ua.configuration.no_answer_timeout
+      this.ua.configuration.no_answer_timeout
     );
 
     /**
@@ -787,11 +787,11 @@ JsSIP.Session.prototype.newSession = function(originator, request, target) {
   session.direction = (originator === 'local') ? 'outgoing' : 'incoming';
 
   if (originator === 'remote') {
-    session.local_identity = session.ua.configuration.from_uri;
-    session.remote_identity = request.s('from').uri.toAor();
+    session.local_identity = request.to.uri;
+    session.remote_identity = request.from.uri;
   } else if (originator === 'local'){
-    session.local_identity = session.ua.configuration.from_uri;
-    session.remote_identity = target.toAor();
+    session.local_identity = session.ua.configuration.uri;
+    session.remote_identity = target;
   }
 
   session.ua.emit(event_name, session.ua, {
