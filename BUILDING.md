@@ -1,6 +1,7 @@
 ## What you need to build JsSIP
 
-You just need to have [Node.js](http://nodejs.org/), [Git](http://git-scm.com/) and [PhantomJS](http://phantomjs.org/) installed.
+You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com/). Optionally you also need [PhantomJS](http://phantomjs.org/) if you want to run test units.
+
 
 ### Node.js
 
@@ -14,6 +15,8 @@ You just need to have [Node.js](http://nodejs.org/), [Git](http://git-scm.com/) 
 
 ### PhantomJS
 
+(optional, just for running test units)
+
 * [Install PhantomJS](http://phantomjs.org/download.html)
 * In modern Debian/Ubuntu systems PhantomJS can be installed via `apt-get install phantomjs`
 
@@ -22,22 +25,34 @@ You just need to have [Node.js](http://nodejs.org/), [Git](http://git-scm.com/) 
 
 Clone a copy of the main JsSIP git repository by running:
 ```
-git clone https://github.com/versatica/JsSIP.git
+$ git clone https://github.com/versatica/JsSIP.git
 ```
 
 Enter the directory and install the Node.js dependencies:
 ```
-cd JsSIP && npm install
+$ cd JsSIP && npm install
 ```
 
 Make sure you have `grunt` installed by testing:
 ```
-grunt -version
+$ grunt -version
 ```
 
-Finally, to run the test units and get a complete version of JsSIP, type the following:
+Finally, run the test units and get a complete version of JsSIP:
 ```
-grunt
+$ grunt
 ```
 
-The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal and minified. Both linted (with [JSHint](http://www.jshint.com/)).
+The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal and minified. Both linted with [JSHint](http://www.jshint.com/).
+
+
+## Running test units
+
+JsSIP includes test units based on [QUnit](http://qunitjs.com/). Run them as follows:
+```
+$ grunt test
+
+Running "qunit:noWebRTC" (qunit) task
+Testing testNoWebRTC.html.........OK
+>> 206 assertions passed (213ms)
+```
