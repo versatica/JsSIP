@@ -1,19 +1,12 @@
-MAIN AUTHOR
-===========
+AUTHORS
+========
 
 - José Luis Millán <jmillan@aliax.net> (Github @jmillan)
-
-
-
-CONTRIBUTORS
-============
+  Main author. Core Designer and Developer.
 
 - Iñaki Baz Castillo <ibc@aliax.net> (Github @ibc)
-
-  Lots of help with the SIP stack design.
-  Providing of OverSIP as the best SIP WebSocket Server for JsSIP.
+  Core Designer and Developer.
 
 - Saúl Ibarra Corretgé <saghul@gmail.com> (Github @saghul)
-
-  Helps with API design, self-appointed release manager, and a pain in the ass most of the time.
+  Core Designer.
 
