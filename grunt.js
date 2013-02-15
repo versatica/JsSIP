@@ -86,8 +86,7 @@ module.exports = function(grunt) {
       globals: {}
     },
     qunit: {
-      noWebRTC: ['test/testNoWebRTC.html'],
-      WebRTC:   ['test/testWebRTC.html']
+      noWebRTC: ['test/run-TestNoWebRTC.html']
     },
     uglify: {}
   });
