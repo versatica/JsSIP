@@ -439,7 +439,7 @@ generic_param       = param: token  value: ( EQUAL gen_value )? {
                         else {
                           value = value[1];
                         }
-                        data.params[param.toLowerCase()] = value && value.toLowerCase();}
+                        data.params[param.toLowerCase()] = value;}
 
 gen_value           = token / host / quoted_string
 

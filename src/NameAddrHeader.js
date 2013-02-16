@@ -36,7 +36,7 @@ JsSIP.NameAddrHeader = function(uri, display_name, parameters) {
 JsSIP.NameAddrHeader.prototype = {
   setParam: function(key, value) {
     if (key) {
-      this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString().toLowerCase();
+      this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString();
     }
   },
 

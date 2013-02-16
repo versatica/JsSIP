@@ -50,7 +50,7 @@ test('Parse multiple Contact', function() {
   strictEqual(c1.display_name, 'Iñaki @ł€');
   strictEqual(c1.hasParam('+sip.instance'), true);
   strictEqual(c1.hasParam('nooo'), false);
-  strictEqual(c1.getParam('+SIP.instance'), '"abcd"');
+  strictEqual(c1.getParam('+SIP.instance'), '"abCD"');
   strictEqual(c1.getParam('nooo'), undefined);
   ok(c1.uri instanceof(JsSIP.URI));
   strictEqual(c1.uri.scheme, 'sip');
@@ -60,7 +60,7 @@ test('Parse multiple Contact', function() {
   strictEqual(c1.uri.getParam('transport'), 'ws');
   strictEqual(c1.uri.getParam('foo'), undefined);
   strictEqual(c1.uri.getHeader('X-Header'), undefined);
-  strictEqual(c1.toString(), '"Iñaki @ł€" <sip:+1234@aliax.net;transport=ws>;+sip.instance="abcd"');
+  strictEqual(c1.toString(), '"Iñaki @ł€" <sip:+1234@aliax.net;transport=ws>;+sip.instance="abCD"');
 
   // Alter data.
   c1.display_name = '€€€';
@@ -68,11 +68,11 @@ test('Parse multiple Contact', function() {
   c1.uri.user = '+999';
   strictEqual(c1.uri.user, '+999');
   c1.setParam('+sip.instance', '"zxCV"');
-  strictEqual(c1.getParam('+SIP.instance'), '"zxcv"');
+  strictEqual(c1.getParam('+SIP.instance'), '"zxCV"');
   c1.setParam('New-Param', null);
   strictEqual(c1.hasParam('NEW-param'), true);
   c1.uri.setParam('New-Param', null);
-  strictEqual(c1.toString(), '"€€€" <sip:+999@aliax.net;transport=ws;new-param>;+sip.instance="zxcv";new-param');
+  strictEqual(c1.toString(), '"€€€" <sip:+999@aliax.net;transport=ws;new-param>;+sip.instance="zxCV";new-param');
 
   // Parsed data.
   ok(c2 instanceof(JsSIP.NameAddrHeader));
@@ -104,7 +104,7 @@ test('Parse multiple Contact', function() {
   // Alter data.
   c3.uri.setParam('newUriParam', 'zxCV');
   c3.setParam('newHeaderParam', 'zxCV');
-  strictEqual(c3.toString(), '<sip:domain.com:5;newuriparam=zxcv>;newheaderparam=zxcv');
+  strictEqual(c3.toString(), '<sip:domain.com:5;newuriparam=zxcv>;newheaderparam=zxCV');
 });
 
 
@@ -118,7 +118,7 @@ test('Parse Via', function() {
   strictEqual(via.host_type, 'IPv6');
   strictEqual(via.port, 6060);
   strictEqual(via.branch, '1234');
-  deepEqual(via.params, {param1: 'foo', param2: undefined, param3: 'bar'});
+  deepEqual(via.params, {param1: 'Foo', param2: undefined, param3: 'Bar'});
 });
 
 

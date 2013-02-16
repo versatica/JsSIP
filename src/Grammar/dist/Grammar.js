@@ -8365,7 +8365,7 @@ JsSIP.Grammar = (function(){
                                 else {
                                   value = value[1];
                                 }
-                                data.params[param.toLowerCase()] = value && value.toLowerCase();})(pos0, result0[0], result0[1]);
+                                data.params[param.toLowerCase()] = value;})(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
