@@ -35,12 +35,11 @@ JsSIP.Registrator = function(ua, transport) {
   this.ua.registrator = this;
 
   // Contact header
+  this.contact = this.ua.contact.toString();
+
   if(reg_id) {
-    this.contact = this.ua.contact.toString();
     this.contact += ';reg-id='+ reg_id;
     this.contact += ';+sip.instance="<urn:uuid:'+ this.ua.configuration.instance_id+'>"';
-  } else {
-    this.contact = this.ua.contact.toString();
   }
 };
 
