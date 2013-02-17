@@ -148,8 +148,11 @@ JsSIP.URI.prototype = {
     }
 
     for (parameter in this.parameters) {
-      uri += ';'+ parameter;
-      uri += (this.parameters[parameter] === null) ? '' : '=' + this.parameters[parameter];
+      uri += ';' + parameter;
+
+      if (this.parameters[parameter] !== null) {
+        uri += '='+ this.parameters[parameter];
+      }
     }
 
     for(header in this.headers) {

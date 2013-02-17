@@ -81,7 +81,10 @@ JsSIP.NameAddrHeader.prototype = {
 
     for (parameter in this.parameters) {
       body += ';' + parameter;
-      body += (this.parameters[parameter] === null) ? '' : '=' + this.parameters[parameter];
+
+      if (this.parameters[parameter] !== null) {
+        body += '='+ this.parameters[parameter];
+      }
     }
 
     return body;
