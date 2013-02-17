@@ -64,7 +64,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
     from = '"' + ua.configuration.display_name + '" ';
   } else {
     from = '';
-  }  
+  }
   from += '<' + (params.from_uri || ua.configuration.uri) + '>;tag=';
   from += params.from_tag || JsSIP.Utils.newTag();
   this.setHeader('from', from);
@@ -445,7 +445,7 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
  */
 JsSIP.IncomingResponse = function() {
   this.headers = {};
-  this.response_code = null;
+  this.status_code = null;
   this.reason_phrase = null;
 };
 JsSIP.IncomingResponse.prototype = new JsSIP.IncomingMessage();
