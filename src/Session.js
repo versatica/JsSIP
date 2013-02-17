@@ -43,13 +43,6 @@ JsSIP.Session = function(ua) {
   this.data = {};
 
   this.initEvents(events);
-
-  // Self contact value. _gruu_ or not.
-  if (ua.contact.pub_gruu) {
-    this.contact = ua.contact.pub_gruu;
-  } else {
-    this.contact = ua.contact.uri;
-  }
 };
 JsSIP.Session.prototype = new JsSIP.EventEmitter();
 
@@ -62,10 +55,11 @@ JsSIP.Session.prototype = new JsSIP.EventEmitter();
 */
 JsSIP.Session.prototype.init_incoming = function(request) {
   // Session parameter initialization
-  this.from_tag = request.from_tag;
   this.status = JsSIP.C.SESSION_INVITE_RECEIVED;
+  this.from_tag = request.from_tag;
   this.id = request.call_id + this.from_tag;
   this.request = request;
+  this.contact = '<'+ this.ua.contact +'>';
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
@@ -133,18 +127,18 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   requestParams = {from_tag: this.from_tag};
 
   if (options.anonymous) {
-    if (this.ua.contact.temp_gruu) {
-      this.contact = this.ua.contact.temp_gruu;
-    }
+    this.contact = '<'+ this.ua.contact.toString(true) +';ob>';
 
     requestParams.from_display_name = 'Anonymous';
     requestParams.from_uri = 'sip:anonymous@anonymous.invalid';
 
     extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.uri.toString());
     extraHeaders.push('Privacy: id');
+  } else {
+    this.contact = '<'+ this.ua.contact +';ob>';
   }
 
-  extraHeaders.push('Contact: <'+ this.contact + ';ob>');
+  extraHeaders.push('Contact: '+ this.contact);
   extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
   extraHeaders.push('Content-Type: application/sdp');
 
@@ -424,7 +418,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(request) {
           return;
         }
 
-        extraHeaders.push('Contact: <' + session.contact + '>');
+        extraHeaders.push('Contact: '+ session.contact);
         request.reply(status_code, reason_phrase, extraHeaders,
           sdp,
           // onSuccess
@@ -478,7 +472,7 @@ JsSIP.Session.prototype.receiveInitialRequest = function(request) {
     if (this.status !== JsSIP.C.SESSION_TERMINATED) {
       this.progress('local');
 
-      request.reply(180, null, ['Contact: <' + this.contact + '>']);
+      request.reply(180, null, ['Contact: '+ this.contact]);
     }
   } else {
     request.reply(415);
@@ -655,7 +649,7 @@ JsSIP.Session.prototype.invite2xxRetransmission = function(retransmissions, requ
   if((retransmissions * JsSIP.Timers.T1) <= JsSIP.Timers.T2) {
     retransmissions += 1;
 
-    request.reply(200, null, ['Contact: <' + this.contact + '>'], body);
+    request.reply(200, null, ['Contact: '+ this.contact], body);
 
     this.invite2xxTimer = window.setTimeout(
       function() {

@@ -32,7 +32,7 @@ JsSIP.UA = function(configuration) {
 
   this.sessions = {};
   this.transport = null;
-  this.contact = {};
+  this.contact = null;
   this.status = JsSIP.C.UA_STATUS_INIT;
   this.error = null;
   this.transactions = {
@@ -597,7 +597,7 @@ JsSIP.UA.prototype.recoverTransport = function(ua) {
  */
 JsSIP.UA.prototype.loadConfig = function(configuration) {
   // Settings and default values
-  var parameter, value, checked_value, contact, contact_uri, hostport_params,
+  var parameter, value, checked_value, hostport_params,
     settings = {
       /* Host address
       * Value to be set in Via sent_by and host part of Contact FQDN
@@ -711,16 +711,21 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
 
-  contact_uri = new JsSIP.URI('sip', JsSIP.Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'});
+  this.contact = {
+    pub_gruu: null,
+    temp_gruu: null,
+    uri: new JsSIP.URI('sip', JsSIP.Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
+    toString: function(anonymous){
+      var contact;
 
-  contact = {
-    uri: {
-      value: contact_uri,
-      writable: false,
-      configurable: false
+      if (anonymous) {
+        contact = this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
+      } else {
+        contact = this.pub_gruu || this.uri.toString();
+      }
+      return contact;
     }
   };
-  Object.defineProperties(this.contact, contact);
 
   // Fill the value of the configuration_skeleton
   console.log(JsSIP.C.LOG_UA + 'configuration parameters after validation:');
