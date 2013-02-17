@@ -36,7 +36,7 @@ JsSIP.Registrator = function(ua, transport) {
 
   // Contact header
   if(reg_id) {
-    this.contact = '<' + this.ua.contact.uri + '>';
+    this.contact = this.ua.contact.toString();
     this.contact += ';reg-id='+ reg_id;
     this.contact += ';+sip.instance="<urn:uuid:'+ this.ua.configuration.instance_id+'>"';
   } else {

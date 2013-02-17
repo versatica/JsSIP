@@ -715,14 +715,26 @@ JsSIP.UA.prototype.loadConfig = function(configuration) {
     pub_gruu: null,
     temp_gruu: null,
     uri: new JsSIP.URI('sip', JsSIP.Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
-    toString: function(anonymous){
-      var contact;
+    toString: function(options){
+      options = options || {};
+
+      var
+        anonymous = options.anonymous || null,
+        outbound = options.outbound || null,
+        contact = '<';
 
       if (anonymous) {
-        contact = this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
+        contact += this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
       } else {
-        contact = this.pub_gruu || this.uri.toString();
+        contact += this.pub_gruu || this.uri.toString();
       }
+
+      if (outbound) {
+        contact += ';ob';
+      }
+
+      contact += '>';
+
       return contact;
     }
   };

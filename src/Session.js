@@ -59,7 +59,7 @@ JsSIP.Session.prototype.init_incoming = function(request) {
   this.from_tag = request.from_tag;
   this.id = request.call_id + this.from_tag;
   this.request = request;
-  this.contact = '<'+ this.ua.contact +'>';
+  this.contact = this.ua.contact.toString();
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
@@ -126,16 +126,17 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
 
   requestParams = {from_tag: this.from_tag};
 
-  if (options.anonymous) {
-    this.contact = '<'+ this.ua.contact.toString(true) +';ob>';
+  this.contact = this.ua.contact.toString({
+    anonymous: this.anonymous,
+    outbound: true
+  });
 
+  if (this.anonymous) {
     requestParams.from_display_name = 'Anonymous';
     requestParams.from_uri = 'sip:anonymous@anonymous.invalid';
 
     extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.uri.toString());
     extraHeaders.push('Privacy: id');
-  } else {
-    this.contact = '<'+ this.ua.contact +';ob>';
   }
 
   extraHeaders.push('Contact: '+ this.contact);
