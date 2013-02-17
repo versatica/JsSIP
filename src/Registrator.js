@@ -40,7 +40,7 @@ JsSIP.Registrator = function(ua, transport) {
     this.contact += ';reg-id='+ reg_id;
     this.contact += ';+sip.instance="<urn:uuid:'+ this.ua.configuration.instance_id+'>"';
   } else {
-    this.contact = '<' + this.ua.contact.uri + '>';
+    this.contact = this.ua.contact.toString();
   }
 };
 
