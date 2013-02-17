@@ -358,7 +358,9 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
   // Check that Ruri points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
     console.log(JsSIP.C.LOG_UA +'Request-URI does not point to us');
-    request.reply_sl(404);
+    if (request.method !== JsSIP.C.ACK) {
+      request.reply_sl(404);
+    }
     return;
   }
 
