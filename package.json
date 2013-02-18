@@ -20,8 +20,9 @@
     "webrtc",
     "library"
   ],
-   "devDependencies": {
-     "grunt": "0.3.17"
-   },
+  "devDependencies": {
+    "grunt": "0.3.17",
+    "pegjs": "0.7.0"
+  },
   "license": "MIT"
 }

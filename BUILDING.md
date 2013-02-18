@@ -56,3 +56,11 @@ Running "qunit:noWebRTC" (qunit) task
 Testing testNoWebRTC.html.........OK
 >> 206 assertions passed (213ms)
 ```
+
+## Changes in JsSIP grammar
+
+If you modify `src/Grammar/src/Grammar.pegjs` then you need to recompile JsSIP grammar files. For that run the following task:
+```
+$ grunt grammar
+```
+And then build JsSIP again by running `grunt`.
