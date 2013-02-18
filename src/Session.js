@@ -47,6 +47,23 @@ JsSIP.Session = function(ua) {
 JsSIP.Session.prototype = new JsSIP.EventEmitter();
 
 /*
+ * RTCPeerconnection handlers
+ * @private
+ */
+JsSIP.Session.prototype.getLocalStreams = function() {
+  return this.mediaSession &&
+    this.mediaSession.peerConnection &&
+    this.mediaSession.peerConnection.getLocalStreams() || [];
+};
+
+JsSIP.Session.prototype.getRemoteStreams = function() {
+  return this.mediaSession &&
+    this.mediaSession.peerConnection &&
+    this.mediaSession.peerConnection.getRemoteStreams() || [];
+};
+
+
+/*
  * Session Management
  */
 
@@ -67,37 +84,31 @@ JsSIP.Session.prototype.init_incoming = function(request) {
   this.receiveInitialRequest(request);
 };
 
-JsSIP.Session.prototype.connect = function(target, views, options) {
-  var event, eventHandlers, request, selfView, remoteView, mediaTypes, extraHeaders, requestParams,
-    invalidTarget = false;
+JsSIP.Session.prototype.connect = function(target, options) {
+  options = options || {};
 
-  if (target === undefined || views === undefined) {
+  var event, requestParams,
+    invalidTarget = false,
+    userMediaConstraints = options.userMediaConstraints || {audio: true, video: true},
+    streamConstraints = options.streamConstraints || {},
+    RTCConstraints = options.RTCConstraints || {},
+    offerConstraints = {
+      'mandatory': {
+        'OfferToReceiveAudio':true,
+        'OfferToReceiveVideo':true
+      }
+    },
+    eventHandlers = options.eventHandlers || {},
+    extraHeaders = options.extraHeaders || [];
+
+  if (target === undefined) {
     throw new TypeError('Not enough arguments');
-  }
-
-  // Check views
-  if (!(views instanceof Object)) {
-    throw new TypeError('Invalid argument "views"');
-  }
-
-  if (!views.selfView || !(views.selfView instanceof HTMLVideoElement)) {
-    throw new TypeError('Missing or invalid "views.selfView" argument');
-  } else if (views.remoteView && !(views.remoteView instanceof HTMLVideoElement)) {
-    throw new TypeError('Invalid "views.remoteView" argument');
   }
 
   // Check Session Status
   if (this.status !== JsSIP.C.SESSION_NULL) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
-
-  // Get call options
-  options = options || {};
-  selfView = views.selfView || null;
-  remoteView = views.remoteView || null;
-  mediaTypes = options.mediaTypes || {audio: true, video: true};
-  extraHeaders = options.extraHeaders || [];
-  eventHandlers = options.eventHandlers || {};
 
   // Set event handlers
   for (event in eventHandlers) {
@@ -115,7 +126,7 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   // Session parameter initialization
   this.from_tag = JsSIP.Utils.newTag();
   this.status = JsSIP.C.SESSION_NULL;
-  this.mediaSession = new JsSIP.MediaSession(this, selfView, remoteView);
+  this.mediaSession = new JsSIP.MediaSession(this, RTCConstraints);
 
   // Set anonymous property
   this.anonymous = options.anonymous;
@@ -143,23 +154,26 @@ JsSIP.Session.prototype.connect = function(target, views, options) {
   extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
   extraHeaders.push('Content-Type: application/sdp');
 
-  request = new JsSIP.OutgoingRequest(JsSIP.C.INVITE, target, this.ua, requestParams, extraHeaders);
+  this.request = new JsSIP.OutgoingRequest(JsSIP.C.INVITE, target, this.ua, requestParams, extraHeaders);
 
-  this.id = request.headers['Call-ID'] + this.from_tag;
-  this.request = request;
+  this.id = this.request.headers['Call-ID'] + this.from_tag;
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
-  this.newSession('local', request, target);
-  this.connecting('local', request, target);
+  this.newSession('local', this.request, target);
+  this.connecting('local', this.request, target);
 
   if (invalidTarget) {
     this.failed('local', null, JsSIP.C.causes.INVALID_TARGET);
   } else if (!JsSIP.WebRTC.isSupported) {
     this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);
   } else {
-    this.sendInitialRequest(mediaTypes);
+    this.sendInitialRequest({
+      userMediaConstraints: userMediaConstraints,
+      streamConstraints: streamConstraints,
+      offerConstraints: offerConstraints
+    });
   }
 };
 
@@ -359,125 +373,66 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
  * @private
  */
 JsSIP.Session.prototype.receiveInitialRequest = function(request) {
-  var body, contentType, expires,
-    session = this;
+  var expires,
+    self = this,
+    contentType = request.getHeader('Content-Type');
+
+  // Save the inital request
+  this.request = request;
+
+  // Request with sdp Offer
+  if(!request.body || (contentType !== 'application/sdp')) {
+    request.reply(415);
+    return;
+  }
 
   //Get the Expires header value if exists
   if(request.hasHeader('expires')) {
     expires = request.getHeader('expires') * 1000;
-    this.expiresTimer = window.setTimeout(function() { session.expiresTimeout(request); }, expires);
+    this.expiresTimer = window.setTimeout(function() { self.expiresTimeout(request); }, expires);
   }
 
-  // Process the INVITE request
-  body = request.body;
-  contentType = request.getHeader('Content-Type');
+  /* Set the to_tag before
+   * replying a response code that will create a dialog.
+   */
+  request.to_tag = JsSIP.Utils.newTag();
 
-  // Request with sdp Offer
-  if(body && (contentType === 'application/sdp')) {
-    // ** Set the to_tag before replying a response code that will create a dialog
-    request.to_tag = JsSIP.Utils.newTag();
-
-    if(!this.createEarlyDialog(request, 'UAS')) {
-      return;
-    }
-
-    this.status = JsSIP.C.SESSION_WAITING_FOR_ANSWER;
-
-    this.userNoAnswerTimer = window.setTimeout(
-      function() { session.userNoAnswerTimeout(request); },
-      session.ua.configuration.no_answer_timeout
-    );
-
-    /**
-    * Answer the call.
-    * @param {HTMLVideoElement} selfView
-    * @param {HTMLVideoElement} remoteView
-    */
-    this.answer = function(selfView, remoteView, options) {
-      options = options || {};
-
-      var offer, onSuccess, onMediaFailure, onSdpFailure,
-        status_code = options.status_code || 200,
-        reason_phrase = options.reason_phrase,
-        extraHeaders = options.extraHeaders || [];
-
-      if (status_code < 200 || status_code >= 300) {
-        throw new TypeError('Invalid status_code: '+ status_code);
-      }
-
-      // Check Session Status
-      if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
-        throw new JsSIP.Exceptions.InvalidStateError(this.status);
-      }
-
-      offer = request.body;
-
-      onSuccess = function() {
-        var sdp = session.mediaSession.peerConnection.localDescription.sdp;
-
-        if(!session.createConfirmedDialog(request, 'UAS')) {
-          return;
-        }
-
-        extraHeaders.push('Contact: '+ session.contact);
-        request.reply(status_code, reason_phrase, extraHeaders,
-          sdp,
-          // onSuccess
-          function(){
-            session.status = JsSIP.C.SESSION_WAITING_FOR_ACK;
-
-            session.invite2xxTimer = window.setTimeout(
-              function() {session.invite2xxRetransmission(1, request,sdp);},JsSIP.Timers.T1
-            );
-
-            window.clearTimeout(session.userNoAnswerTimer);
-
-            session.ackTimer = window.setTimeout(
-              function() { session.ackTimeout(); },
-              JsSIP.Timers.TIMER_H
-            );
-
-            session.started('local');
-          },
-          // onFailure
-          function() {
-            session.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
-          }
-        );
-      };
-
-      onMediaFailure = function(e) {
-        console.warn(JsSIP.C.LOG_INVITE_SESSION +'unable to get user media');
-        console.warn(e);
-        request.reply(480);
-        session.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
-      };
-
-      onSdpFailure = function(e) {
-        // Bad SDP Offer. peerConnection.setRemoteDescription throws an exception.
-        console.warn(JsSIP.C.LOG_INVITE_SESSION +'invalid SDP');
-        console.warn(e);
-        request.reply(488);
-        session.failed('remote', request, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
-      };
-
-      //Initialize Media Session
-      session.mediaSession = new JsSIP.MediaSession(session, selfView, remoteView);
-      session.mediaSession.startCallee(onSuccess, onMediaFailure, onSdpFailure, offer);
-    };
-
-    // Fire 'call' event callback
-    this.newSession('remote', request);
-
-    // Reply with 180 if the session is not closed. It may be closed in the newSession event.
-    if (this.status !== JsSIP.C.SESSION_TERMINATED) {
-      this.progress('local');
-
-      request.reply(180, null, ['Contact: '+ this.contact]);
-    }
-  } else {
-    request.reply(415);
+  if(!this.createEarlyDialog(request, 'UAS')) {
+    return;
   }
+
+  this.status = JsSIP.C.SESSION_WAITING_FOR_ANSWER;
+
+  this.userNoAnswerTimer = window.setTimeout(
+    function() { self.userNoAnswerTimeout(request); },
+    self.ua.configuration.no_answer_timeout
+  );
+
+  //Initialize Media Session
+  this.mediaSession = new JsSIP.MediaSession(this);
+  this.mediaSession.onMessage(
+    'offer',
+    request.body,
+    /*
+     * onSuccess
+     * SDP Offer is valid. Fire UA newSession
+     */
+    function() {
+      self.progress('local');
+      request.reply(180, null, ['Contact: ' + self.contact]);
+      self.newSession('remote', request);
+    },
+    /*
+     * onFailure
+     * Bad media description
+     */
+    function(e) {
+      console.warn(JsSIP.C.LOG_INVITE_SESSION +'invalid SDP');
+      console.warn(e);
+      request.reply(488);
+      self.failed('remote', request, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
+    }
+  );
 };
 
 
@@ -573,8 +528,8 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
           'answer',
           response.body,
           /*
-           * OnSuccess.
-           * SDP Answer fits with Offer. MediaSession will start.
+           * onSuccess
+           * SDP Answer fits with Offer. Media will start
            */
           function() {
             if (session.createConfirmedDialog(response, 'UAC')) {
@@ -584,8 +539,8 @@ JsSIP.Session.prototype.receiveResponse = function(response) {
             }
           },
           /*
-           * OnFailure.
-           * SDP Answer does not fit with Offer. Accept the call and Terminate.
+           * onFailure
+           * SDP Answer does not fit the Offer. Accept the call and Terminate.
            */
           function(e) {
             console.warn(e);
@@ -895,6 +850,120 @@ JsSIP.Session.prototype.terminate = function(options) {
 };
 
 /**
+* Answer the call.
+* @param {Object} [options]
+*/
+JsSIP.Session.prototype.answer = function(options) {
+  options = options || {};
+
+  var constraints,
+    self = this,
+    status_code = options.status_code || 200,
+    reason_phrase = options.reason_phrase,
+    extraHeaders = options.extraHeaders || [],
+    userMediaConstraints = options.userMediaConstraints || {'audio':true, 'video':true},
+    streamConstraints = options.streamConstraints || {},
+    answerConstraints = {
+      'mandatory': {
+        'OfferToReceiveAudio':true,
+        'OfferToReceiveVideo':true
+      }
+    },
+    request = this.request;
+
+  // Check Session Direction and Status
+  if (this.direction !== 'incoming') {
+    throw new TypeError('Invalid method "answer" for an outgoing call');
+  } else if (this.status !== JsSIP.C.SESSION_WAITING_FOR_ANSWER) {
+    throw new JsSIP.Exceptions.InvalidStateError(this.status);
+  }
+
+  if (status_code < 200 || status_code >= 300) {
+    throw new TypeError('Invalid status_code: '+ status_code);
+  }
+
+  if(!this.createConfirmedDialog(request, 'UAS')) {
+    return;
+  }
+
+  constraints = {
+    userMediaConstraints: userMediaConstraints,
+    streamConstraints: streamConstraints,
+    answerConstraints: answerConstraints
+  };
+
+  // Create response and send
+  this.mediaSession.addStream(
+    /*
+     * onSuccess
+     * Stream successfully added
+     */
+    function() {
+      self.mediaSession.createAnswer(
+        /*
+        * onSuccess
+        * Stream successfully attached to RTCPeerconnection
+        */
+        function(body) {
+          var sdp = body;
+
+          extraHeaders.push('Contact: ' + self.contact);
+
+          request.reply(status_code, reason_phrase, extraHeaders,
+            sdp,
+            function(){
+              self.status = JsSIP.C.SESSION_WAITING_FOR_ACK;
+
+              self.invite2xxTimer = window.setTimeout(
+                function() {self.invite2xxRetransmission(1, request,sdp);},JsSIP.Timers.T1
+              );
+
+              window.clearTimeout(self.userNoAnswerTimer);
+
+              self.ackTimer = window.setTimeout(
+                function() { self.ackTimeout(); },
+                JsSIP.Timers.TIMER_H
+              );
+
+              self.started('local');
+            },
+            function() {
+              self.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
+            }
+          );
+        },
+        /*
+         * onFailure
+         * Unable to set localDescription
+         */
+        function(e) {
+          console.warn(JsSIP.C.LOG_INVITE_SESSION +'unable to set local description');
+          if (self.status === JsSIP.C.SESSION_TERMINATED) {
+            return;
+          }
+
+          console.warn(e);
+          self.failed('local', null, e.name);
+        },
+        constraints
+      );
+    },
+    /*
+     * onMediaFailure
+     * Unable to get user media
+     */
+    function(e) {
+      console.warn(JsSIP.C.LOG_INVITE_SESSION +'unable to get user media');
+      console.warn(e);
+      request.reply(480);
+      self.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
+    },
+    constraints
+  );
+};
+
+
+/**
  * Reject the incoming call
  * Only valid for incoming Messages
  *
@@ -1047,42 +1116,62 @@ JsSIP.Session.prototype.sendDTMF = function(tones, options) {
 /**
  * @private
  */
-JsSIP.Session.prototype.sendInitialRequest = function(mediaTypes) {
+JsSIP.Session.prototype.sendInitialRequest = function(constraints) {
   var
     self = this,
     request_sender = new JsSIP.RequestSender(self, this.ua);
 
-  function onMediaSuccess() {
-    if (self.isCanceled || self.status === JsSIP.C.SESSION_TERMINATED) {
-      self.mediaSession.close();
-      return;
-    }
+  this.mediaSession.addStream(
+    /*
+     * onSuccess
+     * Stream successfully added
+     */
+    function() {
+      self.mediaSession.createOffer(
+        /*
+         * onSuccess
+         * Offer successfully created
+         */
+        function(offer) {
+          if (self.isCanceled || self.status === JsSIP.C.SESSION_TERMINATED) {
+            return;
+          }
 
-    // Set the body to the request and send it.
-    self.request.body = self.mediaSession.peerConnection.localDescription.sdp;
+          self.request.body = offer;
+          self.status = JsSIP.C.SESSION_INVITE_SENT;
+          request_sender.send();
+        },
+        /*
+         * onFailure
+         * Unable to set localDescription
+         */
+        function(e) {
+          console.warn(JsSIP.C.LOG_INVITE_SESSION +'unable to set local description');
+          if (self.status === JsSIP.C.SESSION_TERMINATED) {
+            return;
+          }
 
-    // Hack to quit m=video section from sdp defined in http://code.google.com/p/webrtc/issues/detail?id=935
-    // To be deleted when the fix arrives to chrome stable version
-    if (!mediaTypes.video) {
-      if (self.request.body.indexOf('m=video') !== -1){
-        self.request.body = self.request.body.substring(0, self.request.body.indexOf('m=video'));
+          console.warn(e);
+          self.failed('local', null, e.name);
+        },
+        constraints
+      );
+    },
+    /*
+     * onFailure
+     * Unable to get user media
+     */
+    function(e) {
+      if (self.status === JsSIP.C.SESSION_TERMINATED) {
+        return;
       }
-    }
-    // End of Hack
 
-    self.status = JsSIP.C.SESSION_INVITE_SENT;
-    request_sender.send();
-  }
-
-  function onMediaFailure(e) {
-    if (self.status !== JsSIP.C.SESSION_TERMINATED) {
       console.warn(JsSIP.C.LOG_INVITE_SESSION +'unable to get user media');
       console.warn(e);
       self.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
-    }
-  }
-
-  self.mediaSession.startCaller(mediaTypes, onMediaSuccess, onMediaFailure);
+    },
+    constraints
+  );
 };
 
 
