@@ -9271,7 +9271,7 @@ JsSIP.Grammar = (function(){
         if (result0 !== null) {
           result1 = parse_LAQUOT();
           if (result1 !== null) {
-            result2 = parse_SIP_URI_noparams();
+            result2 = parse_SIP_URI();
             if (result2 !== null) {
               result3 = parse_RAQUOT();
               if (result3 !== null) {
@@ -12163,16 +12163,8 @@ JsSIP.Grammar = (function(){
         var offset = Math.max(pos, rightmostFailuresPos);
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = computeErrorPosition();
-        
-        new this.SyntaxError(
-          cleanupExpected(rightmostFailuresExpected),
-          found,
-          offset,
-          errorPosition.line,
-          errorPosition.column
-        );
-
-        return -1;
+      
+        return -1;  
       }
       
       return data;

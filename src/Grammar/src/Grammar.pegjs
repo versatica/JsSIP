@@ -556,7 +556,7 @@ Min_Expires  = min_expires: delta_seconds {data = min_expires; }
 
 // Name_Addr
 
-Name_Addr_Header =  ( display_name )* LAQUOT addr_spec RAQUOT ( SEMI generic_param )* {
+Name_Addr_Header =  ( display_name )* LAQUOT SIP_URI RAQUOT ( SEMI generic_param )* {
                       try {
                         data = new JsSIP.NameAddrHeader(data.uri, data.display_name, data.params);
                       } catch(e) {

@@ -1,5 +1,5 @@
 test('Parse URI', function() {
-  var data = 'SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=123;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2';
+  var data = 'SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2';
   var uri = JsSIP.URI.parse(data);
 
   // Parsed data.
@@ -11,19 +11,19 @@ test('Parse URI', function() {
   strictEqual(uri.hasParam('transport'), true);
   strictEqual(uri.hasParam('nooo'), false);
   strictEqual(uri.getParam('transport'), 'tcp');
-  strictEqual(uri.getParam('foo'), '123');
+  strictEqual(uri.getParam('foo'), 'abc');
   strictEqual(uri.getParam('baz'), null);
   strictEqual(uri.getParam('nooo'), undefined);
   deepEqual(uri.getHeader('x-header-1'), ['AaA1', 'AAA2']);
   deepEqual(uri.getHeader('X-HEADER-2'), ['BbB']);
   strictEqual(uri.getHeader('nooo'), undefined);
-  strictEqual(uri.toString(), 'sip:aliCE@versatica.com:6060;transport=tcp;foo=123;baz?X-Header-1=AaA1&X-Header-1=AAA2&X-Header-2=BbB');
+  strictEqual(uri.toString(), 'sip:aliCE@versatica.com:6060;transport=tcp;foo=abc;baz?X-Header-1=AaA1&X-Header-1=AAA2&X-Header-2=BbB');
   strictEqual(uri.toAor(), 'sip:aliCE@versatica.com');
 
   // Alter data.
   uri.user = 'Iñaki:PASSWD';
   strictEqual(uri.user, 'Iñaki:PASSWD');
-  strictEqual(uri.deleteParam('foo'), '123');
+  strictEqual(uri.deleteParam('foo'), 'abc');
   deepEqual(uri.deleteHeader('x-header-1'), ['AaA1', 'AAA2']);
   strictEqual(uri.toString(), 'sip:I%C3%B1aki:PASSWD@versatica.com:6060;transport=tcp;baz?X-Header-2=BbB');
   strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
@@ -31,6 +31,48 @@ test('Parse URI', function() {
   uri.clearHeaders();
   uri.port = null;
   strictEqual(uri.toString(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
+  strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
+});
+
+
+test('Parse NameAddrHeader', function() {
+  var data = '"Iñaki ðđøþ" <SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+  var name = JsSIP.NameAddrHeader.parse(data);
+  var uri;
+
+  // Parsed data.
+  ok(name instanceof(JsSIP.NameAddrHeader));
+  strictEqual(name.display_name, 'Iñaki ðđøþ');
+  strictEqual(name.hasParam('qwe'), true);
+  strictEqual(name.hasParam('asd'), true);
+  strictEqual(name.hasParam('nooo'), false);
+  strictEqual(name.getParam('qwe'), 'QWE');
+  strictEqual(name.getParam('asd'), null);
+
+  uri = name.uri;
+  ok(uri instanceof(JsSIP.URI));
+  strictEqual(uri.scheme, 'sip');
+  strictEqual(uri.user, 'aliCE');
+  strictEqual(uri.host, 'versatica.com');
+  strictEqual(uri.port, 6060);
+  strictEqual(uri.hasParam('transport'), true);
+  strictEqual(uri.hasParam('nooo'), false);
+  strictEqual(uri.getParam('transport'), 'tcp');
+  strictEqual(uri.getParam('foo'), 'abc');
+  strictEqual(uri.getParam('baz'), null);
+  strictEqual(uri.getParam('nooo'), undefined);
+  deepEqual(uri.getHeader('x-header-1'), ['AaA1', 'AAA2']);
+  deepEqual(uri.getHeader('X-HEADER-2'), ['BbB']);
+  strictEqual(uri.getHeader('nooo'), undefined);
+
+  // Alter data.
+  name.display_name = 'Foo Bar';
+  strictEqual(name.display_name, 'Foo Bar');
+  name.display_name = null;
+  strictEqual(name.display_name, null);
+  strictEqual(name.toString(), '<sip:aliCE@versatica.com:6060;transport=tcp;foo=abc;baz?X-Header-1=AaA1&X-Header-1=AAA2&X-Header-2=BbB>;qwe=QWE;asd');
+
+  uri.user = 'Iñaki:PASSWD';
   strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
 });
 
