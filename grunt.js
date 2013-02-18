@@ -100,39 +100,38 @@ module.exports = function(grunt) {
 
   // Task for building JsSIP grammar.
   grunt.registerTask('grammar', function(){
-    // First compile JsSIP grammar with PEGjs.
-    console.log("grammar task: compiling JsSIP PEGjs grammar into Grammar.js ...");
     var done = this.async();  // This is an async task.
     var sys = require('sys');
     var exec = require('child_process').exec;
     var child;
 
+    // First compile JsSIP grammar with PEGjs.
+    console.log("grammar task: compiling JsSIP PEGjs grammar into Grammar.js ...");
     child = exec('pegjs -e JsSIP.Grammar src/Grammar/src/Grammar.pegjs src/Grammar/dist/Grammar.js', function(error, stdout, stderr) {
-      if (error == null) {
-        // Then modify the generated Grammar.js file with custom changes.
-        console.log("OK");
-        console.log("grammar task: applying custom changes to Grammar.js ...");
-        var fs = require('fs');
-        var grammar = fs.readFileSync('src/Grammar/dist/Grammar.js').toString();
-        var modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
-        fs.writeFileSync('src/Grammar/dist/Grammar.js', modified_grammar);
-        console.log("OK");
-
-        // Then minify Grammar.js.
-        console.log("grammar task: minifying Grammar.js ...");
-        child = exec('cd src/Grammar/ && node minify.js', function(error, stdout, stderr) {
-          if (error == null) {
-            console.log("OK");
-            done();  // Tell grunt that async task has succeeded.
-          } else {
-            sys.print('ERROR: ' + stderr);
-            done(false);  // Tell grunt that async task has failed.
-          }
-        });
-      } else {
+      if (error) {
         sys.print('ERROR: ' + stderr);
         done(false);  // Tell grunt that async task has failed.
       }
+      console.log("OK");
+
+      // Then modify the generated Grammar.js file with custom changes.
+      console.log("grammar task: applying custom changes to Grammar.js ...");
+      var fs = require('fs');
+      var grammar = fs.readFileSync('src/Grammar/dist/Grammar.js').toString();
+      var modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
+      fs.writeFileSync('src/Grammar/dist/Grammar.js', modified_grammar);
+      console.log("OK");
+
+      // Then minify Grammar.js.
+      console.log("grammar task: minifying Grammar.js ...");
+      child = exec('cd src/Grammar/ && node minify.js', function(error, stdout, stderr) {
+        if (error) {
+          sys.print('ERROR: ' + stderr);
+          done(false);  // Tell grunt that async task has failed.
+        }
+        console.log("OK");
+        done();  // Tell grunt that async task has succeeded.
+      });
     });
   });
 
