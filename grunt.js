@@ -88,7 +88,10 @@ module.exports = function(grunt) {
     qunit: {
       noWebRTC: ['test/run-TestNoWebRTC.html']
     },
-    uglify: {}
+    uglify: {},
+    scripts: {
+      test: 'grunt travis --verbose'
+    }
   });
 
   // Default task.
@@ -134,5 +137,9 @@ module.exports = function(grunt) {
       });
     });
   });
+
+  // Travis CI task (it does everything).
+  // Doc: http://manuel.manuelles.nl/blog/2012/06/22/integrate-travis-ci-into-grunt/
+  grunt.registerTask('travis', ['grammar', 'default', 'test']);
 
 };
