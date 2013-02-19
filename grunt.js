@@ -88,10 +88,7 @@ module.exports = function(grunt) {
     qunit: {
       noWebRTC: ['test/run-TestNoWebRTC.html']
     },
-    uglify: {},
-    scripts: {
-      test: 'grunt travis --verbose'
-    }
+    uglify: {}
   });
 
   // Default task.

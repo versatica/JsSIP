@@ -25,5 +25,8 @@
     "pegjs": "0.7.0",
     "node-minify": "~0.7.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "grunt travis --verbose"
+  }
 }
