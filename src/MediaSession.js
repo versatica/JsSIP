@@ -110,8 +110,6 @@ JsSIP.MediaSession.prototype = {
 
     this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({'iceServers': servers}, RTCConstraints);
 
-    this.peerConnection.mediaSession = self;
-
     this.peerConnection.onopen = function() {
       console.log(JsSIP.C.LOG_MEDIA_SESSION +'media session opened');
     };
@@ -132,7 +130,7 @@ JsSIP.MediaSession.prototype = {
 
     this.peerConnection.ongatheringchange = function(e) {
       if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
-        this.mediaSession.onIceCompleted();
+        self.onIceCompleted();
       }
     };
 
