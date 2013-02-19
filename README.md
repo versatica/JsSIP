@@ -1,5 +1,7 @@
 <a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner.png"/></a>
 
+[![Build Status](https://travis-ci.org/versatica/JsSIP.png?branch=master)](https://travis-ci.org/versatica/JsSIP)
+
 ## Overview
 
 * SIP over [WebSocket](http://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
