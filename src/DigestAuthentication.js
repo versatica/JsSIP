@@ -57,23 +57,23 @@ JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
   }
 
   // HA1 = MD5(A1) = MD5(username:realm:password)
-  ha1 = JsSIP.Utils.MD5(this.username + ":" + this.realm + ":" + password);
+  ha1 = JsSIP.Utils.calculateMD5(this.username + ":" + this.realm + ":" + password);
 
   if (this.qop === 'auth' || this.qop === null) {
     // HA2 = MD5(A2) = MD5(method:digestURI)
-    ha2 = JsSIP.Utils.MD5(this.method + ":" + this.uri);
+    ha2 = JsSIP.Utils.calculateMD5(this.method + ":" + this.uri);
 
   } else if (this.qop === 'auth-int') {
     // HA2 = MD5(A2) = MD5(method:digestURI:MD5(entityBody))
-    ha2 = JsSIP.Utils.MD5(this.method + ":" + this.uri + ":" + JsSIP.Utils.MD5(this.body ? this.body : ""));
+    ha2 = JsSIP.Utils.calculateMD5(this.method + ":" + this.uri + ":" + JsSIP.Utils.calculateMD5(this.body ? this.body : ""));
   }
 
   if(this.qop === 'auth' || this.qop === 'auth-int') {
     // response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2)
-    this.response = JsSIP.Utils.MD5(ha1 + ":" + this.nonce + ":" + this.decimalToHex(this.nc) + ":" + this.cnonce + ":" + this.qop + ":" + ha2);
+    this.response = JsSIP.Utils.calculateMD5(ha1 + ":" + this.nonce + ":" + this.decimalToHex(this.nc) + ":" + this.cnonce + ":" + this.qop + ":" + ha2);
   } else {
     // response = MD5(HA1:nonce:HA2)
-    this.response = JsSIP.Utils.MD5(ha1 + ":" + this.nonce + ":" + ha2);
+    this.response = JsSIP.Utils.calculateMD5(ha1 + ":" + this.nonce + ":" + ha2);
   }
 
   return this.toString();

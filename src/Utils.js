@@ -185,7 +185,7 @@ JsSIP.Utils= {
   },
 
   // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info
-  MD5: function(string) {
+  calculateMD5: function(string) {
     function RotateLeft(lValue, iShiftBits) {
       return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
     }
