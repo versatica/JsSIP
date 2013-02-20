@@ -131,9 +131,7 @@ JsSIP.MediaSession.prototype = {
       if (event.candidate) {
         console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE candidate received: '+ event.candidate.candidate);
       } else {
-        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'no more ICE candidates');
-        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'PeerConnection state: '+ this.readyState);
-        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE state: '+ this.iceState);
+        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'no more ICE candidates | PeerConnection state: '+ this.readyState + ' | ICE state: '+ this.iceState);
         if (!sent) { // Execute onSuccess just once.
           sent = true;
           onSuccess();
@@ -158,8 +156,7 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onstatechange = function() {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'PeerConnection state changed to '+ this.readyState);
-      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE state: '+ this.iceState);
+      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'PeerConnection state changed to '+ this.readyState + ' | ICE state: '+ this.iceState);
     };
   },
 

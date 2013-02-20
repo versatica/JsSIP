@@ -80,8 +80,7 @@ JsSIP.Transport.prototype = {
     try {
       this.ws = new WebSocket(this.server.ws_uri, 'sip');
     } catch(e) {
-      console.warn(JsSIP.C.LOG_TRANSPORT +'error connecting to WebSocket ' + this.server.ws_uri);
-      console.warn(e);
+      console.warn(JsSIP.C.LOG_TRANSPORT +'error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
     }
 
     this.ws.binaryType = 'arraybuffer';
@@ -131,7 +130,7 @@ JsSIP.Transport.prototype = {
     this.connected = false;
     this.lastTransportError.code = e.code;
     this.lastTransportError.reason = e.reason;
-    console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket disconnected (code: ' + e.code + (e.reason? ', reason: ' + e.reason : '') +')');
+    console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
 
     if(e.wasClean === false) {
       console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket abrupt disconnection');
@@ -237,8 +236,7 @@ JsSIP.Transport.prototype = {
   * @param {event} e
   */
   onError: function(e) {
-    console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket connection error');
-    console.warn(e);
+    console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket connection error: ' + e);
   },
 
   /**

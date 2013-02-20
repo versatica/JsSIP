@@ -277,12 +277,11 @@ JsSIP.UA.prototype.onTransportClosed = function(transport) {
 JsSIP.UA.prototype.onTransportError = function(transport) {
   var server;
 
-  console.log(JsSIP.C.LOG_UA +'transport ' + transport.server.ws_uri + ' failed');
+  console.log(JsSIP.C.LOG_UA +'transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.C.WS_SERVER_ERROR);
 
   // Close sessions.
   //Mark this transport as 'down' and try the next one
   transport.server.status = JsSIP.C.WS_SERVER_ERROR;
-  console.log(JsSIP.C.LOG_UA +'connection state set to '+ JsSIP.C.WS_SERVER_ERROR);
 
   this.emit('disconnected', this, {
     transport: transport,
@@ -357,7 +356,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
 
   // Check that Ruri points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
-    console.log(JsSIP.C.LOG_UA +'Request-URI does not point to us');
+    console.warn(JsSIP.C.LOG_UA +'Request-URI does not point to us');
     if (request.method !== JsSIP.C.ACK) {
       request.reply_sl(404);
     }
@@ -423,7 +422,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
         if(session) {
           session.receiveRequest(request);
         } else {
-          console.log(JsSIP.C.LOG_UA +'received CANCEL request for a non existent session');
+          console.warn(JsSIP.C.LOG_UA +'received CANCEL request for a non existent session');
         }
         break;
       case JsSIP.C.ACK:
@@ -448,7 +447,7 @@ JsSIP.UA.prototype.receiveRequest = function(request) {
       if(session) {
         session.receiveRequest(request);
       } else {
-        console.log(JsSIP.C.LOG_UA +'received NOTIFY request for a non existent session');
+        console.warn(JsSIP.C.LOG_UA +'received NOTIFY request for a non existent session');
         request.reply(481, 'Subscription does not exist');
       }
     }
