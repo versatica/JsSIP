@@ -106,37 +106,40 @@ module.exports = function(grunt) {
     var child;
 
     // First compile JsSIP grammar with PEGjs.
-    console.log("grammar task: compiling JsSIP PEGjs grammar into Grammar.js ...");
-    child = exec('pegjs -e JsSIP.Grammar src/Grammar/src/Grammar.pegjs src/Grammar/dist/Grammar.js', function(error, stdout, stderr) {
+    console.log('"grammar" task: compiling JsSIP PEGjs grammar into Grammar.js ...');
+    child = exec('if [ -x "./node_modules/pegjs/bin/pegjs" ] ; then PEGJS="./node_modules/pegjs/bin/pegjs"; else PEGJS="pegjs" ; fi && $PEGJS -e JsSIP.Grammar src/Grammar/src/Grammar.pegjs src/Grammar/dist/Grammar.js', function(error, stdout, stderr) {
       if (error) {
         sys.print('ERROR: ' + stderr);
         done(false);  // Tell grunt that async task has failed.
       }
-      console.log("OK");
+      console.log('OK');
 
       // Then modify the generated Grammar.js file with custom changes.
-      console.log("grammar task: applying custom changes to Grammar.js ...");
+      console.log('"grammar" task: applying custom changes to Grammar.js ...');
       var fs = require('fs');
       var grammar = fs.readFileSync('src/Grammar/dist/Grammar.js').toString();
       var modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
       fs.writeFileSync('src/Grammar/dist/Grammar.js', modified_grammar);
-      console.log("OK");
+      console.log('OK');
 
       // Then minify Grammar.js.
-      console.log("grammar task: minifying Grammar.js ...");
+      console.log('"grammar" task: minifying Grammar.js ...');
       child = exec('cd src/Grammar/ && node minify.js', function(error, stdout, stderr) {
         if (error) {
           sys.print('ERROR: ' + stderr);
           done(false);  // Tell grunt that async task has failed.
         }
-        console.log("OK");
+        console.log('OK');
         done();  // Tell grunt that async task has succeeded.
       });
     });
   });
 
+  // A task for doing everything.
+  grunt.registerTask('all', ['grammar', 'default', 'test']);
+
   // Travis CI task (it does everything).
   // Doc: http://manuel.manuelles.nl/blog/2012/06/22/integrate-travis-ci-into-grunt/
-  grunt.registerTask('travis', ['grammar', 'default', 'test']);
+  grunt.registerTask('travis', ['all']);
 
 };
