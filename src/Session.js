@@ -305,10 +305,8 @@ JsSIP.Session.prototype.receiveRequest = function(request) {
     * established.
     */
 
-    // Transaction layer already responded 487 to the initial request.
-
-    // Reply 200 to CANCEL
-    request.reply(200);
+    // Reply 487
+    this.request.reply(487);
 
     /*
     * Terminate the whole session in case the user didn't accept nor reject the

@@ -622,7 +622,6 @@ JsSIP.Transactions.checkTransaction = function(ua, request) {
       tr = ua.transactions.ist[request.via_branch];
       if(tr) {
         if(tr.state === JsSIP.C.TRANSACTION_PROCEEDING) {
-          tr.request.reply(487);
           return false;
         } else {
           return true;
