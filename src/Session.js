@@ -965,15 +965,6 @@ JsSIP.Session.prototype.cancel = function(options) {
   this.failed('local', null, JsSIP.C.causes.CANCELED);
 };
 
-
-/**
- * Returns true if the session is active (connecting, in progress or established).
- */
-JsSIP.Session.prototype.isActive = function() {
-  return this.status !== JsSIP.C.SESSIOIN_TERMINATED;
-};
-
-
 /**
  * Send a DTMF
  *
