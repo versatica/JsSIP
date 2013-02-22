@@ -99,7 +99,19 @@ JsSIP.Utils= {
 
       target = JsSIP.Utils.escapeUser(target_user) + '@' + target_domain;
 
-      if (!/^sip:/i.test(target)) {
+      // If target has 'sip' schema do nothing else.
+      if (/^sip:/i.test(target)) {
+      }
+      // If target has 'sips' schema convert it into 'sip'.
+      else if (/^sips:/i.test(target)) {
+        target = target.replace(/^sips/i, JsSIP.C.SIP);
+      }
+      // If target has 'tel' schema convert it into 'sip'.
+      else if (/^tel:/i.test(target)) {
+        target = target.replace(/^tel/i, JsSIP.C.SIP);
+      }
+      // If target has no schema use 'sip'.
+      else {
         target = JsSIP.C.SIP + ':' + target;
       }
 
