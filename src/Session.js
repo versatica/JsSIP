@@ -1078,16 +1078,6 @@ Session.prototype.sendInitialRequest = function(mediaTypes) {
 
     // Set the body to the request and send it.
     self.request.body = self.mediaSession.peerConnection.localDescription.sdp;
-
-    // Hack to quit m=video section from sdp defined in http://code.google.com/p/webrtc/issues/detail?id=935
-    // To be deleted when the fix arrives to chrome stable version
-    if (!mediaTypes.video) {
-      if (self.request.body.indexOf('m=video') !== -1){
-        self.request.body = self.request.body.substring(0, self.request.body.indexOf('m=video'));
-      }
-    }
-    // End of Hack
-
     self.status = C.STATUS_INVITE_SENT;
     request_sender.send();
   }
