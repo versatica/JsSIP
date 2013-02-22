@@ -142,10 +142,6 @@ MediaSession.prototype = {
       }
     };
 
-    this.peerConnection.onopen = function() {
-      console.log(LOG_PREFIX +'media session opened');
-    };
-
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
       console.log(LOG_PREFIX +'stream added');
 
