@@ -570,7 +570,7 @@ UA.prototype.getNextWsServer = function() {
   for (idx in this.configuration.ws_servers) {
     ws_server = this.configuration.ws_servers[idx];
 
-    if (ws_server.status === 2) {
+    if (ws_server.status === JsSIP.Transport.C.STATUS_ERROR) {
       continue;
     } else if (candidates.length === 0) {
       candidates.push(ws_server);
