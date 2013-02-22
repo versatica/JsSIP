@@ -1,4 +1,8 @@
 /**
+ * @fileoverview SIP URI
+ */
+
+/**
  * @augments JsSIP
  * @class Class creating a SIP URI.
  *
@@ -10,7 +14,10 @@
  * @param {Object} [headers]
  *
  */
-JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
+(function(JsSIP) {
+var URI;
+
+URI = function(scheme, user, host, port, parameters, headers) {
   var param, header;
 
   // Checks
@@ -61,7 +68,7 @@ JsSIP.URI = function(scheme, user, host, port, parameters, headers) {
     }
   });
 };
-JsSIP.URI.prototype = {
+URI.prototype = {
   setParam: function(key, value) {
     if(key) {
       this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString().toLowerCase();
@@ -125,7 +132,7 @@ JsSIP.URI.prototype = {
   },
 
   clone: function() {
-    return new JsSIP.URI(
+    return new URI(
       this.scheme,
       this.user,
       this.host,
@@ -191,7 +198,7 @@ JsSIP.URI.prototype = {
   * @public
   * @param {String} uri
   */
-JsSIP.URI.parse = function(uri) {
+URI.parse = function(uri) {
   uri = JsSIP.Grammar.parse(uri,'SIP_URI');
 
   if (uri !== -1) {
@@ -200,3 +207,6 @@ JsSIP.URI.parse = function(uri) {
     return undefined;
   }
 };
+
+JsSIP.URI = URI;
+}(JsSIP));

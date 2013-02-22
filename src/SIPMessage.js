@@ -1,7 +1,14 @@
-
 /**
- * @fileoverview SIP User Agent
+ * @fileoverview SIP Message
  */
+
+(function(JsSIP) {
+var
+  OutgoingRequest,
+  IncomingMessage,
+  IncomingRequest,
+  IncomingResponse,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'SIP MESSAGE' +' | ';
 
 /**
  * @augments JsSIP
@@ -15,7 +22,7 @@
  * @param {Object} [headers] extra headers
  * @param {String} [body]
  */
-JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
+OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   var
     to,
     from,
@@ -49,7 +56,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   this.setHeader('via', '');
 
   // Max-Forwards
-  this.setHeader('max-forwards', JsSIP.C.MAX_FORWARDS);
+  this.setHeader('max-forwards', JsSIP.UA.C.MAX_FORWARDS);
 
   // To
   to = (params.to_display_name || params.to_display_name === 0) ? '"' + params.to_display_name + '" ' : '';
@@ -78,7 +85,7 @@ JsSIP.OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   this.setHeader('cseq', cseq);
 };
 
-JsSIP.OutgoingRequest.prototype = {
+OutgoingRequest.prototype = {
   /**
    * Replace the the given header by the given value.
    * @param {String} name header name
@@ -103,7 +110,7 @@ JsSIP.OutgoingRequest.prototype = {
       msg += this.extraHeaders[idx] +'\r\n';
     }
 
-    msg += 'Supported: ' +  JsSIP.C.SUPPORTED +'\r\n';
+    msg += 'Supported: ' +  JsSIP.UA.C.SUPPORTED +'\r\n';
     msg += 'User-Agent: ' + JsSIP.C.USER_AGENT +'\r\n';
 
     if(this.body) {
@@ -122,7 +129,7 @@ JsSIP.OutgoingRequest.prototype = {
  * @augments JsSIP
  * @class Class for incoming SIP message.
  */
-JsSIP.IncomingMessage = function(){
+IncomingMessage = function(){
   this.data = null;
   this.headers = null;
   this.method =  null;
@@ -137,7 +144,7 @@ JsSIP.IncomingMessage = function(){
   this.body = null;
 };
 
-JsSIP.IncomingMessage.prototype = {
+IncomingMessage.prototype = {
   /**
   * Insert a header of the given name and value into the last position of the
   * header array.
@@ -255,10 +262,10 @@ JsSIP.IncomingMessage.prototype = {
     idx = idx || 0;
 
     if(!this.headers[name]) {
-      console.log(JsSIP.C.LOG_MESSAGE +'header "' + name + '" not present');
+      console.log(LOG_PREFIX +'header "' + name + '" not present');
       return;
     } else if(idx >= this.headers[name].length) {
-      console.log(JsSIP.C.LOG_MESSAGE +'not so many "' + name + '" headers present');
+      console.log(LOG_PREFIX +'not so many "' + name + '" headers present');
       return;
     }
 
@@ -274,7 +281,7 @@ JsSIP.IncomingMessage.prototype = {
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      console.warn(JsSIP.C.LOG_MESSAGE +'error parsing "' + name + '" header field with value "' + value + '"');
+      console.warn(LOG_PREFIX +'error parsing "' + name + '" header field with value "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
@@ -311,16 +318,16 @@ JsSIP.IncomingMessage.prototype = {
 };
 
 /**
- * @augments JsSIP.IncomingMessage
+ * @augments IncomingMessage
  * @class Class for incoming SIP request.
  */
-JsSIP.IncomingRequest = function() {
+IncomingRequest = function() {
   this.headers = {};
   this.ruri = null;
   this.transport = null;
   this.server_transaction = null;
 };
-JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
+IncomingRequest.prototype = new IncomingMessage();
 
 /**
 * Stateful reply.
@@ -331,7 +338,7 @@ JsSIP.IncomingRequest.prototype = new JsSIP.IncomingMessage();
 * @param {Function} [onSuccess] onSuccess callback
 * @param {Function} [onFailure] onFailure callback
 */
-JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
+IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
   var rr, vias, length, idx, response,
     to = this.getHeader('To'),
     r = 0,
@@ -399,7 +406,7 @@ JsSIP.IncomingRequest.prototype.reply = function(code, reason, extraHeaders, bod
 * @param {Number} code status code
 * @param {String} reason reason phrase
 */
-JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
+IncomingRequest.prototype.reply_sl = function(code, reason) {
   var to, response,
     vias = this.countHeader('via');
 
@@ -440,12 +447,17 @@ JsSIP.IncomingRequest.prototype.reply_sl = function(code, reason) {
 
 
 /**
- * @augments JsSIP.IncomingMessage
+ * @augments IncomingMessage
  * @class Class for incoming SIP response.
  */
-JsSIP.IncomingResponse = function() {
+IncomingResponse = function() {
   this.headers = {};
   this.status_code = null;
   this.reason_phrase = null;
 };
-JsSIP.IncomingResponse.prototype = new JsSIP.IncomingMessage();
+IncomingResponse.prototype = new IncomingMessage();
+
+JsSIP.OutgoingRequest = OutgoingRequest;
+JsSIP.IncomingRequest = IncomingRequest;
+JsSIP.IncomingResponse = IncomingResponse;
+}(JsSIP));

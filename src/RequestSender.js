@@ -1,4 +1,3 @@
-
 /**
  * @fileoverview Request Sender
  */
@@ -9,8 +8,10 @@
  * @param {Object} applicant
  * @param {JsSIP.UA} ua
  */
+(function(JsSIP) {
+var RequestSender;
 
-JsSIP.RequestSender = function(applicant, ua) {
+RequestSender = function(applicant, ua) {
   this.ua = ua;
   this.applicant = applicant;
   this.method = applicant.request.method;
@@ -20,7 +21,7 @@ JsSIP.RequestSender = function(applicant, ua) {
   this.staled = false;
 
   // If ua is in closing process or even closed just allow sending Bye and ACK
-  if (ua.status === JsSIP.C.UA_STATUS_USER_CLOSED && (this.method !== JsSIP.C.BYE || this.method !== JsSIP.C.ACK)) {
+  if (ua.status === JsSIP.UA.C.STATUS_USER_CLOSED && (this.method !== JsSIP.C.BYE || this.method !== JsSIP.C.ACK)) {
     this.onTransportError();
   }
 
@@ -30,7 +31,7 @@ JsSIP.RequestSender = function(applicant, ua) {
 /**
 * Create the client transaction and send the message.
 */
-JsSIP.RequestSender.prototype = {
+RequestSender.prototype = {
   send: function() {
     if (this.credentials && !this.challenged) {
       if (this.request.method === JsSIP.C.REGISTER) {
@@ -134,3 +135,6 @@ JsSIP.RequestSender.prototype = {
     }
   }
 };
+
+JsSIP.RequestSender = RequestSender;
+}(JsSIP));

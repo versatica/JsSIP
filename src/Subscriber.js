@@ -114,7 +114,7 @@ JsSIP.Subscriber.prototype = {
       };
 
       this.onRequestTimeout = function() {
-        subscriber.onFailure(null, JsSIP.C.REQUEST_TIMEOUT);
+        subscriber.onFailure(null, JsSIP.C.causes.REQUEST_TIMEOUT);
       };
 
       this.onTransportError = function() {
@@ -405,7 +405,7 @@ JsSIP.Subscription.prototype = {
       };
 
       this.onRequestTimeout = function() {
-        subscription.subscriber.onFailure(null, JsSIP.C.REQUEST_TIMEOUT);
+        subscription.subscriber.onFailure(null, JsSIP.C.causes.REQUEST_TIMEOUT);
       };
 
       this.onTransportError = function() {
@@ -440,7 +440,7 @@ JsSIP.Subscription.prototype = {
       };
 
       this.onRequestTimeout = function() {
-        subscription.subscriber.onFailure(null, JsSIP.C.REQUEST_TIMEOUT);
+        subscription.subscriber.onFailure(null, JsSIP.C.causes.REQUEST_TIMEOUT);
       };
       this.onTransportError = function() {
         subscription.subscriber.onFailure(null, JsSIP.C.causes.CONNECTION_ERROR);

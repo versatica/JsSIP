@@ -1,3 +1,6 @@
+/**
+ * @fileoverview JsSIP NameAddrHeader
+ */
 
 /**
  * @augments JsSIP
@@ -8,7 +11,10 @@
  * @param {Object} [parameters]
  *
  */
-JsSIP.NameAddrHeader = function(uri, display_name, parameters) {
+(function(JsSIP) {
+var NameAddrHeader;
+
+NameAddrHeader = function(uri, display_name, parameters) {
   var param;
 
   // Checks
@@ -33,7 +39,7 @@ JsSIP.NameAddrHeader = function(uri, display_name, parameters) {
     }
   });
 };
-JsSIP.NameAddrHeader.prototype = {
+NameAddrHeader.prototype = {
   setParam: function(key, value) {
     if (key) {
       this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString();
@@ -67,7 +73,7 @@ JsSIP.NameAddrHeader.prototype = {
   },
 
   clone: function() {
-    return new JsSIP.NameAddrHeader(
+    return new NameAddrHeader(
       this.uri.clone(),
       this.display_name,
       window.JSON.parse(window.JSON.stringify(this.parameters)));
@@ -98,7 +104,7 @@ JsSIP.NameAddrHeader.prototype = {
   * @public
   * @param {String} name_addr_header
   */
-JsSIP.NameAddrHeader.parse = function(name_addr_header) {
+NameAddrHeader.parse = function(name_addr_header) {
   name_addr_header = JsSIP.Grammar.parse(name_addr_header,'Name_Addr_Header');
 
   if (name_addr_header !== -1) {
@@ -107,3 +113,6 @@ JsSIP.NameAddrHeader.parse = function(name_addr_header) {
     return undefined;
   }
 };
+
+JsSIP.NameAddrHeader = NameAddrHeader;
+}(JsSIP));

@@ -1,4 +1,3 @@
-
 /**
  * @fileoverview Registrator Agent
  */
@@ -9,7 +8,11 @@
  * @param {JsSIP.UA} ua
  * @param {JsSIP.Transport} transport
  */
-JsSIP.Registrator = function(ua, transport) {
+(function(JsSIP) {
+var Registrator,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'REGISTRATOR' +' | ';
+
+Registrator = function(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
 
   this.ua = ua;
@@ -43,7 +46,7 @@ JsSIP.Registrator = function(ua, transport) {
   }
 };
 
-JsSIP.Registrator.prototype = {
+Registrator.prototype = {
   /**
    * @param {Object} [options]
    */
@@ -87,7 +90,7 @@ JsSIP.Registrator.prototype = {
 
           // Search the Contact pointing to us and update the expires value accordingly.
           if (!contacts) {
-            console.warn(JsSIP.C.LOG_REGISTRATOR +'no Contact header in response to REGISTER, response ignored');
+            console.warn(LOG_PREFIX +'no Contact header in response to REGISTER, response ignored');
             break;
           }
 
@@ -102,7 +105,7 @@ JsSIP.Registrator.prototype = {
           }
 
           if (!contact) {
-            console.warn(JsSIP.C.LOG_REGISTRATOR +'no Contact header pointing to us, response ignored');
+            console.warn(LOG_PREFIX +'no Contact header pointing to us, response ignored');
             break;
           }
 
@@ -138,7 +141,7 @@ JsSIP.Registrator.prototype = {
               self.register();
             }, this.expires * 1000);
           } else { //This response MUST contain a Min-Expires header field
-            console.warn(JsSIP.C.LOG_REGISTRATOR +'423 response received for REGISTER without Min-Expires');
+            console.warn(LOG_PREFIX +'423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
           }
           break;
@@ -172,7 +175,7 @@ JsSIP.Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      console.warn(JsSIP.C.LOG_REGISTRATOR +'already unregistered');
+      console.warn(LOG_PREFIX +'already unregistered');
       return;
     }
 
@@ -298,3 +301,6 @@ JsSIP.Registrator.prototype = {
     this.unregister();
   }
 };
+
+JsSIP.Registrator = Registrator;
+}(JsSIP));

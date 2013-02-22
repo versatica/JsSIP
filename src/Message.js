@@ -1,6 +1,5 @@
-
 /**
- * @fileoverview Message Sender
+ * @fileoverview Message
  */
 
 /**
@@ -8,17 +7,19 @@
  * @class Class creating SIP MESSAGE request.
  * @param {JsSIP.UA} ua
  */
+(function(JsSIP) {
+var Message;
 
-JsSIP.Message = function(ua) {
+Message = function(ua) {
   this.ua = ua;
   this.direction = null;
   this.local_identity = null;
   this.remote_identity = null;
 };
-JsSIP.Message.prototype = new JsSIP.EventEmitter();
+Message.prototype = new JsSIP.EventEmitter();
 
 
-JsSIP.Message.prototype.send = function(target, body, options) {
+Message.prototype.send = function(target, body, options) {
   var request_sender, event, contentType, eventHandlers, extraHeaders,
     events = [
       'sending',
@@ -94,7 +95,7 @@ JsSIP.Message.prototype.send = function(target, body, options) {
 /**
 * @private
 */
-JsSIP.Message.prototype.receiveResponse = function(response) {
+Message.prototype.receiveResponse = function(response) {
   var cause;
 
   if(this.closed) {
@@ -129,7 +130,7 @@ JsSIP.Message.prototype.receiveResponse = function(response) {
 /**
 * @private
 */
-JsSIP.Message.prototype.onRequestTimeout = function() {
+Message.prototype.onRequestTimeout = function() {
   if(this.closed) {
     return;
   }
@@ -142,7 +143,7 @@ JsSIP.Message.prototype.onRequestTimeout = function() {
 /**
 * @private
 */
-JsSIP.Message.prototype.onTransportError = function() {
+Message.prototype.onTransportError = function() {
   if(this.closed) {
     return;
   }
@@ -155,7 +156,7 @@ JsSIP.Message.prototype.onTransportError = function() {
 /**
 * @private
 */
-JsSIP.Message.prototype.close = function() {
+Message.prototype.close = function() {
   this.closed = true;
   delete this.ua.applicants[this];
 };
@@ -163,7 +164,7 @@ JsSIP.Message.prototype.close = function() {
 /**
  * @private
  */
-JsSIP.Message.prototype.init_incoming = function(request) {
+Message.prototype.init_incoming = function(request) {
   var transaction,
     contentType = request.getHeader('content-type');
 
@@ -181,7 +182,7 @@ JsSIP.Message.prototype.init_incoming = function(request) {
 
     transaction = this.ua.transactions.nist[request.via_branch];
 
-    if (transaction && (transaction.state === JsSIP.C.TRANSACTION_TRYING || transaction.state === JsSIP.C.TRANSACTION_PROCEEDING)) {
+    if (transaction && (transaction.state === JsSIP.Transactions.C.STATUS_TRYING || transaction.state === JsSIP.Transactions.C.STATUS_PROCEEDING)) {
       request.reply(200);
     }
   } else {
@@ -193,7 +194,7 @@ JsSIP.Message.prototype.init_incoming = function(request) {
  * Accept the incoming Message
  * Only valid for incoming Messages
  */
-JsSIP.Message.prototype.accept = function(options) {
+Message.prototype.accept = function(options) {
   options = options || {};
 
   var
@@ -220,7 +221,7 @@ JsSIP.Message.prototype.accept = function(options) {
  * @param {Number} status_code
  * @param {String} [reason_phrase]
  */
-JsSIP.Message.prototype.reject = function(options) {
+Message.prototype.reject = function(options) {
   options = options || {};
 
   var
@@ -239,3 +240,6 @@ JsSIP.Message.prototype.reject = function(options) {
 
   this.request.reply(status_code, reason_phrase, extraHeaders, body);
 };
+
+JsSIP.Message = Message;
+}(JsSIP));

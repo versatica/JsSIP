@@ -1,6 +1,3 @@
-
-/*global WebSocket: false*/
-
 /**
  * @fileoverview Transport
  */
@@ -11,8 +8,17 @@
  * @param {JsSIP.UA} ua
  * @param {Object} server ws_server Object
  */
+(function(JsSIP) {
+var Transport,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'TRANSPORT' +' | ',
+  C = {
+    // Transport status codes
+    STATUS_READY:        0,
+    STATUS_DISCONNECTED: 1,
+    STATUS_ERROR:        2
+  };
 
-JsSIP.Transport = function(ua, server) {
+Transport = function(ua, server) {
   this.ua = ua;
   this.ws = null;
   this.server = server;
@@ -28,7 +34,7 @@ JsSIP.Transport = function(ua, server) {
   this.connect();
 };
 
-JsSIP.Transport.prototype = {
+Transport.prototype = {
   /**
    * Send a message.
    * @param {JsSIP.OutgoingRequest|String} msg
@@ -39,12 +45,12 @@ JsSIP.Transport.prototype = {
 
     if(this.ws && this.ws.readyState === WebSocket.OPEN) {
       if (this.ua.configuration.trace_sip === true) {
-        console.log(JsSIP.C.LOG_TRANSPORT +'sending WebSocket message:\n\n' + message + '\n');
+        console.log(LOG_PREFIX +'sending WebSocket message:\n\n' + message + '\n');
       }
       this.ws.send(message);
       return true;
     } else {
-      console.warn(JsSIP.C.LOG_TRANSPORT +'unable to send message, WebSocket is not open');
+      console.warn(LOG_PREFIX +'unable to send message, WebSocket is not open');
       return false;
     }
   },
@@ -55,7 +61,7 @@ JsSIP.Transport.prototype = {
   disconnect: function() {
     if(this.ws) {
       this.closed = true;
-      console.log(JsSIP.C.LOG_TRANSPORT +'closing WebSocket ' + this.server.ws_uri);
+      console.log(LOG_PREFIX +'closing WebSocket ' + this.server.ws_uri);
       this.ws.close();
     }
   },
@@ -67,7 +73,7 @@ JsSIP.Transport.prototype = {
     var transport = this;
 
     if(this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      console.log(JsSIP.C.LOG_TRANSPORT +'WebSocket ' + this.server.ws_uri + ' is already connected');
+      console.log(LOG_PREFIX +'WebSocket ' + this.server.ws_uri + ' is already connected');
       return false;
     }
 
@@ -75,12 +81,12 @@ JsSIP.Transport.prototype = {
       this.ws.close();
     }
 
-    console.log(JsSIP.C.LOG_TRANSPORT +'connecting to WebSocket ' + this.server.ws_uri);
+    console.log(LOG_PREFIX +'connecting to WebSocket ' + this.server.ws_uri);
 
     try {
       this.ws = new WebSocket(this.server.ws_uri, 'sip');
     } catch(e) {
-      console.warn(JsSIP.C.LOG_TRANSPORT +'error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
+      console.warn(LOG_PREFIX +'error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
     }
 
     this.ws.binaryType = 'arraybuffer';
@@ -111,7 +117,7 @@ JsSIP.Transport.prototype = {
   onOpen: function() {
     this.connected = true;
 
-    console.log(JsSIP.C.LOG_TRANSPORT +'WebSocket ' + this.server.ws_uri + ' connected');
+    console.log(LOG_PREFIX +'WebSocket ' + this.server.ws_uri + ' connected');
     // Clear reconnectTimer since we are not disconnected
     window.clearTimeout(this.reconnectTimer);
     // Disable closed
@@ -130,10 +136,10 @@ JsSIP.Transport.prototype = {
     this.connected = false;
     this.lastTransportError.code = e.code;
     this.lastTransportError.reason = e.reason;
-    console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
+    console.warn(LOG_PREFIX +'WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
 
     if(e.wasClean === false) {
-      console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket abrupt disconnection');
+      console.warn(LOG_PREFIX +'WebSocket abrupt disconnection');
     }
     // Transport was connected
     if(connected_before === true) {
@@ -168,7 +174,7 @@ JsSIP.Transport.prototype = {
     // CRLF Keep Alive response from server. Ignore it.
     if(data === '\r\n') {
       if (this.ua.configuration.trace_sip === true) {
-        console.log(JsSIP.C.LOG_TRANSPORT +'received WebSocket message with CRLF Keep Alive response');
+        console.log(LOG_PREFIX +'received WebSocket message with CRLF Keep Alive response');
       }
       return;
     }
@@ -178,25 +184,25 @@ JsSIP.Transport.prototype = {
       try {
         data = String.fromCharCode.apply(null, new Uint8Array(data));
       } catch(evt) {
-        console.warn(JsSIP.C.LOG_TRANSPORT +'received WebSocket binary message failed to be converted into string, message discarded');
+        console.warn(LOG_PREFIX +'received WebSocket binary message failed to be converted into string, message discarded');
         return;
       }
 
       if (this.ua.configuration.trace_sip === true) {
-        console.log(JsSIP.C.LOG_TRANSPORT +'received WebSocket binary message:\n\n' + data + '\n');
+        console.log(LOG_PREFIX +'received WebSocket binary message:\n\n' + data + '\n');
       }
     }
 
     // WebSocket text message.
     else {
       if (this.ua.configuration.trace_sip === true) {
-        console.log(JsSIP.C.LOG_TRANSPORT +'received WebSocket text message:\n\n' + data + '\n');
+        console.log(LOG_PREFIX +'received WebSocket text message:\n\n' + data + '\n');
       }
     }
 
     message = JsSIP.Parser.parseMessage(data);
 
-    if(this.ua.status === JsSIP.C.UA_STATUS_USER_CLOSED && message instanceof JsSIP.IncomingRequest) {
+    if(this.ua.status === JsSIP.UA.C.STATUS_USER_CLOSED && message instanceof JsSIP.IncomingRequest) {
       return;
     }
 
@@ -236,7 +242,7 @@ JsSIP.Transport.prototype = {
   * @param {event} e
   */
   onError: function(e) {
-    console.warn(JsSIP.C.LOG_TRANSPORT +'WebSocket connection error: ' + e);
+    console.warn(LOG_PREFIX +'WebSocket connection error: ' + e);
   },
 
   /**
@@ -249,13 +255,17 @@ JsSIP.Transport.prototype = {
     this.reconnection_attempts += 1;
 
     if(this.reconnection_attempts > this.ua.configuration.ws_server_max_reconnection) {
-      console.warn(JsSIP.C.LOG_TRANSPORT +'maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
+      console.warn(LOG_PREFIX +'maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
       this.ua.onTransportError(this);
     } else {
-      console.log(JsSIP.C.LOG_TRANSPORT +'trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
+      console.log(LOG_PREFIX +'trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
 
       this.reconnectTimer = window.setTimeout(function() {
         transport.connect();}, this.ua.configuration.ws_server_reconnection_timeout * 1000);
     }
   }
 };
+
+Transport.C = C;
+JsSIP.Transport = Transport;
+}(JsSIP));

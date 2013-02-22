@@ -1,17 +1,19 @@
-
 /**
- * @fileoverview DigestAuthentication
+ * @fileoverview SIP Digest Authentication
  */
 
 /**
- * SIP Digest Authentication.
  * @augments JsSIP.
  * @function Digest Authentication
  * @param {JsSIP.UA} ua
  * @param {JsSIP.OutgoingRequest} request
  * @param {JsSIP.IncomingResponse} response
  */
-JsSIP.DigestAuthentication = function (ua, request, response) {
+(function(JsSIP) {
+var DigestAuthentication,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'DIGEST AUTHENTICATION' +' | ';
+
+DigestAuthentication = function (ua, request, response) {
   var authenticate, realm, qop, nonce, opaque,
     username = ua.configuration.authorization_user,
     password = ua.configuration.password;
@@ -42,7 +44,7 @@ JsSIP.DigestAuthentication = function (ua, request, response) {
   this.nc = 0;
 };
 
-JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
+DigestAuthentication.prototype.authenticate = function(password) {
   var ha1, ha2;
 
   password = password || this.password;
@@ -52,7 +54,7 @@ JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
 
   // nc-value = 8LHEX. Max value = 'FFFFFFFF'
   if (this.nc === 4294967296) {
-    console.log(JsSIP.C.LOG_DIGEST_AUTHENTICATION + 'maximum "nc" value has been reached, resetting "nc"');
+    console.log(LOG_PREFIX + 'maximum "nc" value has been reached, resetting "nc"');
     this.nc = 1;
   }
 
@@ -80,7 +82,7 @@ JsSIP.DigestAuthentication.prototype.authenticate = function(password) {
 };
 
 
-JsSIP.DigestAuthentication.prototype.update = function(response) {
+DigestAuthentication.prototype.update = function(response) {
   var authenticate, nonce;
 
   if(response.status_code === 401) {
@@ -102,7 +104,7 @@ JsSIP.DigestAuthentication.prototype.update = function(response) {
 };
 
 
-JsSIP.DigestAuthentication.prototype.toString = function() {
+DigestAuthentication.prototype.toString = function() {
   var authorization = 'Digest ';
 
   authorization += 'username="' + this.username + '",';
@@ -120,7 +122,10 @@ JsSIP.DigestAuthentication.prototype.toString = function() {
 };
 
 
-JsSIP.DigestAuthentication.prototype.decimalToHex = function(decimal) {
+DigestAuthentication.prototype.decimalToHex = function(decimal) {
   var hex = Number(decimal).toString(16);
   return '00000000'.substr(0, 8-hex.length) + hex;
 };
+
+JsSIP.DigestAuthentication = DigestAuthentication;
+}(JsSIP));

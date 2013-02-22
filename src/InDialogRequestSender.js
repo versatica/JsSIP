@@ -8,13 +8,19 @@
  * @class Class creating an In-dialog request sender.
  * @param {Object} applicant
  */
+/**
+ * @fileoverview in-Dialog Request Sender
+ */
 
-JsSIP.InDialogRequestSender = function(applicant) {
+(function(JsSIP) {
+var InDialogRequestSender;
+
+InDialogRequestSender = function(applicant) {
   this.applicant = applicant;
   this.request = applicant.request;
 };
 
-JsSIP.InDialogRequestSender.prototype = {
+InDialogRequestSender.prototype = {
   send: function() {
     var request_sender = new JsSIP.RequestSender(this, this.applicant.session.ua);
     request_sender.send();
@@ -38,3 +44,6 @@ JsSIP.InDialogRequestSender.prototype = {
     this.applicant.receiveResponse(response);
   }
 };
+
+JsSIP.InDialogRequestSender = InDialogRequestSender;
+}(JsSIP));

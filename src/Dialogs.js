@@ -1,6 +1,5 @@
-
 /**
- * @fileoverview SIP dialog
+ * @fileoverview SIP Dialog
  */
 
 /**
@@ -9,25 +8,33 @@
  * @param {JsSIP.Session} session
  * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} msg
  * @param {Enum} type UAC / UAS
- * @param {Enum} state JsSIP.C.DIALOG_EARLY / JsSIP.C.DIALOG_CONFIRMED
+ * @param {Enum} state JsSIP.Dialog.C.STATUS_EARLY / JsSIP.Dialog.C.STATUS_CONFIRMED
  */
+(function(JsSIP) {
+var Dialog,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'DIALOG' +' | ',
+  C = {
+    // Dialog states
+    STATUS_EARLY:       1,
+    STATUS_CONFIRMED:   2
+  };
 
 // RFC 3261 12.1
-JsSIP.Dialog = function(session, msg, type, state) {
+Dialog = function(session, msg, type, state) {
   var contact;
 
   if(msg.countHeader('contact') === 0) {
-    console.warn(JsSIP.C.LOG_DIALOG + 'no Contact header field, silently discarded');
+    console.warn(LOG_PREFIX + 'no Contact header field, silently discarded');
     return false;
   }
 
   if(msg instanceof JsSIP.IncomingResponse) {
-    state = (msg.status_code < 200) ? JsSIP.C.DIALOG_EARLY : JsSIP.C.DIALOG_CONFIRMED;
+    state = (msg.status_code < 200) ? C.STATUS_EARLY : C.STATUS_CONFIRMED;
   } else if (msg instanceof JsSIP.IncomingRequest) {
     // Create confirmed dialog if state is not defined
-    state = state || JsSIP.C.DIALOG_CONFIRMED;
+    state = state || C.STATUS_CONFIRMED;
   } else {
-    console.warn(JsSIP.C.LOG_DIALOG + 'received message is not a SIP request neither a response, silently discarded');
+    console.warn(LOG_PREFIX + 'received message is not a SIP request neither a response, silently discarded');
     return false;
   }
 
@@ -70,18 +77,18 @@ JsSIP.Dialog = function(session, msg, type, state) {
 
   this.session = session;
   session.ua.dialogs[this.id.toString()] = this;
-  console.log(JsSIP.C.LOG_DIALOG +'new ' + type + ' dialog created: ' + this.state);
+  console.log(LOG_PREFIX +'new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 };
 
-JsSIP.Dialog.prototype = {
+Dialog.prototype = {
   /**
    * @param {JsSIP.IncomingMessage} message
    * @param {Enum} UAC/UAS
    */
   update: function(message, type) {
-    this.state = JsSIP.C.DIALOG_CONFIRMED;
+    this.state = C.STATUS_CONFIRMED;
 
-    console.log(JsSIP.C.LOG_DIALOG +'dialog state changed to CONFIRMED');
+    console.log(LOG_PREFIX +'dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -90,7 +97,7 @@ JsSIP.Dialog.prototype = {
   },
 
   terminate: function() {
-    console.log(JsSIP.C.LOG_DIALOG +'dialog ' + this.id.toString() + ' deleted');
+    console.log(LOG_PREFIX +'dialog ' + this.id.toString() + ' deleted');
     delete this.session.ua.dialogs[this.id.toString()];
   },
 
@@ -150,7 +157,7 @@ JsSIP.Dialog.prototype = {
       // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
       case JsSIP.C.INVITE:
         if(request.cseq < this.remote_seqnum) {
-          if(this.state === JsSIP.C.DIALOG_EARLY) {
+          if(this.state === C.STATUS_EARLY) {
             var retryAfter = (Math.random() * 10 | 0) + 1;
             request.reply(500, null, ['Retry-After:'+ retryAfter]);
           } else {
@@ -159,7 +166,7 @@ JsSIP.Dialog.prototype = {
           return false;
         }
         // RFC3261 14.2
-        if(this.state === JsSIP.C.DIALOG_EARLY) {
+        if(this.state === C.STATUS_EARLY) {
           request.reply(491);
           return false;
         }
@@ -191,3 +198,7 @@ JsSIP.Dialog.prototype = {
     this.session.receiveRequest(request);
   }
 };
+
+Dialog.C = C;
+JsSIP.Dialog = Dialog;
+}(JsSIP));

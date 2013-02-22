@@ -1,14 +1,15 @@
-
 /**
- * @fileoverview JsSIP exceptions
+ * @fileoverview Exceptions
  */
 
 /**
  * JsSIP Exceptions.
  * @augments JsSIP
  */
+(function(JsSIP) {
+var Exceptions;
 
-JsSIP.Exceptions= {
+Exceptions= {
   ConfigurationError: (function(){
     var exception = function(parameter, value) {
       this.code = 1;
@@ -42,3 +43,6 @@ JsSIP.Exceptions= {
     return exception;
   }())
 };
+
+JsSIP.Exceptions = Exceptions;
+}(JsSIP));

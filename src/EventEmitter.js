@@ -1,16 +1,19 @@
-
 /**
-* @fileoverview JsSIP EventEmitter
-*/
+ * @fileoverview EventEmitter
+ */
 
 /**
  * @augments JsSIP
  * @class Class creating an event emitter.
  */
+(function(JsSIP) {
+var
+  EventEmitter,
+  Event,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'EVENT EMITTER' +' | ';
 
-JsSIP.EventEmitter = function(){};
-
-JsSIP.EventEmitter.prototype = {
+EventEmitter = function(){};
+EventEmitter.prototype = {
   /**
    * Initialize events dictionary.
    * @param {Array} events
@@ -22,11 +25,11 @@ JsSIP.EventEmitter.prototype = {
     this.onceNotFired = []; // Array containing events with _once_ defined tat didn't fire yet.
     this.maxListeners = 10;
     this.events.newListener = function(event) { // Default newListener callback
-      console.log(JsSIP.C.LOG_EVENT_EMITTER +'new listener added to event '+ event);
+      console.log(LOG_PREFIX +'new listener added to event '+ event);
     };
 
     while (i--) {
-      console.log(JsSIP.C.LOG_EVENT_EMITTER +'adding event '+ events[i]);
+      console.log(LOG_PREFIX +'adding event '+ events[i]);
       this.events[events[i]] = [];
     }
   },
@@ -38,7 +41,7 @@ JsSIP.EventEmitter.prototype = {
   */
   checkEvent: function(event) {
     if (!this.events[event]) {
-      console.error(JsSIP.C.LOG_EVENT_EMITTER +'no event named '+ event);
+      console.error(LOG_PREFIX +'no event named '+ event);
       return false;
     } else {
       return true;
@@ -56,7 +59,7 @@ JsSIP.EventEmitter.prototype = {
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      console.warn(JsSIP.C.LOG_EVENT_EMITTER +'max listeners exceeded for event '+ event);
+      console.warn(LOG_PREFIX +'max listeners exceeded for event '+ event);
     }
 
     this.events[event].push(listener);
@@ -113,7 +116,9 @@ JsSIP.EventEmitter.prototype = {
   },
 
   /**
-  * By default JsSIP.EventEmitter will print a warning if more than 10 listeners are added for a particular event. This function allows that limit to be modified.
+  * By default EventEmitter will print a warning
+  * if more than 10 listeners are added for a particular event.
+  * This function allows that limit to be modified.
   * @param {Number} listeners
   */
   setMaxListeners: function(listeners) {
@@ -144,7 +149,7 @@ JsSIP.EventEmitter.prototype = {
       return;
     }
 
-    console.log(JsSIP.C.LOG_EVENT_EMITTER +'emitting event '+event);
+    console.log(LOG_PREFIX +'emitting event '+event);
 
     listeners = this.events[event];
     length = listeners.length;
@@ -179,8 +184,12 @@ JsSIP.EventEmitter.prototype = {
   }
 };
 
-JsSIP.Event = function(type, sender, data) {
+Event = function(type, sender, data) {
   this.type = type;
   this.sender= sender;
   this.data = data;
 };
+
+JsSIP.EventEmitter = EventEmitter;
+JsSIP.Event = Event;
+}(JsSIP));

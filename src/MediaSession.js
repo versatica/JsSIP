@@ -1,6 +1,5 @@
-
 /**
- * @fileoverview SIP User Agent
+ * @fileoverview MediaSession
  */
 
 /**
@@ -10,7 +9,11 @@
  * @param {HTMLVideoElement} selfView
  * @param {HTMLVideoElement} remoteView
  */
-JsSIP.MediaSession = function(session, selfView, remoteView) {
+(function(JsSIP) {
+var MediaSession,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'MEDIA SESSION' +' | ';
+
+MediaSession = function(session, selfView, remoteView) {
   this.session = session;
   this.selfView = selfView || null;
   this.remoteView = remoteView || null;
@@ -18,7 +21,7 @@ JsSIP.MediaSession = function(session, selfView, remoteView) {
   this.peerConnection = null;
 };
 
-JsSIP.MediaSession.prototype = {
+MediaSession.prototype = {
   /**
    * Establish peerConnection for Caller.
    * <br> - Prompt the user for permission to use the Web cam or other video or audio input.
@@ -129,9 +132,9 @@ JsSIP.MediaSession.prototype = {
 
     this.peerConnection.onicecandidate = function(event) {
       if (event.candidate) {
-        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'ICE candidate received: '+ event.candidate.candidate);
+        console.log(LOG_PREFIX + 'ICE candidate received: '+ event.candidate.candidate);
       } else {
-        console.log(JsSIP.C.LOG_MEDIA_SESSION + 'no more ICE candidates | PeerConnection state: '+ this.readyState + ' | ICE state: '+ this.iceState);
+        console.log(LOG_PREFIX + 'no more ICE candidates | PeerConnection state: '+ this.readyState + ' | ICE state: '+ this.iceConnectionState);
         if (!sent) { // Execute onSuccess just once.
           sent = true;
           onSuccess();
@@ -140,11 +143,11 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onopen = function() {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'media session opened');
+      console.log(LOG_PREFIX +'media session opened');
     };
 
     this.peerConnection.onaddstream = function(mediaStreamEvent) {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'stream added');
+      console.log(LOG_PREFIX +'stream added');
 
       if (session.remoteView && this.getRemoteStreams().length > 0) {
         session.remoteView.src = window.URL.createObjectURL(mediaStreamEvent.stream);
@@ -152,16 +155,16 @@ JsSIP.MediaSession.prototype = {
     };
 
     this.peerConnection.onremovestream = function(stream) {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'stream removed: '+ stream);
+      console.log(LOG_PREFIX +'stream removed: '+ stream);
     };
 
     this.peerConnection.onstatechange = function() {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'PeerConnection state changed to '+ this.readyState + ' | ICE state: '+ this.iceState);
+      console.log(LOG_PREFIX + 'PeerConnection state changed to '+ this.readyState + ' | ICE state: '+ this.iceConnectionState);
     };
   },
 
   close: function() {
-    console.log(JsSIP.C.LOG_MEDIA_SESSION + 'closing PeerConnection');
+    console.log(LOG_PREFIX + 'closing PeerConnection');
     if(this.peerConnection) {
       this.peerConnection.close();
 
@@ -180,7 +183,7 @@ JsSIP.MediaSession.prototype = {
     var self = this;
 
     function getSuccess(stream) {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION + 'got stream: ' + stream);
+      console.log(LOG_PREFIX + 'got stream: ' + stream);
 
       //Save the localMedia in order to revoke access to devices later.
       self.localMedia = stream;
@@ -198,7 +201,7 @@ JsSIP.MediaSession.prototype = {
     }
 
     // Get User Media
-    console.log(JsSIP.C.LOG_MEDIA_SESSION + 'requesting access to local media');
+    console.log(LOG_PREFIX + 'requesting access to local media');
     JsSIP.WebRTC.getUserMedia(mediaTypes, getSuccess, getFailure);
 
   },
@@ -212,10 +215,13 @@ JsSIP.MediaSession.prototype = {
   */
   onMessage: function(type, sdp, onSuccess, onFailure) {
     if (type === 'offer') {
-      console.log(JsSIP.C.LOG_MEDIA_SESSION +'new SDP offer received');
+      console.log(LOG_PREFIX +'new SDP offer received');
     } else if (type === 'answer') {
       this.peerConnection.setRemoteDescription(
         new JsSIP.WebRTC.RTCSessionDescription({type:'answer', sdp:sdp}), onSuccess, onFailure);
     }
   }
 };
+
+JsSIP.MediaSession = MediaSession;
+}(JsSIP));
