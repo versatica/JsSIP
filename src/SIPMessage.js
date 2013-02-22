@@ -220,26 +220,6 @@ IncomingMessage.prototype = {
   },
 
   /**
-   * Get the URI value of the given header at the given value.
-   * @param {String} name header name
-   * @param {Number} [idx=0] header index
-   * @returns {String|undefined} uri attribute of the header. null if header or uri doesn't exist.
-   */
-  getHeaderUri: function(name, idx) {
-    var header = this.headers[JsSIP.Utils.headerize(name)];
-
-    idx = idx || 0;
-
-    if(header) {
-      if(header[idx] && header[idx].parsed && header[idx].parsed.uri) {
-        return header[idx].parsed.uri;
-      }
-    } else {
-      return;
-    }
-  },
-
-  /**
    * Verify the existence of the given header.
    * @param {String} name header name
    * @returns {boolean} true if header with given name exists, false otherwise
