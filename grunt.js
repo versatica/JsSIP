@@ -91,14 +91,8 @@ module.exports = function(grunt) {
     uglify: {}
   });
 
-  // Default task.
-  grunt.registerTask('default', ['concat:dist', 'lint', 'min', 'concat:post', 'concat:post_min']);
 
-  // Test tasks.
-  grunt.registerTask('testNoWebRTC', ['qunit:noWebRTC']);
-  grunt.registerTask('test', ['testNoWebRTC']);
-
-  // Task for building JsSIP grammar.
+  // Task for building JsSIP Grammar.js and Grammar.min.js files.
   grunt.registerTask('grammar', function(){
     var done = this.async();  // This is an async task.
     var sys = require('sys');
@@ -135,11 +129,24 @@ module.exports = function(grunt) {
     });
   });
 
+  // Task for building JsSIP in both uncompressed and minified flavors.
+  grunt.registerTask('build', ['concat:dist', 'lint', 'min', 'concat:post', 'concat:post_min']);
+
+  // Task for building just JsSIP uncompressed (faster during development).
+  grunt.registerTask('devel', ['concat:dist', 'lint', 'concat:post']);
+
+  // Test tasks.
+  grunt.registerTask('testNoWebRTC', ['qunit:noWebRTC']);
+  grunt.registerTask('test', ['testNoWebRTC']);
+
   // A task for doing everything.
-  grunt.registerTask('all', ['grammar', 'default', 'test']);
+  grunt.registerTask('all', ['grammar', 'build', 'test']);
 
   // Travis CI task (it does everything).
   // Doc: http://manuel.manuelles.nl/blog/2012/06/22/integrate-travis-ci-into-grunt/
   grunt.registerTask('travis', ['all']);
+
+  // Default task is an alias for 'build'.
+  grunt.registerTask('default', ['build']);
 
 };
