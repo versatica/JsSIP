@@ -35,6 +35,9 @@ test('JsSIP.Utils.normalizeURI()', function() {
   test_ok('*999', 'sip:*999@jssip.net');
   test_ok('#999/?:1234', 'sip:%23999/?:1234@jssip.net');
   test_ok('tel:+12345678', 'sip:+12345678@jssip.net');
+  test_ok('tel:(+34)-944-43-89', 'sip:+349444389@jssip.net');
+  test_ok('+123.456.78-9', 'sip:+123456789@jssip.net');
+  test_ok('+ALICE-123.456.78-9', 'sip:+ALICE-123.456.78-9@jssip.net');
 
   test_error(null);
   test_error(undefined);

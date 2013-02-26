@@ -63,7 +63,11 @@ Utils= {
   },
 
   /**
-  * Normalize SIP URI (username required)
+  * Normalize SIP URI.
+  * NOTE: It does not allow a SIP URI without username.
+  * Accepts 'sip', 'sips' and 'tel' URIs and convert them into 'sip'.
+  * Detects the domain part (if given) and properly hex-escapes the user portion.
+  * If the user portion has only 'tel' number symbols the user portion is clean of 'tel' visual separators.
   * @private
   * @param {String} target
   * @param {String} [domain]
@@ -103,23 +107,16 @@ Utils= {
           target_domain = target_array[target_array.length-1];
       }
 
-      target = JsSIP.Utils.escapeUser(target_user) + '@' + target_domain;
+      // Remove the URI scheme (if present).
+      target_user = target_user.replace(/^(sips?|tel):/i, '');
 
-      // If target has 'sip' schema do nothing else.
-      if (/^sip:/i.test(target)) {
+      // Remove 'tel' visual separators if the user portion just contains 'tel' number symbols.
+      if (/^[\-\.\(\)]*\+?[0-9\-\.\(\)]+$/.test(target_user)) {
+        target_user = target_user.replace(/[\-\.\(\)]/g, '');
       }
-      // If target has 'sips' schema convert it into 'sip'.
-      else if (/^sips:/i.test(target)) {
-        target = target.replace(/^sips/i, JsSIP.C.SIP);
-      }
-      // If target has 'tel' schema convert it into 'sip'.
-      else if (/^tel:/i.test(target)) {
-        target = target.replace(/^tel/i, JsSIP.C.SIP);
-      }
-      // If target has no schema use 'sip'.
-      else {
-        target = JsSIP.C.SIP + ':' + target;
-      }
+
+      // Build the complete SIP URI.
+      target = JsSIP.C.SIP + ':' + JsSIP.Utils.escapeUser(target_user) + '@' + target_domain;
 
       // Finally parse the resulting URI.
       if (uri = JsSIP.URI.parse(target)) {
