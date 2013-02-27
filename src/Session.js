@@ -51,7 +51,6 @@ Session = function(ua) {
   this.expiresTimer = null;
   this.invite2xxTimer = null;
   this.userNoAnswerTimer = null;
-  this.closeTimer = null;
 
   // Session info
   this.direction = null;
@@ -210,13 +209,6 @@ Session.prototype.close = function() {
     this.terminateEarlyDialogs();
     this.terminateConfirmedDialog();
     this.status = C.STATUS_TERMINATED;
-    this.closeTimer = window.setTimeout(
-      function() {
-        if (session && session.ua.sessions[session.id]) {
-          delete session.ua.sessions[session.id];
-        }
-      }, '5000'
-    );
   }
 };
 
