@@ -189,8 +189,6 @@ Session.prototype.connect = function(target, views, options) {
 */
 Session.prototype.close = function() {
   if(this.status !== C.STATUS_TERMINATED) {
-    var session = this;
-
     console.log(LOG_PREFIX +'closing INVITE session ' + this.id);
 
     // 1st Step. Terminate media.
