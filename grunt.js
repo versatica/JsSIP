@@ -2,6 +2,33 @@
 
 module.exports = function(grunt) {
 
+  var srcFiles = [
+    'src/head.js',
+    'src/EventEmitter.js',
+    'src/Constants.js',
+    'src/Exceptions.js',
+    'src/Timers.js',
+    'src/Transport.js',
+    'src/Parser.js',
+    'src/SIPMessage.js',
+    'src/URI.js',
+    'src/NameAddrHeader.js',
+    'src/Transactions.js',
+    'src/Dialogs.js',
+    'src/RequestSender.js',
+    'src/InDialogRequestSender.js',
+    'src/Registrator.js',
+    'src/Session.js',
+    'src/MediaSession.js',
+    'src/Message.js',
+    'src/UA.js',
+    'src/Utils.js',
+    'src/SanityCheck.js',
+    'src/DigestAuthentication.js',
+    'src/WebRTC.js',
+    'src/tail.js'
+  ];
+
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
@@ -9,37 +36,17 @@ module.exports = function(grunt) {
       banner: '/*! jsSIP v@<%= pkg.version %> jssip.net | jssip.net/license */'
     },
     lint: {
-      dist: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+      dist: 'dist/<%= pkg.name %>-<%= pkg.version %>.js',
+      devel: 'dist/<%= pkg.name %>-devel.js'
     },
     concat: {
       dist: {
-        src: [
-          'src/head.js',
-          'src/EventEmitter.js',
-          'src/Constants.js',
-          'src/Exceptions.js',
-          'src/Timers.js',
-          'src/Transport.js',
-          'src/Parser.js',
-          'src/SIPMessage.js',
-          'src/URI.js',
-          'src/NameAddrHeader.js',
-          'src/Transactions.js',
-          'src/Dialogs.js',
-          'src/RequestSender.js',
-          'src/InDialogRequestSender.js',
-          'src/Registrator.js',
-          'src/Session.js',
-          'src/MediaSession.js',
-          'src/Message.js',
-          'src/UA.js',
-          'src/Utils.js',
-          'src/SanityCheck.js',
-          'src/DigestAuthentication.js',
-          'src/WebRTC.js',
-          'src/tail.js'
-        ],
+        src: srcFiles,
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+      },
+      devel: {
+        src: srcFiles,
+        dest: 'dist/<%= pkg.name %>-devel.js'
       },
       post: {
         src: [
@@ -54,6 +61,13 @@ module.exports = function(grunt) {
           'src/Grammar/dist/Grammar.min.js'
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js'
+      },
+      post_devel: {
+        src: [
+          'dist/<%= pkg.name %>-devel.js',
+          'src/Grammar/dist/Grammar.js'
+        ],
+        dest: 'dist/<%= pkg.name %>-devel.js'
       }
     },
     min: {
@@ -129,22 +143,21 @@ module.exports = function(grunt) {
     });
   });
 
-  // Task for building JsSIP in both uncompressed and minified flavors.
-  grunt.registerTask('build', ['concat:dist', 'lint', 'min', 'concat:post', 'concat:post_min']);
+  // Task for building jssip-devel.js (uncompressed), jssip-X.Y.X.js (uncompressed)
+  // and jssip-X.Y.Z.min.js (minified).
+  // Both jssip-devel.js and jssip-X.Y.X.js are the same file with different name.
+  grunt.registerTask('build', ['concat:devel', 'lint:devel', 'concat:post_devel', 'concat:dist', 'lint:dist', 'min:dist', 'concat:post', 'concat:post_min']);
 
-  // Task for building just JsSIP uncompressed (faster during development).
-  grunt.registerTask('devel', ['concat:dist', 'lint', 'concat:post']);
+  // Task for building jssip-devel.js (uncompressed).
+  grunt.registerTask('devel', ['concat:devel', 'lint:devel', 'concat:post_devel']);
 
   // Test tasks.
   grunt.registerTask('testNoWebRTC', ['qunit:noWebRTC']);
   grunt.registerTask('test', ['testNoWebRTC']);
 
-  // A task for doing everything.
-  grunt.registerTask('all', ['grammar', 'build', 'test']);
-
-  // Travis CI task (it does everything).
+  // Travis CI task.
   // Doc: http://manuel.manuelles.nl/blog/2012/06/22/integrate-travis-ci-into-grunt/
-  grunt.registerTask('travis', ['all']);
+  grunt.registerTask('travis', ['grammar', 'devel', 'test']);
 
   // Default task is an alias for 'build'.
   grunt.registerTask('default', ['build']);

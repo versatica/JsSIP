@@ -38,23 +38,28 @@ Make sure you have `grunt` installed by testing:
 $ grunt -version
 ```
 
-Finally, run the test units and get a complete version of JsSIP:
+Finally, run `grunt` command with no arguments to get a complete version of JsSIP:
 ```
 $ grunt
 ```
 
-The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal and minified. Both linted with [JSHint](http://www.jshint.com/).
+The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal (uncompressed)  and minified, both linted with [JSHint](http://www.jshint.com/). There will be also a file named `dist/jssip-devel.js` which is an exact copy of the uncompressed file.
 
 
-## Running test units
+## Faster development
 
-JsSIP includes test units based on [QUnit](http://qunitjs.com/). Run them as follows:
+Run `grunt devel` for just generating the `dist/jssip-devel.js` file.
+
+
+## Test units
+
+JsSIP includes test units based on [QUnit](http://qunitjs.com/). Test units use the `dist/jssip-devel.js` file. Run the tests as follows:
 ```
 $ grunt test
 
 Running "qunit:noWebRTC" (qunit) task
 Testing testNoWebRTC.html.........OK
->> 206 assertions passed (213ms)
+>> 250 assertions passed (177ms)
 ```
 
 ## Changes in JsSIP grammar

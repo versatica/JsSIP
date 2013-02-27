@@ -15,7 +15,7 @@ var JsSIP = (function() {
   "use strict";
   var
     productName = 'JsSIP',
-    productVersion = '0.3.0-devel';
+    productVersion = '0.3.0';
 
   return {
     name: function() {
