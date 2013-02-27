@@ -207,6 +207,8 @@ Session.prototype.close = function() {
     this.terminateEarlyDialogs();
     this.terminateConfirmedDialog();
     this.status = C.STATUS_TERMINATED;
+
+    delete this.ua.sessions[session.id];
   }
 };
 
