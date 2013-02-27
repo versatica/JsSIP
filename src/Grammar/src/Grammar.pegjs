@@ -185,7 +185,7 @@ dec_octet       = "25" [\x30-\x35]          // 250-255
                 / DIGIT                     // 0-9
 
 port            = port: (DIGIT ? DIGIT ? DIGIT ? DIGIT ? DIGIT ?) {
-                    port = parseInt(port.join(""));
+                    port = parseInt(port.join(''));
                     data.port = port;
                     return port; }
 
@@ -235,9 +235,9 @@ other_param       = param: pname value: ( "=" pvalue )? {
                       }
                       data.uri_params[param.toLowerCase()] = value && value.toLowerCase();}
 
-pname             = pname: paramchar + {return pname.join(""); }
+pname             = pname: paramchar + {return pname.join(''); }
 
-pvalue            = pvalue: paramchar + {return pvalue.join(""); }
+pvalue            = pvalue: paramchar + {return pvalue.join(''); }
 
 paramchar         = param_unreserved / unreserved / escaped
 
@@ -346,7 +346,7 @@ extension_method  = token
 Status_Line     = SIP_Version SP Status_Code SP Reason_Phrase
 
 Status_Code     = status_code: extension_code {
-                  data.status_code = parseInt(status_code.join("")); }
+                  data.status_code = parseInt(status_code.join('')); }
 
 extension_code  = DIGIT DIGIT DIGIT
 
@@ -426,7 +426,7 @@ c_p_expires         = "expires"i EQUAL expires: delta_seconds {
 contact_extension   = generic_param
 
 delta_seconds       = delta_seconds: DIGIT+ {
-                        return parseInt(delta_seconds.join("")); }
+                        return parseInt(delta_seconds.join('')); }
 
 qvalue              = "0" ( "." DIGIT? DIGIT? DIGIT? )? {
                         return parseFloat(input.substring(pos, offset)); }
@@ -507,7 +507,7 @@ m_value             = token / quoted_string
 CSeq          = CSeq_value LWS CSeq_method
 
 CSeq_value    = cseq_value: DIGIT + {
-                  data.value=parseInt(cseq_value.join("")); }
+                  data.value=parseInt(cseq_value.join('')); }
 
 CSeq_method   = Method
 
@@ -518,7 +518,7 @@ Expires     = expires: delta_seconds {data = expires; }
 
 
 Event             = event_type: event_type ( SEMI event_param )* {
-                       data.event = event_type.join(''); }
+                       data.event = event_type.join('').toLowerCase(); }
 
 event_type        = event_package ( "." event_template )*
 
@@ -547,7 +547,7 @@ tag_param   = "tag"i EQUAL tag: token {data.tag = tag; }
 //MAX-FORWARDS
 
 Max_Forwards  = forwards: DIGIT+ {
-                  data = parseInt(forwards.join("")); }
+                  data = parseInt(forwards.join('')); }
 
 
 // MIN-EXPIRES
@@ -739,7 +739,7 @@ via_branch        = "branch"i EQUAL via_branch: token {
 
 response_port     = "rport"i (EQUAL response_port: (DIGIT*) )? {
                       if(typeof response_port !== 'undefined')
-                        data.rport = response_port.join(""); }
+                        data.rport = response_port.join(''); }
 
 via_extension     = generic_param
 
@@ -759,10 +759,10 @@ via_host          = ( hostname / IPv4address / IPv6reference ) {
                       data.host = input.substring(pos, offset); }
 
 via_port          = via_sent_by_port: (DIGIT ? DIGIT ? DIGIT ? DIGIT ? DIGIT ?) {
-                      data.port = parseInt(via_sent_by_port.join("")); }
+                      data.port = parseInt(via_sent_by_port.join('')); }
 
 ttl               = ttl: (DIGIT DIGIT ? DIGIT ?) {
-                      return parseInt(ttl.join("")); }
+                      return parseInt(ttl.join('')); }
 
 
 // WWW-AUTHENTICATE

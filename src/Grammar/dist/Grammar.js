@@ -5543,7 +5543,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, port) {
-                            port = parseInt(port.join(""));
+                            port = parseInt(port.join(''));
                             data.port = port;
                             return port; })(pos0, result0);
         }
@@ -6023,7 +6023,7 @@ JsSIP.Grammar = (function(){
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pname) {return pname.join(""); })(pos0, result0);
+          result0 = (function(offset, pname) {return pname.join(''); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -6047,7 +6047,7 @@ JsSIP.Grammar = (function(){
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pvalue) {return pvalue.join(""); })(pos0, result0);
+          result0 = (function(offset, pvalue) {return pvalue.join(''); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -7677,7 +7677,7 @@ JsSIP.Grammar = (function(){
         result0 = parse_extension_code();
         if (result0 !== null) {
           result0 = (function(offset, status_code) {
-                          data.status_code = parseInt(status_code.join("")); })(pos0, result0);
+                          data.status_code = parseInt(status_code.join('')); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -8241,7 +8241,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, delta_seconds) {
-                                return parseInt(delta_seconds.join("")); })(pos0, result0);
+                                return parseInt(delta_seconds.join('')); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -8944,7 +8944,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, cseq_value) {
-                          data.value=parseInt(cseq_value.join("")); })(pos0, result0);
+                          data.value=parseInt(cseq_value.join('')); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9019,7 +9019,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, event_type) {
-                               data.event = event_type.join(''); })(pos0, result0[0]);
+                               data.event = event_type.join('').toLowerCase(); })(pos0, result0[0]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9233,7 +9233,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, forwards) {
-                          data = parseInt(forwards.join("")); })(pos0, result0);
+                          data = parseInt(forwards.join('')); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -11234,7 +11234,7 @@ JsSIP.Grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset) {
                               if(typeof response_port !== 'undefined')
-                                data.rport = response_port.join(""); })(pos0);
+                                data.rport = response_port.join(''); })(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -11469,7 +11469,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, via_sent_by_port) {
-                              data.port = parseInt(via_sent_by_port.join("")); })(pos0, result0);
+                              data.port = parseInt(via_sent_by_port.join('')); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -11506,7 +11506,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, ttl) {
-                              return parseInt(ttl.join("")); })(pos0, result0);
+                              return parseInt(ttl.join('')); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;

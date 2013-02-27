@@ -171,3 +171,12 @@ test('Parse CSeq', function() {
   strictEqual(cseq.value, 123456);
   strictEqual(cseq.method, 'CHICKEN');
 });
+
+
+test('Parse Event', function() {
+  var data = 'Presence;Param1=QWe;paraM2';
+  var event = JsSIP.Grammar.parse(data, 'Event');
+
+  strictEqual(event.event, 'presence');
+  deepEqual(event.params, {param1: 'QWe', param2: undefined});
+});
