@@ -192,8 +192,6 @@ Session.prototype.close = function() {
     return;
   }
 
-  var session = this;
-
   console.log(LOG_PREFIX +'closing INVITE session ' + this.id);
 
   // 1st Step. Terminate media.
@@ -213,7 +211,7 @@ Session.prototype.close = function() {
   this.terminateConfirmedDialog();
   this.status = C.STATUS_TERMINATED;
 
-  delete this.ua.sessions[session.id];
+  delete this.ua.sessions[this.id];
 };
 
 /*
