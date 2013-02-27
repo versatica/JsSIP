@@ -143,9 +143,9 @@ module.exports = function(grunt) {
     });
   });
 
-  // Task for building jssip-devel.js (uncompressed), jssip-X.Y.X.js (uncompressed)
+  // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
   // and jssip-X.Y.Z.min.js (minified).
-  // Both jssip-devel.js and jssip-X.Y.X.js are the same file with different name.
+  // Both jssip-devel.js and jssip-X.Y.Z.js are the same file with different name.
   grunt.registerTask('build', ['concat:devel', 'lint:devel', 'concat:post_devel', 'concat:dist', 'lint:dist', 'min:dist', 'concat:post', 'concat:post_min']);
 
   // Task for building jssip-devel.js (uncompressed).
