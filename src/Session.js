@@ -188,28 +188,32 @@ Session.prototype.connect = function(target, views, options) {
 * @private
 */
 Session.prototype.close = function() {
-  if(this.status !== C.STATUS_TERMINATED) {
-    console.log(LOG_PREFIX +'closing INVITE session ' + this.id);
-
-    // 1st Step. Terminate media.
-    if (this.mediaSession){
-      this.mediaSession.close();
-    }
-
-    // 2nd Step. Terminate signaling.
-
-    // Clear session timers
-    window.clearTimeout(this.ackTimer);
-    window.clearTimeout(this.expiresTimer);
-    window.clearTimeout(this.invite2xxTimer);
-    window.clearTimeout(this.userNoAnswerTimer);
-
-    this.terminateEarlyDialogs();
-    this.terminateConfirmedDialog();
-    this.status = C.STATUS_TERMINATED;
-
-    delete this.ua.sessions[session.id];
+  if(this.status === C.STATUS_TERMINATED) {
+    return;
   }
+
+  var session = this;
+
+  console.log(LOG_PREFIX +'closing INVITE session ' + this.id);
+
+  // 1st Step. Terminate media.
+  if (this.mediaSession){
+    this.mediaSession.close();
+  }
+
+  // 2nd Step. Terminate signaling.
+
+  // Clear session timers
+  window.clearTimeout(this.ackTimer);
+  window.clearTimeout(this.expiresTimer);
+  window.clearTimeout(this.invite2xxTimer);
+  window.clearTimeout(this.userNoAnswerTimer);
+
+  this.terminateEarlyDialogs();
+  this.terminateConfirmedDialog();
+  this.status = C.STATUS_TERMINATED;
+
+  delete this.ua.sessions[session.id];
 };
 
 /*
