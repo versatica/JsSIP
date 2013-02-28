@@ -1,6 +1,6 @@
 
 /**
- * @fileoverview DigestAuthentication
+ * @fileoverview SIP Digest Authentication
  */
 
 /**
@@ -29,7 +29,7 @@ DigestAuthentication = function(ua) {
 * Returns true if credentials were successfully generated, false otherwise.
 * 
 * @param {JsSIP.OutgoingRequest} request
-* @param {JsSIP.IncomingResponse} response
+* @param {Object} challenge
 */
 DigestAuthentication.prototype.authenticate = function(request, challenge) {
   // Inspect and validate the challenge.
@@ -96,7 +96,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
 
 /**
-* Generate 'response' value.
+* Generate Digest 'response' value.
 * @private
 */
 DigestAuthentication.prototype.calculateResponse = function() {
