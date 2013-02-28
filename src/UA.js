@@ -880,6 +880,8 @@ UA.configuration_check = {
 
       if(!parsed) {
         return;
+      } else if(!parsed.user) {
+        return;
       } else {
         return parsed;
       }
