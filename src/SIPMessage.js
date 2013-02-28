@@ -78,11 +78,13 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
 
   // Call-ID
   call_id = params.call_id || (ua.configuration.jssip_id + JsSIP.Utils.createRandomToken(15));
+  this.call_id = call_id;
   this.setHeader('call-id', call_id);
 
   // CSeq
-  cseq = (params.cseq || Math.floor(Math.random() * 10000)) + ' ' + method;
-  this.setHeader('cseq', cseq);
+  cseq = params.cseq || Math.floor(Math.random() * 10000);
+  this.cseq = cseq;
+  this.setHeader('cseq', cseq + ' ' + method);
 };
 
 OutgoingRequest.prototype = {
