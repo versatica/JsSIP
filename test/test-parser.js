@@ -173,6 +173,19 @@ test('Parse CSeq', function() {
 });
 
 
+test('Parse challenge', function() {
+  var data = 'Digest realm =  "[1:ABCD::abc]", nonce =  "31d0a89ed7781ce6877de5cb032bf114", qop="AUTH,autH-INt", algorithm =  md5  ,  stale =  TRUE , opaque = "00000188"';
+  var auth = JsSIP.Grammar.parse(data, 'challenge');
+
+  strictEqual(auth.realm, '[1:ABCD::abc]');
+  strictEqual(auth.nonce, '31d0a89ed7781ce6877de5cb032bf114');
+  deepEqual(auth.qop, ['auth', 'auth-int']);
+  strictEqual(auth.algorithm, 'MD5');
+  strictEqual(auth.stale, true);
+  strictEqual(auth.opaque, '00000188');
+});
+
+
 test('Parse Event', function() {
   var data = 'Presence;Param1=QWe;paraM2';
   var event = JsSIP.Grammar.parse(data, 'Event');

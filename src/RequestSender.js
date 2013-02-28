@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Request Sender
  */
@@ -9,7 +10,8 @@
  * @param {JsSIP.UA} ua
  */
 (function(JsSIP) {
-var RequestSender;
+var RequestSender,
+  LOG_PREFIX = JsSIP.name() +' | '+ 'REQUEST SENDER' +' | ';
 
 RequestSender = function(applicant, ua) {
   this.ua = ua;
@@ -24,8 +26,6 @@ RequestSender = function(applicant, ua) {
   if (ua.status === JsSIP.UA.C.STATUS_USER_CLOSED && (this.method !== JsSIP.C.BYE || this.method !== JsSIP.C.ACK)) {
     this.onTransportError();
   }
-
-  this.credentials = ua.getCredentials(this.request);
 };
 
 /**
@@ -33,14 +33,6 @@ RequestSender = function(applicant, ua) {
 */
 RequestSender.prototype = {
   send: function() {
-    if (this.credentials && !this.challenged) {
-      if (this.request.method === JsSIP.C.REGISTER) {
-        this.request.setHeader('authorization', this.credentials.authenticate());
-      } else if (this.request.method !== JsSIP.C.CANCEL) {
-        this.request.setHeader('proxy-authorization', this.credentials.authenticate());
-      }
-    }
-
     switch(this.method) {
       case "INVITE":
         this.clientTransaction = new JsSIP.Transactions.InviteClientTransaction(this, this.request, this.ua.transport);
@@ -78,60 +70,64 @@ RequestSender.prototype = {
   * @param {JsSIP.IncomingResponse} response
   */
   receiveResponse: function(response) {
-    var cseq, challenge,
+    var cseq, challenge, authorization_header_name,
       status_code = response.status_code;
 
     /*
     * Authentication
     * Authenticate once. _challenged_ flag used to avoid infinite authentications.
     */
-    if ((status_code === 401 || status_code === 407) && this.ua.configuration.password !== null) {
+    if ((status_code === 401 || status_code === 407) && this.ua.configuration.authorization_user && this.ua.configuration.password !== null) {
 
-      if (status_code === 401) {
-        challenge = response.s('WWW-Authenticate');
+      // Get and parse the appropriate WWW-Authenticate or Proxy-Authenticate header.
+      if (response.status_code === 401) {
+        challenge = response.parseHeader('www-authenticate');
+        authorization_header_name = 'authorization';
       } else {
-        challenge = response.s('Proxy-Authenticate');
+        challenge = response.parseHeader('proxy-authenticate');
+        authorization_header_name = 'proxy-authorization';
       }
 
-      if ( !this.challenged || (this.challenged && !this.staled && challenge.stale === 'true') ) {
+      // Verify it seems a valid challenge.
+      if (! challenge) {
+        console.warn(LOG_PREFIX + response.status_code + ' with wrong or missing challenge, cannot authenticate');
+        this.applicant.receiveResponse(response);
+        return;
+      }
+
+      if (!this.challenged || (!this.staled && challenge.stale === true)) {
         if (!this.credentials) {
-          this.credentials = new JsSIP.DigestAuthentication(this.ua, this.request, response);
-        } else {
-          this.credentials.update(response);
+          this.credentials = new JsSIP.DigestAuthentication(this.ua);
         }
 
-        if (challenge.stale === 'true') {
+        // Verify that the challenge is really valid.
+        if (!this.credentials.authenticate(this.request, challenge)) {
+          this.applicant.receiveResponse(response);
+          return;
+        }
+        this.challenged = true;
+
+        if (challenge.stale) {
           this.staled = true;
         }
-
 
         if (response.method === JsSIP.C.REGISTER) {
           cseq = this.applicant.cseq += 1;
         } else if (this.request.dialog){
           cseq = this.request.dialog.local_seqnum += 1;
         } else {
-          cseq = this.request.headers.CSeq.toString().split(' ')[0];
-          cseq = parseInt(cseq,10) +1;
+          cseq = this.request.cseq + 1;
+          this.request.cseq = cseq;
         }
-
         this.request.setHeader('cseq', cseq +' '+ this.method);
-        this.challenged = true;
 
-        if (status_code === 401) {
-          this.request.setHeader('authorization', this.credentials.authenticate());
-        } else {
-          this.request.setHeader('proxy-authorization', this.credentials.authenticate());
-        }
-
+        this.request.setHeader(authorization_header_name, this.credentials.toString());
         this.send();
       } else {
         this.applicant.receiveResponse(response);
       }
     } else {
-        if (this.challenged && response.status_code >= 200) {
-          this.ua.saveCredentials(this.credentials);
-        }
-        this.applicant.receiveResponse(response);
+      this.applicant.receiveResponse(response);
     }
   }
 };

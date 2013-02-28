@@ -81,6 +81,9 @@ ctext       = [\x21-\x27] / [\x2A-\x5B] / [\x5D-\x7E] / UTF8_NONASCII / LWS
 quoted_string = SWS DQUOTE ( qdtext / quoted_pair )* DQUOTE {
                   return input.substring(pos, offset); }
 
+quoted_string_clean = SWS DQUOTE ( qdtext / quoted_pair )* DQUOTE {
+                        return input.substring(pos-1, offset+1); }
+
 qdtext  = LWS / "\x21" / [\x23-\x5B] / [\x5D-\x7E] / UTF8_NONASCII
 
 quoted_pair = "\\" ( [\x00-\x09] / [\x0B-\x0C] / [\x0E-\x7F] )
@@ -583,7 +586,7 @@ digest_cln          = realm / domain / nonce / opaque / stale / algorithm
 
 realm               = "realm"i EQUAL realm_value
 
-realm_value         = realm: quoted_string {data.realm = realm; }
+realm_value         = realm: quoted_string_clean { data.realm = realm; }
 
 domain              = "domain"i EQUAL LDQUOT URI ( SP+ URI )* RDQUOT
 
@@ -591,23 +594,21 @@ URI                 = absoluteURI / abs_path
 
 nonce               = "nonce"i EQUAL nonce_value
 
-nonce_value         = nonce: quoted_string {data.nonce=nonce; }
+nonce_value         = nonce: quoted_string_clean { data.nonce=nonce; }
 
-opaque              = "opaque"i EQUAL opaque: quoted_string {
-                        data.opaque=opaque; }
+opaque              = "opaque"i EQUAL opaque: quoted_string_clean { data.opaque=opaque; }
 
-stale               = "stale"i EQUAL stale: ( "true"i / "false"i ) {
-                        data.stale=stale; }
+stale               = "stale"i EQUAL ( "true"i { data.stale=true; } / "false"i { data.stale=false; } )
 
 algorithm           = "algorithm"i EQUAL algorithm: ( "MD5"i / "MD5-sess"i
                       / token ) {
-                      data.algorithm=algorithm; }
+                      data.algorithm=algorithm.toUpperCase(); }
 
-qop_options         = "qop"i EQUAL LDQUOT qop: (qop_value
-                      ("," qop_value)*) RDQUOT {
-                      data.qop= input.substring(pos-1, offset+5); }
+qop_options         = "qop"i EQUAL LDQUOT (qop_value ("," qop_value)*) RDQUOT
 
-qop_value           = "auth-int"i / "auth"i / token
+qop_value           = qop_value: ( "auth-int"i / "auth"i / token ) {
+                        data.qop || (data.qop=[]);
+                        data.qop.push(qop_value.toLowerCase()); }
 
 
 // PROXY-REQUIRE

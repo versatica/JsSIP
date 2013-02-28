@@ -78,6 +78,7 @@ JsSIP.Grammar = (function(){
         "comment": parse_comment,
         "ctext": parse_ctext,
         "quoted_string": parse_quoted_string,
+        "quoted_string_clean": parse_quoted_string_clean,
         "qdtext": parse_qdtext,
         "quoted_pair": parse_quoted_pair,
         "SIP_URI_noparams": parse_SIP_URI_noparams,
@@ -2741,6 +2742,58 @@ JsSIP.Grammar = (function(){
         if (result0 !== null) {
           result0 = (function(offset) {
                           return input.substring(pos, offset); })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_quoted_string_clean() {
+        var result0, result1, result2, result3;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_SWS();
+        if (result0 !== null) {
+          result1 = parse_DQUOTE();
+          if (result1 !== null) {
+            result2 = [];
+            result3 = parse_qdtext();
+            if (result3 === null) {
+              result3 = parse_quoted_pair();
+            }
+            while (result3 !== null) {
+              result2.push(result3);
+              result3 = parse_qdtext();
+              if (result3 === null) {
+                result3 = parse_quoted_pair();
+              }
+            }
+            if (result2 !== null) {
+              result3 = parse_DQUOTE();
+              if (result3 !== null) {
+                result0 = [result0, result1, result2, result3];
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                                return input.substring(pos-1, offset+1); })(pos0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9587,9 +9640,9 @@ JsSIP.Grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        result0 = parse_quoted_string();
+        result0 = parse_quoted_string_clean();
         if (result0 !== null) {
-          result0 = (function(offset, realm) {data.realm = realm; })(pos0, result0);
+          result0 = (function(offset, realm) { data.realm = realm; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9749,9 +9802,9 @@ JsSIP.Grammar = (function(){
         var pos0;
         
         pos0 = pos;
-        result0 = parse_quoted_string();
+        result0 = parse_quoted_string_clean();
         if (result0 !== null) {
-          result0 = (function(offset, nonce) {data.nonce=nonce; })(pos0, result0);
+          result0 = (function(offset, nonce) { data.nonce=nonce; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9777,7 +9830,7 @@ JsSIP.Grammar = (function(){
         if (result0 !== null) {
           result1 = parse_EQUAL();
           if (result1 !== null) {
-            result2 = parse_quoted_string();
+            result2 = parse_quoted_string_clean();
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
@@ -9793,8 +9846,7 @@ JsSIP.Grammar = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, opaque) {
-                                data.opaque=opaque; })(pos0, result0[2]);
+          result0 = (function(offset, opaque) { data.opaque=opaque; })(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9807,7 +9859,6 @@ JsSIP.Grammar = (function(){
         var pos0, pos1;
         
         pos0 = pos;
-        pos1 = pos;
         if (input.substr(pos, 5).toLowerCase() === "stale") {
           result0 = input.substr(pos, 5);
           pos += 5;
@@ -9820,6 +9871,7 @@ JsSIP.Grammar = (function(){
         if (result0 !== null) {
           result1 = parse_EQUAL();
           if (result1 !== null) {
+            pos1 = pos;
             if (input.substr(pos, 4).toLowerCase() === "true") {
               result2 = input.substr(pos, 4);
               pos += 4;
@@ -9829,7 +9881,14 @@ JsSIP.Grammar = (function(){
                 matchFailed("\"true\"");
               }
             }
+            if (result2 !== null) {
+              result2 = (function(offset) { data.stale=true; })(pos1);
+            }
             if (result2 === null) {
+              pos = pos1;
+            }
+            if (result2 === null) {
+              pos1 = pos;
               if (input.substr(pos, 5).toLowerCase() === "false") {
                 result2 = input.substr(pos, 5);
                 pos += 5;
@@ -9839,26 +9898,25 @@ JsSIP.Grammar = (function(){
                   matchFailed("\"false\"");
                 }
               }
+              if (result2 !== null) {
+                result2 = (function(offset) { data.stale=false; })(pos1);
+              }
+              if (result2 === null) {
+                pos = pos1;
+              }
             }
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = pos1;
+              pos = pos0;
             }
           } else {
             result0 = null;
-            pos = pos1;
+            pos = pos0;
           }
         } else {
           result0 = null;
-          pos = pos1;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset, stale) {
-                                data.stale=stale; })(pos0, result0[2]);
-        }
-        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -9921,7 +9979,7 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, algorithm) {
-                              data.algorithm=algorithm; })(pos0, result0[2]);
+                              data.algorithm=algorithm.toUpperCase(); })(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -9931,10 +9989,9 @@ JsSIP.Grammar = (function(){
       
       function parse_qop_options() {
         var result0, result1, result2, result3, result4, result5, result6;
-        var pos0, pos1, pos2, pos3;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
-        pos1 = pos;
         if (input.substr(pos, 3).toLowerCase() === "qop") {
           result0 = input.substr(pos, 3);
           pos += 3;
@@ -9949,11 +10006,11 @@ JsSIP.Grammar = (function(){
           if (result1 !== null) {
             result2 = parse_LDQUOT();
             if (result2 !== null) {
-              pos2 = pos;
+              pos1 = pos;
               result3 = parse_qop_value();
               if (result3 !== null) {
                 result4 = [];
-                pos3 = pos;
+                pos2 = pos;
                 if (input.charCodeAt(pos) === 44) {
                   result5 = ",";
                   pos++;
@@ -9969,15 +10026,15 @@ JsSIP.Grammar = (function(){
                     result5 = [result5, result6];
                   } else {
                     result5 = null;
-                    pos = pos3;
+                    pos = pos2;
                   }
                 } else {
                   result5 = null;
-                  pos = pos3;
+                  pos = pos2;
                 }
                 while (result5 !== null) {
                   result4.push(result5);
-                  pos3 = pos;
+                  pos2 = pos;
                   if (input.charCodeAt(pos) === 44) {
                     result5 = ",";
                     pos++;
@@ -9993,22 +10050,22 @@ JsSIP.Grammar = (function(){
                       result5 = [result5, result6];
                     } else {
                       result5 = null;
-                      pos = pos3;
+                      pos = pos2;
                     }
                   } else {
                     result5 = null;
-                    pos = pos3;
+                    pos = pos2;
                   }
                 }
                 if (result4 !== null) {
                   result3 = [result3, result4];
                 } else {
                   result3 = null;
-                  pos = pos2;
+                  pos = pos1;
                 }
               } else {
                 result3 = null;
-                pos = pos2;
+                pos = pos1;
               }
               if (result3 !== null) {
                 result4 = parse_RDQUOT();
@@ -10016,29 +10073,22 @@ JsSIP.Grammar = (function(){
                   result0 = [result0, result1, result2, result3, result4];
                 } else {
                   result0 = null;
-                  pos = pos1;
+                  pos = pos0;
                 }
               } else {
                 result0 = null;
-                pos = pos1;
+                pos = pos0;
               }
             } else {
               result0 = null;
-              pos = pos1;
+              pos = pos0;
             }
           } else {
             result0 = null;
-            pos = pos1;
+            pos = pos0;
           }
         } else {
           result0 = null;
-          pos = pos1;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset, qop) {
-                              data.qop= input.substring(pos-1, offset+5); })(pos0, result0[3]);
-        }
-        if (result0 === null) {
           pos = pos0;
         }
         return result0;
@@ -10046,7 +10096,9 @@ JsSIP.Grammar = (function(){
       
       function parse_qop_value() {
         var result0;
+        var pos0;
         
+        pos0 = pos;
         if (input.substr(pos, 8).toLowerCase() === "auth-int") {
           result0 = input.substr(pos, 8);
           pos += 8;
@@ -10069,6 +10121,14 @@ JsSIP.Grammar = (function(){
           if (result0 === null) {
             result0 = parse_token();
           }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, qop_value) {
+                                data.qop || (data.qop=[]);
+                                data.qop.push(qop_value.toLowerCase()); })(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
