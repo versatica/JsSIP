@@ -23,6 +23,7 @@ JsSIP.C= {
     REQUEST_TIMEOUT:          'Request Timeout',
     SIP_FAILURE_CODE:         'SIP Failure Code',
     INVALID_TARGET:           'Invalid Target',
+    INTERNAL_ERROR:           'Internal Error',
 
     // SIP error causes
     BUSY:                     'Busy',
@@ -37,6 +38,7 @@ JsSIP.C= {
 
     // Session error causes
     WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
+    WEBRTC_ERROR:             'WebRTC Error',
     CANCELED:                 'Canceled',
     NO_ANSWER:                'No Answer',
     EXPIRES:                  'Expires',

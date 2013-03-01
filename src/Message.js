@@ -15,6 +15,9 @@ Message = function(ua) {
   this.direction = null;
   this.local_identity = null;
   this.remote_identity = null;
+
+  // Custom message empty object for high level use
+  this.data = {};
 };
 Message.prototype = new JsSIP.EventEmitter();
 
@@ -22,7 +25,6 @@ Message.prototype = new JsSIP.EventEmitter();
 Message.prototype.send = function(target, body, options) {
   var request_sender, event, contentType, eventHandlers, extraHeaders,
     events = [
-      'sending',
       'succeeded',
       'failed'
     ],
@@ -74,11 +76,6 @@ Message.prototype.send = function(target, body, options) {
   this.ua.emit('newMessage', this.ua, {
     originator: 'local',
     message: this,
-    request: this.request
-  });
-
-  this.emit('sending', this, {
-    originator: 'local',
     request: this.request
   });
 
@@ -198,8 +195,6 @@ Message.prototype.accept = function(options) {
   options = options || {};
 
   var
-    status_code = options.status_code || 200,
-    reason_phrase = options.reason_phrase,
     extraHeaders = options.extraHeaders || [],
     body = options.body;
 
@@ -207,11 +202,7 @@ Message.prototype.accept = function(options) {
     throw new TypeError('Invalid method "accept" for an outgoing message');
   }
 
-  if (status_code < 200 || status_code >= 300) {
-    throw new TypeError('Invalid status_code: '+ status_code);
-  }
-
-  this.request.reply(status_code, reason_phrase, extraHeaders, body);
+  this.request.reply(200, null, extraHeaders, body);
 };
 
 /**
