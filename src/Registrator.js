@@ -18,6 +18,7 @@ Registrator = function(ua, transport) {
   this.ua = ua;
   this.transport = transport;
 
+  this.registrar = ua.configuration.registrar_server;
   this.expires = ua.configuration.register_expires;
   this.min_expires = ua.configuration.register_min_expires;
 
@@ -25,7 +26,6 @@ Registrator = function(ua, transport) {
   this.call_id = JsSIP.Utils.createRandomToken(22);
   this.cseq = 80;
 
-  this.registrar = 'sip:'+ ua.configuration.hostport_params;
   // this.to_uri
   this.to_uri = ua.configuration.uri;
 
