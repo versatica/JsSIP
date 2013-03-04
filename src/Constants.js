@@ -33,7 +33,7 @@ JsSIP.C= {
     ADDRESS_INCOMPLETE:       'Address Incomplete',
     INCOMPATIBLE_SDP:         'Incompatible SDP',
     AUTHENTICATION_ERROR:     'Authentication Error',
-    IN_DIALOG_408_OR_481:     'In-dialog 408 or 481',
+    DIALOG_ERROR:             'Dialog Error',
 
     // Session error causes
     WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
@@ -42,7 +42,8 @@ JsSIP.C= {
     EXPIRES:                  'Expires',
     NO_ACK:                   'No ACK',
     USER_DENIED_MEDIA_ACCESS: 'User Denied Media Access',
-    BAD_MEDIA_DESCRIPTION:    'Bad Media Description'
+    BAD_MEDIA_DESCRIPTION:    'Bad Media Description',
+    RTP_TIMEOUT:              'RTP Timeout'
   },
 
   SIP_ERROR_CAUSES: {
