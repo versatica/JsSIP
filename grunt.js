@@ -33,7 +33,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: '<json:package.json>',
     meta: {
-      banner: '/*! jsSIP v@<%= pkg.version %> jssip.net | jssip.net/license */'
+      banner: '/*! jsSIP v@<%= pkg.version %> http://jssip.net | http://jssip.net/license */'
     },
     lint: {
       dist: 'dist/<%= pkg.name %>-<%= pkg.version %>.js',
