@@ -43,7 +43,7 @@ Finally, run `grunt` command with no arguments to get a complete version of JsSI
 $ grunt
 ```
 
-The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal (uncompressed)  and minified, both linted with [JSHint](http://www.jshint.com/). There will be also a file named `dist/jssip-devel.js` which is an exact copy of the uncompressed file.
+The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal (uncompressed)  and minified, both linted with [JSLint](http://jslint.com/). There will be also a file named `dist/jssip-devel.js` which is an exact copy of the uncompressed file.
 
 
 ## Faster development
