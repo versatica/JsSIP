@@ -62,6 +62,7 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   to = (params.to_display_name || params.to_display_name === 0) ? '"' + params.to_display_name + '" ' : '';
   to += '<' + (params.to_uri || ruri) + '>';
   to += params.to_tag ? ';tag=' + params.to_tag : '';
+  this.to = new JsSIP.NameAddrHeader.parse(to);
   this.setHeader('to', to);
 
   // From
@@ -74,6 +75,7 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   }
   from += '<' + (params.from_uri || ua.configuration.uri) + '>;tag=';
   from += params.from_tag || JsSIP.Utils.newTag();
+  this.from = new JsSIP.NameAddrHeader.parse(from);
   this.setHeader('from', from);
 
   // Call-ID

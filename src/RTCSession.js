@@ -540,7 +540,7 @@ RTCSession.prototype.connect = function(target, options) {
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
-  this.newRTCSession('local', this.request, target);
+  this.newRTCSession('local', this.request);
 
   if (invalidTarget) {
     this.failed('local', null, JsSIP.C.causes.INVALID_TARGET);
@@ -968,18 +968,18 @@ RTCSession.prototype.onRequestTimeout = function() {
 /**
  * @private
  */
-RTCSession.prototype.newRTCSession = function(originator, request, target) {
+RTCSession.prototype.newRTCSession = function(originator, request) {
   var session = this,
     event_name = 'newRTCSession';
 
-  session.direction = (originator === 'local') ? 'outgoing' : 'incoming';
-
   if (originator === 'remote') {
-    session.local_identity = request.to.uri;
-    session.remote_identity = request.from.uri;
+    session.direction = 'incoming';
+    session.local_identity = request.to;
+    session.remote_identity = request.from;
   } else if (originator === 'local'){
-    session.local_identity = session.ua.configuration.uri;
-    session.remote_identity = target;
+    session.direction = 'outgoing';
+    session.local_identity = request.from;
+    session.remote_identity = request.to;
   }
 
   session.ua.emit(event_name, session.ua, {
