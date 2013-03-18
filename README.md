@@ -32,26 +32,50 @@ coolPhone.start();
 
 // Make an audio/video call:
 
-var useAudio = true;
-var useVideo = true;
-
+// HTML5 <video> elements in which local and remote video will be shown
 var views = {
-  'selfView':   document.getElementById('my-video'),
+  'selfView': document.getElementById('my-video'),
   'remoteView': document.getElementById('peer-video')
 };
 
+// Register callbacks to desired call events
 var eventHandlers = {
-  'connecting': function(e){ // Your code here },
-  'progress':   function(e){ // Your code here },
-  'failed':     function(e){ // Your code here },
-  'started':    function(e){ // Your code here },
-  'ended':      function(e){ // Your code here }
+  'progress': function(e){
+    console.log('call is in progress');
+  },
+  'failed': function(e){
+    console.log('call failed with cause: '+ e.data.cause);
+  },
+  'started': function(e){
+    var rtcSession = e.data.session;
+
+    console.log('call started');
+
+    // Attach local stream to selfView
+    if (rtcSession.getLocalStreams().length > 0) {
+      selfView.src = window.URL.createObjectURL(rtcSession.getLocalStreams()[0]);
+    }
+
+    // Attach remote stream to remoteView
+    if (rtcSession.getRemoteStreams().length > 0) {
+      remoteView.src = window.URL.createObjectURL(rtcSession.getRemoteStreams()[0]);
+    }
+  },
+  'ended': function(e){
+    console.log('call ended with cause: '+ e.data.cause);
+  }
 };
 
-coolPhone.call('sip:bob@example.com', useAudio, useVideo, eventHandlers, views);
+var options = {
+  'eventHandlers': eventHandlers,
+  'userMediaTypes': {'audio': true, 'video': true}
+};
+
+
+coolPhone.call('sip:bob@example.com', options);
 ```
 
-Want to see more? Check the full [Getting Started](http://jssip.net/documentation/0.2.x/getting_started/) section in the project website.
+Want to see more? Check the full [Getting Started](http://jssip.net/documentation/0.3.x/getting_started/) section in the project website.
 
 
 ## Online Demo
@@ -73,14 +97,20 @@ Check our **Tryit JsSIP** online demo:
 
 ## Authors
 
-### Main Author
+### José Luis Millán
 
-* José Luis Millán (<jmillan@aliax.net> | [github](https://github.com/jmillan) | [twitter](https://twitter.com/jomivi))
+* Main author. Core Designer and Developer.
+* <jmillan@aliax.net> (Github [@jmillan](https://github.com/jmillan))
 
-### Contributors
+### Iñaki Baz Castillo
 
-* Iñaki Baz Castillo (<ibc@aliax.net> | [github](https://github.com/ibc) | [twitter](https://twitter.com/ibc_tw))
-* Saúl Ibarra Corretgé (<saghul@gmail.com> | [github](https://github.com/saghul) | [twitter](https://twitter.com/saghul))
+* Core Designer and Developer.
+* <ibc@aliax.net> (Github [@ibc](https://github.com/ibc))
+
+### Saúl Ibarra Corretgé
+
+* Core Designer.
+* <saghul@gmail.com> (Github [@saghul](https://github.com/saghul))
 
 
 ## License

@@ -15,7 +15,7 @@ You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com
 
 ### PhantomJS
 
-(optional, just for running test units)
+(optional, just for running unit tests)
 
 * [Install PhantomJS](http://phantomjs.org/download.html)
 * In modern Debian/Ubuntu systems PhantomJS can be installed via `apt-get install phantomjs`
@@ -51,9 +51,9 @@ $ grunt
 The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal (uncompressed)  and minified, both linted with [JSLint](http://jslint.com/). There will be also a file named `dist/jssip-devel.js` which is an exact copy of the uncompressed file.
 
 
-## Faster development
+## Development version
 
-Run `grunt devel` for just generating the `dist/jssip-devel.js` file.
+Run `grunt devel` for just generating the `dist/jssip-devel.js` file. An uncompressed JsSIP source file named `jssip-devel.js` will be created in `dist` directory.
 
 
 ## Test units
@@ -73,4 +73,4 @@ If you modify `src/Grammar/src/Grammar.pegjs` then you need to recompile JsSIP g
 ```
 $ grunt grammar
 ```
-And then build JsSIP again by running `grunt`.
+And then build JsSIP again as explained above.
