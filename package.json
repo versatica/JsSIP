@@ -22,6 +22,7 @@
   ],
   "devDependencies": {
     "grunt": "~0.4.0",
+    "grunt-cli": "~0.1.6",
     "pegjs": "0.7.0",
     "node-minify": "~0.7.2",
     "grunt-contrib-concat": "~0.1.3",
