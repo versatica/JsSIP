@@ -26,7 +26,7 @@ var UA,
      * corresponding event handler is set.
      */
     EVENT_METHODS: {
-      'newSession': 'INVITE',
+      'newRTCSession': 'INVITE',
       'newMessage': 'MESSAGE'
     },
 
@@ -55,7 +55,7 @@ UA = function(configuration) {
     'registered',
     'unregistered',
     'registrationFailed',
-    'newSession',
+    'newRTCSession',
     'newMessage'
   ];
 
@@ -171,7 +171,7 @@ UA.prototype.isConnected = function() {
 UA.prototype.call = function(target, views, options) {
   var session;
 
-  session = new JsSIP.Session(this);
+  session = new JsSIP.RTCSession(this);
   session.connect(target, views, options);
 };
 
@@ -448,7 +448,7 @@ UA.prototype.receiveRequest = function(request) {
     switch(method) {
       case JsSIP.C.INVITE:
         if(JsSIP.WebRTC.isSupported) {
-          session = new JsSIP.Session(this);
+          session = new JsSIP.RTCSession(this);
           session.init_incoming(request);
         } else {
           console.warn(LOG_PREFIX +'INVITE received but WebRTC is not supported');

@@ -6,7 +6,7 @@
  * @augments JsSIP
  * @class Class creating a SIP dialog.
  * @param {JsSIP.Session} session
- * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} msg
+ * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} message
  * @param {Enum} type UAC / UAS
  * @param {Enum} state JsSIP.Dialog.C.STATUS_EARLY / JsSIP.Dialog.C.STATUS_CONFIRMED
  */
@@ -20,59 +20,56 @@ var Dialog,
   };
 
 // RFC 3261 12.1
-Dialog = function(session, msg, type, state) {
+Dialog = function(session, message, type, state) {
   var contact;
 
-  if(msg.countHeader('contact') === 0) {
-    console.warn(LOG_PREFIX + 'no Contact header field, silently discarded');
+  if(!message.hasHeader('contact')) {
+    console.error(LOG_PREFIX +'unable to create a Dialog without Contact header field');
     return false;
   }
 
-  if(msg instanceof JsSIP.IncomingResponse) {
-    state = (msg.status_code < 200) ? C.STATUS_EARLY : C.STATUS_CONFIRMED;
-  } else if (msg instanceof JsSIP.IncomingRequest) {
+  if(message instanceof JsSIP.IncomingResponse) {
+    state = (message.status_code < 200) ? C.STATUS_EARLY : C.STATUS_CONFIRMED;
+  } else {
     // Create confirmed dialog if state is not defined
     state = state || C.STATUS_CONFIRMED;
-  } else {
-    console.warn(LOG_PREFIX + 'received message is not a SIP request neither a response, silently discarded');
-    return false;
   }
 
-  contact = msg.s('contact');
+  contact = message.parseHeader('contact');
 
   // RFC 3261 12.1.1
   if(type === 'UAS') {
     this.id = {
-      call_id: msg.call_id,
-      local_tag: msg.to_tag,
-      remote_tag: msg.from_tag,
+      call_id: message.call_id,
+      local_tag: message.to_tag,
+      remote_tag: message.from_tag,
       toString: function() {
         return this.call_id + this.local_tag + this.remote_tag;
       }
     };
     this.state = state;
-    this.remote_seqnum = msg.cseq;
-    this.local_uri = msg.parseHeader('to').uri;
-    this.remote_uri = msg.parseHeader('from').uri;
+    this.remote_seqnum = message.cseq;
+    this.local_uri = message.parseHeader('to').uri;
+    this.remote_uri = message.parseHeader('from').uri;
     this.remote_target = contact.uri;
-    this.route_set = msg.getHeaderAll('record-route');
+    this.route_set = message.getHeaderAll('record-route');
   }
   // RFC 3261 12.1.2
   else if(type === 'UAC') {
     this.id = {
-      call_id: msg.call_id,
-      local_tag: msg.from_tag,
-      remote_tag: msg.to_tag,
+      call_id: message.call_id,
+      local_tag: message.from_tag,
+      remote_tag: message.to_tag,
       toString: function() {
         return this.call_id + this.local_tag + this.remote_tag;
       }
     };
     this.state = state;
-    this.local_seqnum = msg.cseq;
-    this.local_uri = msg.parseHeader('from').uri;
-    this.remote_uri = msg.parseHeader('to').uri;
+    this.local_seqnum = message.cseq;
+    this.local_uri = message.parseHeader('from').uri;
+    this.remote_uri = message.parseHeader('to').uri;
     this.remote_target = contact.uri;
-    this.route_set = msg.getHeaderAll('record-route').reverse();
+    this.route_set = message.getHeaderAll('record-route').reverse();
   }
 
   this.session = session;

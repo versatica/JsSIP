@@ -21,7 +21,7 @@
     "library"
   ],
   "devDependencies": {
-    "grunt": "0.3.17",
+    "grunt": "~0.4.0",
     "pegjs": "0.7.0",
     "node-minify": "~0.7.2"
   },
