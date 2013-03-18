@@ -1018,11 +1018,7 @@ UA.configuration_check = {
     },
 
     password: function(password) {
-      if(JsSIP.Grammar.parse(password, 'password') === -1) {
-        return;
-      } else {
-        return password;
-      }
+      return String(password);
     },
 
     register: function(register) {
