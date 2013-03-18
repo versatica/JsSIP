@@ -32,6 +32,9 @@
     "grunt-contrib-watch": "~0.3.1",
     "grunt-include-replace": "~0.1.0"
   },
+  "engines": {
+    "node": ">=0.8"
+  },
   "license": "MIT",
   "scripts": {
     "test": "grunt travis --verbose"
