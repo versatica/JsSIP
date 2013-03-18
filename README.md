@@ -46,6 +46,9 @@ var eventHandlers = {
   'failed': function(e){
     console.log('call failed with cause: '+ e.data.cause);
   },
+  'ended': function(e){
+    console.log('call ended with cause: '+ e.data.cause);
+  },
   'started': function(e){
     var rtcSession = e.data.session;
 
@@ -60,9 +63,6 @@ var eventHandlers = {
     if (rtcSession.getRemoteStreams().length > 0) {
       remoteView.src = window.URL.createObjectURL(rtcSession.getRemoteStreams()[0]);
     }
-  },
-  'ended': function(e){
-    console.log('call ended with cause: '+ e.data.cause);
   }
 };
 
