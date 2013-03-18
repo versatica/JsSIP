@@ -168,11 +168,11 @@ UA.prototype.isConnected = function() {
  * @throws {TypeError}
  *
  */
-UA.prototype.call = function(target, views, options) {
+UA.prototype.call = function(target, options) {
   var session;
 
   session = new JsSIP.RTCSession(this);
-  session.connect(target, views, options);
+  session.connect(target, options);
 };
 
 /**
