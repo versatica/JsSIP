@@ -28,6 +28,11 @@ Clone a copy of the main JsSIP git repository by running:
 $ git clone https://github.com/versatica/JsSIP.git
 ```
 
+Install grunt-cli globally:
+```
+$ npm install -g grunt-cli
+```
+
 Enter the directory and install the Node.js dependencies:
 ```
 $ cd JsSIP && npm install
