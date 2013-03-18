@@ -8,7 +8,7 @@ var
   IncomingMessage,
   IncomingRequest,
   IncomingResponse,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'SIP MESSAGE' +' | ';
+  LOG_PREFIX = JsSIP.name +' | '+ 'SIP MESSAGE' +' | ';
 
 /**
  * @augments JsSIP

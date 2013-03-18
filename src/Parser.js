@@ -9,7 +9,7 @@
  */
 (function(JsSIP) {
 var Parser,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'PARSER' +' | ';
+  LOG_PREFIX = JsSIP.name +' | '+ 'PARSER' +' | ';
 
 function getHeader(data, headerStart) {
   var

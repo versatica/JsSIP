@@ -6,6 +6,6 @@ new compressor.minify({
     fileIn: 'dist/Grammar.js',
     fileOut: 'dist/Grammar.min.js',
     callback: function(err){
-        console.log(err);
+      console.log(err);
     }
 });

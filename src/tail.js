@@ -1,3 +1,0 @@
-
-  window.JsSIP = JsSIP;
-}(window));

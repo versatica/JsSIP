@@ -13,7 +13,7 @@
  */
 (function(JsSIP) {
 var sanityCheck,
- LOG_PREFIX = JsSIP.name() +' | '+ 'SANITY CHECK' +' | ',
+ LOG_PREFIX = JsSIP.name +' | '+ 'SANITY CHECK' +' | ',
 
  message, ua, transport,
  requests = [],

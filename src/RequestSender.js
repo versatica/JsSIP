@@ -11,7 +11,7 @@
  */
 (function(JsSIP) {
 var RequestSender,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'REQUEST SENDER' +' | ';
+  LOG_PREFIX = JsSIP.name +' | '+ 'REQUEST SENDER' +' | ';
 
 RequestSender = function(applicant, ua) {
   this.ua = ua;

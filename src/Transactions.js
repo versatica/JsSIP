@@ -8,7 +8,7 @@
  */
 (function(JsSIP) {
 var Transactions,
-  LOG_PREFIX =  JsSIP.name() +' | '+ 'TRANSACTION' +' | ',
+  LOG_PREFIX =  JsSIP.name +' | '+ 'TRANSACTION' +' | ',
   C = {
     // Transaction states
     STATUS_TRYING:     1,

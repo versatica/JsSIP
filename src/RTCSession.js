@@ -14,7 +14,7 @@ var RTCMediaHandler = @@include('../src/RTCSession/RTCMediaHandler.js')
 var DTMF            = @@include('../src/RTCSession/DTMF.js')
 
 var RTCSession,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'RTC SESSION' +' | ',
+  LOG_PREFIX = JsSIP.name +' | '+ 'RTC SESSION' +' | ',
   C = {
     // RTCSession states
     STATUS_NULL:               0,

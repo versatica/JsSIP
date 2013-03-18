@@ -10,7 +10,7 @@
  */
 (function(JsSIP) {
 var Registrator,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'REGISTRATOR' +' | ';
+  LOG_PREFIX = JsSIP.name +' | '+ 'REGISTRATOR' +' | ';
 
 Registrator = function(ua, transport) {
   var reg_id=1; //Force reg_id to 1.

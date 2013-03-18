@@ -12,7 +12,7 @@
  */
 (function(JsSIP) {
 var Dialog,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'DIALOG' +' | ',
+  LOG_PREFIX = JsSIP.name +' | '+ 'DIALOG' +' | ',
   C = {
     // Dialog states
     STATUS_EARLY:       1,

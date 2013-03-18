@@ -10,7 +10,7 @@
  */
 (function(JsSIP) {
 var Transport,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'TRANSPORT' +' | ',
+  LOG_PREFIX = JsSIP.name +' | '+ 'TRANSPORT' +' | ',
   C = {
     // Transport status codes
     STATUS_READY:        0,

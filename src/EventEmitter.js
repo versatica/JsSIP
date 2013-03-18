@@ -10,7 +10,7 @@
 var
   EventEmitter,
   Event,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'EVENT EMITTER' +' | ';
+  LOG_PREFIX = JsSIP.name +' | '+ 'EVENT EMITTER' +' | ';
 
 EventEmitter = function(){};
 EventEmitter.prototype = {

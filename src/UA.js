@@ -9,7 +9,7 @@
  */
 (function(JsSIP) {
 var UA,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'UA' +' | ',
+  LOG_PREFIX = JsSIP.name +' | '+ 'UA' +' | ',
   C = {
     // UA status codes
     STATUS_INIT :                0,

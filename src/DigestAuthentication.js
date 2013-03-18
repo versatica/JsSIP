@@ -11,7 +11,7 @@
  */
 (function(JsSIP) {
 var DigestAuthentication,
-  LOG_PREFIX = JsSIP.name() +' | '+ 'DIGEST AUTHENTICATION' +' | ';
+  LOG_PREFIX = JsSIP.name +' | '+ 'DIGEST AUTHENTICATION' +' | ';
 
 DigestAuthentication = function(ua) {
   this.username = ua.configuration.authorization_user;
