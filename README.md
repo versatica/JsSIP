@@ -20,9 +20,9 @@ The following simple JavaScript code creates a JsSIP User Agent instance and mak
 // Create our JsSIP instance and run it:
 
 var configuration = {
-  'outbound_proxy_set': 'ws://sip-ws.example.com',
-  'uri':                'sip:alice@example.com',
-  'password':           'superpassword'
+  'ws_servers': 'ws://sip-ws.example.com',
+  'uri': 'sip:alice@example.com',
+  'password': 'superpassword'
 };
 
 var coolPhone = new JsSIP.UA(configuration);
