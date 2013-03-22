@@ -100,7 +100,7 @@ Request.prototype.onRequestTimeout = function() {
 /**
  * @private
  */
-Request.prototype.onRequestTransportError = function() {
+Request.prototype.onTransportError = function() {
   this.emit('failed', this, {
     originator: 'system',
     cause: JsSIP.C.causes.CONNECTION_ERROR
