@@ -4,15 +4,14 @@
 
 /**
  * @class Session RequestSender
- * @param {JsSIP.RTCSession | RTCSession applicant} applicant
- * @param {JsSIP.OutgoingRequest} [request]
+ * @param {JsSIP.Request} applicant
  */
 (function(JsSIP){
 
-var RequestSender = function(applicant, request) {
+var RequestSender = function(applicant) {
   this.applicant = applicant;
-  this.request = request || applicant.request;
-  this.session = (applicant instanceof JsSIP.RTCSession)? applicant : applicant.session;
+  this.session = applicant.session;
+  this.request = applicant.request;
   this.reattempt = false;
   this.reatemptTimer = null;
   this.request_sender = new JsSIP.InDialogRequestSender(this);
