@@ -9,6 +9,7 @@
 (function(JsSIP) {
 
 // Load dependencies
+var Request         = @@include('../src/RTCSession/Request.js')
 var RequestSender   = @@include('../src/RTCSession/RequestSender.js')
 var RTCMediaHandler = @@include('../src/RTCSession/RTCMediaHandler.js')
 var DTMF            = @@include('../src/RTCSession/DTMF.js')
@@ -138,8 +139,19 @@ RTCSession.prototype.terminate = function(options) {
     case C.STATUS_CONFIRMED:
       console.log(LOG_PREFIX +'terminating RTCSession');
 
-      // Send Bye
-      this.sendBye(options);
+      reason_phrase = options.reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '';
+
+      if (status_code && (status_code < 200 || status_code >= 700)) {
+        throw new TypeError('Invalid status_code: '+ status_code);
+      } else if (status_code) {
+        extraHeaders.push('Reason: SIP ;cause=' + status_code + '; text="' + reason_phrase + '"');
+      }
+
+      this.sendRequest(JsSIP.C.BYE, {
+        extraHeaders: extraHeaders,
+        body: body
+      });
+
       this.ended('local', null, JsSIP.C.causes.BYE);
       break;
   }
@@ -236,7 +248,7 @@ RTCSession.prototype.answer = function(options) {
               if(self.status === C.STATUS_WAITING_FOR_ACK) {
                 console.log(LOG_PREFIX + 'no ACK received, terminating the call');
                 window.clearTimeout(self.timers.invite2xxTimer);
-                self.sendBye();
+                self.sendRequest(JsSIP.C.BYE);
                 self.ended('remote', null, JsSIP.C.causes.NO_ACK);
               }
             },
@@ -361,6 +373,18 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
     },
     interToneGap
   );
+};
+
+/**
+ * Send a generic in-dialog Request
+ *
+ * @param {String} method
+ * @param {Object} [options]
+ */
+RTCSession.prototype.sendRequest = function(method, options) {
+  var request = new Request(this);
+
+  request.send(method, options);
 };
 
 
@@ -853,7 +877,7 @@ RTCSession.prototype.receiveResponse = function(response) {
             return;
           }
 
-          session.sendACK();
+          session.sendRequest(JsSIP.C.ACK);
           session.status = C.STATUS_CONFIRMED;
           session.started('remote', response);
         },
@@ -879,58 +903,22 @@ RTCSession.prototype.receiveResponse = function(response) {
 * @private
 */
 RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason_phrase) {
-  // Send ACK and BYE
+  var extraHeaders = [];
+
+  if (status_code) {
+    reason_phrase = reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '';
+    extraHeaders.push('Reason: SIP ;cause=' + status_code + '; text="' + reason_phrase + '"');
+  }
+
   // An error on dialog creation will fire 'failed' event
   if (this.dialog || this.createDialog(response, 'UAC')) {
-    this.sendACK();
-    this.sendBye({
-      status_code: status_code,
-      reason_phrase: reason_phrase
+    this.sendRequest(JsSIP.C.ACK);
+    this.sendRequest(JsSIP.C.BYE, {
+      extraHeaders: extraHeaders
     });
   }
 };
 
-/**
-* @private
-*/
-RTCSession.prototype.sendACK = function() {
-  var request = this.dialog.createRequest(JsSIP.C.ACK);
-
-  this.sendRequest(request);
-};
-
-/**
-* @private
-*/
-RTCSession.prototype.sendBye = function(options) {
-  options = options || {};
-
-  var request, reason,
-    status_code = options.status_code,
-    reason_phrase = options.reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '',
-    extraHeaders = options.extraHeaders || [],
-    body = options.body;
-
-  if (status_code && (status_code < 200 || status_code >= 700)) {
-    throw new TypeError('Invalid status_code: '+ status_code);
-  } else if (status_code) {
-    reason = 'SIP ;cause=' + status_code + '; text="' + reason_phrase + '"';
-    extraHeaders.push('Reason: '+ reason);
-  }
-
-  request = this.dialog.createRequest(JsSIP.C.BYE, extraHeaders);
-  request.body = body;
-
-  this.sendRequest(request);
-};
-
-/**
- * @private
- */
-RTCSession.prototype.sendRequest = function(request) {
-  var request_sender = new RequestSender(this, request);
-  request_sender.send();
-};
 
 /**
  * Session Callbacks
