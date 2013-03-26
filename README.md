@@ -68,7 +68,7 @@ var eventHandlers = {
 
 var options = {
   'eventHandlers': eventHandlers,
-  'userMediaTypes': {'audio': true, 'video': true}
+  'mediaConstraints': {'audio': true, 'video': true}
 };
 
 
