@@ -5,12 +5,16 @@
 /**
  * @augments JsSIP
  * @class Class creating a SIP dialog.
- * @param {JsSIP.Session} session
+ * @param {JsSIP.RTCSession} owner
  * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} message
  * @param {Enum} type UAC / UAS
  * @param {Enum} state JsSIP.Dialog.C.STATUS_EARLY / JsSIP.Dialog.C.STATUS_CONFIRMED
  */
 (function(JsSIP) {
+
+// Load dependencies
+var RequestSender   = @@include('../src/Dialog/RequestSender.js')
+
 var Dialog,
   LOG_PREFIX = JsSIP.name +' | '+ 'DIALOG' +' | ',
   C = {
@@ -20,7 +24,7 @@ var Dialog,
   };
 
 // RFC 3261 12.1
-Dialog = function(session, message, type, state) {
+Dialog = function(owner, message, type, state) {
   var contact;
 
   if(!message.hasHeader('contact')) {
@@ -72,8 +76,8 @@ Dialog = function(session, message, type, state) {
     this.route_set = message.getHeaderAll('record-route').reverse();
   }
 
-  this.session = session;
-  session.ua.dialogs[this.id.toString()] = this;
+  this.owner = owner;
+  owner.ua.dialogs[this.id.toString()] = this;
   console.log(LOG_PREFIX +'new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 };
 
@@ -95,7 +99,7 @@ Dialog.prototype = {
 
   terminate: function() {
     console.log(LOG_PREFIX +'dialog ' + this.id.toString() + ' deleted');
-    delete this.session.ua.dialogs[this.id.toString()];
+    delete this.owner.ua.dialogs[this.id.toString()];
   },
 
   /**
@@ -105,7 +109,7 @@ Dialog.prototype = {
   */
 
   // RFC 3261 12.2.1.1
-  createRequest: function(method, extraHeaders) {
+  createRequest: function(method, extraHeaders, body) {
     var cseq, request;
     extraHeaders = extraHeaders || [];
 
@@ -116,7 +120,7 @@ Dialog.prototype = {
     request = new JsSIP.OutgoingRequest(
       method,
       this.remote_target,
-      this.session.ua, {
+      this.owner.ua, {
         'cseq': cseq,
         'call_id': this.id.call_id,
         'from_uri': this.local_uri,
@@ -124,7 +128,7 @@ Dialog.prototype = {
         'to_uri': this.remote_uri,
         'to_tag': this.id.remote_tag,
         'route_set': this.route_set
-      }, extraHeaders);
+      }, extraHeaders, body);
 
     request.dialog = this;
 
@@ -183,6 +187,18 @@ Dialog.prototype = {
     return true;
   },
 
+  sendRequest: function(applicant, method, options) {
+    options = options || {};
+
+    var
+      extraHeaders = options.extraHeaders || [],
+      body = options.body || null,
+      request = this.createRequest(method, extraHeaders, body),
+      request_sender = new RequestSender(this, applicant, request);
+
+      request_sender.send();
+  },
+
   /**
   * @param {JsSIP.IncomingRequest} request
   */
@@ -192,7 +208,7 @@ Dialog.prototype = {
       return;
     }
 
-    this.session.receiveRequest(request);
+    this.owner.receiveRequest(request);
   }
 };
 

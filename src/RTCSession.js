@@ -10,7 +10,6 @@
 
 // Load dependencies
 var Request         = @@include('../src/RTCSession/Request.js')
-var RequestSender   = @@include('../src/RTCSession/RequestSender.js')
 var RTCMediaHandler = @@include('../src/RTCSession/RTCMediaHandler.js')
 var DTMF            = @@include('../src/RTCSession/DTMF.js')
 
@@ -925,7 +924,6 @@ RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason
  */
 
 /**
-* Callback to be called from UA instance when TransportError occurs
 * @private
 */
 RTCSession.prototype.onTransportError = function() {
@@ -939,7 +937,6 @@ RTCSession.prototype.onTransportError = function() {
 };
 
 /**
-* Callback to be called from UA instance when RequestTimeout occurs
 * @private
 */
 RTCSession.prototype.onRequestTimeout = function() {
@@ -947,7 +944,20 @@ RTCSession.prototype.onRequestTimeout = function() {
     if (this.status === C.STATUS_CONFIRMED) {
       this.ended('system', null, JsSIP.C.causes.REQUEST_TIMEOUT);
     } else {
-      this.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
+      this.failed('system', null, JsSIP.C.causes.REQUEST_TIMEOUT);
+    }
+  }
+};
+
+/**
+ * @private
+ */
+RTCSession.prototype.onDialogError = function(response) {
+  if(this.status !== C.STATUS_TERMINATED) {
+    if (this.status === C.STATUS_CONFIRMED) {
+      this.ended('remote', response, JsSIP.C.causes.DIALOG_ERROR);
+    } else {
+      this.failed('remote', response, JsSIP.C.causes.DIALOG_ERROR);
     }
   }
 };

@@ -15,7 +15,7 @@ var Request = function(session) {
   'failed'
   ];
 
-  this.session = session;
+  this.owner = session;
 
   this.initEvents(events);
 };
@@ -25,7 +25,7 @@ Request.prototype = new JsSIP.EventEmitter();
 Request.prototype.send = function(method, options) {
   options = options || {};
 
-  var request_sender, event,
+  var event,
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
     body = options.body || null;
@@ -35,11 +35,11 @@ Request.prototype.send = function(method, options) {
   }
 
   // Check RTCSession Status
-  if (this.session.status !== JsSIP.RTCSession.C.STATUS_1XX_RECEIVED &&
-    this.session.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
-    this.session.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ACK &&
-    this.session.status !== JsSIP.RTCSession.C.STATUS_CONFIRMED) {
-    throw new JsSIP.Exceptions.InvalidStateError(this.session.status);
+  if (this.owner.status !== JsSIP.RTCSession.C.STATUS_1XX_RECEIVED &&
+    this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
+    this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ACK &&
+    this.owner.status !== JsSIP.RTCSession.C.STATUS_CONFIRMED) {
+    throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
   }
 
   // Set event handlers
@@ -47,12 +47,10 @@ Request.prototype.send = function(method, options) {
     this.on(event, eventHandlers[event]);
   }
 
-  this.request = this.session.dialog.createRequest(method, extraHeaders);
-
-  this.request.body = body;
-
-  request_sender = new RequestSender(this);
-  request_sender.send();
+  this.owner.dialog.sendRequest(this, method, {
+    extraHeaders: extraHeaders,
+    body: body
+  });
 };
 
 /**
@@ -95,6 +93,7 @@ Request.prototype.onRequestTimeout = function() {
     originator: 'system',
     cause: JsSIP.C.causes.REQUEST_TIMEOUT
   });
+  this.owner.onRequestTimeout();
 };
 
 /**
@@ -105,6 +104,19 @@ Request.prototype.onTransportError = function() {
     originator: 'system',
     cause: JsSIP.C.causes.CONNECTION_ERROR
   });
+  this.owner.onTransportError();
+};
+
+/**
+ * @private
+ */
+Request.prototype.onDialogError = function(response) {
+  this.emit('failed', this, {
+    originator: 'remote',
+    response: response,
+    cause: JsSIP.C.causes.DIALOG_ERROR
+  });
+  this.owner.onDialogError(response);
 };
 
 return Request;
