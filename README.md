@@ -33,10 +33,8 @@ coolPhone.start();
 // Make an audio/video call:
 
 // HTML5 <video> elements in which local and remote video will be shown
-var views = {
-  'selfView': document.getElementById('my-video'),
-  'remoteView': document.getElementById('peer-video')
-};
+var selfView =   document.getElementById('my-video');
+var remoteView =  document.getElementById('peer-video');
 
 // Register callbacks to desired call events
 var eventHandlers = {
@@ -50,7 +48,7 @@ var eventHandlers = {
     console.log('call ended with cause: '+ e.data.cause);
   },
   'started': function(e){
-    var rtcSession = e.data.session;
+    var rtcSession = e.sender;
 
     console.log('call started');
 
