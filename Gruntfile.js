@@ -51,14 +51,16 @@ module.exports = function(grunt) {
           separator: '\n\n\n',
           footer: '<%= meta.footer %>',
           process: true
-        }
+        },
+        nonull: true
       },
       post_dist: {
         src: [
           'dist/<%= pkg.name %>-<%= pkg.version %>.js',
           'src/Grammar/dist/Grammar.js'
         ],
-        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
+        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js',
+        nonull: true
       },
       devel: {
         src: srcFiles,
@@ -68,21 +70,24 @@ module.exports = function(grunt) {
           separator: '\n\n\n',
           footer: '<%= meta.footer %>',
           process: true
-        }
+        },
+        nonull: true
       },
       post_devel: {
         src: [
           'dist/<%= pkg.name %>-devel.js',
           'src/Grammar/dist/Grammar.js'
         ],
-        dest: 'dist/<%= pkg.name %>-devel.js'
+        dest: 'dist/<%= pkg.name %>-devel.js',
+        nonull: true
       },
       post_uglify: {
         src: [
           'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
           'src/Grammar/dist/Grammar.min.js'
         ],
-        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js'
+        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
+        nonull: true
       }
     },
     includereplace: {
