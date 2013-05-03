@@ -214,7 +214,10 @@ RTCSession.prototype.answer = function(options) {
 
                 request.reply(200, null, ['Contact: '+ self.contact], body);
 
-                self.timers.invite2xxTimer = window.setTimeout(invite2xxRetransmission(retransmissions),
+                self.timers.invite2xxTimer = window.setTimeout(
+                  function() {
+                    invite2xxRetransmission(retransmissions);
+                  },
                   timeout
                 );
               } else {
