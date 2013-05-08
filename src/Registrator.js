@@ -20,7 +20,6 @@ Registrator = function(ua, transport) {
 
   this.registrar = ua.configuration.registrar_server;
   this.expires = ua.configuration.register_expires;
-  this.min_expires = ua.configuration.register_min_expires;
 
   // Call-ID and CSeq values RFC3261 10.2
   this.call_id = JsSIP.Utils.createRandomToken(22);
@@ -71,7 +70,7 @@ Registrator.prototype = {
     * @private
     */
     this.receiveResponse = function(response) {
-      var contact, expires, min_expires,
+      var contact, expires,
         contacts = response.countHeader('contact');
 
       // Discard responses to older REGISTER/un-REGISTER requests.
@@ -138,11 +137,12 @@ Registrator.prototype = {
         // Interval too brief RFC3261 10.2.8
         case /^423$/.test(response.status_code):
           if(response.hasHeader('min-expires')) {
-            min_expires = response.getHeader('min-expires');
-            expires = (min_expires - this.expires);
+            // Increase our registration interval to the suggested minimum
+            this.expires = response.getHeader('min-expires');
+            // Attempt the registration again immediately 
             this.registrationTimer = window.setTimeout(function() {
               self.register();
-            }, this.expires * 1000);
+            }, 0);
           } else { //This response MUST contain a Min-Expires header field
             console.warn(LOG_PREFIX +'423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
