@@ -798,6 +798,9 @@ UA.prototype.loadConfig = function(configuration) {
       case 'registrar_server':
         console.log('· ' + parameter + ': ' + settings[parameter]);
         break;
+      case 'password':
+        console.log('· ' + parameter + ': ' + 'NOT SHOWN');
+        break;
       default:
         console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
     }
