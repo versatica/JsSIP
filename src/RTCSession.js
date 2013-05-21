@@ -41,7 +41,7 @@ RTCSession = function(ua) {
   this.ua = ua;
   this.status = C.STATUS_NULL;
   this.dialog = null;
-  this.earlyDialogs = [];
+  this.earlyDialogs = {};
   this.rtcMediaHandler = null;
 
   // Session Timers
