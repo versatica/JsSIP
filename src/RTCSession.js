@@ -1028,6 +1028,7 @@ RTCSession.prototype.started = function(originator, message) {
   session.start_time = new Date();
 
   session.emit(event_name, session, {
+    originator: originator,
     response: message || null
   });
 };
