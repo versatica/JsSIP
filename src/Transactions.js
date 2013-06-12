@@ -139,7 +139,10 @@ var InviteClientTransactionPrototype = function() {
     window.clearTimeout(this.D);
     window.clearTimeout(this.M);
     delete this.request_sender.ua.transactions.ict[this.id];
-    this.request_sender.onTransportError();
+
+    if (this.state !== C.STATUS_ACCEPTED) {
+      this.request_sender.onTransportError();
+    }
   };
 
   // RFC 6026 7.2
