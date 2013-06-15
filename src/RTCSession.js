@@ -840,6 +840,11 @@ RTCSession.prototype.receiveResponse = function(response) {
         break;
       }
 
+      // An error on dialog creation will fire 'failed' event
+      if (!this.createDialog(response, 'UAC')) {
+        break;
+      }
+
       this.rtcMediaHandler.onMessage(
         'answer',
         response.body,
@@ -848,11 +853,6 @@ RTCSession.prototype.receiveResponse = function(response) {
          * SDP Answer fits with Offer. Media will start
          */
         function() {
-          // An error on dialog creation will fire 'failed' event
-          if (!session.createDialog(response, 'UAC')) {
-            return;
-          }
-
           session.sendACK();
           session.status = C.STATUS_CONFIRMED;
           session.started('remote', response);
