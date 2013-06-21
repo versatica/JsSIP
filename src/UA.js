@@ -52,6 +52,8 @@ UA = function(configuration) {
   var events = [
     'connected',
     'disconnected',
+    'newTransaction',
+    'transactionDestroyed',
     'registered',
     'unregistered',
     'registrationFailed',
@@ -86,6 +88,46 @@ UA = function(configuration) {
   };
 
   this.transportRecoverAttempts = 0;
+
+  Object.defineProperties(this, {
+    transactionsCount: {
+      get: function() {
+        var type,
+          transactions = ['nist','nict','ist','ict'],
+          count = 0;
+
+        for (type in transactions) {
+          count += Object.keys(this.transactions[transactions[type]]).length;
+        }
+
+        return count;
+      }
+    },
+
+    nictTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['nict']).length;
+      }
+    },
+
+    nistTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['nist']).length;
+      }
+    },
+
+    ictTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['ict']).length;
+      }
+    },
+
+    istTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['ist']).length;
+      }
+    }
+  });
 
   /**
    * Load configuration
@@ -200,6 +242,13 @@ UA.prototype.stop = function() {
   var session, applicant,
     ua = this;
 
+  function transactionsListener() {
+    if (ua.nistTransactionsCount === 0 && ua.nictTransactionsCount === 0) {
+        ua.removeListener('transactionDestroyed', transactionsListener);
+        ua.transport.disconnect();
+    }
+  }
+
   console.log(LOG_PREFIX +'user requested closure...');
 
   if(this.status === C.STATUS_USER_CLOSED) {
@@ -225,10 +274,20 @@ UA.prototype.stop = function() {
   }
 
   this.status = C.STATUS_USER_CLOSED;
-  this.shutdownGraceTimer = window.setTimeout(
-    function() { ua.transport.disconnect(); },
-    '5000'
-  );
+
+  /*
+   * If the remaining transactions are all INVITE transactions, there is no need to
+   * wait anymore because every session has already been closed by this method.
+   * - locally originated sessions where terminated (CANCEL or BYE)
+   * - remotely originated sessions where rejected (4XX) or terminated (BYE)
+   * Remaining INVITE transactions belong tho sessions that where answered. This are in
+   * 'accepted' state due to timers 'L' and 'M' defined in [RFC 6026]
+   */
+  if (this.nistTransactionsCount === 0 && this.nictTransactionsCount === 0) {
+    this.transport.disconnect();
+  } else {
+    this.on('transactionDestroyed', transactionsListener);
+  }
 };
 
 /**
@@ -383,6 +442,33 @@ UA.prototype.onTransportConnected = function(transport) {
     this.registrator = new JsSIP.Registrator(this, transport);
   }
 };
+
+
+/**
+ * new Transaction
+ * @private
+ * @param {JsSIP.Transaction} transaction.
+ */
+UA.prototype.newTransaction = function(transaction) {
+  this.transactions[transaction.type][transaction.id] = transaction;
+  this.emit('newTransaction', this, {
+    transaction: transaction
+  });
+};
+
+
+/**
+ * new Transaction
+ * @private
+ * @param {JsSIP.Transaction} transaction.
+ */
+UA.prototype.destroyTransaction = function(transaction) {
+  delete this.transactions[transaction.type][transaction.id];
+  this.emit('transactionDestroyed', this, {
+    transaction: transaction
+  });
+};
+
 
 //=========================
 // receiveRequest

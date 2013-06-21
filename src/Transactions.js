@@ -17,7 +17,13 @@ var
     STATUS_ACCEPTED:   4,
     STATUS_COMPLETED:  5,
     STATUS_TERMINATED: 6,
-    STATUS_CONFIRMED:  7
+    STATUS_CONFIRMED:  7,
+
+    // Transaction types
+    NON_INVITE_CLIENT: 'nict',
+    NON_INVITE_SERVER: 'nist',
+    INVITE_CLIENT: 'ict',
+    INVITE_SERVER: 'ist'
   };
 
 /**
@@ -31,6 +37,7 @@ var NonInviteClientTransaction = function(request_sender, request, transport) {
   var via,
     events = ['stateChanged'];
 
+  this.type = C.NON_INVITE_CLIENT;
   this.transport = transport;
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
   this.request_sender = request_sender;
@@ -41,7 +48,7 @@ var NonInviteClientTransaction = function(request_sender, request, transport) {
 
   this.request.setHeader('via', via);
 
-  this.request_sender.ua.transactions.nict[this.id] = this;
+  this.request_sender.ua.newTransaction(this);
 
   this.initEvents(events);
 };
@@ -67,7 +74,7 @@ NonInviteClientTransaction.prototype.onTransportError = function() {
   console.log(LOG_PREFIX +'transport error occurred, deleting non-INVITE client transaction ' + this.id);
   window.clearTimeout(this.F);
   window.clearTimeout(this.K);
-  delete this.request_sender.ua.transactions.nict[this.id];
+  this.request_sender.ua.destroyTransaction(this);
   this.request_sender.onTransportError();
 };
 
@@ -75,12 +82,12 @@ NonInviteClientTransaction.prototype.timer_F = function() {
   console.log(LOG_PREFIX +'Timer F expired for non-INVITE client transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
   this.request_sender.onRequestTimeout();
-  delete this.request_sender.ua.transactions.nict[this.id];
+  this.request_sender.ua.destroyTransaction(this);
 };
 
 NonInviteClientTransaction.prototype.timer_K = function() {
   this.stateChanged(C.STATUS_TERMINATED);
-  delete this.request_sender.ua.transactions.nict[this.id];
+  this.request_sender.ua.destroyTransaction(this);
 };
 
 NonInviteClientTransaction.prototype.receiveResponse = function(response) {
@@ -131,6 +138,7 @@ var InviteClientTransaction = function(request_sender, request, transport) {
     tr = this,
     events = ['stateChanged'];
 
+  this.type = C.INVITE_CLIENT;
   this.transport = transport;
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
   this.request_sender = request_sender;
@@ -141,7 +149,7 @@ var InviteClientTransaction = function(request_sender, request, transport) {
 
   this.request.setHeader('via', via);
 
-  this.request_sender.ua.transactions.ict[this.id] = this;
+  this.request_sender.ua.newTransaction(this);
 
   // Add the cancel property to the request.
   //Will be called from the request instance, not the transaction itself.
@@ -175,7 +183,7 @@ InviteClientTransaction.prototype.onTransportError = function() {
   window.clearTimeout(this.B);
   window.clearTimeout(this.D);
   window.clearTimeout(this.M);
-  delete this.request_sender.ua.transactions.ict[this.id];
+  this.request_sender.ua.destroyTransaction(this);
 
   if (this.state !== C.STATUS_ACCEPTED) {
     this.request_sender.onTransportError();
@@ -189,7 +197,7 @@ InviteClientTransaction.prototype.timer_M = function() {
   if(this.state === C.STATUS_ACCEPTED) {
     this.stateChanged(C.STATUS_TERMINATED);
     window.clearTimeout(this.B);
-    delete this.request_sender.ua.transactions.ict[this.id];
+    this.request_sender.ua.destroyTransaction(this);
   }
 };
 
@@ -199,7 +207,7 @@ InviteClientTransaction.prototype.timer_B = function() {
   if(this.state === C.STATUS_CALLING) {
     this.stateChanged(C.STATUS_TERMINATED);
     this.request_sender.onRequestTimeout();
-    delete this.request_sender.ua.transactions.ict[this.id];
+    this.request_sender.ua.destroyTransaction(this);
   }
 };
 
@@ -207,7 +215,7 @@ InviteClientTransaction.prototype.timer_D = function() {
   console.log(LOG_PREFIX +'Timer D expired for INVITE client transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
   window.clearTimeout(this.B);
-  delete this.request_sender.ua.transactions.ict[this.id];
+  this.request_sender.ua.destroyTransaction(this);
 };
 
 InviteClientTransaction.prototype.sendACK = function(response) {
@@ -326,8 +334,6 @@ var AckClientTransaction = function(request_sender, request, transport) {
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
   this.request.setHeader('via', via);
-
-  this.request_sender.ua.transactions.nict[this.id] = this;
 };
 AckClientTransaction.prototype = new JsSIP.EventEmitter();
 
@@ -352,6 +358,7 @@ AckClientTransaction.prototype.onTransportError = function() {
 var NonInviteServerTransaction = function(request, ua) {
   var events = ['stateChanged'];
 
+  this.type = C.NON_INVITE_SERVER;
   this.id = request.via_branch;
   this.request = request;
   this.transport = request.transport;
@@ -361,7 +368,7 @@ var NonInviteServerTransaction = function(request, ua) {
 
   this.state = C.STATUS_TRYING;
 
-  ua.transactions.nist[this.id] = this;
+  ua.newTransaction(this);
 
   this.initEvents(events);
 };
@@ -375,7 +382,7 @@ NonInviteServerTransaction.prototype.stateChanged = function(state) {
 NonInviteServerTransaction.prototype.timer_J = function() {
   console.log(LOG_PREFIX +'Timer J expired for non-INVITE server transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
-  delete this.ua.transactions.nist[this.id];
+  this.ua.destroyTransaction(this);
 };
 
 NonInviteServerTransaction.prototype.onTransportError = function() {
@@ -385,7 +392,7 @@ NonInviteServerTransaction.prototype.onTransportError = function() {
     console.log(LOG_PREFIX +'transport error occurred, deleting non-INVITE server transaction ' + this.id);
 
     window.clearTimeout(this.J);
-    delete this.ua.transactions.nist[this.id];
+    this.ua.destroyTransaction(this);
   }
 };
 
@@ -450,6 +457,7 @@ NonInviteServerTransaction.prototype.receiveResponse = function(status_code, res
 var InviteServerTransaction = function(request, ua) {
   var events = ['stateChanged'];
 
+  this.type = C.INVITE_SERVER;
   this.id = request.via_branch;
   this.request = request;
   this.transport = request.transport;
@@ -459,7 +467,7 @@ var InviteServerTransaction = function(request, ua) {
 
   this.state = C.STATUS_PROCEEDING;
 
-  ua.transactions.ist[this.id] = this;
+  ua.newTransaction(this);
 
   this.reliableProvisionalTimer = null;
 
@@ -482,12 +490,12 @@ InviteServerTransaction.prototype.timer_H = function() {
     this.stateChanged(C.STATUS_TERMINATED);
   }
 
-  delete this.ua.transactions.ist[this.id];
+  this.ua.destroyTransaction(this);
 };
 
 InviteServerTransaction.prototype.timer_I = function() {
   this.stateChanged(C.STATUS_TERMINATED);
-  delete this.ua.transactions.ist[this.id];
+  this.ua.destroyTransaction(this);
 };
 
 // RFC 6026 7.1
@@ -496,7 +504,7 @@ InviteServerTransaction.prototype.timer_L = function() {
 
   if(this.state === C.STATUS_ACCEPTED) {
     this.stateChanged(C.STATUS_TERMINATED);
-    delete this.ua.transactions.ist[this.id];
+    this.ua.destroyTransaction(this);
   }
 };
 
@@ -510,7 +518,7 @@ InviteServerTransaction.prototype.onTransportError = function() {
     window.clearTimeout(this.L);
     window.clearTimeout(this.H);
     window.clearTimeout(this.I);
-    delete this.ua.transactions.ist[this.id];
+    this.ua.destroyTransaction(this);
   }
 };
 
