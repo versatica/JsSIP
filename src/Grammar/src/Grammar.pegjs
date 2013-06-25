@@ -811,3 +811,11 @@ turn_scheme       = scheme: ("turns"i / "turn"i) {
 
 turn_transport    = transport ("udp"i / "tcp"i / unreserved*) {
                       data.transport = transport; }
+
+// UUID URI
+uuid_URI      = "uuid:" uuid
+uuid          = uuid: hex8 "-" hex4 "-" hex4 "-" hex4 "-" hex12 {
+                  data = input.substring(pos+5, offset); }
+hex4          = HEXDIG HEXDIG HEXDIG HEXDIG
+hex8          = hex4 hex4
+hex12         = hex4 hex4 hex4

@@ -816,7 +816,9 @@ UA.prototype.loadConfig = function(configuration) {
   }
 
   // Instance-id for GRUU
-  settings.instance_id = JsSIP.Utils.newUUID();
+  if (!settings.instance_id) {
+    settings.instance_id = JsSIP.Utils.newUUID();
+  }
 
   // jssip_id instance parameter. Static random tag of length 5
   settings.jssip_id = JsSIP.Utils.createRandomToken(5);
@@ -913,7 +915,6 @@ UA.configuration_skeleton = (function() {
     skeleton = {},
     parameters = [
       // Internal parameters
-      "instance_id",
       "jssip_id",
       "register_min_expires",
       "ws_server_max_reconnection",
@@ -931,6 +932,7 @@ UA.configuration_skeleton = (function() {
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
+      "instance_id",
       "no_answer_timeout", // 30 seconds.
       "password",
       "register_expires", // 600 seconds.
@@ -1093,6 +1095,18 @@ UA.configuration_check = {
     hack_ip_in_contact: function(hack_ip_in_contact) {
       if (typeof hack_ip_in_contact === 'boolean') {
         return hack_ip_in_contact;
+      }
+    },
+
+    instance_id: function(instance_id) {
+      if (!(/^uuid?:/.test(instance_id))) {
+        instance_id = 'uuid:' + instance_id;
+      }
+
+      if(JsSIP.Grammar.parse(instance_id, 'uuid_URI') === -1) {
+        return;
+      } else {
+        return instance_id;
       }
     },
 
