@@ -79,6 +79,9 @@ Registrator.prototype = {
         return;
       }
 
+      // Clear registration timer
+      window.clearTimeout(this.registrationTimer);
+
       switch(true) {
         case /^1[0-9]{2}$/.test(response.status_code):
           // Ignore provisional responses.
