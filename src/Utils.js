@@ -72,14 +72,12 @@ Utils= {
   * @param {String} target
   * @param {String} [domain]
   */
-  normalizeURI: function(target, domain) {
-    var uri, target_array, target_user, target_domain,
-      original_target = target;
+  normalizeTarget: function(target, domain) {
+    var uri, target_array, target_user, target_domain;
 
     // If no target is given then raise an error.
     if (!target) {
-      throw new JsSIP.Exceptions.InvalidTargetError(original_target);
-
+      return;
     // If a JsSIP.URI instance is given then return it.
     } else if (target instanceof JsSIP.URI) {
       return target;
@@ -93,7 +91,7 @@ Utils= {
       switch(target_array.length) {
         case 1:
           if (!domain) {
-            throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+            return;
           }
           target_user = target;
           target_domain = domain;
@@ -122,13 +120,10 @@ Utils= {
       if (uri = JsSIP.URI.parse(target)) {
         return uri;
       } else {
-        throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+        return;
       }
-    }
-
-    // Otherwise raise an error.
-    else {
-      throw new JsSIP.Exceptions.InvalidTargetError(original_target);
+    } else {
+      return;
     }
   },
 

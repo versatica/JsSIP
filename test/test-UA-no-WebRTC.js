@@ -44,18 +44,11 @@ test('UA no WS connection', function() {
     }
   });
 
-  ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE', {
-    eventHandlers: {
-      sending: function(e) {
-        var ruri = e.data.request.ruri;
-        ok(ruri instanceof JsSIP.URI);
-        strictEqual(e.data.request.ruri.toString(), JsSIP.C.INVALID_TARGET_URI);
-      },
-      failed: function(e) {
-        strictEqual(e.data.cause, JsSIP.C.causes.INVALID_TARGET);
-      }
-    }
-  });
-
+  throws(
+    function() {
+      ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE');
+    },
+    JsSIP.Exceptions.TypeError
+  );
 });
 

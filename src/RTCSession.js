@@ -501,7 +501,7 @@ RTCSession.prototype.connect = function(target, options) {
   options = options || {};
 
   var event, requestParams,
-    invalidTarget = false,
+    originalTarget = target,
     eventHandlers = options.eventHandlers || {},
     extraHeaders = options.extraHeaders || [],
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
@@ -509,6 +509,12 @@ RTCSession.prototype.connect = function(target, options) {
 
   if (target === undefined) {
     throw new TypeError('Not enough arguments');
+  }
+
+  // Check target validity
+  target = this.ua.normalizeTarget(target);
+  if (!target) {
+    throw new TypeError('Invalid target: '+ originalTarget);
   }
 
   // Check Session Status
@@ -519,14 +525,6 @@ RTCSession.prototype.connect = function(target, options) {
   // Set event handlers
   for (event in eventHandlers) {
     this.on(event, eventHandlers[event]);
-  }
-
-  // Check target validity
-  try {
-    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.hostport_params);
-  } catch(e) {
-    target = JsSIP.URI.parse(JsSIP.C.INVALID_TARGET_URI);
-    invalidTarget = true;
   }
 
   // Session parameter initialization
@@ -568,9 +566,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.newRTCSession('local', this.request);
 
-  if (invalidTarget) {
-    this.failed('local', null, JsSIP.C.causes.INVALID_TARGET);
-  } else if (!JsSIP.WebRTC.isSupported) {
+  if (!JsSIP.WebRTC.isSupported) {
     this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);
   } else {
     this.sendInitialRequest(mediaConstraints);

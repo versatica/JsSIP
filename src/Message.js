@@ -28,10 +28,16 @@ Message.prototype.send = function(target, body, options) {
       'succeeded',
       'failed'
     ],
-    invalidTarget = false;
+    originalTarget = target;
 
   if (target === undefined || body === undefined) {
     throw new TypeError('Not enough arguments');
+  }
+
+  // Check target validity
+  target = this.ua.normalizeTarget(target);
+  if (!target) {
+    throw new TypeError('Invalid target: '+ originalTarget);
   }
 
   this.initEvents(events);
@@ -45,14 +51,6 @@ Message.prototype.send = function(target, body, options) {
   // Set event handlers
   for (event in eventHandlers) {
     this.on(event, eventHandlers[event]);
-  }
-
-  // Check target validity
-  try {
-    target = JsSIP.Utils.normalizeURI(target, this.ua.configuration.hostport_params);
-  } catch(e) {
-    target = JsSIP.URI.parse(JsSIP.C.INVALID_TARGET_URI);
-    invalidTarget = true;
   }
 
   // Message parameter initialization
@@ -79,14 +77,7 @@ Message.prototype.send = function(target, body, options) {
     request: this.request
   });
 
-  if (invalidTarget) {
-    this.emit('failed', this, {
-      originator: 'local',
-      cause: JsSIP.C.causes.INVALID_TARGET
-    });
-  } else {
-    request_sender.send();
-  }
+  request_sender.send();
 };
 
 /**

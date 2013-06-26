@@ -13,16 +13,12 @@ JsSIP.C= {
   // SIP scheme
   SIP: 'sip',
 
-  // Invalid target
-  INVALID_TARGET_URI: 'sip:invalid@invalid',
-
   // End and Failure causes
   causes: {
     // Generic error causes
     CONNECTION_ERROR:         'Connection Error',
     REQUEST_TIMEOUT:          'Request Timeout',
     SIP_FAILURE_CODE:         'SIP Failure Code',
-    INVALID_TARGET:           'Invalid Target',
     INTERNAL_ERROR:           'Internal Error',
 
     // SIP error causes

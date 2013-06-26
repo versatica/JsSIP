@@ -22,20 +22,9 @@ Exceptions= {
     return exception;
   }()),
 
-  InvalidTargetError: (function(){
-    var exception = function(target) {
-      this.code = 2;
-      this.name = 'INVALID_TARGET_ERROR';
-      this.target = target;
-      this.message = 'Invalid target: ' + this.target;
-    };
-    exception.prototype = new Error();
-    return exception;
-  }()),
-
   InvalidStateError: (function(){
     var exception = function(status) {
-      this.code = 3;
+      this.code = 2;
       this.name = 'INVALID_STATE_ERROR';
       this.status = status;
     };

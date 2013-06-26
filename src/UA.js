@@ -314,6 +314,17 @@ UA.prototype.start = function() {
   }
 };
 
+/**
+ * Normalice a string into a valid SIP request URI
+ *
+ * @param {String} target
+ *
+ * @returns {JsSIP.URI|undefined}
+ */
+UA.prototype.normalizeTarget = function(target) {
+  return JsSIP.Utils.normalizeTarget(target, this.configuration.hostport_params);
+};
+
 
 //===============================
 //  Private (For internal use)
