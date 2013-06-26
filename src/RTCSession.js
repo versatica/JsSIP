@@ -694,15 +694,13 @@ RTCSession.prototype.receiveRequest = function(request) {
     * established.
     */
 
-    // Reply 487
-    this.request.reply(487);
-
     /*
     * Terminate the whole session in case the user didn't accept nor reject the
     *request opening the session.
     */
     if(this.status === C.STATUS_WAITING_FOR_ANSWER) {
       this.status = C.STATUS_CANCELED;
+      this.request.reply(487);
       this.failed('remote', request, JsSIP.C.causes.CANCELED);
     }
   } else {

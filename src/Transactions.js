@@ -671,6 +671,7 @@ var checkTransaction = function(ua, request) {
     case JsSIP.C.CANCEL:
       tr = ua.transactions.ist[request.via_branch];
       if(tr) {
+        request.reply_sl(200);
         if(tr.state === C.STATUS_PROCEEDING) {
           return false;
         } else {
