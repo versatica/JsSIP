@@ -8,3 +8,5 @@ Here the list of contributors with code and patches to JsSIP project. Thanks a l
 * [Iwan Budi Kusnanto](https://github.com/iwanbk)
 * Davide Corda
 * [Anthony Minessale](https://github.com/FreeSWITCH)
+* [Gavin Llewellyn](https://github.com/gavllew)
+
