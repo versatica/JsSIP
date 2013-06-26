@@ -460,7 +460,6 @@ UA.prototype.receiveRequest = function(request) {
         request.reply(481);
         break;
       case JsSIP.C.CANCEL:
-        request.reply(200);
         session = this.findSession(request);
         if(session) {
           session.receiveRequest(request);
