@@ -9,13 +9,43 @@ WebRTC = {};
 
 // getUserMedia
 if (window.navigator.webkitGetUserMedia) {
-  WebRTC.getUserMedia = window.navigator.webkitGetUserMedia.bind(navigator);
+	WebRTC.getNewUserMedia = window.navigator.webkitGetUserMedia.bind(navigator);
 }
 else if (window.navigator.mozGetUserMedia) {
-  WebRTC.getUserMedia = window.navigator.mozGetUserMedia.bind(navigator);
+	WebRTC.getNewUserMedia = window.navigator.mozGetUserMedia.bind(navigator);
 }
 else if (window.navigator.getUserMedia) {
-  WebRTC.getUserMedia = window.navigator.getUserMedia.bind(navigator);
+	WebRTC.getNewUserMedia = window.navigator.getUserMedia.bind(navigator);
+}
+
+if (WebRTC.getNewUserMedia) {
+	WebRTC.cacheUserMedia = false;
+	WebRTC.cachedStream = null;
+
+	// Get shared user media if flagged, else new
+	WebRTC.getUserMedia = function (constraints, onSuccess, onFailure) {
+		var self = this;
+
+		if (!this.cacheUserMedia || this.cachedStream == null) {
+			// Get new user media
+			WebRTC.getNewUserMedia(constraints, function (stream) {
+				onSuccess(stream);
+
+				if (self.cacheUserMedia) {
+					// Store local stream for reuse if cacheUserMedia is set to true
+					self.cachedStream = stream;
+				}
+				else if (self.cachedStream != null) {
+					// Reset reusable local stream if cacheUserMedia is set to false
+					self.cachedStream = null;
+				}
+			}, onFailure);
+		}
+		else {
+			// Call success and pass through reusable local stream
+			onSuccess(this.cachedStream);
+		}
+	}
 }
 
 // RTCPeerConnection
