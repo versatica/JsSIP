@@ -136,7 +136,7 @@ Transport.prototype = {
     this.connected = false;
     this.lastTransportError.code = e.code;
     this.lastTransportError.reason = e.reason;
-    console.warn(LOG_PREFIX +'WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
+    console.log(LOG_PREFIX +'WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
 
     if(e.wasClean === false) {
       console.warn(LOG_PREFIX +'WebSocket abrupt disconnection');
