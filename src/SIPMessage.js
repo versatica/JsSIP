@@ -168,34 +168,16 @@ IncomingMessage.prototype = {
   },
 
   /**
-   * Count the number of headers of the given header name.
-   * @param {String} name header name
-   * @returns {Number} Number of headers with the given name
-   */
-  countHeader: function(name) {
-    var header = this.headers[JsSIP.Utils.headerize(name)];
-
-    if(header) {
-      return header.length;
-    } else {
-      return 0;
-    }
-  },
-
-  /**
    * Get the value of the given header name at the given position.
    * @param {String} name header name
-   * @param {Number} [idx=0] header index
    * @returns {String|undefined} Returns the specified header, null if header doesn't exist.
    */
-  getHeader: function(name, idx) {
+  getHeader: function(name) {
     var header = this.headers[JsSIP.Utils.headerize(name)];
 
-    idx = idx || 0;
-
     if(header) {
-      if(header[idx]) {
-        return header[idx].raw;
+      if(header[0]) {
+        return header[0].raw;
       }
     } else {
       return;
@@ -207,7 +189,7 @@ IncomingMessage.prototype = {
    * @param {String} name header name
    * @returns {Array} Array with all the headers of the specified name.
    */
-  getHeaderAll: function(name) {
+  getHeaders: function(name) {
     var idx,
       header = this.headers[JsSIP.Utils.headerize(name)],
       result = [];
@@ -344,17 +326,19 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
   if(this.method === JsSIP.C.INVITE && code > 100 && code <= 200) {
-    rr = this.countHeader('record-route');
+    rr = this.getHeaders('record-route');
+    length = rr.length;
 
-    for(r; r < rr; r++) {
-      response += 'Record-Route: ' + this.getHeader('record-route', r) + '\r\n';
+    for(r; r < length; r++) {
+      response += 'Record-Route: ' + rr[r] + '\r\n';
     }
   }
 
-  vias = this.countHeader('via');
+  vias = this.getHeaders('via');
+  length = vias.length;
 
-  for(v; v < vias; v++) {
-    response += 'Via: ' + this.getHeader('via', v) + '\r\n';
+  for(v; v < length; v++) {
+    response += 'Via: ' + vias[v] + '\r\n';
   }
 
   if(!this.to_tag && code > 100) {
@@ -392,7 +376,9 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
 */
 IncomingRequest.prototype.reply_sl = function(code, reason) {
   var to, response,
-    vias = this.countHeader('via');
+    v = 0,
+    vias = this.getHeaders('via'),
+    length = vias.length;
 
   code = code || null;
   reason = reason || null;
@@ -408,8 +394,8 @@ IncomingRequest.prototype.reply_sl = function(code, reason) {
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
-  for(var v = 0; v < vias; v++) {
-    response += 'Via: ' + this.getHeader('via', v) + '\r\n';
+  for(v; v < length; v++) {
+    response += 'Via: ' + vias[v] + '\r\n';
   }
 
   to = this.getHeader('To');

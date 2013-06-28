@@ -56,7 +56,7 @@ Dialog = function(owner, message, type, state) {
     this.local_uri = message.parseHeader('to').uri;
     this.remote_uri = message.parseHeader('from').uri;
     this.remote_target = contact.uri;
-    this.route_set = message.getHeaderAll('record-route');
+    this.route_set = message.getHeaders('record-route');
   }
   // RFC 3261 12.1.2
   else if(type === 'UAC') {
@@ -73,7 +73,7 @@ Dialog = function(owner, message, type, state) {
     this.local_uri = message.parseHeader('from').uri;
     this.remote_uri = message.parseHeader('to').uri;
     this.remote_target = contact.uri;
-    this.route_set = message.getHeaderAll('record-route').reverse();
+    this.route_set = message.getHeaders('record-route').reverse();
   }
 
   this.owner = owner;
@@ -93,7 +93,7 @@ Dialog.prototype = {
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
-      this.route_set = message.getHeaderAll('record-route').reverse();
+      this.route_set = message.getHeaders('record-route').reverse();
     }
   },
 

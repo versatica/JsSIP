@@ -72,7 +72,7 @@ Registrator.prototype = {
     */
     this.receiveResponse = function(response) {
       var contact, expires, min_expires,
-        contacts = response.countHeader('contact');
+        contacts = response.getHeaders('contact').length;
 
       // Discard responses to older REGISTER/un-REGISTER requests.
       if(response.cseq !== this.cseq) {

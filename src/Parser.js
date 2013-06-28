@@ -56,7 +56,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
     case 'via':
     case 'v':
       message.addHeader('via', headerValue);
-      if(message.countHeader('via') === 1) {
+      if(message.getHeaders('via').length === 1) {
         parsed = message.parseHeader('Via');
         if(parsed) {
           message.via = parsed;
@@ -94,7 +94,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
       for(idx in parsed) {
         header = parsed[idx];
         message.addHeader('record-route', headerValue.substring(header.possition, header.offset));
-        message.headers['Record-Route'][message.countHeader('record-route')-1].parsed = header.parsed;
+        message.headers['Record-Route'][message.getHeaders('record-route').length - 1].parsed = header.parsed;
       }
       break;
     case 'call-id':
@@ -116,7 +116,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
       for(idx in parsed) {
         header = parsed[idx];
         message.addHeader('contact', headerValue.substring(header.possition, header.offset));
-        message.headers['Contact'][message.countHeader('contact')-1].parsed = header.parsed;
+        message.headers['Contact'][message.getHeaders('contact').length - 1].parsed = header.parsed;
       }
       break;
     case 'content-length':

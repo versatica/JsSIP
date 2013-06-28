@@ -106,7 +106,7 @@ function rfc3261_8_2_2_2() {
 
 // Sanity Check functions for responses
 function rfc3261_8_1_3_3() {
-  if(message.countHeader('via') > 1) {
+  if(message.getHeaders('via').length > 1) {
     console.warn(LOG_PREFIX +'More than one Via header field present in the response. Dropping the response');
     return false;
   }
@@ -149,11 +149,12 @@ function minimumHeaders() {
 function reply(status_code) {
   var to,
     response = "SIP/2.0 " + status_code + " " + JsSIP.C.REASON_PHRASE[status_code] + "\r\n",
-    via_length = message.countHeader('via'),
+    vias = message.getHeaders('via'),
+    length = vias.length,
     idx = 0;
 
-  for(idx; idx < via_length; idx++) {
-    response += "Via: " + message.getHeader('via', idx) + "\r\n";
+  for(idx; idx < length; idx++) {
+    response += "Via: " + vias[idx] + "\r\n";
   }
 
   to = message.getHeader('To');
