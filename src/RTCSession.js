@@ -511,6 +511,11 @@ RTCSession.prototype.connect = function(target, options) {
     throw new TypeError('Not enough arguments');
   }
 
+  // Check WebRTC support
+  if (!JsSIP.WebRTC.isSupported) {
+    throw new TypeError('WebRTC not supported');
+  }
+
   // Check target validity
   target = this.ua.normalizeTarget(target);
   if (!target) {
@@ -566,11 +571,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.newRTCSession('local', this.request);
 
-  if (!JsSIP.WebRTC.isSupported) {
-    this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);
-  } else {
-    this.sendInitialRequest(mediaConstraints);
-  }
+  this.sendInitialRequest(mediaConstraints);
 };
 
 /**
