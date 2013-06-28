@@ -30,6 +30,16 @@ Exceptions= {
     };
     exception.prototype = new Error();
     return exception;
+  }()),
+
+  NotSupportedError: (function(){
+    var exception = function(message) {
+      this.code = 3;
+      this.name = 'NOT_SUPPORTED_ERROR';
+      this.message = message;
+    };
+    exception.prototype = new Error();
+    return exception;
   }())
 };
 

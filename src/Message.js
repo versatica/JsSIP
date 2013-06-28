@@ -190,7 +190,7 @@ Message.prototype.accept = function(options) {
     body = options.body;
 
   if (this.direction !== 'incoming') {
-    throw new TypeError('Invalid method "accept" for an outgoing message');
+    throw new JsSIP.Exceptions.NotSupportedError('"accept" not supported for outgoing Message');
   }
 
   this.request.reply(200, null, extraHeaders, body);
@@ -213,7 +213,7 @@ Message.prototype.reject = function(options) {
     body = options.body;
 
   if (this.direction !== 'incoming') {
-    throw new TypeError('Invalid method "reject" for an outgoing message');
+    throw new JsSIP.Exceptions.NotSupportedError('"reject" not supported for outgoing Message');
   }
 
   if (status_code < 300 || status_code >= 700) {

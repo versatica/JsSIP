@@ -283,7 +283,7 @@ RTCSession.prototype.answer = function(options) {
 
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
-    throw new TypeError('Invalid method "answer" for an outgoing call');
+    throw new JsSIP.Exceptions.NotSupportedError('"answer" not supported for outgoing RTCSession');
   } else if (this.status !== C.STATUS_WAITING_FOR_ANSWER) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
@@ -513,7 +513,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   // Check WebRTC support
   if (!JsSIP.WebRTC.isSupported) {
-    throw new TypeError('WebRTC not supported');
+    throw new JsSIP.Exceptions.NotSupportedError('WebRTC not supported');
   }
 
   // Check target validity
