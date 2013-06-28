@@ -10,10 +10,10 @@
  * @param {JsSIP.UA} ua
  */
 (function(JsSIP) {
-var DigestAuthentication,
-  LOG_PREFIX = JsSIP.name +' | '+ 'DIGEST AUTHENTICATION' +' | ';
+var DigestAuthentication;
 
 DigestAuthentication = function(ua) {
+  this.logger = ua.createLogger('jssip.digestauth');
   this.username = ua.configuration.authorization_user;
   this.password = ua.configuration.password;
   this.cnonce = null;
@@ -42,7 +42,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
   if (this.algorithm) {
     if (this.algorithm !== 'MD5') {
-      console.warn(LOG_PREFIX + 'challenge with Digest algorithm different than "MD5", authentication aborted');
+      this.logger.warn('challenge with Digest algorithm different than "MD5", authentication aborted');
       return false;
     }
   } else {
@@ -50,12 +50,12 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
   }
 
   if (! this.realm) {
-    console.warn(LOG_PREFIX + 'challenge without Digest realm, authentication aborted');
+    this.logger.warn('challenge without Digest realm, authentication aborted');
     return false;
   }
 
   if (! this.nonce) {
-    console.warn(LOG_PREFIX + 'challenge without Digest nonce, authentication aborted');
+    this.logger.warn('challenge without Digest nonce, authentication aborted');
     return false;
   }
 
@@ -67,7 +67,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
       this.qop = 'auth-int';
     } else {
       // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-      console.warn(LOG_PREFIX + 'challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
+      this.logger.warn('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
       return false;
     }
   } else {

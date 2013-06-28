@@ -10,7 +10,6 @@
 var
   EventEmitter,
   Event,
-  LOG_PREFIX = JsSIP.name +' | '+ 'EVENT EMITTER' +' | ',
   C = {
     MAX_LISTENERS: 10
   };
@@ -30,7 +29,7 @@ EventEmitter.prototype = {
     this.oneTimeListeners = {};
 
     for (idx in events) {
-      console.log(LOG_PREFIX +'adding event '+ events[idx]);
+      this.logger.log('adding event '+ events[idx]);
       this.events[events[idx]] = [];
       this.oneTimeListeners[events[idx]] = [];
     }
@@ -54,19 +53,19 @@ EventEmitter.prototype = {
     if (listener === undefined) {
       return;
     } else if (typeof listener !== 'function') {
-      console.error('listener must be a function');
+      this.logger.error('listener must be a function');
       return;
     } else if (!this.checkEvent(event)) {
-      console.error(LOG_PREFIX +'unable to add a listener to a nonexistent event'+ event);
+      this.logger.error('unable to add a listener to a nonexistent event'+ event);
       return;
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      console.warn(LOG_PREFIX +'max listeners exceeded for event '+ event);
+      this.logger.warn('max listeners exceeded for event '+ event);
     }
 
     this.events[event].push(listener);
-    console.log(LOG_PREFIX +'new listener added to event '+ event);
+    this.logger.log('new listener added to event '+ event);
   },
 
   on: function(event, listener) {
@@ -97,9 +96,9 @@ EventEmitter.prototype = {
     if (listener === undefined) {
       return;
     } else if (typeof listener !== 'function') {
-      console.error('listener must be a function');
+      this.logger.error('listener must be a function');
     } else if (!this.checkEvent(event)) {
-      console.error(LOG_PREFIX +'unable to remove a listener from a nonexistent event'+ event);
+      this.logger.error('unable to remove a listener from a nonexistent event'+ event);
       return;
     }
 
@@ -121,7 +120,7 @@ EventEmitter.prototype = {
   */
   removeAllListener: function(event) {
     if (!this.checkEvent(event)) {
-      console.error(LOG_PREFIX +'unable to remove listeners from a nonexistent event'+ event);
+      this.logger.error('unable to remove listeners from a nonexistent event'+ event);
       return;
     }
 
@@ -137,7 +136,7 @@ EventEmitter.prototype = {
   */
   setMaxListeners: function(listeners) {
     if (typeof listeners !== 'number' || listeners < 0) {
-      console.error('listeners must be a positive number');
+      this.logger.error('listeners must be a positive number');
       return;
     }
 
@@ -151,7 +150,7 @@ EventEmitter.prototype = {
   */
   listeners: function(event) {
     if (!this.checkEvent(event)) {
-      console.error(LOG_PREFIX +'no event '+ event);
+      this.logger.error('no event '+ event);
       return;
     }
 
@@ -167,11 +166,11 @@ EventEmitter.prototype = {
     var listeners, idx, e;
 
     if (!this.checkEvent(event)) {
-      console.error(LOG_PREFIX +'unable to emit a nonexistent event'+ event);
+      this.logger.error('unable to emit a nonexistent event'+ event);
       return;
     }
 
-    console.log(LOG_PREFIX +'emitting event '+ event);
+    this.logger.log('emitting event '+ event);
 
     e = new JsSIP.Event(event, sender, data);
 
@@ -181,7 +180,7 @@ EventEmitter.prototype = {
       try {
         listeners[idx].apply(null, [e]);
       } catch(err) {
-        console.error(err.stack);
+        this.logger.error(err.stack);
       }
     }
 

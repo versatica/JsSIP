@@ -14,7 +14,6 @@ var RTCMediaHandler = @@include('../src/RTCSession/RTCMediaHandler.js')
 var DTMF            = @@include('../src/RTCSession/DTMF.js')
 
 var RTCSession,
-  LOG_PREFIX = JsSIP.name +' | '+ 'RTC SESSION' +' | ',
   C = {
     // RTCSession states
     STATUS_NULL:               0,
@@ -38,6 +37,7 @@ RTCSession = function(ua) {
   'newDTMF'
   ];
 
+  this.logger = ua.createLogger('jssip.rtcsession');
   this.ua = ua;
   this.status = C.STATUS_NULL;
   this.dialog = null;
@@ -94,7 +94,7 @@ RTCSession.prototype.terminate = function(options) {
     case C.STATUS_NULL:
     case C.STATUS_INVITE_SENT:
     case C.STATUS_1XX_RECEIVED:
-      console.log(LOG_PREFIX +'canceling RTCSession');
+      this.logger.log('canceling RTCSession');
 
       if (status_code && (status_code < 200 || status_code >= 700)) {
         throw new TypeError('Invalid status_code: '+ status_code);
@@ -123,7 +123,7 @@ RTCSession.prototype.terminate = function(options) {
 
       // - UAS -
     case C.STATUS_WAITING_FOR_ANSWER:
-      console.log(LOG_PREFIX +'rejecting RTCSession');
+      this.logger.log('rejecting RTCSession');
 
       status_code = status_code || 480;
 
@@ -136,7 +136,7 @@ RTCSession.prototype.terminate = function(options) {
       break;
     case C.STATUS_WAITING_FOR_ACK:
     case C.STATUS_CONFIRMED:
-      console.log(LOG_PREFIX +'terminating RTCSession');
+      this.logger.log('terminating RTCSession');
 
       reason_phrase = options.reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '';
 
@@ -245,7 +245,7 @@ RTCSession.prototype.answer = function(options) {
            */
           self.timers.ackTimer = window.setTimeout(function() {
               if(self.status === C.STATUS_WAITING_FOR_ACK) {
-                console.log(LOG_PREFIX + 'no ACK received, terminating the call');
+                self.logger.log('no ACK received, terminating the call');
                 window.clearTimeout(self.timers.invite2xxTimer);
                 self.sendRequest(JsSIP.C.BYE);
                 self.ended('remote', null, JsSIP.C.causes.NO_ACK);
@@ -340,7 +340,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   } else if (!interToneGap) {
     interToneGap = DTMF.C.DEFAULT_INTER_TONE_GAP;
   } else if (interToneGap < DTMF.C.MIN_INTER_TONE_GAP) {
-    console.warn(LOG_PREFIX +'"interToneGap" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
+    this.logger.warn('"interToneGap" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
     interToneGap = DTMF.C.MIN_INTER_TONE_GAP;
   } else {
     interToneGap = Math.abs(interToneGap);
@@ -489,8 +489,8 @@ RTCSession.prototype.init_incoming = function(request) {
      * Bad media description
      */
     function(e) {
-      console.warn(LOG_PREFIX +'invalid SDP');
-      console.warn(e);
+      self.logger.warn('invalid SDP');
+      self.logger.warn(e);
       request.reply(488);
     }
   );
@@ -586,7 +586,7 @@ RTCSession.prototype.close = function() {
     return;
   }
 
-  console.log(LOG_PREFIX +'closing INVITE session ' + this.id);
+  this.logger.log('closing INVITE session ' + this.id);
 
   // 1st Step. Terminate media.
   if (this.rtcMediaHandler){
@@ -720,7 +720,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP.C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
-          console.log(LOG_PREFIX +'re-INVITE received');
+          this.logger.log('re-INVITE received');
         }
         break;
       case JsSIP.C.INFO:
@@ -835,7 +835,7 @@ RTCSession.prototype.receiveResponse = function(response) {
     case /^1[0-9]{2}$/.test(response.status_code):
       // Do nothing with 1xx responses without To tag.
       if(!response.to_tag) {
-        console.warn(LOG_PREFIX +'1xx response received without to tag');
+        this.logger.warn('1xx response received without to tag');
         break;
       }
 
@@ -882,7 +882,7 @@ RTCSession.prototype.receiveResponse = function(response) {
          * SDP Answer does not fit the Offer. Accept the call and Terminate.
          */
         function(e) {
-          console.warn(e);
+          session.logger.warn(e);
           session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
           session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
         }

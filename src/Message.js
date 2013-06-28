@@ -12,6 +12,7 @@ var Message;
 
 Message = function(ua) {
   this.ua = ua;
+  this.logger = ua.createLogger('jssip.message');
   this.direction = null;
   this.local_identity = null;
   this.remote_identity = null;

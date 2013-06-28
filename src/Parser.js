@@ -8,8 +8,7 @@
  * @namespace
  */
 (function(JsSIP) {
-var Parser,
-  LOG_PREFIX = JsSIP.name +' | '+ 'PARSER' +' | ';
+var Parser;
 
 function getHeader(data, headerStart) {
   var
@@ -167,16 +166,17 @@ function parseHeader(message, data, headerStart, headerEnd) {
 /** Parse SIP Message
  * @function
  * @param {String} message SIP message.
+ * @param {Object} logger object.
  * @returns {JsSIP.IncomingRequest|JsSIP.IncomingResponse|undefined}
  */
 Parser = {};
-Parser.parseMessage = function(data) {
+Parser.parseMessage = function(data, logger) {
   var message, firstLine, contentLength, bodyStart, parsed,
     headerStart = 0,
     headerEnd = data.indexOf('\r\n');
 
   if(headerEnd === -1) {
-    console.warn(LOG_PREFIX +'no CRLF found, not a SIP message, discarded');
+    logger.warn('no CRLF found, not a SIP message, discarded');
     return;
   }
 
@@ -185,7 +185,7 @@ Parser.parseMessage = function(data) {
   parsed = JsSIP.Grammar.parse(firstLine, 'Request_Response');
 
   if(parsed === -1) {
-    console.warn(LOG_PREFIX +'error parsing first line of SIP message: "' + firstLine + '"');
+    logger.warn('error parsing first line of SIP message: "' + firstLine + '"');
     return;
   } else if(!parsed.status_code) {
     message = new JsSIP.IncomingRequest();
