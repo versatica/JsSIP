@@ -9,7 +9,6 @@
  */
 (function(JsSIP) {
 var UA,
-  LOG_PREFIX = JsSIP.name +' | '+ 'UA' +' | ',
   C = {
     // UA status codes
     STATUS_INIT :                0,
@@ -151,6 +150,7 @@ UA = function(configuration) {
 };
 UA.prototype = new JsSIP.EventEmitter();
 
+
 //=================
 //  High Level API
 //=================
@@ -249,22 +249,22 @@ UA.prototype.stop = function() {
     }
   }
 
-  console.log(LOG_PREFIX +'user requested closure...');
+  this.logger.log('user requested closure...');
 
   if(this.status === C.STATUS_USER_CLOSED) {
-    console.warn('UA already closed');
+    this.logger.warn('UA already closed');
     return;
   }
 
   // Close registrator
   if(this.registrator) {
-    console.log(LOG_PREFIX +'closing registrator');
+    this.logger.log('closing registrator');
     this.registrator.close();
   }
 
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
-    console.log(LOG_PREFIX +'closing session ' + session);
+    this.logger.log('closing session ' + session);
     this.sessions[session].terminate();
   }
 
@@ -298,19 +298,19 @@ UA.prototype.stop = function() {
 UA.prototype.start = function() {
   var server;
 
-  console.log(LOG_PREFIX +'user requested startup...');
+  this.logger.log('user requested startup...');
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     new JsSIP.Transport(this, server);
   } else if(this.status === C.STATUS_USER_CLOSED) {
-    console.log(LOG_PREFIX +'resuming');
+    this.logger.log('resuming');
     this.status = C.STATUS_READY;
     this.transport.connect();
   } else if (this.status === C.STATUS_READY) {
-    console.log(LOG_PREFIX +'UA is in READY status, not resuming');
+    this.logger.log('UA is in READY status, not resuming');
   } else {
-    console.error('Connection is down. Auto-Recovery system is trying to connect');
+    this.logger.error('Connection is down. Auto-Recovery system is trying to connect');
   }
 };
 
@@ -348,6 +348,10 @@ UA.prototype.getCredentials = function(request) {
   return credentials;
 };
 
+UA.prototype.createLogger = function(category) {
+    return this.configuration.logger_factory.call(window, category);
+};
+
 
 //==========================
 // Event Handlers
@@ -365,7 +369,7 @@ UA.prototype.onTransportClosed = function(transport) {
     client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = JsSIP.Transport.C.STATUS_DISCONNECTED;
-  console.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
+  this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
 
   for(type in client_transactions) {
     for(idx in this.transactions[client_transactions[type]]) {
@@ -390,7 +394,7 @@ UA.prototype.onTransportClosed = function(transport) {
 UA.prototype.onTransportError = function(transport) {
   var server;
 
-  console.log(LOG_PREFIX +'transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.Transport.C.STATUS_ERROR);
+  this.logger.log('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.Transport.C.STATUS_ERROR);
 
   // Close sessions.
   //Mark this transport as 'down' and try the next one
@@ -430,7 +434,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = JsSIP.Transport.C.STATUS_READY;
-  console.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_READY);
+  this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -496,7 +500,7 @@ UA.prototype.receiveRequest = function(request) {
 
   // Check that Ruri points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
-    console.warn(LOG_PREFIX +'Request-URI does not point to us');
+    this.logger.warn('Request-URI does not point to us');
     if (request.method !== JsSIP.C.ACK) {
       request.reply_sl(404);
     }
@@ -548,7 +552,7 @@ UA.prototype.receiveRequest = function(request) {
           session = new JsSIP.RTCSession(this);
           session.init_incoming(request);
         } else {
-          console.warn(LOG_PREFIX +'INVITE received but WebRTC is not supported');
+          this.logger.warn('INVITE received but WebRTC is not supported');
           request.reply(488);
         }
         break;
@@ -561,7 +565,7 @@ UA.prototype.receiveRequest = function(request) {
         if(session) {
           session.receiveRequest(request);
         } else {
-          console.warn(LOG_PREFIX +'received CANCEL request for a non existent session');
+          this.logger.warn('received CANCEL request for a non existent session');
         }
         break;
       case JsSIP.C.ACK:
@@ -586,7 +590,7 @@ UA.prototype.receiveRequest = function(request) {
       if(session) {
         session.receiveRequest(request);
       } else {
-        console.warn(LOG_PREFIX +'received NOTIFY request for a non existent session');
+        this.logger.warn('received NOTIFY request for a non existent session');
         request.reply(481, 'Subscription does not exist');
       }
     }
@@ -715,12 +719,12 @@ UA.prototype.recoverTransport = function(ua) {
   nextRetry = k * ua.configuration.connection_recovery_min_interval;
 
   if (nextRetry > ua.configuration.connection_recovery_max_interval) {
-    console.log(LOG_PREFIX + 'time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
+    this.logger.log('time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
     nextRetry = ua.configuration.connection_recovery_min_interval;
     count = 0;
   }
 
-  console.log(LOG_PREFIX + 'next connection attempt in '+ nextRetry +' seconds');
+  this.logger.log('next connection attempt in '+ nextRetry +' seconds');
 
   window.setTimeout(
     function(){
@@ -768,6 +772,36 @@ UA.prototype.loadConfig = function(configuration) {
 
       // Logging parameters
       trace_sip: false,
+
+      logger_factory: function(category) {
+        function DefaultLogger(category) {
+          var prefixed = function(target, args) {
+            if (typeof args[0] === 'string') {
+              var newArgs = Array.prototype.slice.call(args, 1);
+              newArgs.unshift("[" + category + "] " + args[0]);
+              target.apply(console, newArgs);
+            }
+            else {
+              target.apply(console, args);
+            }
+          };
+
+          this.debug = function() {
+            prefixed(console.debug, arguments);
+          };
+          this.log = function() {
+            prefixed(console.log, arguments);
+          };
+          this.warn = function() {
+            prefixed(console.warn, arguments);
+          };
+          this.error = function() {
+            prefixed(console.error, arguments);
+          };
+          return this;
+        }
+        return new DefaultLogger(category);
+      },
 
       // Hacks
       hack_via_tcp: false,
@@ -889,19 +923,7 @@ UA.prototype.loadConfig = function(configuration) {
   };
 
   // Fill the value of the configuration_skeleton
-  console.log(LOG_PREFIX + 'configuration parameters after validation:');
   for(parameter in settings) {
-    switch(parameter) {
-      case 'uri':
-      case 'registrar_server':
-        console.log('· ' + parameter + ': ' + settings[parameter]);
-        break;
-      case 'password':
-        console.log('· ' + parameter + ': ' + 'NOT SHOWN');
-        break;
-      default:
-        console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
-    }
     UA.configuration_skeleton[parameter].value = settings[parameter];
   }
 
@@ -912,9 +934,25 @@ UA.prototype.loadConfig = function(configuration) {
     UA.configuration_skeleton[parameter].value = '';
   }
 
+  this.logger = this.createLogger('jssip.ua');
+
+  this.logger.log('configuration parameters after validation:');
+  for(parameter in settings) {
+    switch(parameter) {
+      case 'uri':
+      case 'registrar_server':
+        this.logger.log('· ' + parameter + ': ' + settings[parameter]);
+        break;
+      case 'password':
+        this.logger.log('· ' + parameter + ': ' + 'NOT SHOWN');
+        break;
+      default:
+        this.logger.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+    }
+  }
+
   return;
 };
-
 
 /**
  * Configuration Object skeleton.
@@ -949,6 +987,7 @@ UA.configuration_skeleton = (function() {
       "registrar_server",
       "stun_servers",
       "trace_sip",
+      "logger_factory",
       "turn_servers",
       "use_preloaded_route",
 
@@ -1027,21 +1066,21 @@ UA.configuration_check = {
 
       for (idx in ws_servers) {
         if (!ws_servers[idx].ws_uri) {
-          console.error(LOG_PREFIX +'missing "ws_uri" attribute in ws_servers parameter');
+          this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
           return;
         }
         if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
-          console.error(LOG_PREFIX +'"weight" attribute in ws_servers parameter must be a Number');
+          this.logger.error('"weight" attribute in ws_servers parameter must be a Number');
           return;
         }
 
         url = JsSIP.Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
-          console.error(LOG_PREFIX +'invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
+          this.logger.error('invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
           return;
         } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
-          console.error(LOG_PREFIX +'invalid URI scheme in ws_servers parameter: ' + url.scheme);
+          this.logger.error('invalid URI scheme in ws_servers parameter: ' + url.scheme);
           return;
         } else {
           ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
@@ -1194,6 +1233,12 @@ UA.configuration_check = {
     trace_sip: function(trace_sip) {
       if (typeof trace_sip === 'boolean') {
         return trace_sip;
+      }
+    },
+
+    logger_factory: function(logger_factory) {
+      if (typeof logger_factory === 'function') {
+        return logger_factory;
       }
     },
 

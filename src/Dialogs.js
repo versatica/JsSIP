@@ -16,7 +16,6 @@
 var RequestSender   = @@include('../src/Dialog/RequestSender.js')
 
 var Dialog,
-  LOG_PREFIX = JsSIP.name +' | '+ 'DIALOG' +' | ',
   C = {
     // Dialog states
     STATUS_EARLY:       1,
@@ -27,8 +26,10 @@ var Dialog,
 Dialog = function(owner, message, type, state) {
   var contact;
 
+  this.logger = owner.ua.createLogger('jssip.dialog');
+
   if(!message.hasHeader('contact')) {
-    console.error(LOG_PREFIX +'unable to create a Dialog without Contact header field');
+    this.logger.error('unable to create a Dialog without Contact header field');
     return false;
   }
 
@@ -78,7 +79,7 @@ Dialog = function(owner, message, type, state) {
 
   this.owner = owner;
   owner.ua.dialogs[this.id.toString()] = this;
-  console.log(LOG_PREFIX +'new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
+  this.logger.log('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 };
 
 Dialog.prototype = {
@@ -89,7 +90,7 @@ Dialog.prototype = {
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
-    console.log(LOG_PREFIX +'dialog '+ this.id.toString() +'  changed to CONFIRMED state');
+    this.logger.log('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -98,7 +99,7 @@ Dialog.prototype = {
   },
 
   terminate: function() {
-    console.log(LOG_PREFIX +'dialog ' + this.id.toString() + ' deleted');
+    this.logger.log('dialog ' + this.id.toString() + ' deleted');
     delete this.owner.ua.dialogs[this.id.toString()];
   },
 

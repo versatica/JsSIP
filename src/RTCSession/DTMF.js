@@ -23,6 +23,7 @@ DTMF = function(session) {
   'failed'
   ];
 
+  this.logger = session.ua.createLogger('jssip.rtcsession.dtmf');
   this.owner = session;
   this.direction = null;
   this.tone = null;
@@ -75,10 +76,10 @@ DTMF.prototype.send = function(tone, options) {
   } else if (!options.duration) {
     options.duration = C.DEFAULT_DURATION;
   } else if (options.duration < C.MIN_DURATION) {
-    console.warn(LOG_PREFIX +'"duration" value is lower than the minimum allowed, setting it to '+ C.MIN_DURATION+ ' milliseconds');
+    this.logger.warn('"duration" value is lower than the minimum allowed, setting it to '+ C.MIN_DURATION+ ' milliseconds');
     options.duration = C.MIN_DURATION;
   } else if (options.duration > C.MAX_DURATION) {
-    console.warn(LOG_PREFIX +'"duration" value is greater than the maximum allowed, setting it to '+ C.MAX_DURATION +' milliseconds');
+    this.logger.warn('"duration" value is greater than the maximum allowed, setting it to '+ C.MAX_DURATION +' milliseconds');
     options.duration = C.MAX_DURATION;
   } else {
     options.duration = Math.abs(options.duration);
@@ -196,7 +197,7 @@ DTMF.prototype.init_incoming = function(request) {
   }
 
   if (!this.tone || !this.duration) {
-    console.warn(LOG_PREFIX +'invalid INFO DTMF received, discarded');
+    this.logger.warn('invalid INFO DTMF received, discarded');
   } else {
     this.owner.emit('newDTMF', this.owner, {
       originator: 'remote',

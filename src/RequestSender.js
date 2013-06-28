@@ -10,10 +10,10 @@
  * @param {JsSIP.UA} ua
  */
 (function(JsSIP) {
-var RequestSender,
-  LOG_PREFIX = JsSIP.name +' | '+ 'REQUEST SENDER' +' | ';
+var RequestSender;
 
 RequestSender = function(applicant, ua) {
+  this.logger = ua.createLogger('jssip.requestsender');
   this.ua = ua;
   this.applicant = applicant;
   this.method = applicant.request.method;
@@ -90,7 +90,7 @@ RequestSender.prototype = {
 
       // Verify it seems a valid challenge.
       if (! challenge) {
-        console.warn(LOG_PREFIX + response.status_code + ' with wrong or missing challenge, cannot authenticate');
+        this.logger.warn(response.status_code + ' with wrong or missing challenge, cannot authenticate');
         this.applicant.receiveResponse(response);
         return;
       }
