@@ -7,8 +7,7 @@ var
   OutgoingRequest,
   IncomingMessage,
   IncomingRequest,
-  IncomingResponse,
-  LOG_PREFIX = JsSIP.name +' | '+ 'SIP MESSAGE' +' | ';
+  IncomingResponse;
 
 /**
  * @augments JsSIP
@@ -36,6 +35,7 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
     return null;
   }
 
+  this.logger = ua.createLogger('jssip.sipmessage');
   this.headers = {};
   this.method = method;
   this.ruri = ruri;
@@ -228,10 +228,10 @@ IncomingMessage.prototype = {
     idx = idx || 0;
 
     if(!this.headers[name]) {
-      console.log(LOG_PREFIX +'header "' + name + '" not present');
+      this.logger.log('header "' + name + '" not present');
       return;
     } else if(idx >= this.headers[name].length) {
-      console.log(LOG_PREFIX +'not so many "' + name + '" headers present');
+      this.logger.log('not so many "' + name + '" headers present');
       return;
     }
 
@@ -247,7 +247,7 @@ IncomingMessage.prototype = {
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      console.warn(LOG_PREFIX +'error parsing "' + name + '" header field with value "' + value + '"');
+      this.logger.warn('error parsing "' + name + '" header field with value "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
