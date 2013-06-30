@@ -79,7 +79,10 @@ Registrator.prototype = {
       }
 
       // Clear registration timer
-      window.clearTimeout(this.registrationTimer);
+      if (this.registrationTimer !== null) {
+        window.clearTimeout(this.registrationTimer);
+        this.registrationTimer = null;
+      }
 
       switch(true) {
         case /^1[0-9]{2}$/.test(response.status_code):
@@ -118,6 +121,7 @@ Registrator.prototype = {
           // Re-Register before the expiration interval has elapsed.
           // For that, decrease the expires value. ie: 3 seconds
           this.registrationTimer = window.setTimeout(function() {
+            self.registrationTimer = null;
             self.register();
           }, (expires * 1000) - 3000);
 
@@ -140,9 +144,7 @@ Registrator.prototype = {
             // Increase our registration interval to the suggested minimum
             this.expires = response.getHeader('min-expires');
             // Attempt the registration again immediately 
-            this.registrationTimer = window.setTimeout(function() {
-              self.register();
-            }, 0);
+            this.register();
           } else { //This response MUST contain a Min-Expires header field
             console.warn(LOG_PREFIX +'423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
@@ -188,7 +190,10 @@ Registrator.prototype = {
     this.registered = false;
 
     // Clear the registration timer.
-    window.clearTimeout(this.registrationTimer);
+    if (this.registrationTimer !== null) {
+      window.clearTimeout(this.registrationTimer);
+      this.registrationTimer = null;
+    }
 
     if(options.all) {
       extraHeaders.push('Contact: *');
@@ -281,7 +286,10 @@ Registrator.prototype = {
   */
   onTransportClosed: function() {
     this.registered_before = this.registered;
-    window.clearTimeout(this.registrationTimer);
+    if (this.registrationTimer !== null) {
+      window.clearTimeout(this.registrationTimer);
+      this.registrationTimer = null;
+    }
 
     if(this.registered) {
       this.registered = false;
