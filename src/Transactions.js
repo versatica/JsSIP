@@ -435,7 +435,7 @@ var InviteServerTransactionPrototype = function() {
       // Trigger the resendProvisionalTimer only for the first non 100 provisional response.
       if(this.resendProvisionalTimer === null) {
         this.resendProvisionalTimer = window.setInterval(function() {
-          tr.resend_provisional();}, JsSIP.Timers.RESEND_PROVISIONAL);
+          tr.resend_provisional();}, JsSIP.Timers.PROVISIONAL_RESPONSE_INTERVAL);
       }
     } else if(status_code >= 200 && status_code <= 299) {
       switch(this.state) {

@@ -24,7 +24,7 @@ Timers = {
   TIMER_K: 0  * T4,
   TIMER_L: 64 * T1,
   TIMER_M: 64 * T1,
-  RESEND_PROVISIONAL: 60000  // See RFC 3261 Section 13.3.1.1
+  PROVISIONAL_RESPONSE_INTERVAL: 60000  // See RFC 3261 Section 13.3.1.1
 };
 
 JsSIP.Timers = Timers;
