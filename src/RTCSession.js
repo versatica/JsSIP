@@ -370,13 +370,17 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
 RTCSession.prototype.getLocalStreams = function() {
   return this.rtcMediaHandler &&
     this.rtcMediaHandler.peerConnection &&
-    this.rtcMediaHandler.peerConnection.getLocalStreams() || [];
+    (this.rtcMediaHandler.peerConnection.getLocalStreams &&
+     this.rtcMediaHandler.peerConnection.getLocalStreams()) ||
+    (this.rtcMediaHandler.peerConnection.localStreams) || [];
 };
 
 RTCSession.prototype.getRemoteStreams = function() {
   return this.rtcMediaHandler &&
     this.rtcMediaHandler.peerConnection &&
-    this.rtcMediaHandler.peerConnection.getRemoteStreams() || [];
+    (this.rtcMediaHandler.peerConnection.getRemoteStreams &&
+     this.rtcMediaHandler.peerConnection.getRemoteStreams()) ||
+    (this.rtcMediaHandler.peerConnection.remoteStreams) || [];
 };
 
 
