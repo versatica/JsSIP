@@ -37,7 +37,6 @@ RTCSession = function(ua) {
   'newDTMF'
   ];
 
-  this.logger = ua.createLogger('jssip.rtcsession');
   this.ua = ua;
   this.status = C.STATUS_NULL;
   this.dialog = null;
@@ -428,6 +427,8 @@ RTCSession.prototype.init_incoming = function(request) {
   this.request = request;
   this.contact = this.ua.contact.toString();
 
+  this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
+
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
@@ -536,7 +537,6 @@ RTCSession.prototype.connect = function(target, options) {
 
   // Session parameter initialization
   this.from_tag = JsSIP.Utils.newTag();
-  this.rtcMediaHandler = new RTCMediaHandler(this, RTCConstraints);
 
   // Set anonymous property
   this.anonymous = options.anonymous;
@@ -567,6 +567,10 @@ RTCSession.prototype.connect = function(target, options) {
   this.request = new JsSIP.OutgoingRequest(JsSIP.C.INVITE, target, this.ua, requestParams, extraHeaders);
 
   this.id = this.request.call_id + this.from_tag;
+
+  this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
+
+  this.rtcMediaHandler = new RTCMediaHandler(this, RTCConstraints);
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
@@ -639,14 +643,13 @@ RTCSession.prototype.createDialog = function(message, type, early) {
       early_dialog = new JsSIP.Dialog(this, message, type, JsSIP.Dialog.C.STATUS_EARLY);
 
       // Dialog has been successfully created.
-      if(early_dialog.id) {
-        this.earlyDialogs[id] = early_dialog;
-        return true;
-      }
-      // Dialog not created due to an error.
-      else {
+      if(early_dialog.error) {
+        this.logger.error(dialog.error);
         this.failed('remote', message, JsSIP.C.causes.INTERNAL_ERROR);
         return false;
+      } else {
+        this.earlyDialogs[id] = early_dialog;
+        return true;
       }
     }
   }
@@ -664,15 +667,14 @@ RTCSession.prototype.createDialog = function(message, type, early) {
     // Otherwise, create a _confirmed_ dialog
     dialog = new JsSIP.Dialog(this, message, type);
 
-    if(dialog.id) {
+    if(dialog.error) {
+      this.logger.error(dialog.error);
+      this.failed('remote', message, JsSIP.C.causes.INTERNAL_ERROR);
+      return false;
+    } else {
       this.to_tag = message.to_tag;
       this.dialog = dialog;
       return true;
-    }
-    // Dialog not created due to an error
-    else {
-      this.failed('remote', message, JsSIP.C.causes.INTERNAL_ERROR);
-      return false;
     }
   }
 };

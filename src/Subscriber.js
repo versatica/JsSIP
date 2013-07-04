@@ -10,7 +10,7 @@
  */
 
 JsSIP.Subscriber = function(ua) {
-  this.logger = ua.createLogger('jssip.subscriber')
+  this.logger = ua.getLogger('jssip.subscriber')
 };
 
 JsSIP.Subscriber.prototype = {

@@ -26,11 +26,10 @@ var Dialog,
 Dialog = function(owner, message, type, state) {
   var contact;
 
-  this.logger = owner.ua.createLogger('jssip.dialog');
-
   if(!message.hasHeader('contact')) {
-    this.logger.error('unable to create a Dialog without Contact header field');
-    return false;
+    return {
+      error: 'unable to create a Dialog without Contact header field'
+    };
   }
 
   if(message instanceof JsSIP.IncomingResponse) {
@@ -77,6 +76,7 @@ Dialog = function(owner, message, type, state) {
     this.route_set = message.getHeaders('record-route').reverse();
   }
 
+  this.logger = owner.ua.getLogger('jssip.dialog', this.id.toString());
   this.owner = owner;
   owner.ua.dialogs[this.id.toString()] = this;
   this.logger.log('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));

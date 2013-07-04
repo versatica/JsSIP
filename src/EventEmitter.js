@@ -10,6 +10,7 @@
 var
   EventEmitter,
   Event,
+  logger = new JsSIP.LoggerFactory().getLogger('jssip.eventemitter'),
   C = {
     MAX_LISTENERS: 10
   };
@@ -22,6 +23,10 @@ EventEmitter.prototype = {
    */
   initEvents: function(events) {
     var idx;
+
+    if (!this.logger) {
+      this.logger = logger;
+    }
 
     this.maxListeners = C.MAX_LISTENERS;
 

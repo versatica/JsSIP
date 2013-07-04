@@ -36,13 +36,13 @@ var NonInviteClientTransaction = function(request_sender, request, transport) {
   var via,
     events = ['stateChanged'];
 
-  this.logger = request_sender.ua.createLogger('jssip.transaction');
-
   this.type = C.NON_INVITE_CLIENT;
   this.transport = transport;
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
   this.request_sender = request_sender;
   this.request = request;
+
+  this.logger = request_sender.ua.getLogger('jssip.transaction.nict', this.id);
 
   via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
@@ -139,13 +139,13 @@ var InviteClientTransaction = function(request_sender, request, transport) {
     tr = this,
     events = ['stateChanged'];
 
-  this.logger = request_sender.ua.createLogger('jssip.transaction');
-
   this.type = C.INVITE_CLIENT;
   this.transport = transport;
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
   this.request_sender = request_sender;
   this.request = request;
+
+  this.logger = request_sender.ua.getLogger('jssip.transaction.ict', this.id);
 
   via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
@@ -328,12 +328,12 @@ InviteClientTransaction.prototype.receiveResponse = function(response) {
 var AckClientTransaction = function(request_sender, request, transport) {
   var via;
 
-  this.logger = request_sender.ua.createLogger('jssip.transaction');
-
   this.transport = transport;
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
   this.request_sender = request_sender;
   this.request = request;
+
+  this.logger = request_sender.ua.getLogger('jssip.transaction.nict', this.id);
 
   via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
@@ -363,8 +363,6 @@ AckClientTransaction.prototype.onTransportError = function() {
 var NonInviteServerTransaction = function(request, ua) {
   var events = ['stateChanged'];
 
-  this.logger = ua.createLogger('jssip.transaction');
-
   this.type = C.NON_INVITE_SERVER;
   this.id = request.via_branch;
   this.request = request;
@@ -372,6 +370,8 @@ var NonInviteServerTransaction = function(request, ua) {
   this.ua = ua;
   this.last_response = '';
   request.server_transaction = this;
+
+  this.logger = ua.getLogger('jssip.transaction.nist', this.id);
 
   this.state = C.STATUS_TRYING;
 
@@ -464,8 +464,6 @@ NonInviteServerTransaction.prototype.receiveResponse = function(status_code, res
 var InviteServerTransaction = function(request, ua) {
   var events = ['stateChanged'];
 
-  this.logger = ua.createLogger('jssip.transaction');
-
   this.type = C.INVITE_SERVER;
   this.id = request.via_branch;
   this.request = request;
@@ -473,6 +471,8 @@ var InviteServerTransaction = function(request, ua) {
   this.ua = ua;
   this.last_response = '';
   request.server_transaction = this;
+
+  this.logger = ua.getLogger('jssip.transaction.ist', this.id);
 
   this.state = C.STATUS_PROCEEDING;
 

@@ -157,7 +157,9 @@ function parseHeader(message, data, headerStart, headerEnd) {
   }
 
   if (parsed === undefined) {
-    return false;
+    return {
+      error: 'error parsing header "'+ headerName +'"'
+    };
   } else {
     return true;
   }
@@ -170,10 +172,11 @@ function parseHeader(message, data, headerStart, headerEnd) {
  * @returns {JsSIP.IncomingRequest|JsSIP.IncomingResponse|undefined}
  */
 Parser = {};
-Parser.parseMessage = function(data, logger) {
+Parser.parseMessage = function(data, ua) {
   var message, firstLine, contentLength, bodyStart, parsed,
     headerStart = 0,
-    headerEnd = data.indexOf('\r\n');
+    headerEnd = data.indexOf('\r\n'),
+    logger = ua.getLogger('jssip.parser');
 
   if(headerEnd === -1) {
     logger.warn('no CRLF found, not a SIP message, discarded');
@@ -188,11 +191,11 @@ Parser.parseMessage = function(data, logger) {
     logger.warn('error parsing first line of SIP message: "' + firstLine + '"');
     return;
   } else if(!parsed.status_code) {
-    message = new JsSIP.IncomingRequest();
+    message = new JsSIP.IncomingRequest(ua);
     message.method = parsed.method;
     message.ruri = parsed.uri;
   } else {
-    message = new JsSIP.IncomingResponse();
+    message = new JsSIP.IncomingResponse(ua);
     message.status_code = parsed.status_code;
     message.reason_phrase = parsed.reason_phrase;
   }
@@ -213,12 +216,14 @@ Parser.parseMessage = function(data, logger) {
     }
     // data.indexOf returned -1 due to a malformed message.
     else if(headerEnd === -1) {
+      parsed.error('malformed message');
       return;
     }
 
     parsed = parseHeader(message, data, headerStart, headerEnd);
 
-    if(!parsed) {
+    if(parsed !== true) {
+      logger.error(parsed.error);
       return;
     }
 

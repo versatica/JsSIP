@@ -19,7 +19,7 @@ var Transport,
 
 Transport = function(ua, server) {
 
-  this.logger = ua.createLogger('jssip.transport');
+  this.logger = ua.getLogger('jssip.transport');
   this.ua = ua;
   this.ws = null;
   this.server = server;
@@ -201,14 +201,18 @@ Transport.prototype = {
       }
     }
 
-    message = JsSIP.Parser.parseMessage(data, this.logger);
+    message = JsSIP.Parser.parseMessage(data, this.ua);
+
+    if (!message) {
+      return;
+    }
 
     if(this.ua.status === JsSIP.UA.C.STATUS_USER_CLOSED && message instanceof JsSIP.IncomingRequest) {
       return;
     }
 
     // Do some sanity check
-    if(message && JsSIP.sanityCheck(message, this.ua, this)) {
+    if(JsSIP.sanityCheck(message, this.ua, this)) {
       if(message instanceof JsSIP.IncomingRequest) {
         message.transport = this;
         this.ua.receiveRequest(message);

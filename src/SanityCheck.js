@@ -189,7 +189,7 @@ sanityCheck = function(m, u, t) {
   ua = u;
   transport = t;
 
-  logger = ua.createLogger('jssip.sanitycheck');
+  logger = ua.getLogger('jssip.sanitycheck');
 
   len = all.length;
   while(len--) {

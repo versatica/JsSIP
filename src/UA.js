@@ -63,6 +63,9 @@ UA = function(configuration) {
   // Set Accepted Body Types
   C.ACCEPTED_BODY_TYPES = C.ACCEPTED_BODY_TYPES.toString();
 
+  this.log = new JsSIP.LoggerFactory();
+  this.logger = this.getLogger('jssip.ua');
+
   this.cache = {
     credentials: {}
   };
@@ -137,6 +140,21 @@ UA = function(configuration) {
 
   if(configuration === undefined) {
     throw new TypeError('Not enough arguments');
+  }
+
+  // Apply log configuration if present
+  if (configuration.log) {
+    if (configuration.log.hasOwnProperty('builtinEnabled')) {
+      this.log.builtinEnabled = configuration.log.builtinEnabled;
+    }
+
+    if (configuration.log.hasOwnProperty('level')) {
+      this.log.level = configuration.log.level;
+    }
+
+    if (configuration.log.hasOwnProperty('connector')) {
+      this.log.level = configuration.log.connector;
+    }
   }
 
   try {
@@ -348,8 +366,8 @@ UA.prototype.getCredentials = function(request) {
   return credentials;
 };
 
-UA.prototype.createLogger = function(category) {
-    return this.configuration.logger_factory.call(window, category);
+UA.prototype.getLogger = function(category, label) {
+    return this.log.getLogger(category, label);
 };
 
 
@@ -773,36 +791,6 @@ UA.prototype.loadConfig = function(configuration) {
       // Logging parameters
       trace_sip: false,
 
-      logger_factory: function(category) {
-        function DefaultLogger(category) {
-          var prefixed = function(target, args) {
-            if (typeof args[0] === 'string') {
-              var newArgs = Array.prototype.slice.call(args, 1);
-              newArgs.unshift("[" + category + "] " + args[0]);
-              target.apply(console, newArgs);
-            }
-            else {
-              target.apply(console, args);
-            }
-          };
-
-          this.debug = function() {
-            prefixed(console.debug, arguments);
-          };
-          this.log = function() {
-            prefixed(console.log, arguments);
-          };
-          this.warn = function() {
-            prefixed(console.warn, arguments);
-          };
-          this.error = function() {
-            prefixed(console.error, arguments);
-          };
-          return this;
-        }
-        return new DefaultLogger(category);
-      },
-
       // Hacks
       hack_via_tcp: false,
       hack_ip_in_contact: false
@@ -934,8 +922,6 @@ UA.prototype.loadConfig = function(configuration) {
     UA.configuration_skeleton[parameter].value = '';
   }
 
-  this.logger = this.createLogger('jssip.ua');
-
   this.logger.log('configuration parameters after validation:');
   for(parameter in settings) {
     switch(parameter) {
@@ -987,7 +973,6 @@ UA.configuration_skeleton = (function() {
       "registrar_server",
       "stun_servers",
       "trace_sip",
-      "logger_factory",
       "turn_servers",
       "use_preloaded_route",
 
@@ -1233,12 +1218,6 @@ UA.configuration_check = {
     trace_sip: function(trace_sip) {
       if (typeof trace_sip === 'boolean') {
         return trace_sip;
-      }
-    },
-
-    logger_factory: function(logger_factory) {
-      if (typeof logger_factory === 'function') {
-        return logger_factory;
       }
     },
 

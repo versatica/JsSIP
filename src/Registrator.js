@@ -14,7 +14,7 @@ var Registrator;
 Registrator = function(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
 
-  this.logger = ua.createLogger('jssip.registrator');
+  this.logger = ua.getLogger('jssip.registrator');
 
   this.ua = ua;
   this.transport = transport;

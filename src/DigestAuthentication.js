@@ -13,7 +13,7 @@
 var DigestAuthentication;
 
 DigestAuthentication = function(ua) {
-  this.logger = ua.createLogger('jssip.digestauth');
+  this.logger = ua.getLogger('jssip.digestauthentication');
   this.username = ua.configuration.authorization_user;
   this.password = ua.configuration.password;
   this.cnonce = null;
@@ -27,7 +27,7 @@ DigestAuthentication = function(ua) {
 * Performs Digest authentication given a SIP request and the challenge
 * received in a response to that request.
 * Returns true if credentials were successfully generated, false otherwise.
-* 
+*
 * @param {JsSIP.OutgoingRequest} request
 * @param {Object} challenge
 */
