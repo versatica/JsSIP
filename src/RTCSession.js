@@ -871,8 +871,8 @@ RTCSession.prototype.receiveResponse = function(response) {
          * SDP Answer fits with Offer. Media will start
          */
         function() {
-          session.sendRequest(JsSIP.C.ACK);
           session.status = C.STATUS_CONFIRMED;
+          session.sendRequest(JsSIP.C.ACK);
           session.started('remote', response);
         },
         /*
