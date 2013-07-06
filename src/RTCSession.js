@@ -448,7 +448,9 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   //Initialize Media Session
-  this.rtcMediaHandler = new RTCMediaHandler(this);
+  this.rtcMediaHandler = new RTCMediaHandler(this,
+    {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
+  );
   this.rtcMediaHandler.onMessage(
     'offer',
     request.body,
