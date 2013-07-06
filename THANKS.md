@@ -9,4 +9,5 @@ Here the list of contributors with code and patches to JsSIP project. Thanks a l
 * Davide Corda
 * [Anthony Minessale](https://github.com/FreeSWITCH)
 * [Gavin Llewellyn](https://github.com/gavllew)
+* [Julian Scheid](https://github.com/jscheid)
 
