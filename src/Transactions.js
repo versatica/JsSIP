@@ -478,8 +478,8 @@ var InviteServerTransaction = function(request, ua) {
 
   ua.newTransaction(this);
 
-  this.reliableProvisionalTimer = null;
-
+  this.resendProvisionalTimer = null;
+  
   request.reply(100);
 
   this.initEvents(events);
@@ -523,7 +523,11 @@ InviteServerTransaction.prototype.onTransportError = function() {
 
     this.logger.log('transport error occurred, deleting INVITE server transaction ' + this.id);
 
-    window.clearTimeout(this.reliableProvisionalTimer);
+    if (this.resendProvisionalTimer !== null) {
+      window.clearInterval(this.resendProvisionalTimer);
+      this.resendProvisionalTimer = null;
+    }
+    
     window.clearTimeout(this.L);
     window.clearTimeout(this.H);
     window.clearTimeout(this.I);
@@ -531,21 +535,9 @@ InviteServerTransaction.prototype.onTransportError = function() {
   }
 };
 
-InviteServerTransaction.prototype.timer_reliableProvisional = function(retransmissions) {
-  var
-  tr = this,
-  response = this.last_response,
-  timeout = JsSIP.Timers.T1 * (Math.pow(2, retransmissions + 1));
-
-  if(retransmissions > 8) {
-    window.clearTimeout(this.reliableProvisionalTimer);
-  } else {
-    retransmissions += 1;
-    if(!this.transport.send(response)) {
-      this.onTransportError();
-    }
-    this.reliableProvisionalTimer = window.setTimeout(function() {
-      tr.timer_reliableProvisional(retransmissions);}, timeout);
+InviteServerTransaction.prototype.resend_provisional = function() {
+  if(!this.transport.send(this.last_response)) {
+    this.onTransportError();
   }
 };
 
@@ -564,11 +556,11 @@ InviteServerTransaction.prototype.receiveResponse = function(status_code, respon
     }
   }
 
-  if(status_code > 100 && status_code <= 199) {
-    // Trigger the reliableProvisionalTimer only for the first non 100 provisional response.
-    if(!this.reliableProvisionalTimer) {
-      this.reliableProvisionalTimer = window.setTimeout(function() {
-        tr.timer_reliableProvisional(1);}, JsSIP.Timers.T1);
+  if(status_code > 100 && status_code <= 199 && this.state === C.STATUS_PROCEEDING) {
+    // Trigger the resendProvisionalTimer only for the first non 100 provisional response.
+    if(this.resendProvisionalTimer === null) {
+      this.resendProvisionalTimer = window.setInterval(function() {
+        tr.resend_provisional();}, JsSIP.Timers.PROVISIONAL_RESPONSE_INTERVAL);
     }
   } else if(status_code >= 200 && status_code <= 299) {
     switch(this.state) {
@@ -578,7 +570,11 @@ InviteServerTransaction.prototype.receiveResponse = function(status_code, respon
         this.L = window.setTimeout(function() {
           tr.timer_L();
         }, JsSIP.Timers.TIMER_L);
-        window.clearTimeout(this.reliableProvisionalTimer);
+        
+        if (this.resendProvisionalTimer !== null) {
+          window.clearInterval(this.resendProvisionalTimer);
+          this.resendProvisionalTimer = null;
+        }
         /* falls through */
         case C.STATUS_ACCEPTED:
           // Note that this point will be reached for proceeding tr.state also.
@@ -595,7 +591,11 @@ InviteServerTransaction.prototype.receiveResponse = function(status_code, respon
   } else if(status_code >= 300 && status_code <= 699) {
     switch(this.state) {
       case C.STATUS_PROCEEDING:
-        window.clearTimeout(this.reliableProvisionalTimer);
+        if (this.resendProvisionalTimer !== null) {
+          window.clearInterval(this.resendProvisionalTimer);
+          this.resendProvisionalTimer = null;
+        }
+        
         if(!this.transport.send(response)) {
           this.onTransportError();
           if (onFailure) {
