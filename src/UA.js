@@ -471,7 +471,7 @@ UA.prototype.onTransportConnected = function(transport) {
       this.registrator = new JsSIP.Registrator(this, transport);
       this.register();
     }
-  } else {
+  } else if (!this.registrator) {
     this.registrator = new JsSIP.Registrator(this, transport);
   }
 };
