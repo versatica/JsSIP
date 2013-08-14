@@ -46,7 +46,7 @@ function getHeader(data, headerStart) {
 }
 
 function parseHeader(message, data, headerStart, headerEnd) {
-  var header, idx, parsed,
+  var header, idx, length, parsed,
     hcolonIndex = data.indexOf(':', headerStart),
     headerName = data.substring(headerStart, hcolonIndex).trim(),
     headerValue = data.substring(hcolonIndex + 1, headerEnd).trim();
@@ -91,7 +91,8 @@ function parseHeader(message, data, headerStart, headerEnd) {
         parsed = undefined;
       }
 
-      for(idx in parsed) {
+      length = parsed.length;
+      for (idx = 0; idx < length; idx++) {
         header = parsed[idx];
         message.addHeader('record-route', headerValue.substring(header.possition, header.offset));
         message.headers['Record-Route'][message.countHeader('record-route')-1].parsed = header.parsed;
@@ -113,7 +114,8 @@ function parseHeader(message, data, headerStart, headerEnd) {
         parsed = undefined;
       }
 
-      for(idx in parsed) {
+      length = parsed.length;
+      for (idx = 0; idx < length; idx++) {
         header = parsed[idx];
         message.addHeader('contact', headerValue.substring(header.possition, header.offset));
         message.headers['Contact'][message.countHeader('contact')-1].parsed = header.parsed;
