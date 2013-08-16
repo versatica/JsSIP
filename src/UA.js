@@ -153,7 +153,7 @@ UA = function(configuration) {
     }
 
     if (configuration.log.hasOwnProperty('connector')) {
-      this.log.level = configuration.log.connector;
+      this.log.connector = configuration.log.connector;
     }
   }
 
