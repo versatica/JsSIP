@@ -68,6 +68,16 @@ Transport.prototype = {
       this.logger.log('closing WebSocket ' + this.server.ws_uri);
       this.ws.close();
     }
+
+    if (this.reconnectTimer !== null) {
+      window.clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+      this.ua.emit('disconnected', this.ua, {
+        transport: this,
+        code: this.lastTransportError.code,
+        reason: this.lastTransportError.reason
+      });
+    }
   },
 
   /**
@@ -123,7 +133,12 @@ Transport.prototype = {
 
     this.logger.log('WebSocket ' + this.server.ws_uri + ' connected');
     // Clear reconnectTimer since we are not disconnected
-    window.clearTimeout(this.reconnectTimer);
+    if (this.reconnectTimer !== null) {
+      window.clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    // Reset reconnection_attempts
+    this.reconnection_attempts = 0;
     // Disable closed
     this.closed = false;
     // Trigger onTransportConnected callback
@@ -150,8 +165,6 @@ Transport.prototype = {
       this.ua.onTransportClosed(this);
       // Check whether the user requested to close.
       if(!this.closed) {
-        // Reset reconnection_attempts
-        this.reconnection_attempts = 0;
         this.reConnect();
       } else {
         this.ua.emit('disconnected', this.ua, {
@@ -269,7 +282,9 @@ Transport.prototype = {
       this.logger.log('trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
 
       this.reconnectTimer = window.setTimeout(function() {
-        transport.connect();}, this.ua.configuration.ws_server_reconnection_timeout * 1000);
+        transport.connect();
+        transport.reconnectTimer = null;
+      }, this.ua.configuration.ws_server_reconnection_timeout * 1000);
     }
   }
 };
