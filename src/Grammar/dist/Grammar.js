@@ -679,9 +679,10 @@ JsSIP.Grammar = (function(){
       
       function parse_escaped() {
         var result0, result1, result2;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = pos;
+        pos1 = pos;
         if (input.charCodeAt(pos) === 37) {
           result0 = "%";
           pos++;
@@ -699,14 +700,20 @@ JsSIP.Grammar = (function(){
               result0 = [result0, result1, result2];
             } else {
               result0 = null;
-              pos = pos0;
+              pos = pos1;
             }
           } else {
             result0 = null;
-            pos = pos0;
+            pos = pos1;
           }
         } else {
           result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, escaped) {return escaped.join(''); })(pos0, result0);
+        }
+        if (result0 === null) {
           pos = pos0;
         }
         return result0;
