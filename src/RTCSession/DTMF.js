@@ -70,20 +70,7 @@ DTMF.prototype.send = function(tone, options) {
     this.tone = tone;
   }
 
-  // Check duration
-  if (options.duration && !JsSIP.Utils.isDecimal(options.duration)) {
-    throw new TypeError('Invalid tone duration: '+ options.duration);
-  } else if (!options.duration) {
-    options.duration = C.DEFAULT_DURATION;
-  } else if (options.duration < C.MIN_DURATION) {
-    this.logger.warn('"duration" value is lower than the minimum allowed, setting it to '+ C.MIN_DURATION+ ' milliseconds');
-    options.duration = C.MIN_DURATION;
-  } else if (options.duration > C.MAX_DURATION) {
-    this.logger.warn('"duration" value is greater than the maximum allowed, setting it to '+ C.MAX_DURATION +' milliseconds');
-    options.duration = C.MAX_DURATION;
-  } else {
-    options.duration = Math.abs(options.duration);
-  }
+  // Duration is checked/corrected in RTCSession
   this.duration = options.duration;
 
   // Set event handlers
