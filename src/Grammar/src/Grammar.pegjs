@@ -19,7 +19,7 @@ alphanum    = [a-zA-Z0-9]
 reserved    = ";" / "/" / "?" / ":" / "@" / "&" / "=" / "+" / "$" / ","
 unreserved  = alphanum / mark
 mark        = "-" / "_" / "." / "!" / "~" / "*" / "'" / "(" / ")"
-escaped     = "%" HEXDIG HEXDIG
+escaped     = escaped: ("%" HEXDIG HEXDIG) {return escaped.join(''); }
 
 /* RFC3261 25: A recipient MAY replace any linear white space with a single SP
  * before interpreting the field value or forwarding the message downstream
