@@ -1234,10 +1234,6 @@ UA.configuration_check = {
 
         if(JsSIP.Grammar.parse(turn_server.server, 'turn_URI') === -1) {
           return;
-        } else if(JsSIP.Grammar.parse(turn_server.username, 'user') === -1) {
-          return;
-        } else if(JsSIP.Grammar.parse(turn_server.password, 'password') === -1) {
-          return;
         }
       }
       return turn_servers;
