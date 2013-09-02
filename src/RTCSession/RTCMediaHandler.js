@@ -140,7 +140,7 @@ RTCMediaHandler.prototype = {
     this.peerConnection.onicecandidate = function(e) {
       if (e.candidate) {
         self.logger.log('ICE candidate received: '+ e.candidate.candidate);
-      } else {
+      } else if (self.onIceCompleted !== undefined) {
         self.onIceCompleted();
       }
     };
