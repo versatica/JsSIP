@@ -149,10 +149,11 @@ Utils= {
       'Www-Authenticate': 'WWW-Authenticate'
       },
       name = string.toLowerCase().replace(/_/g,'-').split('-'),
-      hname = '', part;
+      hname = '',
+      parts = name.length, part;
 
-    for (part in name) {
-      if (part !== '0') {
+    for (part = 0; part < parts; part++) {
+      if (part !== 0) {
         hname +='-';
       }
       hname += name[part].charAt(0).toUpperCase()+name[part].substring(1);

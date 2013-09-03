@@ -7987,8 +7987,9 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                                var idx;
-                                for (idx in data.multi_header) {
+                                var idx, length;
+                                length = data.multi_header.length;
+                                for (idx = 0; idx < length; idx++) {
                                   if (data.multi_header[idx].parsed === null) {
                                     data = null;
                                     break;
@@ -10244,8 +10245,9 @@ JsSIP.Grammar = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset) {
-                          var idx;
-                          for (idx in data.multi_header) {
+                          var idx, length;
+                          length = data.multi_header.length;
+                          for (idx = 0; idx < length; idx++) {
                             if (data.multi_header[idx].parsed === null) {
                               data = null;
                               break;
