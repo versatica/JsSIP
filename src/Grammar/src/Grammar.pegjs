@@ -375,8 +375,9 @@ Call_ID  =  word ( "@" word )? {
 // CONTACT
 
 Contact             = ( STAR / (contact_param (COMMA contact_param)*) ) {
-                        var idx;
-                        for (idx in data.multi_header) {
+                        var idx, length;
+                        length = data.multi_header.length;
+                        for (idx = 0; idx < length; idx++) {
                           if (data.multi_header[idx].parsed === null) {
                             data = null;
                             break;
@@ -621,8 +622,9 @@ option_tag     = token
 // RECORD-ROUTE
 
 Record_Route  = rec_route (COMMA rec_route)* {
-                  var idx;
-                  for (idx in data.multi_header) {
+                  var idx, length;
+                  length = data.multi_header.length;
+                  for (idx = 0; idx < length; idx++) {
                     if (data.multi_header[idx].parsed === null) {
                       data = null;
                       break;

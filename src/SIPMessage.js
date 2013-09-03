@@ -103,14 +103,15 @@ OutgoingRequest.prototype = {
 
     msg += this.method + ' ' + this.ruri + ' SIP/2.0\r\n';
 
-    for(header in this.headers) {
-      for(idx in this.headers[header]) {
+    for (header in this.headers) {
+      length = this.headers[header].length;
+      for (idx = 0; idx < length; idx++) {
         msg += header + ': ' + this.headers[header][idx] + '\r\n';
       }
     }
 
     length = this.extraHeaders.length;
-    for(idx=0; idx < length; idx++) {
+    for (idx = 0; idx < length; idx++) {
       msg += this.extraHeaders[idx] +'\r\n';
     }
 
@@ -190,7 +191,7 @@ IncomingMessage.prototype = {
    * @returns {Array} Array with all the headers of the specified name.
    */
   getHeaders: function(name) {
-    var idx,
+    var idx, length,
       header = this.headers[JsSIP.Utils.headerize(name)],
       result = [];
 
@@ -198,7 +199,8 @@ IncomingMessage.prototype = {
       return [];
     }
 
-    for(idx in header) {
+    length = header.length;
+    for (idx = 0; idx < length; idx++) {
       result.push(header[idx].raw);
     }
 
@@ -354,7 +356,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
 
   length = extraHeaders.length;
-  for(idx=0; idx < length; idx++) {
+  for (idx = 0; idx < length; idx++) {
     response += extraHeaders[idx] +'\r\n';
   }
 

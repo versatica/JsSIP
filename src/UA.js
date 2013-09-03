@@ -383,13 +383,14 @@ UA.prototype.getLogger = function(category, label) {
  */
 UA.prototype.onTransportClosed = function(transport) {
   // Run _onTransportError_ callback on every client transaction using _transport_
-  var type, idx,
+  var type, idx, length,
     client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = JsSIP.Transport.C.STATUS_DISCONNECTED;
   this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
 
-  for(type in client_transactions) {
+  length = client_transactions.length;
+  for (type = 0; type < length; type++) {
     for(idx in this.transactions[client_transactions[type]]) {
       this.transactions[client_transactions[type]][idx].onTransportError();
     }
@@ -676,10 +677,11 @@ UA.prototype.findDialog = function(request) {
  */
 UA.prototype.getNextWsServer = function() {
   // Order servers by weight
-  var idx, ws_server,
+  var idx, length, ws_server,
     candidates = [];
 
-  for (idx in this.configuration.ws_servers) {
+  length = this.configuration.ws_servers.length;
+  for (idx = 0; idx < length; idx++) {
     ws_server = this.configuration.ws_servers[idx];
 
     if (ws_server.status === JsSIP.Transport.C.STATUS_ERROR) {
@@ -716,12 +718,13 @@ UA.prototype.closeSessionsOnTransportError = function() {
 };
 
 UA.prototype.recoverTransport = function(ua) {
-  var idx, k, nextRetry, count, server;
+  var idx, length, k, nextRetry, count, server;
 
   ua = ua || this;
   count = ua.transportRecoverAttempts;
 
-  for (idx in ua.configuration.ws_servers) {
+  length = ua.configuration.ws_servers.length;
+  for (idx = 0; idx < length; idx++) {
     ua.configuration.ws_servers[idx].status = 0;
   }
 
@@ -1019,7 +1022,7 @@ UA.configuration_check = {
     },
 
     ws_servers: function(ws_servers) {
-      var idx, url;
+      var idx, length, url;
 
       /* Allow defining ws_servers parameter as:
        *  String: "host"
@@ -1030,7 +1033,8 @@ UA.configuration_check = {
       if (typeof ws_servers === 'string') {
         ws_servers = [{ws_uri: ws_servers}];
       } else if (ws_servers instanceof Array) {
-        for(idx in ws_servers) {
+        length = ws_servers.length;
+        for (idx = 0; idx < length; idx++) {
           if (typeof ws_servers[idx] === 'string'){
             ws_servers[idx] = {ws_uri: ws_servers[idx]};
           }
@@ -1043,7 +1047,8 @@ UA.configuration_check = {
         return false;
       }
 
-      for (idx in ws_servers) {
+      length = ws_servers.length;
+      for (idx = 0; idx < length; idx++) {
         if (!ws_servers[idx].ws_uri) {
           this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
           return;
@@ -1186,7 +1191,7 @@ UA.configuration_check = {
     },
 
     stun_servers: function(stun_servers) {
-      var idx, stun_server;
+      var idx, length, stun_server;
 
       if (typeof stun_servers === 'string') {
         stun_servers = [stun_servers];
@@ -1194,7 +1199,8 @@ UA.configuration_check = {
         return;
       }
 
-      for (idx in stun_servers) {
+      length = stun_servers.length;
+      for (idx = 0; idx < length; idx++) {
         stun_server = stun_servers[idx];
         if (!(/^stuns?:/.test(stun_server))) {
           stun_server = 'stun:' + stun_server;
@@ -1216,7 +1222,7 @@ UA.configuration_check = {
     },
 
     turn_servers: function(turn_servers) {
-      var idx, turn_server;
+      var idx, length, turn_server;
 
       if (turn_servers instanceof Array) {
         // Do nothing
@@ -1224,7 +1230,8 @@ UA.configuration_check = {
         turn_servers = [turn_servers];
       }
 
-      for (idx in turn_servers) {
+      length = turn_servers.length;
+      for (idx = 0; idx < length; idx++) {
         turn_server = turn_servers[idx];
         if (!turn_server.server || !turn_server.username || !turn_server.password) {
           return;
