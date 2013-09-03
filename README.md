@@ -8,7 +8,7 @@
 * Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)), instant messaging and presence
 * Lightweight! (~140KB)
 * Easy to use and powerful user API
-* Works with OverSIP, Kamailio and Asterisk servers ([more info](http://jssip.net/documentation/misc/interoperability))
+* Works with OverSIP, Kamailio, repro (reSIProcate) and Asterisk servers ([more info](http://jssip.net/documentation/misc/interoperability))
 * Written by the authors of [draft-ietf-sipcore-sip-websocket](http://tools.ietf.org/html/draft-ietf-sipcore-sip-websocket) and [OverSIP](http://www.oversip.net)
 
 
