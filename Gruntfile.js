@@ -162,6 +162,7 @@ module.exports = function(grunt) {
       var modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
       fs.writeFileSync('src/Grammar/dist/Grammar.js', modified_grammar);
       console.log('OK');
+      done();  // Tell grunt that async task has succeeded.
 
     });
   });
