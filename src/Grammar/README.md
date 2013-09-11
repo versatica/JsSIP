@@ -73,6 +73,9 @@ $ npm install node-minify
 ```
 Run the `minify.js` script with node command to minimize the grammar:
 ```
-$ node minify.js
+$ node minify.js [compressor]
 ```
 This will generate the `dist/Grammar.min.js` file.
+
+Any of the compressor types supported by [node-minify](https://github.com/srod/node-minify) can be used by specifying it as argument.
+The 'gcc' (Google Closure Compiler) is used by the default. 
