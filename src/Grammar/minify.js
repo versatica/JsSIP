@@ -1,6 +1,6 @@
 var compressor = require('node-minify');
 
-var compressors = ['gcc','yui-js','uglifyjs','sqwish'];
+var compressors = ['gcc','yui-js','uglifyjs'];
 
 // Use GCC Google Closure Compiler by default
 var compressorType = process.argv[2] || 'gcc';
