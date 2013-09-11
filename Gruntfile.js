@@ -81,14 +81,6 @@ module.exports = function(grunt) {
         ],
         dest: 'dist/<%= pkg.name %>-devel.js',
         nonull: true
-      },
-      post_uglify: {
-        src: [
-          'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
-          'src/Grammar/dist/Grammar.min.js'
-        ],
-        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js',
-        nonull: true
       }
     },
     includereplace: {
@@ -172,16 +164,6 @@ module.exports = function(grunt) {
       fs.writeFileSync('src/Grammar/dist/Grammar.js', modified_grammar);
       console.log('OK');
 
-      // Then minify Grammar.js.
-      console.log('"grammar" task: minifying Grammar.js ...');
-      child = exec('cd src/Grammar/ && node minify.js', function(error, stdout, stderr) {
-        if (error) {
-          sys.print('ERROR: ' + stderr);
-          done(false);  // Tell grunt that async task has failed.
-        }
-        console.log('OK');
-        done();  // Tell grunt that async task has succeeded.
-      });
     });
   });
 
@@ -189,7 +171,7 @@ module.exports = function(grunt) {
   // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
   // and jssip-X.Y.Z.min.js (minified).
   // Both jssip-devel.js and jssip-X.Y.Z.js are the same file with different name.
-  grunt.registerTask('build', ['concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'uglify:dist', 'concat:post_dist', 'concat:post_uglify']);
+  grunt.registerTask('build', ['concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'concat:post_dist', 'uglify:dist']);
 
   // Task for building jssip-devel.js (uncompressed).
   grunt.registerTask('devel', ['concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel']);
