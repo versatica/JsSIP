@@ -21,10 +21,11 @@ var RTCSession,
     STATUS_1XX_RECEIVED:       2,
     STATUS_INVITE_RECEIVED:    3,
     STATUS_WAITING_FOR_ANSWER: 4,
-    STATUS_WAITING_FOR_ACK:    5,
-    STATUS_CANCELED:           6,
-    STATUS_TERMINATED:         7,
-    STATUS_CONFIRMED:          8
+    STATUS_ANSWERED:           5,
+    STATUS_WAITING_FOR_ACK:    6,
+    STATUS_CANCELED:           7,
+    STATUS_TERMINATED:         8,
+    STATUS_CONFIRMED:          9
   };
 
 
@@ -123,6 +124,7 @@ RTCSession.prototype.terminate = function(options) {
 
       // - UAS -
     case C.STATUS_WAITING_FOR_ANSWER:
+    case C.STATUS_ANSWERED:
       this.logger.log('rejecting RTCSession');
 
       status_code = status_code || 480;
@@ -286,6 +288,8 @@ RTCSession.prototype.answer = function(options) {
   } else if (this.status !== C.STATUS_WAITING_FOR_ANSWER) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
+  
+  this.status = C.STATUS_ANSWERED;
 
   // An error on dialog creation will fire 'failed' event
   if(!this.createDialog(request, 'UAS')) {
