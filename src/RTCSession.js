@@ -36,7 +36,8 @@ RTCSession = function(ua) {
   'failed',
   'started',
   'ended',
-  'newDTMF'
+  'newDTMF',
+  'LocalMediaOK'
   ];
 
   this.ua = ua;
