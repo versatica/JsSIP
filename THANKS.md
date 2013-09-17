@@ -10,3 +10,7 @@ Here the list of contributors with code and patches to JsSIP project. Thanks a l
 * [Anthony Minessale](https://github.com/FreeSWITCH)
 * [Gavin Llewellyn](https://github.com/gavllew)
 
+
+JsSIP Debian and Ubuntu packaging
+
+* [Daniel Pocock](https://github.com/dpocock)
