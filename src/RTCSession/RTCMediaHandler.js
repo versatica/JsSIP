@@ -147,7 +147,7 @@ RTCMediaHandler.prototype = {
 
     // To be deprecated as per https://code.google.com/p/webrtc/issues/detail?id=1393
     this.peerConnection.ongatheringchange = function(e) {
-      if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
+      if (e.currentTarget && e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
         self.onIceCompleted();
       }
     };
