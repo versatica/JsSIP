@@ -60,6 +60,9 @@ Transport.prototype = {
   */
   disconnect: function() {
     if(this.ws) {
+      // Clear reconnectTimer
+      window.clearTimeout(this.reconnectTimer);
+      
       this.closed = true;
       console.log(LOG_PREFIX +'closing WebSocket ' + this.server.ws_uri);
       this.ws.close();
