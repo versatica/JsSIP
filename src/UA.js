@@ -72,7 +72,6 @@ UA = function(configuration) {
 
   this.configuration = {};
   this.dialogs = {};
-  this.registrator = null;
 
   //User actions outside any session/dialog (MESSAGE)
   this.applicants = {};
@@ -165,6 +164,9 @@ UA = function(configuration) {
     this.error = C.CONFIGURATION_ERROR;
     throw e;
   }
+  
+  // Initialize registrator
+  this.registrator = new JsSIP.Registrator(this);
 };
 UA.prototype = new JsSIP.EventEmitter();
 
@@ -199,7 +201,7 @@ UA.prototype.unregister = function(options) {
  * @param {Boolean}
  */
 UA.prototype.isRegistered = function() {
-  if(this.registrator && this.registrator.registered) {
+  if(this.registrator.registered) {
     return true;
   } else {
     return false;
@@ -275,10 +277,8 @@ UA.prototype.stop = function() {
   }
 
   // Close registrator
-  if(this.registrator) {
-    this.logger.log('closing registrator');
-    this.registrator.close();
-  }
+  this.logger.log('closing registrator');
+  this.registrator.close();
 
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
@@ -466,14 +466,7 @@ UA.prototype.onTransportConnected = function(transport) {
   });
 
   if(this.configuration.register) {
-    if(this.registrator) {
-      this.registrator.onTransportConnected();
-    } else {
-      this.registrator = new JsSIP.Registrator(this, transport);
-      this.register();
-    }
-  } else if (!this.registrator) {
-    this.registrator = new JsSIP.Registrator(this, transport);
+    this.registrator.onTransportConnected();
   }
 };
 
@@ -712,9 +705,7 @@ UA.prototype.closeSessionsOnTransportError = function() {
     this.sessions[idx].onTransportError();
   }
   // Call registrator _onTransportClosed_
-  if(this.registrator){
-    this.registrator.onTransportClosed();
-  }
+  this.registrator.onTransportClosed();
 };
 
 UA.prototype.recoverTransport = function(ua) {
