@@ -85,6 +85,7 @@ UA = function(configuration) {
   };
 
   this.transportRecoverAttempts = 0;
+  this.transportRecoveryTimer = null;
 
   /**
    * Load configuration
@@ -208,6 +209,9 @@ UA.prototype.stop = function() {
     console.warn('UA already closed');
     return;
   }
+  
+  // Clear transportRecoveryTimer
+  window.clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
   console.log(LOG_PREFIX +'closing registrator');
@@ -619,7 +623,7 @@ UA.prototype.recoverTransport = function(ua) {
 
   console.log(LOG_PREFIX + 'next connection attempt in '+ nextRetry +' seconds');
 
-  window.setTimeout(
+  this.transportRecoveryTimer = window.setTimeout(
     function(){
       ua.transportRecoverAttempts = count + 1;
       new JsSIP.Transport(ua, server);

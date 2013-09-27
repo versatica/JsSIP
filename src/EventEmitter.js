@@ -142,8 +142,8 @@ EventEmitter.prototype = {
   * @param {Array} args
   */
   emit: function(event, sender, data) {
-    var listeners, length,
-      idx=0;
+    var listeners, length, 
+      emitter = this;
 
     if (!this.checkEvent(event)) {
       return;
@@ -156,23 +156,22 @@ EventEmitter.prototype = {
 
     var e = new JsSIP.Event(event, sender, data);
 
-    if (e) {
-      for (idx; idx<length; idx++) {
-        listeners[idx].apply(null, [e]);
-      }
-    } else {
-      for (idx; idx<length; idx++) {
-        listeners[idx].call();
-      }
-    }
+    window.setTimeout(
+      function(){
+        var idx=0;
+        
+        for (idx; idx<length; idx++) {
+          listeners[idx].call(null, e);
+        }
 
-    // Check whether _once_ was defined for the event
-    idx = this.onceNotFired.indexOf(event);
+        // Check whether _once_ was defined for the event
+        idx = emitter.onceNotFired.indexOf(event);
 
-    if (idx !== -1) {
-      this.onceNotFired.splice(idx,1);
-      this.events[event].shift();
-    }
+        if (idx !== -1) {
+          emitter.onceNotFired.splice(idx,1);
+          emitter.events[event].shift();
+        }
+      }, 0);
   },
 
   /**
