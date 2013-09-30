@@ -37,7 +37,8 @@ RTCSession = function(ua) {
   'started',
   'ended',
   'newDTMF',
-  'LocalMediaOK'
+  'localMediaAcquired',
+  'localMediaFailed'
   ];
 
   this.ua = ua;
@@ -763,6 +764,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints) {
      streamAdditionSucceeded,
      streamAdditionFailed
    );
+   self.localMediaAcquired('local');
  },
 
  // User media failed
@@ -770,7 +772,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints) {
    if (self.status === C.STATUS_TERMINATED) {
      return;
    }
-
+   self.localMediaFailed('local');
    self.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
  },
 
@@ -1097,6 +1099,29 @@ RTCSession.prototype.failed = function(originator, message, cause) {
   });
 };
 
+/**
+ * @private
+ */
+RTCSession.prototype.localMediaAcquired = function(originator) {
+  var session = this,
+    event_name = 'localMediaAcquired';
+
+  session.emit(event_name, session, {
+    originator: originator
+  });
+};
+
+/**
+ * @private
+ */
+RTCSession.prototype.localMediaFailed = function(originator) {
+  var session = this,
+    event_name = 'localMediaFailed';
+
+  session.emit(event_name, session, {
+    originator: originator
+  });
+};
 
 RTCSession.C = C;
 JsSIP.RTCSession = RTCSession;

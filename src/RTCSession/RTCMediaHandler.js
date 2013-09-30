@@ -187,9 +187,6 @@ RTCMediaHandler.prototype = {
         console.log(LOG_PREFIX + 'got local media stream');
         self.localMedia = stream;
         onSuccess(stream);
-        self.session.emit('LocalMediaOK', self.session, {
-          originator: 'local'
-        });        
       },
       function(e) {
         console.error(LOG_PREFIX +'unable to get user media');
