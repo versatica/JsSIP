@@ -10,7 +10,7 @@
  */
 (function(JsSIP) {
 var Registrator,
-  LOG_PREFIX = JsSIP.name +' | '+ 'REGISTRATOR' +' | ';
+  logger = new JsSIP.Logger('REGISTRATOR');
 
 Registrator = function(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
@@ -95,7 +95,7 @@ Registrator.prototype = {
 
           // Search the Contact pointing to us and update the expires value accordingly.
           if (!contacts) {
-            console.warn(LOG_PREFIX +'no Contact header in response to REGISTER, response ignored');
+            logger.warn('no Contact header in response to REGISTER, response ignored');
             break;
           }
 
@@ -110,7 +110,7 @@ Registrator.prototype = {
           }
 
           if (!contact) {
-            console.warn(LOG_PREFIX +'no Contact header pointing to us, response ignored');
+            logger.warn('no Contact header pointing to us, response ignored');
             break;
           }
 
@@ -146,7 +146,7 @@ Registrator.prototype = {
             // Attempt the registration again immediately 
             this.register();
           } else { //This response MUST contain a Min-Expires header field
-            console.warn(LOG_PREFIX +'423 response received for REGISTER without Min-Expires');
+            logger.warn('423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
           }
           break;
@@ -180,7 +180,7 @@ Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      console.warn(LOG_PREFIX +'already unregistered');
+      logger.warn('already unregistered');
       return;
     }
 

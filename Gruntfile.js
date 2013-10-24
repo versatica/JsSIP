@@ -4,6 +4,7 @@ module.exports = function(grunt) {
 
   var srcFiles = [
     'src/JsSIP.js',
+    'src/Logger.js',
     'src/EventEmitter.js',
     'src/Constants.js',
     'src/Exceptions.js',
