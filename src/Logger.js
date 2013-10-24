@@ -1,11 +1,11 @@
 /**
- * @fileoverview Message
+ * @fileoverview Logger
  */
 
 /**
  * @augments JsSIP
  * @class Class creating a logger.
- * @param {String} ua
+ * @param {String} name
  */
 (function(JsSIP) {
 var Logger;
