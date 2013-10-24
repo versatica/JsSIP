@@ -8,7 +8,7 @@ var
   IncomingMessage,
   IncomingRequest,
   IncomingResponse,
-  LOG_PREFIX = JsSIP.name +' | '+ 'SIP MESSAGE' +' | ';
+  logger = new JsSIP.Logger('SIP MESSAGE');
 
 /**
  * @augments JsSIP
@@ -248,10 +248,10 @@ IncomingMessage.prototype = {
     idx = idx || 0;
 
     if(!this.headers[name]) {
-      console.log(LOG_PREFIX +'header "' + name + '" not present');
+      logger.log('header "' + name + '" not present');
       return;
     } else if(idx >= this.headers[name].length) {
-      console.log(LOG_PREFIX +'not so many "' + name + '" headers present');
+      logger.log('not so many "' + name + '" headers present');
       return;
     }
 
@@ -267,7 +267,7 @@ IncomingMessage.prototype = {
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      console.warn(LOG_PREFIX +'error parsing "' + name + '" header field with value "' + value + '"');
+      logger.warn('error parsing "' + name + '" header field with value "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
