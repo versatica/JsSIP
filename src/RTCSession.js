@@ -44,6 +44,7 @@ RTCSession = function(ua) {
   this.dialog = null;
   this.earlyDialogs = {};
   this.rtcMediaHandler = null;
+  this.mediaStream = null;
 
   // Session Timers
   this.timers = {
@@ -515,8 +516,8 @@ RTCSession.prototype.connect = function(target, options) {
     eventHandlers = options.eventHandlers || {},
     extraHeaders = options.extraHeaders || [],
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
-    RTCConstraints = options.RTCConstraints || {};
-
+    RTCConstraints = options.RTCConstraints || {},
+    inviteWithoutSdp = options.inviteWithoutSdp || false;
   if (target === undefined) {
     throw new TypeError('Not enough arguments');
   }
@@ -564,10 +565,11 @@ RTCSession.prototype.connect = function(target, options) {
     extraHeaders.push('P-Preferred-Identity: '+ this.ua.configuration.uri.toString());
     extraHeaders.push('Privacy: id');
   }
-
   extraHeaders.push('Contact: '+ this.contact);
   extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
-  extraHeaders.push('Content-Type: application/sdp');
+  if (!inviteWithoutSdp) {
+    extraHeaders.push('Content-Type: application/sdp');
+  }
 
   this.request = new JsSIP.OutgoingRequest(JsSIP.C.INVITE, target, this.ua, requestParams, extraHeaders);
 
@@ -575,13 +577,43 @@ RTCSession.prototype.connect = function(target, options) {
 
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
-
   this.newRTCSession('local', this.request);
 
   if (invalidTarget) {
     this.failed('local', null, JsSIP.C.causes.INVALID_TARGET);
   } else if (!JsSIP.WebRTC.isSupported) {
     this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);
+  } else if (inviteWithoutSdp) {
+    var self = this;
+    var streamAdditionSucceeded = function() {
+      //just send an invite with no sdp...
+      var request_sender = new JsSIP.RequestSender(self, self.ua);
+      request_sender.send();
+    };
+    var streamAdditionFailed = function () {
+      if (self.status === C.STATUS_TERMINATED) {
+        return;
+      }
+      self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
+    };
+    var userMediaSucceeded = function(stream) {
+      self.rtcMediaHandler.addStream(
+        stream,
+        streamAdditionSucceeded,
+        streamAdditionFailed
+      );
+    };
+    var userMediaFailed = function() {
+      if (self.status === C.STATUS_TERMINATED) {
+        return;
+      }
+      self.failed('local', null, JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS);
+    };
+    this.rtcMediaHandler.getUserMedia(
+      userMediaSucceeded,
+      userMediaFailed,
+      mediaConstraints
+    );
   } else {
     this.sendInitialRequest(mediaConstraints);
   }
@@ -750,7 +782,7 @@ RTCSession.prototype.receiveRequest = function(request) {
  * Initial Request Sender
  * @private
  */
-RTCSession.prototype.sendInitialRequest = function(constraints) {
+RTCSession.prototype.sendInitialRequest = function(mediaConstraints) {
   var
   self = this,
  request_sender = new JsSIP.RequestSender(self, this.ua),
@@ -813,7 +845,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints) {
  this.rtcMediaHandler.getUserMedia(
    userMediaSucceeded,
    userMediaFailed,
-   constraints
+   mediaConstraints
  );
 };
 
@@ -826,7 +858,9 @@ RTCSession.prototype.receiveResponse = function(response) {
     session = this;
 
   if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
-    return;
+    if (response.status_code!==200) {
+      return;
+    }
   }
 
   // Proceed to cancellation if the user requested.
@@ -876,35 +910,76 @@ RTCSession.prototype.receiveResponse = function(response) {
         break;
       }
 
-      this.rtcMediaHandler.onMessage(
-        'answer',
-        response.body,
-        /*
-         * onSuccess
-         * SDP Answer fits with Offer. Media will start
-         */
-        function() {
-          session.status = C.STATUS_CONFIRMED;
-          session.sendACK();
-          session.started('remote', response);
-        },
-        /*
-         * onFailure
-         * SDP Answer does not fit the Offer. Accept the call and Terminate.
-         */
-        function(e) {
-          console.warn(e);
-          session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
-          session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
-        }
-      );
+      // This is an invite without sdp
+      if (!this.request.body) {
+        this.rtcMediaHandler.onMessage(
+          'offer',
+          response.body,
+          /*
+           * onSuccess
+           * SDP Offer is valid. Fire UA newRTCSession
+           */
+          function() {
+            var offerCreationSucceeded = function (offer) {
+              if(session.isCanceled || session.status === C.STATUS_TERMINATED) {
+                return;
+              }
+              session.status = C.STATUS_CONFIRMED;
+              session.sendRequest(JsSIP.C.ACK,{
+                body:offer,
+                extraHeaders:["Content-Type: application/sdp"]
+              });
+              session.started('remote', response);
+            };
+            var offerCreationFailed = function () {
+              //do something here
+              console.log("there was a problem");
+            };
+            session.rtcMediaHandler.createAnswer(
+              offerCreationSucceeded,
+              offerCreationFailed
+            );
+          },
+          /*
+           * onFailure
+           * Bad media description
+           */
+          function(e) {
+            session.logger.warn('invalid SDP');
+            session.logger.warn(e);
+            response.reply(488);
+          }
+        );
+      } else {
+        this.rtcMediaHandler.onMessage(
+          'answer',
+          response.body,
+          /*
+           * onSuccess
+           * SDP Answer fits with Offer. Media will start
+           */
+          function() {
+            session.status = C.STATUS_CONFIRMED;
+            session.sendACK();
+            session.started('remote', response);
+          },
+          /*
+           * onFailure
+           * SDP Answer does not fit the Offer. Accept the call and Terminate.
+           */
+          function(e) {
+            console.warn(e);
+            session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
+            session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
+          }
+        );
+      }
       break;
     default:
       cause = JsSIP.Utils.sipErrorCause(response.status_code);
       this.failed('remote', response, cause);
   }
 };
-
 
 /**
 * @private
