@@ -1088,7 +1088,7 @@ UA.configuration_check = {
     },
 
     turn_servers: function(turn_servers) {
-      var idx, length, turn_server;
+      var idx, length, turn_server, url;
 
       if (turn_servers instanceof Array) {
         // Do nothing
@@ -1099,14 +1099,32 @@ UA.configuration_check = {
       length = turn_servers.length;
       for (idx = 0; idx < length; idx++) {
         turn_server = turn_servers[idx];
-        if (!turn_server.server || !turn_server.username || !turn_server.password) {
-          return;
-        } else if (!(/^turns?:/.test(turn_server.server))) {
-          turn_server.server = 'turn:' + turn_server.server;
+        
+        // Backward compatibility:
+        //Allow defining the turn_server url with the 'server' property.
+        if (turn_server.server) {
+          turn_server.urls = [turn_server.server];
         }
-
-        if(JsSIP.Grammar.parse(turn_server.server, 'turn_URI') === -1) {
+        
+        if (!turn_server.urls || !turn_server.username || !turn_server.password) {
           return;
+        }
+        
+        if (!turn_server.urls instanceof Array) {
+          turn_server.urls = [turn_server.urls];
+        }
+        
+        length = turn_server.urls.length;
+        for (idx = 0; idx < length; idx++) {
+          url = turn_server.urls[idx];
+          
+          if (!(/^turns?:/.test(url))) {
+            url = 'turn:' + url;
+          }
+
+          if(JsSIP.Grammar.parse(url, 'turn_URI') === -1) {
+            return;
+          }
         }
       }
       return turn_servers;
