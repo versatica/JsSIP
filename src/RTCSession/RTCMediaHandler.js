@@ -143,16 +143,13 @@ RTCMediaHandler.prototype = {
       }
     };
 
-    // To be deprecated as per https://code.google.com/p/webrtc/issues/detail?id=1393
-    this.peerConnection.ongatheringchange = function(e) {
+    this.peerConnection.oniceconnectionstatechange = function(e) {
+      self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
       if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
         self.onIceCompleted();
       }
     };
 
-    this.peerConnection.onicechange = function() {
-      self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
-    };
 
     this.peerConnection.onstatechange = function() {
       self.logger.log('PeerConnection state changed to "'+ this.readyState +'"');
