@@ -1123,11 +1123,11 @@ UA.configuration_check = {
     },
 
     instance_id: function(instance_id) {
-      if (!(/^uuid?:/.test(instance_id))) {
-        instance_id = 'uuid:' + instance_id;
+      if ((/^uuid:/i.test(instance_id))) {
+        instance_id = instance_id.substr(5);
       }
 
-      if(JsSIP.Grammar.parse(instance_id, 'uuid_URI') === -1) {
+      if(JsSIP.Grammar.parse(instance_id, 'uuid') === -1) {
         return;
       } else {
         return instance_id;
