@@ -172,6 +172,7 @@ RTCSession.prototype.answer = function(options) {
     request = this.request,
     extraHeaders = options.extraHeaders || [],
     mediaConstraints = options.mediaConstraints || {'audio':true, 'video':true},
+    mediaStream = options.mediaStream || null,
 
     // User media succeeded
     userMediaSucceeded = function(stream) {
@@ -299,11 +300,15 @@ RTCSession.prototype.answer = function(options) {
 
   window.clearTimeout(this.timers.userNoAnswerTimer);
 
-  this.rtcMediaHandler.getUserMedia(
-    userMediaSucceeded,
-    userMediaFailed,
-    mediaConstraints
-  );
+  if (mediaStream) {
+    userMediaSucceeded(mediaStream);
+  } else {
+    this.rtcMediaHandler.getUserMedia(
+      userMediaSucceeded,
+      userMediaFailed,
+      mediaConstraints
+    );
+  }
 };
 
 /**
@@ -539,6 +544,7 @@ RTCSession.prototype.connect = function(target, options) {
     eventHandlers = options.eventHandlers || {},
     extraHeaders = options.extraHeaders || [],
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
+    mediaStream = options.mediaStream || null,
     RTCConstraints = options.RTCConstraints || {};
 
   if (target === undefined) {
@@ -608,7 +614,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.newRTCSession('local', this.request);
 
-  this.sendInitialRequest(mediaConstraints);
+  this.sendInitialRequest(mediaConstraints, mediaStream);
 };
 
 /**
@@ -772,7 +778,7 @@ RTCSession.prototype.receiveRequest = function(request) {
  * Initial Request Sender
  * @private
  */
-RTCSession.prototype.sendInitialRequest = function(constraints) {
+RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
   var
   self = this,
  request_sender = new JsSIP.RequestSender(self, this.ua),
@@ -832,11 +838,15 @@ RTCSession.prototype.sendInitialRequest = function(constraints) {
    self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
  };
 
- this.rtcMediaHandler.getUserMedia(
-   userMediaSucceeded,
-   userMediaFailed,
-   constraints
- );
+ if (mediaStream) {
+   userMediaSucceeded(mediaStream);
+ } else {
+   this.rtcMediaHandler.getUserMedia(
+     userMediaSucceeded,
+     userMediaFailed,
+     constraints
+   );
+ }
 };
 
 /**
