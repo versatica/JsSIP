@@ -289,11 +289,15 @@ RTCSession.prototype.answer = function(options) {
 
   window.clearTimeout(this.timers.userNoAnswerTimer);
 
-  this.rtcMediaHandler.getUserMedia(
-    userMediaSucceeded,
-    userMediaFailed,
-    mediaConstraints
-  );
+  if (options.stream) {
+    userMediaSucceeded(options.stream);
+  } else {
+    this.rtcMediaHandler.getUserMedia(
+      userMediaSucceeded,
+      userMediaFailed,
+      mediaConstraints
+    );
+  }
 };
 
 /**
@@ -583,7 +587,7 @@ RTCSession.prototype.connect = function(target, options) {
   } else if (!JsSIP.WebRTC.isSupported) {
     this.failed('local', null, JsSIP.C.causes.WEBRTC_NOT_SUPPORTED);
   } else {
-    this.sendInitialRequest(mediaConstraints);
+    this.sendInitialRequest(mediaConstraints, options.stream);
   }
 };
 
@@ -750,7 +754,7 @@ RTCSession.prototype.receiveRequest = function(request) {
  * Initial Request Sender
  * @private
  */
-RTCSession.prototype.sendInitialRequest = function(constraints) {
+RTCSession.prototype.sendInitialRequest = function(constraints, stream) {
   var
   self = this,
  request_sender = new JsSIP.RequestSender(self, this.ua),
@@ -810,11 +814,15 @@ RTCSession.prototype.sendInitialRequest = function(constraints) {
    self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
  };
 
- this.rtcMediaHandler.getUserMedia(
-   userMediaSucceeded,
-   userMediaFailed,
-   constraints
- );
+ if (stream) {
+   userMediaSucceeded(stream);
+ } else {
+   this.rtcMediaHandler.getUserMedia(
+     userMediaSucceeded,
+     userMediaFailed,
+     constraints
+   );
+ }
 };
 
 /**
