@@ -806,8 +806,8 @@ UA.prototype.loadConfig = function(configuration) {
     if(configuration.hasOwnProperty(parameter)) {
       value = configuration[parameter];
 
-      // If the parameter value is null, empty string or undefined then apply its default value.
-      if(value === null || value === "" || value === undefined) { continue; }
+      // If the parameter value is null, empty string, undefined or empty array then apply its default value.
+      if(value === null || value === "" || value === undefined || (value instanceof Array && value.length === 0)) { continue; }
       // If it's a number with NaN value then also apply its default value.
       // NOTE: JS does not allow "value === NaN", the following does the work:
       else if(typeof(value) === 'number' && window.isNaN(value)) { continue; }
