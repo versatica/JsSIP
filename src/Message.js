@@ -13,9 +13,6 @@ var Message;
 Message = function(ua) {
   this.ua = ua;
   this.logger = ua.getLogger('jssip.message');
-  this.direction = null;
-  this.local_identity = null;
-  this.remote_identity = null;
 
   // Custom message empty object for high level use
   this.data = {};
@@ -54,11 +51,6 @@ Message.prototype.send = function(target, body, options) {
     this.on(event, eventHandlers[event]);
   }
 
-  // Message parameter initialization
-  this.direction = 'outgoing';
-  this.local_identity = this.ua.configuration.uri;
-  this.remote_identity = target;
-
   this.closed = false;
   this.ua.applicants[this] = this;
 
@@ -72,11 +64,7 @@ Message.prototype.send = function(target, body, options) {
 
   request_sender = new JsSIP.RequestSender(this, this.ua);
 
-  this.ua.emit('newMessage', this.ua, {
-    originator: 'local',
-    message: this,
-    request: this.request
-  });
+  this.newMessage('local', this.request);
 
   request_sender.send();
 };
@@ -156,16 +144,9 @@ Message.prototype.close = function() {
 Message.prototype.init_incoming = function(request) {
   var transaction;
 
-  this.direction = 'incoming';
   this.request = request;
-  this.local_identity = request.to.uri;
-  this.remote_identity = request.from.uri;
 
-  this.ua.emit('newMessage', this.ua, {
-    originator: 'remote',
-    message: this,
-    request: request
-  });
+  this.newMessage('remote', request);
 
   transaction = this.ua.transactions.nist[request.via_branch];
 
@@ -217,6 +198,34 @@ Message.prototype.reject = function(options) {
   }
 
   this.request.reply(status_code, reason_phrase, extraHeaders, body);
+};
+
+/**
+ * Internal Callbacks
+ */
+
+/**
+ * @private
+ */
+Message.prototype.newMessage = function(originator, request) {
+  var message = this,
+    event_name = 'newMessage';
+
+  if (originator === 'remote') {
+    message.direction = 'incoming';
+    message.local_identity = request.to;
+    message.remote_identity = request.from;
+  } else if (originator === 'local'){
+    message.direction = 'outgoing';
+    message.local_identity = request.from;
+    message.remote_identity = request.to;
+  }
+
+  message.ua.emit(event_name, message.ua, {
+    originator: originator,
+    message: message,
+    request: request
+  });
 };
 
 JsSIP.Message = Message;
