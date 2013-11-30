@@ -548,6 +548,11 @@ UA.prototype.receiveRequest = function(request) {
     }
     message = new JsSIP.Message(this);
     message.init_incoming(request);
+  } else if (method === JsSIP.C.INVITE) {
+    if (!this.checkEvent('newRTCSession') || this.listeners('newRTCSession').length === 0) {
+      request.reply(405, null, ['Allow: '+ JsSIP.Utils.getAllowedMethods(this)]);
+      return;
+    }
   }
 
   // Initial Request
