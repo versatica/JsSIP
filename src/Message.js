@@ -154,28 +154,23 @@ Message.prototype.close = function() {
  * @private
  */
 Message.prototype.init_incoming = function(request) {
-  var transaction,
-    contentType = request.getHeader('content-type');
+  var transaction;
 
   this.direction = 'incoming';
   this.request = request;
   this.local_identity = request.to.uri;
   this.remote_identity = request.from.uri;
 
-  if (contentType && (contentType.match(/^text\/plain(\s*;\s*.+)*$/i) || contentType.match(/^text\/html(\s*;\s*.+)*$/i))) {
-    this.ua.emit('newMessage', this.ua, {
-      originator: 'remote',
-      message: this,
-      request: request
-    });
+  this.ua.emit('newMessage', this.ua, {
+    originator: 'remote',
+    message: this,
+    request: request
+  });
 
-    transaction = this.ua.transactions.nist[request.via_branch];
+  transaction = this.ua.transactions.nist[request.via_branch];
 
-    if (transaction && (transaction.state === JsSIP.Transactions.C.STATUS_TRYING || transaction.state === JsSIP.Transactions.C.STATUS_PROCEEDING)) {
-      request.reply(200);
-    }
-  } else {
-    request.reply(415, null, ['Accept: text/plain, text/html']);
+  if (transaction && (transaction.state === JsSIP.Transactions.C.STATUS_TRYING || transaction.state === JsSIP.Transactions.C.STATUS_PROCEEDING)) {
+    request.reply(200);
   }
 };
 
