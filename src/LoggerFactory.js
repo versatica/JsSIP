@@ -40,7 +40,7 @@ var LoggerFactory = function() {
           level = value;
         } else if (value > 3) {
           level = 3;
-        } else if (levels.hasOwnProperty(level)) {
+        } else if (levels.hasOwnProperty(value)) {
           level = levels[value];
         } else {
           logger.error('invalid "level" parameter value: '+ window.JSON.stringify(value));
