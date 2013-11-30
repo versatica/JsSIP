@@ -98,6 +98,55 @@ OutgoingRequest.prototype = {
   setHeader: function(name, value) {
     this.headers[JsSIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
   },
+  
+  /**
+   * Get the value of the given header name at the given position.
+   * @param {String} name header name
+   * @returns {String|undefined} Returns the specified header, null if header doesn't exist.
+   */
+  getHeader: function(name) {
+    var header = this.headers[JsSIP.Utils.headerize(name)];
+
+    if(header) {
+      if(header[0]) {
+        return header[0];
+      }
+    } else {
+      return;
+    }
+  },
+
+  /**
+   * Get the header/s of the given name.
+   * @param {String} name header name
+   * @returns {Array} Array with all the headers of the specified name.
+   */
+  getHeaders: function(name) {
+    var idx, length,
+      header = this.headers[JsSIP.Utils.headerize(name)],
+      result = [];
+
+    if(!header) {
+      return [];
+    }
+
+    length = header.length;
+    for (idx = 0; idx < length; idx++) {
+      result.push(header[idx]);
+    }
+
+    return result;
+  },
+
+  /**
+   * Verify the existence of the given header.
+   * @param {String} name header name
+   * @returns {boolean} true if header with given name exists, false otherwise
+   */
+  hasHeader: function(name) {
+    return(this.headers[JsSIP.Utils.headerize(name)]) ? true : false;
+  },
+  
   toString: function() {
     var msg = '', header, length, idx;
 
