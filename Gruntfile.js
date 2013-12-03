@@ -176,6 +176,24 @@ module.exports = function(grunt) {
     });
   });
 
+  // Task for building JsSIP SDP.js and SDP.min.js files.
+  grunt.registerTask('sdp', function(){
+    var done = this.async();  // This is an async task.
+    var sys = require('sys');
+    var exec = require('child_process').exec;
+    var child;
+
+    // Build a bundle of 'sdp-transform' for the browser.
+    console.log('"sdp" task: getting JsSIP parser from "sdp-transform" ...');
+    child = exec('browserify src/SDP/main.js -o src/SDP/dist/SDP.js', function(error, stdout, stderr) {
+      if (error) {
+        sys.print('ERROR: ' + stderr);
+        done(false);  // Tell grunt that async task has failed.
+      }
+      console.log('OK');
+      done();  // Tell grunt that async task has succeeded.
+    });
+  });
 
   // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
   // and jssip-X.Y.Z.min.js (minified).
