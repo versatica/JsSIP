@@ -30,8 +30,29 @@ RequestSender = function(dialog, applicant, request) {
 
 RequestSender.prototype = {
   send: function() {
-    var request_sender = new JsSIP.RequestSender(this, this.dialog.owner.ua);
+    var 
+      self = this,
+      request_sender = new JsSIP.RequestSender(this, this.dialog.owner.ua);
+    
     request_sender.send();
+    
+    // RFC3261 14.2 Modifying an Existing Session -UAC BEHAVIOR-
+    if (this.request.method === JsSIP.C.INVITE && request_sender.clientTransaction.state !== JsSIP.Transactions.C.STATUS_TERMINATED) {
+      this.dialog.uac_pending_reply = true;
+      request_sender.clientTransaction.on('stateChanged', function stateChanged(e){
+        if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
+            e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
+            e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+            
+          request_sender.clientTransaction.removeListener('stateChanged', stateChanged);
+          self.dialog.uac_pending_reply = false;
+          
+          if (self.dialog.uas_pending_reply === false) {
+            self.dialog.owner.onReadyToReinvite();
+          }
+        }
+      });
+    }
   },
 
   onRequestTimeout: function() {
