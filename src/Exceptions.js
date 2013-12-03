@@ -41,6 +41,16 @@ Exceptions= {
     };
     exception.prototype = new Error();
     return exception;
+  }()),
+  
+  NotReadyError: (function(){
+    var exception = function(message) {
+      this.code = 4;
+      this.name = 'NOT_READY_ERROR';
+      this.message = message;
+    };
+    exception.prototype = new Error();
+    return exception;
   }())
 };
 
