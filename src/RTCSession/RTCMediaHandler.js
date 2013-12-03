@@ -145,7 +145,14 @@ RTCMediaHandler.prototype = {
 
     this.peerConnection.oniceconnectionstatechange = function(e) {
       self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
-      if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
+      
+      if (this.iceConnectionState === 'disconnected') {
+        self.session.terminate({
+            cause: JsSIP.C.causes.RTP_TIMEOUT,
+            status_code: 200,
+            reason_phrase: JsSIP.C.causes.RTP_TIMEOUT
+          });
+      } else if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
         self.onIceCompleted();
       }
     };

@@ -80,6 +80,7 @@ RTCSession.prototype.terminate = function(options) {
   options = options || {};
 
   var cancel_reason,
+    cause = options.cause || JsSIP.C.causes.BYE,
     status_code = options.status_code,
     reason_phrase = options.reason_phrase,
     extraHeaders = options.extraHeaders || [],
@@ -153,7 +154,7 @@ RTCSession.prototype.terminate = function(options) {
         body: body
       });
 
-      this.ended('local', null, JsSIP.C.causes.BYE);
+      this.ended('local', null, cause);
       break;
   }
 
