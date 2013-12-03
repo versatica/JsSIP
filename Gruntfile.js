@@ -54,7 +54,8 @@ module.exports = function(grunt) {
       post_dist: {
         src: [
           'dist/<%= pkg.name %>-<%= pkg.version %>.js',
-          'src/Grammar/dist/Grammar.js'
+          'src/Grammar/dist/Grammar.js',
+          'src/SDP/dist/SDP.js'
         ],
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js',
         nonull: true
@@ -72,7 +73,8 @@ module.exports = function(grunt) {
       post_devel: {
         src: [
           'dist/<%= pkg.name %>-devel.js',
-          'src/Grammar/dist/Grammar.js'
+          'src/Grammar/dist/Grammar.js',
+          'src/SDP/dist/SDP.js'
         ],
         dest: 'dist/<%= pkg.name %>-devel.js',
         nonull: true
@@ -165,6 +167,26 @@ module.exports = function(grunt) {
 
     });
   });
+
+  // Task for building JsSIP SDP.js and SDP.min.js files.
+  grunt.registerTask('sdp', function(){
+    var done = this.async();  // This is an async task.
+    var sys = require('sys');
+    var exec = require('child_process').exec;
+    var child;
+
+    // Build a bundle of 'sdp-transform' for the browser.
+    console.log('"sdp" task: getting JsSIP parser from "sdp-transform" ...');
+    child = exec('browserify src/SDP/main.js -o src/SDP/dist/SDP.js', function(error, stdout, stderr) {
+      if (error) {
+        sys.print('ERROR: ' + stderr);
+        done(false);  // Tell grunt that async task has failed.
+      }
+      console.log('OK');
+      done();  // Tell grunt that async task has succeeded.
+    });
+  });
+
 
   // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
   // and jssip-X.Y.Z.min.js (minified).

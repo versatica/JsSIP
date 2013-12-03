@@ -25,6 +25,9 @@ var Dialog,
 // RFC 3261 12.1
 Dialog = function(owner, message, type, state) {
   var contact;
+  
+  this.uac_pending_reply = false;
+  this.uas_pending_reply = false;
 
   if(!message.hasHeader('contact')) {
     return {
@@ -147,7 +150,7 @@ Dialog.prototype = {
     
     if(!this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
-    } else if(request.method !== JsSIP.C.INVITE && request.cseq < this.remote_seqnum) {
+    } else if(request.cseq < this.remote_seqnum) {
         //Do not try to reply to an ACK request.
         if (request.method !== JsSIP.C.ACK) {
           request.reply(500);
@@ -160,20 +163,29 @@ Dialog.prototype = {
     switch(request.method) {
       // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
       case JsSIP.C.INVITE:
-        if(request.cseq < this.remote_seqnum) {
-          if(this.state === C.STATUS_EARLY) {
-            var retryAfter = (Math.random() * 10 | 0) + 1;
-            request.reply(500, null, ['Retry-After:'+ retryAfter]);
-          } else {
-            request.reply(500);
-          }
-          return false;
-        }
-        // RFC3261 14.2
-        if(this.state === C.STATUS_EARLY) {
+        if (this.uac_pending_reply === true) {
           request.reply(491);
+        } else if (this.uas_pending_reply === true) {
+          var retryAfter = (Math.random() * 10 | 0) + 1;
+          request.reply(500, null, ['Retry-After:'+ retryAfter]);
           return false;
+        } else {
+          this.uas_pending_reply = true;
+          request.server_transaction.on('stateChanged', function stateChanged(e){
+            if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
+                e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
+                e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+                
+              request.server_transaction.removeListener('stateChanged', stateChanged);
+              self.uas_pending_reply = false;
+              
+              if (self.uac_pending_reply === false) {
+                self.owner.onReadyToReinvite();
+              }
+            }
+          });
         }
+        
         // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
         if(request.hasHeader('contact')) {
           request.server_transaction.on('stateChanged', function(e){

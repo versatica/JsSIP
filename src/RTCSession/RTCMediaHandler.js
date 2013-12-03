@@ -16,78 +16,104 @@ var RTCMediaHandler = function(session, constraints) {
   this.session = session;
   this.localMedia = null;
   this.peerConnection = null;
+  this.ready = true;
 
   this.init(constraints);
 };
 
 RTCMediaHandler.prototype = {
-
+  isReady: function() {
+    return this.ready;
+  },
+  
   createOffer: function(onSuccess, onFailure, constraints) {
-    var
-      self = this,
-      sent = false;
+    var self = this;
 
-    this.onIceCompleted = function() {
-      if (!sent) {
-        sent = true;
+    function onSetLocalDescriptionSuccess() {
+      if (self.peerConnection.iceGatheringState === 'complete' && self.peerConnection.iceConnectionState === 'connected') {
+        self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
+      } else {
+        self.onIceCompleted = function() {
+          self.onIceCompleted = undefined;
+          self.ready = true;
+          onSuccess(self.peerConnection.localDescription.sdp);
+        };
       }
-    };
+    }
+    
+    this.ready = false;
 
     this.peerConnection.createOffer(
       function(sessionDescription){
         self.setLocalDescription(
           sessionDescription,
-          onFailure
+          onSetLocalDescriptionSuccess,
+          function(e) {
+            self.ready = true;
+            onFailure(e);
+          }
         );
       },
       function(e) {
+        self.ready = true;
         self.logger.error('unable to create offer');
         self.logger.error(e);
-        onFailure();
+        onFailure(e);
       },
       constraints
     );
   },
 
   createAnswer: function(onSuccess, onFailure, constraints) {
-    var
-      self = this,
-      sent = false;
+    var self = this;
 
-    this.onIceCompleted = function() {
-      if (!sent) {
-        sent = true;
+    function onSetLocalDescriptionSuccess() {
+      if (self.peerConnection.iceGatheringState === 'complete' && self.peerConnection.iceConnectionState === 'connected') {
+        self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
+      } else {
+        self.onIceCompleted = function() {
+          self.onIceCompleted = undefined;
+          self.ready = true;
+          onSuccess(self.peerConnection.localDescription.sdp);
+        };
       }
-    };
+    }
+    
+    this.ready = false;
 
     this.peerConnection.createAnswer(
       function(sessionDescription){
         self.setLocalDescription(
           sessionDescription,
-          onFailure
+          onSetLocalDescriptionSuccess,
+          function(e) {
+            self.ready = true;
+            onFailure(e);
+          }
         );
       },
       function(e) {
+        self.ready = true;
         self.logger.error('unable to create answer');
         self.logger.error(e);
-        onFailure();
+        onFailure(e);
       },
       constraints
     );
   },
 
-  setLocalDescription: function(sessionDescription, onFailure) {
+  setLocalDescription: function(sessionDescription, onSuccess, onFailure) {
     var self = this;
 
     this.peerConnection.setLocalDescription(
       sessionDescription,
-      function(){},
+      onSuccess,
       function(e) {
         self.logger.error('unable to set local description');
         self.logger.error(e);
-        onFailure();
+        onFailure(e);
       }
     );
   },
@@ -162,7 +188,7 @@ RTCMediaHandler.prototype = {
       }
     };
 
-    this.peerConnection.oniceconnectionstatechange = function(e) {
+    this.peerConnection.oniceconnectionstatechange = function() {
       self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
       
       if (this.iceConnectionState === 'disconnected') {
@@ -171,8 +197,6 @@ RTCMediaHandler.prototype = {
             status_code: 200,
             reason_phrase: JsSIP.C.causes.RTP_TIMEOUT
           });
-      } else if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
-        self.onIceCompleted();
       }
     };
 
