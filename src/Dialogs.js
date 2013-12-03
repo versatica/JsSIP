@@ -143,6 +143,8 @@ Dialog.prototype = {
 
   // RFC 3261 12.2.2
   checkInDialogRequest: function(request) {
+    var self = this;
+    
     if(!this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
     } else if(request.method !== JsSIP.C.INVITE && request.cseq < this.remote_seqnum) {
@@ -172,15 +174,23 @@ Dialog.prototype = {
           request.reply(491);
           return false;
         }
-        // RFC3261 12.2.2 Replace the dialog`s remote target URI
+        // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
         if(request.hasHeader('contact')) {
-          this.remote_target = request.parseHeader('contact').uri;
+          request.server_transaction.on('stateChanged', function(e){
+            if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED) {
+              self.remote_target = request.parseHeader('contact').uri;
+            }
+          });
         }
         break;
       case JsSIP.C.NOTIFY:
-        // RFC6655 3.2 Replace the dialog`s remote target URI
+        // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
         if(request.hasHeader('contact')) {
-          this.remote_target = request.parseHeader('contact').uri;
+          request.server_transaction.on('stateChanged', function(e){
+            if (e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED) {
+              self.remote_target = request.parseHeader('contact').uri;
+            }
+          });
         }
         break;
     }
