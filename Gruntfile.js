@@ -194,7 +194,7 @@ module.exports = function(grunt) {
       done();  // Tell grunt that async task has succeeded.
     });
   });
-
+  
   // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
   // and jssip-X.Y.Z.min.js (minified).
   // Both jssip-devel.js and jssip-X.Y.Z.js are the same file with different name.
