@@ -22,3 +22,10 @@ var JsSIP = (function() {
 
   return JsSIP;
 }());
+
+// Register as AMD module
+if(typeof window.define === "function" && window.define.amd) {
+  define([], function(){
+    return JsSIP;
+  });
+}

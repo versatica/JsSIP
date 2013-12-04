@@ -106,7 +106,7 @@ module.exports = function(grunt) {
         newcap: false,
         noarg: true,
         sub: true,
-        undef: true,
+        undef: false,
         boss: true,
         eqnull: true,
         onecase:true,
