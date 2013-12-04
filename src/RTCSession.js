@@ -623,7 +623,7 @@ RTCSession.prototype.connect = function(target, options) {
   this.from_tag = JsSIP.Utils.newTag();
 
   // Set anonymous property
-  this.anonymous = options.anonymous;
+  this.anonymous = options.anonymous || false;
 
   // OutgoingSession specific parameters
   this.isCanceled = false;
@@ -631,9 +631,12 @@ RTCSession.prototype.connect = function(target, options) {
 
   requestParams = {from_tag: this.from_tag};
 
+  /* Do not add ;ob in initial forming dialog requests if the registration over the current
+   * connection got a GRUU URI.
+   */
   this.contact = this.ua.contact.toString({
     anonymous: this.anonymous,
-    outbound: true
+    outbound: ((this.anonymous === false && this.ua.contact.pub_gruu) || (this.anonymous === true && this.ua.contact.temp_gruu)) ? false : true
   });
 
   if (this.anonymous) {
