@@ -39,7 +39,17 @@ Request.prototype.send = function(method, options) {
   if (this.owner.status !== JsSIP.RTCSession.C.STATUS_1XX_RECEIVED &&
     this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
     this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ACK &&
-    this.owner.status !== JsSIP.RTCSession.C.STATUS_CONFIRMED) {
+    this.owner.status !== JsSIP.RTCSession.C.STATUS_CONFIRMED &&
+    this.owner.status !== JsSIP.RTCSession.C.STATUS_TERMINATED) {
+    throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
+  }
+  
+  /* 
+   * Allow sending BYE in TERMINATED status since the RTCSession 
+   * could had been terminated before the ACK had arrived.
+   * RFC3261 Section 15, Paragraph 2
+   */
+  else if (this.owner.status === C.STATUS_TERMINATED && method !== JsSIP.C.BYE) {
     throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
   }
 

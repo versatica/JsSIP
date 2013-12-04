@@ -79,12 +79,13 @@ RTCSession.prototype = new JsSIP.EventEmitter();
 RTCSession.prototype.terminate = function(options) {
   options = options || {};
 
-  var cancel_reason,
+  var cancel_reason, dialog,
     cause = options.cause || JsSIP.C.causes.BYE,
     status_code = options.status_code,
     reason_phrase = options.reason_phrase,
     extraHeaders = options.extraHeaders || [],
-    body = options.body;
+    body = options.body,
+    self = this;
 
   // Check Session Status
   if (this.status === C.STATUS_TERMINATED) {
@@ -137,6 +138,7 @@ RTCSession.prototype.terminate = function(options) {
       this.request.reply(status_code, reason_phrase, extraHeaders, body);
       this.failed('local', null, JsSIP.C.causes.REJECTED);
       break;
+      
     case C.STATUS_WAITING_FOR_ACK:
     case C.STATUS_CONFIRMED:
       this.logger.log('terminating RTCSession');
@@ -148,14 +150,58 @@ RTCSession.prototype.terminate = function(options) {
       } else if (status_code) {
         extraHeaders.push('Reason: SIP ;cause=' + status_code + '; text="' + reason_phrase + '"');
       }
+      
+      /* RFC 3261 section 15 (Terminating a session):
+        *
+        * "...the callee's UA MUST NOT send a BYE on a confirmed dialog
+        * until it has received an ACK for its 2xx response or until the server
+        * transaction times out."
+        */
+      if (this.status === C.STATUS_WAITING_FOR_ACK &&
+          this.direction === 'incoming' &&
+          this.request.server_transaction.state !== JsSIP.Transactions.C.STATUS_TERMINATED) {
 
-      this.sendRequest(JsSIP.C.BYE, {
-        extraHeaders: extraHeaders,
-        body: body
-      });
+        // Save the dialog for later restoration
+        dialog = this.dialog;
+        
+        // Send the BYE as soon as the ACK is received...
+        this.receiveRequest = function(request) {
+          if(request.method === JsSIP.C.ACK) {
+            this.sendRequest(JsSIP.C.BYE, {
+              extraHeaders: extraHeaders,
+              body: body
+            });
+            dialog.terminate();
+          }
+        };
+        
+        // .., or when the INVITE transaction times out 
+        this.request.server_transaction.on('stateChanged', function(e){
+          if (e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+            self.sendRequest(JsSIP.C.BYE, {
+              extraHeaders: extraHeaders,
+              body: body
+            });
+            dialog.terminate();
+          }
+        });
 
-      this.ended('local', null, cause);
-      break;
+        this.ended('local', null, cause);
+        
+        // Restore the dialog into 'this' in order to be able to send the in-dialog BYE :-)
+        this.dialog = dialog;
+        
+        // Restore the dialog into 'ua' so the ACK can reach 'this' session
+        this.ua.dialogs[dialog.id.toString()] = dialog;
+        
+      } else {
+        this.sendRequest(JsSIP.C.BYE, {
+          extraHeaders: extraHeaders,
+          body: body
+        });
+
+        this.ended('local', null, cause);
+      }
   }
 
   this.close();
