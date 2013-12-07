@@ -904,10 +904,51 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
  * @private
  */
 RTCSession.prototype.receiveResponse = function(response) {
-  var cause,
+  var cause, dialog,
     session = this;
 
-  if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
+  // Handle 2XX retransmissions and responses from forked requests
+  if (this.dialog && (response.status_code >=200 && response.status_code <=299)) {
+  
+    /*
+     * If it is a retransmission from the endpoint that established
+     * the dialog, send an ACK
+     */
+    if (this.dialog.id.call_id === response.call_id && 
+        this.dialog.id.local_tag === response.from_tag && 
+        this.dialog.id.remote_tag === response.to_tag) {
+      this.sendRequest(JsSIP.C.ACK);
+      return;
+    } 
+    
+    // If not, send an ACK  and terminate
+    else  {
+      dialog = new JsSIP.Dialog(this, response, 'UAC');
+      
+      if (dialog.error !== undefined) {
+        this.logger.error(dialog.error);
+        return;
+      }
+      
+      dialog.sendRequest({
+          owner: {status: C.STATUS_TERMINATED},
+          onRequestTimeout: function(){},
+          onTransportError: function(){},
+          onDialogError: function(){},
+          receiveResponse: function(){}
+        }, JsSIP.C.ACK);
+        
+      dialog.sendRequest({
+          owner: {status: C.STATUS_TERMINATED},
+          onRequestTimeout: function(){},
+          onTransportError: function(){},
+          onDialogError: function(){},
+          receiveResponse: function(){}
+        }, JsSIP.C.BYE);
+      return;
+    }
+
+  } else if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
     return;
   }
 
@@ -942,11 +983,6 @@ RTCSession.prototype.receiveResponse = function(response) {
       this.progress('remote', response);
       break;
     case /^2[0-9]{2}$/.test(response.status_code):
-      // Do nothing if this.dialog is already confirmed
-      if (this.dialog) {
-        break;
-      }
-
       if(!response.body) {
         this.acceptAndTerminate(response, 400, 'Missing session description');
         this.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
