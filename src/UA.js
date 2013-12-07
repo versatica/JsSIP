@@ -40,9 +40,7 @@ var UA,
       'application/sdp',
       'application/dtmf-relay'
     ],
-
-    SUPPORTED: 'path, outbound, gruu',
-
+    
     MAX_FORWARDS: 69,
     TAG_LENGTH: 10
   };

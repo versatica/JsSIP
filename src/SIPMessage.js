@@ -36,6 +36,7 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   }
 
   this.logger = ua.getLogger('jssip.sipmessage');
+  this.ua = ua;
   this.headers = {};
   this.method = method;
   this.ruri = ruri;
@@ -148,7 +149,8 @@ OutgoingRequest.prototype = {
   },
   
   toString: function() {
-    var msg = '', header, length, idx;
+    var msg = '', header, length, idx, 
+      supported = [];
 
     msg += this.method + ' ' + this.ruri + ' SIP/2.0\r\n';
 
@@ -164,7 +166,21 @@ OutgoingRequest.prototype = {
       msg += this.extraHeaders[idx] +'\r\n';
     }
 
-    msg += 'Supported: ' +  JsSIP.UA.C.SUPPORTED +'\r\n';
+    // Supported
+    switch (this.method) {
+      case JsSIP.C.REGISTER:
+        supported.push('path', 'gruu');
+        break;
+      case JsSIP.C.INVITE:
+        if (this.ua.contact.pub_gruu || this.ua.contact.temp_gruu) {
+          supported.push('gruu');
+        }
+        break;
+    }
+    
+    supported.push('outbound');
+    
+    msg += 'Supported: ' +  supported +'\r\n';
     msg += 'User-Agent: ' + JsSIP.C.USER_AGENT +'\r\n';
 
     if(this.body) {
@@ -340,6 +356,7 @@ IncomingMessage.prototype = {
  */
 IncomingRequest = function(ua) {
   this.logger = ua.getLogger('jssip.sipmessage');
+  this.ua = ua;
   this.headers = {};
   this.ruri = null;
   this.transport = null;
@@ -358,6 +375,7 @@ IncomingRequest.prototype = new IncomingMessage();
 */
 IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
   var rr, vias, length, idx, response,
+    supported = [],
     to = this.getHeader('To'),
     r = 0,
     v = 0;
@@ -408,6 +426,19 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   for (idx = 0; idx < length; idx++) {
     response += extraHeaders[idx] +'\r\n';
   }
+  
+  // Supported
+  switch (this.method) {
+    case JsSIP.C.INVITE:
+      if (this.ua.contact.pub_gruu || this.ua.contact.temp_gruu) {
+        supported.push('gruu');
+      }
+      break;
+  }
+  
+  supported.push('outbound');
+  
+  response += 'Supported: ' +  supported +'\r\n';
 
   if(body) {
     length = JsSIP.Utils.str_utf8_length(body);
