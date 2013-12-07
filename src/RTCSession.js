@@ -272,7 +272,7 @@ RTCSession.prototype.answer = function(options) {
                 return;
               }
 
-              request.reply(200, null, ['Contact: '+ self.contact], body);
+              request.reply(200, null, extraHeaders, body);
 
               if (timeout < JsSIP.Timers.T2) {
                 timeout = timeout * 2;
@@ -311,8 +311,6 @@ RTCSession.prototype.answer = function(options) {
           self.failed('system', null, JsSIP.C.causes.CONNECTION_ERROR);
         };
 
-      extraHeaders.push('Contact: ' + self.contact);
-
       request.reply(200, null, extraHeaders,
         body,
         replySucceeded,
@@ -346,6 +344,8 @@ RTCSession.prototype.answer = function(options) {
   }
 
   window.clearTimeout(this.timers.userNoAnswerTimer);
+  
+  extraHeaders.unshift('Contact: ' + self.contact);
 
   if (mediaStream) {
     userMediaSucceeded(mediaStream);
