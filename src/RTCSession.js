@@ -257,7 +257,7 @@ RTCSession.prototype.answer = function(options) {
         return;
       }
 
-      self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
+      self.failed('system', null, JsSIP.C.causes.WEBRTC_ERROR);
     },
 
     // rtcMediaHandler.createAnswer succeeded
@@ -331,7 +331,7 @@ RTCSession.prototype.answer = function(options) {
         return;
       }
 
-      self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
+      self.failed('system', null, JsSIP.C.causes.WEBRTC_ERROR);
     };
 
 
@@ -878,7 +878,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
      return;
    }
 
-   self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
+   self.failed('system', null, JsSIP.C.causes.WEBRTC_ERROR);
  },
 
  // rtcMediaHandler.createOffer succeeded
@@ -898,7 +898,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
      return;
    }
 
-   self.failed('local', null, JsSIP.C.causes.WEBRTC_ERROR);
+   self.failed('system', null, JsSIP.C.causes.WEBRTC_ERROR);
  };
 
  if (mediaStream) {
