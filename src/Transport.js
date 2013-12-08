@@ -96,6 +96,8 @@ Transport.prototype = {
     }
 
     this.logger.log('connecting to WebSocket ' + this.server.ws_uri);
+    this.ua.onTransportConnecting(this,
+      (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
 
     try {
       this.ws = new WebSocket(this.server.ws_uri, 'sip');

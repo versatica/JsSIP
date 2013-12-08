@@ -47,6 +47,7 @@ var UA,
 
 UA = function(configuration) {
   var events = [
+    'connecting',
     'connected',
     'disconnected',
     'newTransaction',
@@ -466,6 +467,20 @@ UA.prototype.onTransportConnected = function(transport) {
   if(this.configuration.register) {
     this.registrator.onTransportConnected();
   }
+};
+
+
+/**
+ * Transport connecting event
+ * @private
+ * @param {JsSIP.Transport} transport.
+ * @param {Integer} attempts.
+ */
+UA.prototype.onTransportConnecting = function(transport, attempts) {
+  this.emit('connecting', this, {
+    transport: transport,
+    attempts: attempts
+  });
 };
 
 
