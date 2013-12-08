@@ -121,7 +121,7 @@ SIP_URI         = uri_scheme ":"  userinfo ? hostport uri_parameters headers ? {
                         data = -1;
                       }}
 
-uri_scheme      = uri_scheme:  "sip"i {
+uri_scheme      = uri_scheme:  "sip"i / "sips"i {
                     data.scheme = uri_scheme.toLowerCase(); }
 
 userinfo        = user (":" password)? "@" {

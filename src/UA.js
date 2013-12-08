@@ -523,12 +523,18 @@ UA.prototype.receiveRequest = function(request) {
   var dialog, session, message,
     method = request.method;
 
-  // Check that Ruri points to us
+  // Check that request URI points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
     this.logger.warn('Request-URI does not point to us');
     if (request.method !== JsSIP.C.ACK) {
       request.reply_sl(404);
     }
+    return;
+  }
+  
+  // Check request URI scheme
+  if(request.ruri.scheme === JsSIP.C.SIPS) {
+    request.reply_sl(416);
     return;
   }
 

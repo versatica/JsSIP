@@ -11,7 +11,8 @@ JsSIP.C= {
   USER_AGENT: JsSIP.name +' '+ JsSIP.version,
 
   // SIP scheme
-  SIP: 'sip',
+  SIP:  'sip',
+  SIPS: 'sips',
 
   // End and Failure causes
   causes: {
