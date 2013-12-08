@@ -107,17 +107,30 @@ RTCMediaHandler.prototype = {
   * peerConnection creation.
   * @param {Function} onSuccess Fired when there are no more ICE candidates
   */
-  init: function(constraints) {
+  init: function(options) {
+    options = options || {};
+    
     var idx, length, server,
       self = this,
       servers = [],
+      constraints = options.constraints || {},
+      stun_servers = options.stun_servers  || null,
+      turn_servers = options.turn_servers || null,
       config = this.session.ua.configuration;
 
-    servers.push({'url': config.stun_servers});
+    if (!stun_servers) {
+      stun_servers = config.stun_servers;
+    }
 
-    length = config.turn_servers.length;
+    if (!turn_servers) {
+      turn_servers = config.turn_servers;
+    }
+    
+    servers.push({'url': stun_servers});
+    
+    length = turn_servers.length;
     for (idx = 0; idx < length; idx++) {
-      server = config.turn_servers[idx];
+      server = turn_servers[idx];
       servers.push({
         'url': server.urls,
         'username': server.username,

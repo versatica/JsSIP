@@ -539,9 +539,10 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   //Initialize Media Session
-  this.rtcMediaHandler = new RTCMediaHandler(this,
-    {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
-  );
+  this.rtcMediaHandler = new RTCMediaHandler(this, {
+    RTCConstraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
+    });
+    
   this.rtcMediaHandler.onMessage(
     'offer',
     request.body,
@@ -599,7 +600,21 @@ RTCSession.prototype.connect = function(target, options) {
     extraHeaders = options.extraHeaders || [],
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
     mediaStream = options.mediaStream || null,
-    RTCConstraints = options.RTCConstraints || {};
+    RTCConstraints = options.RTCConstraints || {},
+    stun_servers = options.stun_servers || null,
+    turn_servers = options.turn_servers || null;
+  
+  if (stun_servers) {
+    if (!JsSIP.UA.configuration_check.optional['stun_servers'](stun_servers)) {
+      throw new TypeError('Invalid stun_servers: '+ stun_servers);
+    }
+  }
+  
+  if (turn_servers) {
+    if (!JsSIP.UA.configuration_check.optional['turn_servers'](turn_servers)) {
+      throw new TypeError('Invalid turn_servers: '+ turn_servers);
+    }
+  }
 
   if (target === undefined) {
     throw new TypeError('Not enough arguments');
@@ -664,8 +679,12 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
 
-  this.rtcMediaHandler = new RTCMediaHandler(this, RTCConstraints);
-
+  this.rtcMediaHandler = new RTCMediaHandler(this, {
+    RTCConstraints: RTCConstraints,
+    stun_servers: stun_servers,
+    trun_servers: turn_servers
+    });
+  
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
