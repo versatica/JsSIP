@@ -27,6 +27,7 @@ Exceptions= {
       this.code = 2;
       this.name = 'INVALID_STATE_ERROR';
       this.status = status;
+      this.message = 'Invalid status: '+ status;
     };
     exception.prototype = new Error();
     return exception;
