@@ -240,6 +240,11 @@ RTCSession.prototype.answer = function(options) {
     // rtcMediaHandler.addStream successfully added
     streamAdditionSucceeded = function() {
       self.connecting(request);
+      
+      if (self.status === C.STATUS_TERMINATED) {
+        return;
+      }
+      
       self.rtcMediaHandler.createAnswer(
         answerCreationSucceeded,
         answerCreationFailed
@@ -856,6 +861,11 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
  // rtcMediaHandler.addStream successfully added
  streamAdditionSucceeded = function() {
    self.connecting(self.request);
+   
+   if (self.status === C.STATUS_TERMINATED) {
+     return;
+   }
+      
    self.rtcMediaHandler.createOffer(
      offerCreationSucceeded,
      offerCreationFailed
