@@ -999,6 +999,10 @@ RTCSession.prototype.receiveResponse = function(response) {
       this.received_100 = true;
       break;
     case /^1[0-9]{2}$/.test(response.status_code):
+      if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
+        break;
+      }
+      
       // Do nothing with 1xx responses without To tag.
       if(!response.to_tag) {
         this.logger.warn('1xx response received without to tag');
@@ -1008,11 +1012,37 @@ RTCSession.prototype.receiveResponse = function(response) {
       // Create Early Dialog if 1XX comes with contact
       if(response.hasHeader('contact')) {
         // An error on dialog creation will fire 'failed' event
-        this.createDialog(response, 'UAC', true);
+        if(!this.createDialog(response, 'UAC', true)) {
+          break;
+        }
       }
-
-      this.status = C.STATUS_1XX_RECEIVED;
-      this.progress('remote', response);
+      
+      if (!response.body) {
+        session.status = C.STATUS_1XX_RECEIVED;
+        session.progress('remote', response);
+        break;
+      }
+      
+      this.rtcMediaHandler.onMessage(
+        'pranswer',
+        response.body,
+        /*
+        * OnSuccess.
+        * SDP Answer fits with Offer.
+        */
+        function() {
+          session.status = C.STATUS_1XX_RECEIVED;
+          session.progress('remote', response);
+        },
+        /*
+        * OnFailure.
+        * SDP Answer does not fit with Offer.
+        */
+        function(e) {
+          session.logger.warn(e);
+          this.earlyDialogs[response.call_id + response.from_tag + response.to_tag].terminate();
+        }
+      );
       break;
     case /^2[0-9]{2}$/.test(response.status_code):
       if(!response.body) {
