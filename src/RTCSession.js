@@ -31,6 +31,7 @@ var RTCSession,
 
 RTCSession = function(ua) {
   var events = [
+  'connecting',
   'progress',
   'failed',
   'started',
@@ -238,6 +239,7 @@ RTCSession.prototype.answer = function(options) {
 
     // rtcMediaHandler.addStream successfully added
     streamAdditionSucceeded = function() {
+      self.connecting(request);
       self.rtcMediaHandler.createAnswer(
         answerCreationSucceeded,
         answerCreationFailed
@@ -853,6 +855,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
 
  // rtcMediaHandler.addStream successfully added
  streamAdditionSucceeded = function() {
+   self.connecting(self.request);
    self.rtcMediaHandler.createOffer(
      offerCreationSucceeded,
      offerCreationFailed
@@ -1119,12 +1122,11 @@ RTCSession.prototype.newRTCSession = function(originator, request) {
 /**
  * @private
  */
-RTCSession.prototype.connecting = function(originator, request) {
+RTCSession.prototype.connecting = function(request) {
   var session = this,
   event_name = 'connecting';
 
   session.emit(event_name, session, {
-    originator: 'local',
     request: request
   });
 };
