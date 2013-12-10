@@ -22,7 +22,7 @@ var RTCMediaHandler = function(session, constraints) {
 
 RTCMediaHandler.prototype = {
 
-  createOffer: function(onSuccess, onFailure) {
+  createOffer: function(onSuccess, onFailure, constraints) {
     var
       self = this,
       sent = false;
@@ -45,11 +45,12 @@ RTCMediaHandler.prototype = {
         self.logger.error('unable to create offer');
         self.logger.error(e);
         onFailure();
-      }
+      },
+      constraints
     );
   },
 
-  createAnswer: function(onSuccess, onFailure) {
+  createAnswer: function(onSuccess, onFailure, constraints) {
     var
       self = this,
       sent = false;
@@ -72,7 +73,8 @@ RTCMediaHandler.prototype = {
         self.logger.error('unable to create answer');
         self.logger.error(e);
         onFailure();
-      }
+      },
+      constraints
     );
   },
 
