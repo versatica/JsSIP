@@ -128,6 +128,10 @@ RTCMediaHandler.prototype = {
       turn_servers = config.turn_servers;
     }
     
+    /* Change 'url' to 'urls' whenever this issue is solved:
+     * https://code.google.com/p/webrtc/issues/detail?id=2096
+     */
+    
     servers.push({'url': stun_servers});
     
     length = turn_servers.length;

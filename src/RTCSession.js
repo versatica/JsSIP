@@ -594,7 +594,7 @@ RTCSession.prototype.init_incoming = function(request) {
 RTCSession.prototype.connect = function(target, options) {
   options = options || {};
 
-  var event, requestParams,
+  var event, requestParams, iceServers,
     originalTarget = target,
     eventHandlers = options.eventHandlers || {},
     extraHeaders = options.extraHeaders || [],
@@ -605,14 +605,20 @@ RTCSession.prototype.connect = function(target, options) {
     turn_servers = options.turn_servers || null;
   
   if (stun_servers) {
-    if (!JsSIP.UA.configuration_check.optional['stun_servers'](stun_servers)) {
+    iceServers = JsSIP.UA.configuration_check.optional['stun_servers'](stun_servers);
+    if (!iceServers) {
       throw new TypeError('Invalid stun_servers: '+ stun_servers);
+    } else {
+      stun_servers = iceServers;
     }
   }
   
   if (turn_servers) {
-    if (!JsSIP.UA.configuration_check.optional['turn_servers'](turn_servers)) {
+    iceServers = JsSIP.UA.configuration_check.optional['turn_servers'](turn_servers);
+    if (!iceServers){
       throw new TypeError('Invalid turn_servers: '+ turn_servers);
+    } else {
+      turn_servers = iceServers;
     }
   }
 
@@ -682,7 +688,7 @@ RTCSession.prototype.connect = function(target, options) {
   this.rtcMediaHandler = new RTCMediaHandler(this, {
     RTCConstraints: RTCConstraints,
     stun_servers: stun_servers,
-    trun_servers: turn_servers
+    turn_servers: turn_servers
     });
   
   //Save the session into the ua sessions collection.
