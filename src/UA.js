@@ -88,6 +88,7 @@ UA = function(configuration) {
   };
 
   this.transportRecoverAttempts = 0;
+  this.transportRecoveryTimer = null;
 
   Object.defineProperties(this, {
     transactionsCount: {
@@ -274,6 +275,9 @@ UA.prototype.stop = function() {
     this.logger.warn('UA already closed');
     return;
   }
+  
+  // Clear transportRecoveryTimer
+  window.clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
   this.logger.log('closing registrator');
@@ -757,7 +761,7 @@ UA.prototype.recoverTransport = function(ua) {
 
   this.logger.log('next connection attempt in '+ nextRetry +' seconds');
 
-  window.setTimeout(
+  this.transportRecoveryTimer = window.setTimeout(
     function(){
       ua.transportRecoverAttempts = count + 1;
       new JsSIP.Transport(ua, server);

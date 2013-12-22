@@ -168,7 +168,8 @@ EventEmitter.prototype = {
   * @param {Array} args
   */
   emit: function(event, sender, data) {
-    var listeners, idx, e;
+    var listeners, length, e,
+      self = this;
 
     if (!this.checkEvent(event)) {
       this.logger.error('unable to emit a nonexistent event'+ event);
@@ -177,24 +178,34 @@ EventEmitter.prototype = {
 
     this.logger.log('emitting event '+ event);
 
-    e = new JsSIP.Event(event, sender, data);
-
-    // Fire event listeners
     listeners = this.events[event];
-    for (idx in listeners) {
-      try {
-        listeners[idx].apply(null, [e]);
-      } catch(err) {
-        this.logger.error(err.stack);
-      }
+    length = listeners.length;
+    
+    e = new JsSIP.Event(event, sender, data);
+    
+    if (length === 0) {
+      return;
     }
 
-    // Remove one time listeners
-    for (idx in this.oneTimeListeners[event]) {
-      this.removeListener(event, this.oneTimeListeners[event][idx]);
-    }
+    window.setTimeout(
+      function(){
+        var idx=0;
+        
+        for (idx; idx<length; idx++) {
+          try {
+            listeners[idx].call(null, e);
+          } catch(err) {
+            self.logger.error(err.stack);
+          }
+        }
 
-    this.oneTimeListeners[event] = [];
+        // Remove one time listeners
+        for (idx in self.oneTimeListeners[event]) {
+          self.removeListener(event, self.oneTimeListeners[event][idx]);
+        }
+
+        self.oneTimeListeners[event] = [];
+      }, 0);
   }
 };
 
