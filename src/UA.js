@@ -460,13 +460,14 @@ UA.prototype.onTransportConnected = function(transport) {
 
   this.status = C.STATUS_READY;
   this.error = null;
-  this.emit('connected', this, {
-    transport: transport
-  });
 
   if(this.configuration.register) {
     this.registrator.onTransportConnected();
   }
+  
+  this.emit('connected', this, {
+    transport: transport
+  });
 };
 
 
