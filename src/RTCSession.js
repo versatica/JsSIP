@@ -220,6 +220,7 @@ RTCSession.prototype.answer = function(options) {
     request = this.request,
     extraHeaders = options.extraHeaders || [],
     mediaConstraints = options.mediaConstraints || {'audio':true, 'video':true},
+    RTCAnswerConstraints = options.RTCAnswerConstraints || {},
     mediaStream = options.mediaStream || null,
 
     // User media succeeded
@@ -247,7 +248,8 @@ RTCSession.prototype.answer = function(options) {
       
       self.rtcMediaHandler.createAnswer(
         answerCreationSucceeded,
-        answerCreationFailed
+        answerCreationFailed,
+        RTCAnswerConstraints
       );
     },
 
@@ -601,6 +603,7 @@ RTCSession.prototype.connect = function(target, options) {
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
     mediaStream = options.mediaStream || null,
     RTCConstraints = options.RTCConstraints || {},
+    RTCOfferConstraints = options.RTCOfferConstraints || {},
     stun_servers = options.stun_servers || null,
     turn_servers = options.turn_servers || null;
   
@@ -696,7 +699,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.newRTCSession('local', this.request);
 
-  this.sendInitialRequest(mediaConstraints, mediaStream);
+  this.sendInitialRequest(mediaConstraints, RTCOfferConstraints, mediaStream);
 };
 
 /**
@@ -860,7 +863,7 @@ RTCSession.prototype.receiveRequest = function(request) {
  * Initial Request Sender
  * @private
  */
-RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
+RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferConstraints, mediaStream) {
   var
   self = this,
  request_sender = new JsSIP.RequestSender(self, this.ua),
@@ -893,7 +896,8 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
       
    self.rtcMediaHandler.createOffer(
      offerCreationSucceeded,
-     offerCreationFailed
+     offerCreationFailed,
+     RTCOfferConstraints
    );
  },
 
@@ -932,7 +936,7 @@ RTCSession.prototype.sendInitialRequest = function(constraints, mediaStream) {
    this.rtcMediaHandler.getUserMedia(
      userMediaSucceeded,
      userMediaFailed,
-     constraints
+     mediaConstraints
    );
  }
 };
