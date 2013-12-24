@@ -561,20 +561,17 @@ UA.prototype.receiveRequest = function(request) {
    * They are processed as if they had been received outside the dialog.
    */
   if(method === JsSIP.C.OPTIONS) {
-    request.reply(200, null, [
-      'Allow: '+ JsSIP.Utils.getAllowedMethods(this),
-      'Accept: '+ C.ACCEPTED_BODY_TYPES
-    ]);
+    request.reply(200);
   } else if (method === JsSIP.C.MESSAGE) {
     if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
-      request.reply(405, null, ['Allow: '+ JsSIP.Utils.getAllowedMethods(this)]);
+      request.reply(405);
       return;
     }
     message = new JsSIP.Message(this);
     message.init_incoming(request);
   } else if (method === JsSIP.C.INVITE) {
     if (!this.checkEvent('newRTCSession') || this.listeners('newRTCSession').length === 0) {
-      request.reply(405, null, ['Allow: '+ JsSIP.Utils.getAllowedMethods(this)]);
+      request.reply(405);
       return;
     }
   }

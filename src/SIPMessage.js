@@ -211,6 +211,9 @@ OutgoingRequest.prototype = {
     
     supported.push('outbound');
     
+    // Allow
+    msg += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
+    
     msg += 'Supported: ' +  supported +'\r\n';
     msg += 'User-Agent: ' + JsSIP.C.USER_AGENT +'\r\n';
 
@@ -468,6 +471,14 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   }
   
   supported.push('outbound');
+  
+  // Allow and Accept
+  if (this.method === JsSIP.C.OPTIONS) {
+    response += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
+    response += 'Accept: '+ JsSIP.UA.C.ACCEPTED_BODY_TYPES +'\r\n';
+  } else if (code === 405) {
+    response += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
+  }
   
   response += 'Supported: ' +  supported +'\r\n';
 
