@@ -101,27 +101,30 @@ Transport.prototype = {
 
     try {
       this.ws = new WebSocket(this.server.ws_uri, 'sip');
+      
+      this.ws.binaryType = 'arraybuffer';
+
+      this.ws.onopen = function() {
+        transport.onOpen();
+      };
+
+      this.ws.onclose = function(e) {
+        transport.onClose(e);
+      };
+
+      this.ws.onmessage = function(e) {
+        transport.onMessage(e);
+      };
+
+      this.ws.onerror = function(e) {
+        transport.onError(e);
+      };
     } catch(e) {
       this.logger.warn('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
+      this.lastTransportError.code = null;
+      this.lastTransportError.reason = e.message;
+      this.ua.onTransportError(this);
     }
-
-    this.ws.binaryType = 'arraybuffer';
-
-    this.ws.onopen = function() {
-      transport.onOpen();
-    };
-
-    this.ws.onclose = function(e) {
-      transport.onClose(e);
-    };
-
-    this.ws.onmessage = function(e) {
-      transport.onMessage(e);
-    };
-
-    this.ws.onerror = function(e) {
-      transport.onError(e);
-    };
   },
 
   // Transport Event Handlers
