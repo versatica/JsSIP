@@ -128,6 +128,13 @@ module.exports = function(grunt) {
     },
     qunit: {
       noWebRTC: ['test/run-TestNoWebRTC.html']
+    },
+    browserify: {
+      dist: {
+        files: {
+          'src/SDP/dist/SDP.js': ['src/SDP/main.js']
+        }
+      }
     }
   });
 
@@ -138,6 +145,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
+  grunt.loadNpmTasks('grunt-browserify');
 
 
   // Task for building JsSIP Grammar.js and Grammar.min.js files.
@@ -168,33 +176,14 @@ module.exports = function(grunt) {
     });
   });
 
-  // Task for building JsSIP SDP.js and SDP.min.js files.
-  grunt.registerTask('sdp', function(){
-    var done = this.async();  // This is an async task.
-    var sys = require('sys');
-    var exec = require('child_process').exec;
-    var child;
-
-    // Build a bundle of 'sdp-transform' for the browser.
-    console.log('"sdp" task: getting JsSIP parser from "sdp-transform" ...');
-    child = exec('browserify src/SDP/main.js -o src/SDP/dist/SDP.js', function(error, stdout, stderr) {
-      if (error) {
-        sys.print('ERROR: ' + stderr);
-        done(false);  // Tell grunt that async task has failed.
-      }
-      console.log('OK');
-      done();  // Tell grunt that async task has succeeded.
-    });
-  });
-
 
   // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
   // and jssip-X.Y.Z.min.js (minified).
   // Both jssip-devel.js and jssip-X.Y.Z.js are the same file with different name.
-  grunt.registerTask('build', ['concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'concat:post_dist', 'uglify:dist']);
+  grunt.registerTask('build', ['browserify', 'concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'concat:post_dist', 'uglify:dist']);
 
   // Task for building jssip-devel.js (uncompressed).
-  grunt.registerTask('devel', ['concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel']);
+  grunt.registerTask('devel', ['browserify', 'concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel']);
 
   // Test tasks.
   grunt.registerTask('testNoWebRTC', ['qunit:noWebRTC']);
@@ -205,6 +194,6 @@ module.exports = function(grunt) {
   grunt.registerTask('travis', ['grammar', 'devel', 'test']);
 
   // Default task is an alias for 'build'.
-  grunt.registerTask('default', ['sdp', 'build']);
+  grunt.registerTask('default', ['build']);
 
 };
