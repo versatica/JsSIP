@@ -212,6 +212,6 @@ module.exports = function(grunt) {
   grunt.registerTask('travis', ['grammar', 'devel', 'test']);
 
   // Default task is an alias for 'build'.
-  grunt.registerTask('default', ['sdp', 'build']);
+  grunt.registerTask('default', ['build']);
 
 };
