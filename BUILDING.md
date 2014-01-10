@@ -1,6 +1,6 @@
 ## What you need to build JsSIP
 
-You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com/). Optionally you also need [PhantomJS](http://phantomjs.org/) if you want to run test units.
+You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com/).
 
 
 ### Node.js
@@ -11,14 +11,6 @@ You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com
 ### Git
 
 * [Install Git](http://git-scm.com/book/en/Getting-Started-Installing-Git)
-
-
-### PhantomJS
-
-(optional, just for running unit tests)
-
-* [Install PhantomJS](http://phantomjs.org/download.html)
-* In modern Debian/Ubuntu systems PhantomJS can be installed via `apt-get install phantomjs`
 
 
 ## How to build JsSIP
