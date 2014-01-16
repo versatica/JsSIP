@@ -20,14 +20,15 @@ test('UA no WS connection', function() {
   strictEqual(ua.contact.toString({anonymous: true}), '<sip:anonymous@anonymous.invalid;transport=ws>');
   strictEqual(ua.contact.toString({anonymous: true, outbound: true}), '<sip:anonymous@anonymous.invalid;transport=ws;ob>');
 
-  for (parameter in TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START) {
+  for (var parameter in TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START) {
+    console.log("*** testing parameter: " + parameter);
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
-        deepEqual(ua.configuration[parameter].toString(), TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
+        deepEqual(ua.configuration[parameter].toString(), TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
         break;
       default:
-        deepEqual(ua.configuration[parameter], TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
+        deepEqual(ua.configuration[parameter], TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
     }
   }
 

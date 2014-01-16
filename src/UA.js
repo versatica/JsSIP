@@ -40,7 +40,7 @@ var UA,
       'application/sdp',
       'application/dtmf-relay'
     ],
-    
+
     MAX_FORWARDS: 69,
     TAG_LENGTH: 10
   };
@@ -164,7 +164,7 @@ UA = function(configuration) {
     this.error = C.CONFIGURATION_ERROR;
     throw e;
   }
-  
+
   // Initialize registrator
   this.registrator = new JsSIP.Registrator(this);
 };
@@ -275,7 +275,7 @@ UA.prototype.stop = function() {
     this.logger.warn('UA already closed');
     return;
   }
-  
+
   // Clear transportRecoveryTimer
   window.clearTimeout(this.transportRecoveryTimer);
 
@@ -468,7 +468,7 @@ UA.prototype.onTransportConnected = function(transport) {
   if(this.configuration.register) {
     this.registrator.onTransportConnected();
   }
-  
+
   this.emit('connected', this, {
     transport: transport
   });
@@ -536,7 +536,7 @@ UA.prototype.receiveRequest = function(request) {
     }
     return;
   }
-  
+
   // Check request URI scheme
   if(request.ruri.scheme === JsSIP.C.SIPS) {
     request.reply_sl(416);
@@ -1250,25 +1250,31 @@ UA.configuration_check = {
       length = turn_servers.length;
       for (idx = 0; idx < length; idx++) {
         turn_server = turn_servers[idx];
-        
+
         // Backward compatibility:
-        //Allow defining the turn_server url with the 'server' property.
+        //Allow defining the turn_server 'urls' with the 'server' property.
         if (turn_server.server) {
           turn_server.urls = [turn_server.server];
         }
-        
-        if (!turn_server.urls || !turn_server.username || !turn_server.password) {
+
+        // Backward compatibility:
+        //Allow defining the turn_server 'credential' with the 'password' property.
+        if (turn_server.password) {
+          turn_server.credential = [turn_server.password];
+        }
+
+        if (!turn_server.urls || !turn_server.username || !turn_server.credential) {
           return;
         }
-        
+
         if (!turn_server.urls instanceof Array) {
           turn_server.urls = [turn_server.urls];
         }
-        
+
         length = turn_server.urls.length;
         for (idx = 0; idx < length; idx++) {
           url = turn_server.urls[idx];
-          
+
           if (!(/^turns?:/.test(url))) {
             url = 'turn:' + url;
           }
