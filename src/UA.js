@@ -784,7 +784,6 @@ UA.prototype.loadConfig = function(configuration) {
 
       // Registration parameters
       register_expires: 600,
-      register_min_expires: 120,
       register: true,
       registrar_server: null,
 
@@ -964,7 +963,6 @@ UA.configuration_skeleton = (function() {
     parameters = [
       // Internal parameters
       "jssip_id",
-      "register_min_expires",
       "ws_server_max_reconnection",
       "ws_server_reconnection_timeout",
       "hostport_params",
