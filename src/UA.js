@@ -1265,7 +1265,7 @@ UA.configuration_check = {
           return;
         }
 
-        if (!turn_server.urls instanceof Array) {
+        if (!(turn_server.urls instanceof Array)) {
           turn_server.urls = [turn_server.urls];
         }
 
