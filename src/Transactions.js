@@ -237,7 +237,8 @@ InviteClientTransaction.prototype.sendACK = function(response) {
   this.ack += 'From: ' + this.request.headers['From'].toString() + '\r\n';
   this.ack += 'Call-ID: ' + this.request.headers['Call-ID'].toString() + '\r\n';
   this.ack += 'CSeq: ' + this.request.headers['CSeq'].toString().split(' ')[0];
-  this.ack += ' ACK\r\n\r\n';
+  this.ack += ' ACK\r\n';
+  this.ack += 'Content-Length: 0\r\n\r\n';
 
   this.D = window.setTimeout(function() {tr.timer_D();}, JsSIP.Timers.TIMER_D);
 
