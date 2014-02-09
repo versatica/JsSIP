@@ -112,7 +112,7 @@ Dialog.prototype = {
   // RFC 3261 12.2.1.1
   createRequest: function(method, extraHeaders, body) {
     var cseq, request;
-    extraHeaders = extraHeaders || [];
+    extraHeaders = extraHeaders && extraHeaders.slice() || [];
 
     if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }
 
