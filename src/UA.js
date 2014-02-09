@@ -913,7 +913,7 @@ UA.prototype.loadConfig = function(configuration) {
         contact += this.pub_gruu || this.uri.toString();
       }
 
-      if (outbound) {
+      if (outbound && (anonymous ? !this.temp_gruu : !this.pub_gruu)) {
         contact += ';ob';
       }
 
