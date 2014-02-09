@@ -22,6 +22,12 @@ Utils= {
   isDecimal: function (num) {
     return !isNaN(num) && (parseFloat(num) === parseInt(num,10));
   },
+  
+  isEmpty: function(value) {
+    if (value === null || value === "" || value === undefined || (value instanceof Array && value.length === 0) || (typeof(value) === 'number' && window.isNaN(value))) {
+      return true;
+    }
+  },
 
   createRandomToken: function(size, base) {
     var i, r,

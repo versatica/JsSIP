@@ -132,7 +132,9 @@ RTCMediaHandler.prototype = {
      * https://code.google.com/p/webrtc/issues/detail?id=2096
      */
     
-    servers.push({'url': stun_servers});
+    if (stun_servers.length > 0) {
+      servers.push({'url': stun_servers});
+    }
     
     length = turn_servers.length;
     for (idx = 0; idx < length; idx++) {
@@ -140,7 +142,7 @@ RTCMediaHandler.prototype = {
       servers.push({
         'url': server.urls,
         'username': server.username,
-        'credential': server.password
+        'credential': server.credential
       });
     }
 

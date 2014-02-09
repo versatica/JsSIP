@@ -47,8 +47,8 @@ TestJsSIP.Helpers = {
     no_answer_timeout: 60000 * 1000,  // Internally converted to miliseconds.
     stun_servers: ['stun:stun.l.google.com:19302'],
     turn_servers: [
-      { urls:'turn:example.org', username:'turnuser', credential:'turnpassword' },
-      { urls:'turn:example.org?transport=udp', username:'turnuser2', credential:'turnpassword2'}
+      { urls:['turn:example.org'], username:'turnuser', credential:'turnpassword' },
+      { urls:['turn:example.org?transport=udp'], username:'turnuser2', credential:'turnpassword2'}
     ],
     trace_sip: true,
     hack_via_tcp: false,
