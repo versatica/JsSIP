@@ -59,7 +59,7 @@ Registrator.prototype = {
     options = options || {};
     
     if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
-      this.extraHeaders = options.extraHeaders;
+      this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
     }
     
     extraHeaders = this.extraHeaders.slice();
@@ -194,7 +194,7 @@ Registrator.prototype = {
     options = options || {};
     
     if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
-      this.extraHeaders = options.extraHeaders;
+      this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
     }
     
     extraHeaders = this.extraHeaders.slice();

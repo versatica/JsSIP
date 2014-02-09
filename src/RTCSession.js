@@ -84,7 +84,7 @@ RTCSession.prototype.terminate = function(options) {
     cause = options.cause || JsSIP.C.causes.BYE,
     status_code = options.status_code,
     reason_phrase = options.reason_phrase,
-    extraHeaders = options.extraHeaders || [],
+    extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     body = options.body,
     self = this;
 
@@ -218,7 +218,7 @@ RTCSession.prototype.answer = function(options) {
   var
     self = this,
     request = this.request,
-    extraHeaders = options.extraHeaders || [],
+    extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     mediaConstraints = options.mediaConstraints || {'audio':true, 'video':true},
     RTCAnswerConstraints = options.RTCAnswerConstraints || {},
     mediaStream = options.mediaStream || null,
@@ -599,7 +599,7 @@ RTCSession.prototype.connect = function(target, options) {
   var event, requestParams, iceServers,
     originalTarget = target,
     eventHandlers = options.eventHandlers || {},
-    extraHeaders = options.extraHeaders || [],
+    extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
     mediaStream = options.mediaStream || null,
     RTCConstraints = options.RTCConstraints || {},

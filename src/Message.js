@@ -42,7 +42,7 @@ Message.prototype.send = function(target, body, options) {
 
   // Get call options
   options = options || {};
-  extraHeaders = options.extraHeaders || [];
+  extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [];
   eventHandlers = options.eventHandlers || {};
   contentType = options.contentType || 'text/plain';
 
@@ -163,7 +163,7 @@ Message.prototype.accept = function(options) {
   options = options || {};
 
   var
-    extraHeaders = options.extraHeaders || [],
+    extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     body = options.body;
 
   if (this.direction !== 'incoming') {
@@ -186,7 +186,7 @@ Message.prototype.reject = function(options) {
   var
     status_code = options.status_code || 480,
     reason_phrase = options.reason_phrase,
-    extraHeaders = options.extraHeaders || [],
+    extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     body = options.body;
 
   if (this.direction !== 'incoming') {

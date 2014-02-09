@@ -27,7 +27,7 @@ Request.prototype.send = function(method, options) {
   options = options || {};
 
   var event,
-    extraHeaders = options.extraHeaders || [],
+    extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     eventHandlers = options.eventHandlers || {},
     body = options.body || null;
 

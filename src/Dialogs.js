@@ -202,7 +202,7 @@ Dialog.prototype = {
     options = options || {};
 
     var
-      extraHeaders = options.extraHeaders || [],
+      extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
       body = options.body || null,
       request = this.createRequest(method, extraHeaders, body),
       request_sender = new RequestSender(this, applicant, request);

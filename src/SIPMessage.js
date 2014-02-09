@@ -41,7 +41,7 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   this.method = method;
   this.ruri = ruri;
   this.body = body;
-  this.extraHeaders = extraHeaders || [];
+  this.extraHeaders = extraHeaders && extraHeaders.slice() || [];
 
   // Fill the Common SIP Request Headers
 
@@ -425,7 +425,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   }
 
   reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
-  extraHeaders = extraHeaders || [];
+  extraHeaders = extraHeaders && extraHeaders.slice() || [];
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
