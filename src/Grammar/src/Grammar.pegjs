@@ -136,9 +136,15 @@ password        = ( unreserved / escaped / "&" / "=" / "+" / "$" / "," )* {
 
 hostport        = host ( ":" port )?
 
-host            = ( hostname / IPv4address / IPv6reference ) {
+host            = ( IPv4address / IPv6reference / hostname ) {
                     data.host = input.substring(pos, offset).toLowerCase();
                     return data.host; }
+
+// 'hostname' grammar is relaxed.
+// RFC 3261:
+//   hostname = *( domainlabel "." ) toplabel [ "." ]
+//   domainlabel = alphanum / alphanum *( alphanum / "-" ) alphanum
+//   toplabel = ALPHA / ALPHA *( alphanum / "-" ) alphanum
 
 hostname        = ( domainlabel "." )* toplabel  "." ? {
                   data.host_type = 'domain';
@@ -146,7 +152,7 @@ hostname        = ( domainlabel "." )* toplabel  "." ? {
 
 domainlabel     = domainlabel: ( [a-zA-Z0-9_-]+ )
 
-toplabel        = toplabel: ( [a-zA-Z_-]+ )
+toplabel        = toplabel: ( [a-zA-Z0-9_-]+ )
 
 IPv6reference   = "[" IPv6address "]" {
                     data.host_type = 'IPv6';
@@ -758,7 +764,7 @@ transport         = via_transport: ("UDP"i / "TCP"i / "TLS"i / "SCTP"i / other_t
 
 sent_by           = via_host ( COLON via_port )?
 
-via_host          = ( hostname / IPv4address / IPv6reference ) {
+via_host          = ( IPv4address / IPv6reference / hostname ) {
                       data.host = input.substring(pos, offset); }
 
 via_port          = via_sent_by_port: (DIGIT ? DIGIT ? DIGIT ? DIGIT ? DIGIT ?) {
