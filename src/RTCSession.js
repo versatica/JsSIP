@@ -739,6 +739,8 @@ RTCSession.prototype.receiveRequest = function(request) {
           contentType = request.getHeader('content-type');
           if (contentType && (contentType.match(/^application\/dtmf-relay/i))) {
             new DTMF(this).init_incoming(request);
+          } else {
+            request.reply(415,null,['Accept: application/dtmf-relay']);
           }
         }
     }
