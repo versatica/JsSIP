@@ -34,7 +34,6 @@ EventEmitter.prototype = {
     this.oneTimeListeners = {};
 
     for (idx in events) {
-      this.logger.log('adding event '+ events[idx]);
       this.events[events[idx]] = [];
       this.oneTimeListeners[events[idx]] = [];
     }
@@ -70,7 +69,6 @@ EventEmitter.prototype = {
     }
 
     this.events[event].push(listener);
-    this.logger.log('new listener added to event '+ event);
   },
 
   on: function(event, listener) {
