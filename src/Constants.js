@@ -34,6 +34,7 @@ JsSIP.C= {
     DIALOG_ERROR:             'Dialog Error',
 
     // Session error causes
+    BYE:                      'Terminated',
     WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
     WEBRTC_ERROR:             'WebRTC Error',
     CANCELED:                 'Canceled',
