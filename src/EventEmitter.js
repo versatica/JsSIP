@@ -10,7 +10,7 @@
 var
   EventEmitter,
   Event,
-  LOG_PREFIX = JsSIP.name +' | '+ 'EVENT EMITTER' +' | ';
+  LOG_PREFIX = ' | '+ 'EVENT EMITTER' +' | ';
 
 EventEmitter = function(){};
 EventEmitter.prototype = {
@@ -25,11 +25,11 @@ EventEmitter.prototype = {
     this.onceNotFired = []; // Array containing events with _once_ defined tat didn't fire yet.
     this.maxListeners = 10;
     this.events.newListener = function(event) { // Default newListener callback
-      console.log(LOG_PREFIX +'new listener added to event '+ event);
+      JsSIP.log(LOG_PREFIX +'new listener added to event '+ event);
     };
 
     while (i--) {
-      console.log(LOG_PREFIX +'adding event '+ events[i]);
+      JsSIP.log(LOG_PREFIX +'adding event '+ events[i]);
       this.events[events[i]] = [];
     }
   },
@@ -41,7 +41,7 @@ EventEmitter.prototype = {
   */
   checkEvent: function(event) {
     if (!this.events[event]) {
-      console.error(LOG_PREFIX +'no event named '+ event);
+      JsSIP.error(LOG_PREFIX +'no event named '+ event);
       return false;
     } else {
       return true;
@@ -59,7 +59,7 @@ EventEmitter.prototype = {
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      console.warn(LOG_PREFIX +'max listeners exceeded for event '+ event);
+      JsSIP.warn(LOG_PREFIX +'max listeners exceeded for event '+ event);
     }
 
     this.events[event].push(listener);
@@ -142,14 +142,14 @@ EventEmitter.prototype = {
   * @param {Array} args
   */
   emit: function(event, sender, data) {
-    var listeners, length, 
+    var listeners, length,
       emitter = this;
 
     if (!this.checkEvent(event)) {
       return;
     }
 
-    console.log(LOG_PREFIX +'emitting event '+event);
+    JsSIP.log(LOG_PREFIX +'emitting event '+event);
 
     listeners = this.events[event];
     length = listeners.length;
@@ -159,7 +159,7 @@ EventEmitter.prototype = {
     window.setTimeout(
       function(){
         var idx=0;
-        
+
         for (idx; idx<length; idx++) {
           listeners[idx].call(null, e);
         }

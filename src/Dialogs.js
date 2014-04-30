@@ -12,7 +12,7 @@
  */
 (function(JsSIP) {
 var Dialog,
-  LOG_PREFIX = JsSIP.name +' | '+ 'DIALOG' +' | ',
+  LOG_PREFIX = ' | '+ 'DIALOG' +' | ',
   C = {
     // Dialog states
     STATUS_EARLY:       1,
@@ -24,7 +24,7 @@ Dialog = function(session, message, type, state) {
   var contact;
 
   if(!message.hasHeader('contact')) {
-    console.error(LOG_PREFIX +'unable to create a Dialog without Contact header field');
+    JsSIP.error(LOG_PREFIX +'unable to create a Dialog without Contact header field');
     return false;
   }
 
@@ -74,7 +74,7 @@ Dialog = function(session, message, type, state) {
 
   this.session = session;
   session.ua.dialogs[this.id.toString()] = this;
-  console.log(LOG_PREFIX +'new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
+  JsSIP.log(LOG_PREFIX +'new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 };
 
 Dialog.prototype = {
@@ -85,7 +85,7 @@ Dialog.prototype = {
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
-    console.log(LOG_PREFIX +'dialog '+ this.id.toString() +'  changed to CONFIRMED state');
+    JsSIP.log(LOG_PREFIX +'dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -94,7 +94,7 @@ Dialog.prototype = {
   },
 
   terminate: function() {
-    console.log(LOG_PREFIX +'dialog ' + this.id.toString() + ' deleted');
+    JsSIP.log(LOG_PREFIX +'dialog ' + this.id.toString() + ' deleted');
     delete this.session.ua.dialogs[this.id.toString()];
   },
 
