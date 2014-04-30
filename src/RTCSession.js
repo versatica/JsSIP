@@ -14,7 +14,7 @@ var RTCMediaHandler = @@include('../src/RTCSession/RTCMediaHandler.js')
 var DTMF            = @@include('../src/RTCSession/DTMF.js')
 
 var RTCSession,
-  LOG_PREFIX = JsSIP.name +' | '+ 'RTC SESSION' +' | ',
+  LOG_PREFIX = ' | '+ 'RTC SESSION' +' | ',
   C = {
     // RTCSession states
     STATUS_NULL:               0,
@@ -96,7 +96,7 @@ RTCSession.prototype.terminate = function(options) {
     case C.STATUS_NULL:
     case C.STATUS_INVITE_SENT:
     case C.STATUS_1XX_RECEIVED:
-      console.log(LOG_PREFIX +'canceling RTCSession');
+      JsSIP.log(LOG_PREFIX +'canceling RTCSession');
 
       if (status_code && (status_code < 200 || status_code >= 700)) {
         throw new TypeError('Invalid status_code: '+ status_code);
@@ -126,7 +126,7 @@ RTCSession.prototype.terminate = function(options) {
       // - UAS -
     case C.STATUS_WAITING_FOR_ANSWER:
     case C.STATUS_ANSWERED:
-      console.log(LOG_PREFIX +'rejecting RTCSession');
+      JsSIP.log(LOG_PREFIX +'rejecting RTCSession');
 
       status_code = status_code || 480;
 
@@ -139,7 +139,7 @@ RTCSession.prototype.terminate = function(options) {
       break;
     case C.STATUS_WAITING_FOR_ACK:
     case C.STATUS_CONFIRMED:
-      console.log(LOG_PREFIX +'terminating RTCSession');
+      JsSIP.log(LOG_PREFIX +'terminating RTCSession');
 
       // Send Bye
       this.sendBye(options);
@@ -236,7 +236,7 @@ RTCSession.prototype.answer = function(options) {
            */
           self.timers.ackTimer = window.setTimeout(function() {
               if(self.status === C.STATUS_WAITING_FOR_ACK) {
-                console.log(LOG_PREFIX + 'no ACK received, terminating the call');
+                JsSIP.log(LOG_PREFIX + 'no ACK received, terminating the call');
                 window.clearTimeout(self.timers.invite2xxTimer);
                 self.sendBye();
                 self.ended('remote', null, JsSIP.C.causes.NO_ACK);
@@ -278,7 +278,7 @@ RTCSession.prototype.answer = function(options) {
   } else if (this.status !== C.STATUS_WAITING_FOR_ANSWER) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
-  
+
   this.status = C.STATUS_ANSWERED;
 
   // An error on dialog creation will fire 'failed' event
@@ -333,10 +333,10 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   } else if (!duration) {
     duration = DTMF.C.DEFAULT_DURATION;
   } else if (duration < DTMF.C.MIN_DURATION) {
-    console.warn(LOG_PREFIX +'"duration" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_DURATION+ ' milliseconds');
+    JsSIP.warn(LOG_PREFIX +'"duration" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_DURATION+ ' milliseconds');
     duration = DTMF.C.MIN_DURATION;
   } else if (duration > DTMF.C.MAX_DURATION) {
-    console.warn(LOG_PREFIX +'"duration" value is greater than the maximum allowed, setting it to '+ DTMF.C.MAX_DURATION +' milliseconds');
+    JsSIP.warn(LOG_PREFIX +'"duration" value is greater than the maximum allowed, setting it to '+ DTMF.C.MAX_DURATION +' milliseconds');
     duration = DTMF.C.MAX_DURATION;
   } else {
     duration = Math.abs(duration);
@@ -349,7 +349,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   } else if (!interToneGap) {
     interToneGap = DTMF.C.DEFAULT_INTER_TONE_GAP;
   } else if (interToneGap < DTMF.C.MIN_INTER_TONE_GAP) {
-    console.warn(LOG_PREFIX +'"interToneGap" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
+    JsSIP.warn(LOG_PREFIX +'"interToneGap" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
     interToneGap = DTMF.C.MIN_INTER_TONE_GAP;
   } else {
     interToneGap = Math.abs(interToneGap);
@@ -497,8 +497,8 @@ RTCSession.prototype.init_incoming = function(request) {
      * Bad media description
      */
     function(e) {
-      console.warn(LOG_PREFIX +'invalid SDP');
-      console.warn(e);
+      JsSIP.warn(LOG_PREFIX +'invalid SDP');
+      JsSIP.warn(e);
       request.reply(488);
     }
   );
@@ -597,7 +597,7 @@ RTCSession.prototype.close = function() {
     return;
   }
 
-  console.log(LOG_PREFIX +'closing INVITE session ' + this.id);
+  JsSIP.log(LOG_PREFIX +'closing INVITE session ' + this.id);
 
   // 1st Step. Terminate media.
   if (this.rtcMediaHandler){
@@ -731,7 +731,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP.C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
-          console.log(LOG_PREFIX +'re-INVITE received');
+          JsSIP.log(LOG_PREFIX +'re-INVITE received');
         }
         break;
       case JsSIP.C.INFO:
@@ -846,7 +846,7 @@ RTCSession.prototype.receiveResponse = function(response) {
     case /^1[0-9]{2}$/.test(response.status_code):
       // Do nothing with 1xx responses without To tag.
       if(!response.to_tag) {
-        console.warn(LOG_PREFIX +'1xx response received without to tag');
+        JsSIP.warn(LOG_PREFIX +'1xx response received without to tag');
         break;
       }
 
@@ -893,7 +893,7 @@ RTCSession.prototype.receiveResponse = function(response) {
          * SDP Answer does not fit the Offer. Accept the call and Terminate.
          */
         function(e) {
-          console.warn(e);
+          JsSIP.warn(e);
           session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
           session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
         }

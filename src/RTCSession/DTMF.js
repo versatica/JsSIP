@@ -169,7 +169,7 @@ DTMF.prototype.init_incoming = function(request) {
   }
 
   if (!this.tone || !this.duration) {
-    console.warn(LOG_PREFIX +'invalid INFO DTMF received, discarded');
+    JsSIP.warn(LOG_PREFIX +'invalid INFO DTMF received, discarded');
   } else {
     this.session.emit('newDTMF', this.session, {
       originator: 'remote',

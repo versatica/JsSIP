@@ -11,7 +11,7 @@
  */
 (function(JsSIP) {
 var RequestSender,
-  LOG_PREFIX = JsSIP.name +' | '+ 'REQUEST SENDER' +' | ';
+  LOG_PREFIX = ' | '+ 'REQUEST SENDER' +' | ';
 
 RequestSender = function(applicant, ua) {
   this.ua = ua;
@@ -90,7 +90,7 @@ RequestSender.prototype = {
 
       // Verify it seems a valid challenge.
       if (! challenge) {
-        console.warn(LOG_PREFIX + response.status_code + ' with wrong or missing challenge, cannot authenticate');
+        JsSIP.warn(LOG_PREFIX + response.status_code + ' with wrong or missing challenge, cannot authenticate');
         this.applicant.receiveResponse(response);
         return;
       }

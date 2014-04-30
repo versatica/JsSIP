@@ -33,7 +33,7 @@ JsSIP.Subscriber.prototype = {
     var subscription;
 
     if (this.state !== 'terminated') {
-      console.log(JsSIP.C.LOG_SUBSCRIBER,'terminating Subscriber');
+      JsSIP.log(JsSIP.C.LOG_SUBSCRIBER,'terminating Subscriber');
 
       this.state = 'terminated';
       window.clearTimeout(this.N);
@@ -65,7 +65,7 @@ JsSIP.Subscriber.prototype = {
     var subscriber, from_tag, expires;
 
     if (['notify_wait', 'pending', 'active', 'terminated'].indexOf(this.state) !== -1) {
-      console.error(JsSIP.C.LOG_SUBSCRIBER,'subscription is already on');
+      JsSIP.error(JsSIP.C.LOG_SUBSCRIBER,'subscription is already on');
       return;
     }
 
@@ -98,10 +98,10 @@ JsSIP.Subscriber.prototype = {
               subscriber.close();
 
               if (!expires) {
-                console.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
+                JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
                 subscriber.onFailure(null, JsSIP.C.EXPIRES_HEADER_MISSING);
               } else {
-                console.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
+                JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
                 subscriber.onFailure(null, JsSIP.C.INVALID_EXPIRES_HEADER);
               }
             }
@@ -179,7 +179,7 @@ JsSIP.Subscriber.prototype = {
         break;
       case 'terminated':
         if (subscription_state.reason) {
-          console.log(JsSIP.C.LOG_SUBSCRIBER,'terminating subscription with reason '+ subscription_state.reason);
+          JsSIP.log(JsSIP.C.LOG_SUBSCRIBER,'terminating subscription with reason '+ subscription_state.reason);
         }
         window.clearTimeout(this.N);
         this.close();
@@ -195,12 +195,12 @@ JsSIP.Subscriber.prototype = {
 
     // Check mandatory header Event
     if (!request.hasHeader('Event')) {
-      console.warn(JsSIP.C.LOG_SUBSCRIBER,'missing Event header');
+      JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'missing Event header');
       return false;
     }
     // Check mandatory header Subscription-State
     if (!request.hasHeader('Subscription-State')) {
-      console.warn(JsSIP.C.LOG_SUBSCRIBER,'missing Subscription-State header');
+      JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'missing Subscription-State header');
       return false;
     }
 
@@ -208,7 +208,7 @@ JsSIP.Subscriber.prototype = {
     event = request.s('event').event;
 
     if (this.event !== event) {
-      console.warn(JsSIP.C.LOG_SUBSCRIBER,'event match failed');
+      JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'event match failed');
       request.reply(481, 'Event Match Failed');
       return false;
     } else {
@@ -316,7 +316,7 @@ JsSIP.Subscription.prototype = {
       subscription = this;
 
     if (!initial && !this.subscriber.matchEvent(request)) {
-      console.warn(JsSIP.C.LOG_SUBSCRIBER,'NOTIFY request does not match event');
+      JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'NOTIFY request does not match event');
       return;
     }
 
@@ -341,7 +341,7 @@ JsSIP.Subscription.prototype = {
         break;
       case 'terminated':
         if (subscription_state.reason) {
-          console.log(JsSIP.C.LOG_SUBSCRIBER,'terminating subscription with reason '+ subscription_state.reason);
+          JsSIP.log(JsSIP.C.LOG_SUBSCRIBER,'terminating subscription with reason '+ subscription_state.reason);
         }
         this.close();
         this.subscriber.receiveInfo(request);
@@ -379,10 +379,10 @@ JsSIP.Subscription.prototype = {
                 subscription.close();
 
                 if (!expires) {
-                  console.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
+                  JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header missing in a 200-class response to SUBSCRIBE');
                   subscription.subscriber.onFailure(null, JsSIP.C.EXPIRES_HEADER_MISSING);
                 } else {
-                  console.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
+                  JsSIP.warn(JsSIP.C.LOG_SUBSCRIBER,'Expires header in a 200-class response to SUBSCRIBE with a higher value than the indicated in the request');
                   subscription.subscriber.onFailure(null, JsSIP.C.INVALID_EXPIRES_HEADER);
                 }
               }
