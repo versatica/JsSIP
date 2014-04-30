@@ -50,6 +50,7 @@ UA = function(configuration) {
     'connecting',
     'connected',
     'disconnected',
+    'connectionFailed',
     'newTransaction',
     'transactionDestroyed',
     'registered',
@@ -422,7 +423,7 @@ UA.prototype.onTransportError = function(transport) {
   //Mark this transport as 'down' and try the next one
   transport.server.status = JsSIP.Transport.C.STATUS_ERROR;
 
-  this.emit('disconnected', this, {
+  this.emit('connectionFailed', this, {
     transport: transport,
     code: transport.lastTransportError.code,
     reason: transport.lastTransportError.reason
@@ -835,9 +836,9 @@ UA.prototype.loadConfig = function(configuration) {
        * or it's a number with NaN value, then apply its default value.
        */
       if (JsSIP.Utils.isEmpty(value)) {
-        continue; 
+        continue;
       }
-      
+
       checked_value = UA.configuration_check.optional[parameter](value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
@@ -895,7 +896,7 @@ UA.prototype.loadConfig = function(configuration) {
   if (settings.hack_ip_in_contact) {
     settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
-  
+
   // Set empty Stun Server Set if explicitly passed an empty Array
   value = configuration.stun_servers;
   if (value instanceof Array && value.length === 0) {
