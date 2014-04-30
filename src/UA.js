@@ -52,6 +52,7 @@ UA = function(configuration) {
   var events = [
     'connected',
     'disconnected',
+    'connectionFailed',
     'registered',
     'unregistered',
     'registrationFailed',
@@ -331,11 +332,16 @@ UA.prototype.onTransportError = function(transport) {
   //Mark this transport as 'down' and try the next one
   transport.server.status = JsSIP.Transport.C.STATUS_ERROR;
 
-  this.emit('disconnected', this, {
+  this.emit('connectionFailed', this, {
     transport: transport,
     code: transport.lastTransportError.code,
     reason: transport.lastTransportError.reason
   });
+
+  // No reconnection possibility by config
+  if(!this.configuration.connection_autorecovery) {
+    return;
+  }
 
   server = this.getNextWsServer();
 
@@ -654,6 +660,8 @@ UA.prototype.loadConfig = function(configuration) {
       registrar_server: null,
 
       // Transport related parameters
+
+      connection_autorecovery: true,
       ws_server_max_reconnection: 3,
       ws_server_reconnection_timeout: 4,
 
@@ -827,6 +835,7 @@ UA.configuration_skeleton = (function() {
       "instance_id",
       "jssip_id",
       "register_min_expires",
+      "connection_autorecovery",
       "ws_server_max_reconnection",
       "ws_server_reconnection_timeout",
       "hostport_params",
@@ -966,6 +975,12 @@ UA.configuration_check = {
         return;
       } else {
         return authorization_user;
+      }
+    },
+
+    connection_autorecovery: function(connection_autorecovery) {
+      if (typeof connection_autorecovery === 'boolean') {
+        return connection_autorecovery;
       }
     },
 
