@@ -9,7 +9,7 @@
  */
 (function(JsSIP) {
 var UA,
-  LOG_PREFIX = JsSIP.name +' | '+ 'UA' +' | ',
+  LOG_PREFIX = ' | '+ 'UA' +' | ',
   C = {
     // UA status codes
     STATUS_INIT :                0,
@@ -106,7 +106,7 @@ UA = function(configuration) {
     this.error = C.CONFIGURATION_ERROR;
     throw e;
   }
-  
+
   // Initialize registrator
   this.registrator = new JsSIP.Registrator(this);
 };
@@ -203,23 +203,23 @@ UA.prototype.stop = function() {
   var session, applicant,
     ua = this;
 
-  console.log(LOG_PREFIX +'user requested closure...');
+  JsSIP.log(LOG_PREFIX +'user requested closure...');
 
   if(this.status === C.STATUS_USER_CLOSED) {
-    console.warn('UA already closed');
+    JsSIP.warn('UA already closed');
     return;
   }
-  
+
   // Clear transportRecoveryTimer
   window.clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
-  console.log(LOG_PREFIX +'closing registrator');
+  JsSIP.log(LOG_PREFIX +'closing registrator');
   this.registrator.close();
 
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
-    console.log(LOG_PREFIX +'closing session ' + session);
+    JsSIP.log(LOG_PREFIX +'closing session ' + session);
     this.sessions[session].terminate();
   }
 
@@ -243,19 +243,19 @@ UA.prototype.stop = function() {
 UA.prototype.start = function() {
   var server;
 
-  console.log(LOG_PREFIX +'user requested startup...');
+  JsSIP.log(LOG_PREFIX +'user requested startup...');
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     new JsSIP.Transport(this, server);
   } else if(this.status === C.STATUS_USER_CLOSED) {
-    console.log(LOG_PREFIX +'resuming');
+    JsSIP.log(LOG_PREFIX +'resuming');
     this.status = C.STATUS_READY;
     this.transport.connect();
   } else if (this.status === C.STATUS_READY) {
-    console.log(LOG_PREFIX +'UA is in READY status, not resuming');
+    JsSIP.log(LOG_PREFIX +'UA is in READY status, not resuming');
   } else {
-    console.error('Connection is down. Auto-Recovery system is trying to connect');
+    JsSIP.error('Connection is down. Auto-Recovery system is trying to connect');
   }
 };
 
@@ -299,7 +299,7 @@ UA.prototype.onTransportClosed = function(transport) {
     client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = JsSIP.Transport.C.STATUS_DISCONNECTED;
-  console.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
+  JsSIP.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
 
   length = client_transactions.length;
   for (type = 0; type < length; type++) {
@@ -325,7 +325,7 @@ UA.prototype.onTransportClosed = function(transport) {
 UA.prototype.onTransportError = function(transport) {
   var server;
 
-  console.log(LOG_PREFIX +'transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.Transport.C.STATUS_ERROR);
+  JsSIP.log(LOG_PREFIX +'transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.Transport.C.STATUS_ERROR);
 
   // Close sessions.
   //Mark this transport as 'down' and try the next one
@@ -365,7 +365,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = JsSIP.Transport.C.STATUS_READY;
-  console.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_READY);
+  JsSIP.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -397,7 +397,7 @@ UA.prototype.receiveRequest = function(request) {
 
   // Check that Ruri points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
-    console.warn(LOG_PREFIX +'Request-URI does not point to us');
+    JsSIP.warn(LOG_PREFIX +'Request-URI does not point to us');
     if (request.method !== JsSIP.C.ACK) {
       request.reply_sl(404);
     }
@@ -449,7 +449,7 @@ UA.prototype.receiveRequest = function(request) {
           session = new JsSIP.RTCSession(this);
           session.init_incoming(request);
         } else {
-          console.warn(LOG_PREFIX +'INVITE received but WebRTC is not supported');
+          JsSIP.warn(LOG_PREFIX +'INVITE received but WebRTC is not supported');
           request.reply(488);
         }
         break;
@@ -462,7 +462,7 @@ UA.prototype.receiveRequest = function(request) {
         if(session) {
           session.receiveRequest(request);
         } else {
-          console.warn(LOG_PREFIX +'received CANCEL request for a non existent session');
+          JsSIP.warn(LOG_PREFIX +'received CANCEL request for a non existent session');
         }
         break;
       case JsSIP.C.ACK:
@@ -487,7 +487,7 @@ UA.prototype.receiveRequest = function(request) {
       if(session) {
         session.receiveRequest(request);
       } else {
-        console.warn(LOG_PREFIX +'received NOTIFY request for a non existent session');
+        JsSIP.warn(LOG_PREFIX +'received NOTIFY request for a non existent session');
         request.reply(481, 'Subscription does not exist');
       }
     }
@@ -616,12 +616,12 @@ UA.prototype.recoverTransport = function(ua) {
   nextRetry = k * ua.configuration.connection_recovery_min_interval;
 
   if (nextRetry > ua.configuration.connection_recovery_max_interval) {
-    console.log(LOG_PREFIX + 'time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
+    JsSIP.log(LOG_PREFIX + 'time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
     nextRetry = ua.configuration.connection_recovery_min_interval;
     count = 0;
   }
 
-  console.log(LOG_PREFIX + 'next connection attempt in '+ nextRetry +' seconds');
+  JsSIP.log(LOG_PREFIX + 'next connection attempt in '+ nextRetry +' seconds');
 
   this.transportRecoveryTimer = window.setTimeout(
     function(){
@@ -788,18 +788,18 @@ UA.prototype.loadConfig = function(configuration) {
   };
 
   // Fill the value of the configuration_skeleton
-  console.log(LOG_PREFIX + 'configuration parameters after validation:');
+  JsSIP.log(LOG_PREFIX + 'configuration parameters after validation:');
   for(parameter in settings) {
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
-        console.log('· ' + parameter + ': ' + settings[parameter]);
+        JsSIP.log('· ' + parameter + ': ' + settings[parameter]);
         break;
       case 'password':
-        console.log('· ' + parameter + ': ' + 'NOT SHOWN');
+        JsSIP.log('· ' + parameter + ': ' + 'NOT SHOWN');
         break;
       default:
-        console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+        JsSIP.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
     }
     UA.configuration_skeleton[parameter].value = settings[parameter];
   }
@@ -928,21 +928,21 @@ UA.configuration_check = {
       length = ws_servers.length;
       for (idx = 0; idx < length; idx++) {
         if (!ws_servers[idx].ws_uri) {
-          console.error(LOG_PREFIX +'missing "ws_uri" attribute in ws_servers parameter');
+          JsSIP.error(LOG_PREFIX +'missing "ws_uri" attribute in ws_servers parameter');
           return;
         }
         if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
-          console.error(LOG_PREFIX +'"weight" attribute in ws_servers parameter must be a Number');
+          JsSIP.error(LOG_PREFIX +'"weight" attribute in ws_servers parameter must be a Number');
           return;
         }
 
         url = JsSIP.Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
-          console.error(LOG_PREFIX +'invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
+          JsSIP.error(LOG_PREFIX +'invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
           return;
         } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
-          console.error(LOG_PREFIX +'invalid URI scheme in ws_servers parameter: ' + url.scheme);
+          JsSIP.error(LOG_PREFIX +'invalid URI scheme in ws_servers parameter: ' + url.scheme);
           return;
         } else {
           ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
@@ -1099,25 +1099,25 @@ UA.configuration_check = {
       length = turn_servers.length;
       for (idx = 0; idx < length; idx++) {
         turn_server = turn_servers[idx];
-        
+
         // Backward compatibility:
         //Allow defining the turn_server url with the 'server' property.
         if (turn_server.server) {
           turn_server.urls = [turn_server.server];
         }
-        
+
         if (!turn_server.urls || !turn_server.username || !turn_server.password) {
           return;
         }
-        
+
         if (!turn_server.urls instanceof Array) {
           turn_server.urls = [turn_server.urls];
         }
-        
+
         length = turn_server.urls.length;
         for (idx = 0; idx < length; idx++) {
           url = turn_server.urls[idx];
-          
+
           if (!(/^turns?:/.test(url))) {
             url = 'turn:' + url;
           }

@@ -41,8 +41,8 @@ RTCMediaHandler.prototype = {
         );
       },
       function(e) {
-        console.error(LOG_PREFIX +'unable to create offer');
-        console.error(e);
+        JsSIP.error(LOG_PREFIX +'unable to create offer');
+        JsSIP.error(e);
         onFailure();
       }
     );
@@ -68,8 +68,8 @@ RTCMediaHandler.prototype = {
         );
       },
       function(e) {
-        console.error(LOG_PREFIX +'unable to create answer');
-        console.error(e);
+        JsSIP.error(LOG_PREFIX +'unable to create answer');
+        JsSIP.error(e);
         onFailure();
       }
     );
@@ -80,8 +80,8 @@ RTCMediaHandler.prototype = {
       sessionDescription,
       function(){},
       function(e) {
-        console.error(LOG_PREFIX +'unable to set local description');
-        console.error(e);
+        JsSIP.error(LOG_PREFIX +'unable to set local description');
+        JsSIP.error(e);
         onFailure();
       }
     );
@@ -91,8 +91,8 @@ RTCMediaHandler.prototype = {
     try {
       this.peerConnection.addStream(stream, constraints);
     } catch(e) {
-      console.error(LOG_PREFIX +'error adding stream');
-      console.error(e);
+      JsSIP.error(LOG_PREFIX +'error adding stream');
+      JsSIP.error(e);
       onFailure();
       return;
     }
@@ -125,16 +125,16 @@ RTCMediaHandler.prototype = {
     this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({'iceServers': servers}, constraints);
 
     this.peerConnection.onaddstream = function(e) {
-      console.log(LOG_PREFIX +'stream added: '+ e.stream.id);
+      JsSIP.log(LOG_PREFIX +'stream added: '+ e.stream.id);
     };
 
     this.peerConnection.onremovestream = function(e) {
-      console.log(LOG_PREFIX +'stream removed: '+ e.stream.id);
+      JsSIP.log(LOG_PREFIX +'stream removed: '+ e.stream.id);
     };
 
     this.peerConnection.onicecandidate = function(e) {
       if (e.candidate) {
-        console.log(LOG_PREFIX +'ICE candidate received: '+ e.candidate.candidate);
+        JsSIP.log(LOG_PREFIX +'ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
         self.onIceCompleted();
       }
@@ -148,16 +148,16 @@ RTCMediaHandler.prototype = {
     };
 
     this.peerConnection.onicechange = function() {
-      console.log(LOG_PREFIX +'ICE connection state changed to "'+ this.iceConnectionState +'"');
+      JsSIP.log(LOG_PREFIX +'ICE connection state changed to "'+ this.iceConnectionState +'"');
     };
 
     this.peerConnection.onstatechange = function() {
-      console.log(LOG_PREFIX +'PeerConnection state changed to "'+ this.readyState +'"');
+      JsSIP.log(LOG_PREFIX +'PeerConnection state changed to "'+ this.readyState +'"');
     };
   },
 
   close: function() {
-    console.log(LOG_PREFIX + 'closing PeerConnection');
+    JsSIP.log(LOG_PREFIX + 'closing PeerConnection');
     if(this.peerConnection) {
       this.peerConnection.close();
 
@@ -175,17 +175,17 @@ RTCMediaHandler.prototype = {
   getUserMedia: function(onSuccess, onFailure, constraints) {
     var self = this;
 
-    console.log(LOG_PREFIX + 'requesting access to local media');
+    JsSIP.log(LOG_PREFIX + 'requesting access to local media');
 
     JsSIP.WebRTC.getUserMedia(constraints,
       function(stream) {
-        console.log(LOG_PREFIX + 'got local media stream');
+        JsSIP.log(LOG_PREFIX + 'got local media stream');
         self.localMedia = stream;
         onSuccess(stream);
       },
       function(e) {
-        console.error(LOG_PREFIX +'unable to get user media');
-        console.error(e);
+        JsSIP.error(LOG_PREFIX +'unable to get user media');
+        JsSIP.error(e);
         onFailure();
       }
     );

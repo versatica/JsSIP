@@ -9,7 +9,7 @@
  */
 (function(JsSIP) {
 var Parser,
-  LOG_PREFIX = JsSIP.name +' | '+ 'PARSER' +' | ';
+  LOG_PREFIX = ' | '+ 'PARSER' +' | ';
 
 function getHeader(data, headerStart) {
   var
@@ -178,7 +178,7 @@ Parser.parseMessage = function(data) {
     headerEnd = data.indexOf('\r\n');
 
   if(headerEnd === -1) {
-    console.warn(LOG_PREFIX +'no CRLF found, not a SIP message, discarded');
+    JsSIP.warn(LOG_PREFIX +'no CRLF found, not a SIP message, discarded');
     return;
   }
 
@@ -187,7 +187,7 @@ Parser.parseMessage = function(data) {
   parsed = JsSIP.Grammar.parse(firstLine, 'Request_Response');
 
   if(parsed === -1) {
-    console.warn(LOG_PREFIX +'error parsing first line of SIP message: "' + firstLine + '"');
+    JsSIP.warn(LOG_PREFIX +'error parsing first line of SIP message: "' + firstLine + '"');
     return;
   } else if(!parsed.status_code) {
     message = new JsSIP.IncomingRequest();

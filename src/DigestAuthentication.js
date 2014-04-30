@@ -11,7 +11,7 @@
  */
 (function(JsSIP) {
 var DigestAuthentication,
-  LOG_PREFIX = JsSIP.name +' | '+ 'DIGEST AUTHENTICATION' +' | ';
+  LOG_PREFIX = ' | '+ 'DIGEST AUTHENTICATION' +' | ';
 
 DigestAuthentication = function(ua) {
   this.username = ua.configuration.authorization_user;
@@ -27,7 +27,7 @@ DigestAuthentication = function(ua) {
 * Performs Digest authentication given a SIP request and the challenge
 * received in a response to that request.
 * Returns true if credentials were successfully generated, false otherwise.
-* 
+*
 * @param {JsSIP.OutgoingRequest} request
 * @param {Object} challenge
 */
@@ -42,7 +42,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
   if (this.algorithm) {
     if (this.algorithm !== 'MD5') {
-      console.warn(LOG_PREFIX + 'challenge with Digest algorithm different than "MD5", authentication aborted');
+      JsSIP.warn(LOG_PREFIX + 'challenge with Digest algorithm different than "MD5", authentication aborted');
       return false;
     }
   } else {
@@ -50,12 +50,12 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
   }
 
   if (! this.realm) {
-    console.warn(LOG_PREFIX + 'challenge without Digest realm, authentication aborted');
+    JsSIP.warn(LOG_PREFIX + 'challenge without Digest realm, authentication aborted');
     return false;
   }
 
   if (! this.nonce) {
-    console.warn(LOG_PREFIX + 'challenge without Digest nonce, authentication aborted');
+    JsSIP.warn(LOG_PREFIX + 'challenge without Digest nonce, authentication aborted');
     return false;
   }
 
@@ -67,7 +67,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
       this.qop = 'auth-int';
     } else {
       // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-      console.warn(LOG_PREFIX + 'challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
+      JsSIP.warn(LOG_PREFIX + 'challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
       return false;
     }
   } else {

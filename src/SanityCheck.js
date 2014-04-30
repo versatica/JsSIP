@@ -13,7 +13,7 @@
  */
 (function(JsSIP) {
 var sanityCheck,
- LOG_PREFIX = JsSIP.name +' | '+ 'SANITY CHECK' +' | ',
+ LOG_PREFIX = ' | '+ 'SANITY CHECK' +' | ',
 
  message, ua, transport,
  requests = [],
@@ -107,7 +107,7 @@ function rfc3261_8_2_2_2() {
 // Sanity Check functions for responses
 function rfc3261_8_1_3_3() {
   if(message.countHeader('via') > 1) {
-    console.warn(LOG_PREFIX +'More than one Via header field present in the response. Dropping the response');
+    JsSIP.warn(LOG_PREFIX +'More than one Via header field present in the response. Dropping the response');
     return false;
   }
 }
@@ -115,7 +115,7 @@ function rfc3261_8_1_3_3() {
 function rfc3261_18_1_2() {
   var via_host = ua.configuration.via_host;
   if(message.via.host !== via_host) {
-    console.warn(LOG_PREFIX +'Via host in the response does not match UA Via host value. Dropping the response');
+    JsSIP.warn(LOG_PREFIX +'Via host in the response does not match UA Via host value. Dropping the response');
     return false;
   }
 }
@@ -126,7 +126,7 @@ function rfc3261_18_3_response() {
     contentLength = message.getHeader('content-length');
 
     if(len < contentLength) {
-      console.warn(LOG_PREFIX +'Message body length is lower than the value in Content-Length header field. Dropping the response');
+      JsSIP.warn(LOG_PREFIX +'Message body length is lower than the value in Content-Length header field. Dropping the response');
       return false;
     }
 }
@@ -139,7 +139,7 @@ function minimumHeaders() {
 
   while(idx--) {
     if(!message.hasHeader(mandatoryHeaders[idx])) {
-      console.warn(LOG_PREFIX +'Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
+      JsSIP.warn(LOG_PREFIX +'Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
       return false;
     }
   }
