@@ -368,15 +368,10 @@ RTCSession.prototype.answer = function(options) {
   
   extraHeaders.unshift('Contact: ' + self.contact);
 
-  length = this.getRemoteStreams().length;
-  
-  for (idx=0; idx<length; idx++) {
-    if (this.getRemoteStreams()[idx].getAudioTracks().length > 0) {
-      hasAudio=true;
-    }
-    if (this.getRemoteStreams()[idx].getVideoTracks().length > 0) {
-      hasVideo=true;
-    }
+  var remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription;
+  if (remoteDescription) {
+    hasAudio = /^m=audio/m.test(remoteDescription.sdp);
+    hasVideo = /^m=video/m.test(remoteDescription.sdp);
   }
   
   if (!hasAudio && mediaConstraints.audio === true) {
