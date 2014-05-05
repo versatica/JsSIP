@@ -439,8 +439,11 @@ UA.prototype.onTransportError = function(transport) {
       this.status = C.STATUS_NOT_READY;
       this.error = C.NETWORK_ERROR;
     }
-    // Transport Recovery process
-    this.recoverTransport();
+
+    if(this.configuration.connection_recovery) {
+      // Transport Recovery process
+      this.recoverTransport();
+    }
   }
 };
 
@@ -789,6 +792,8 @@ UA.prototype.loadConfig = function(configuration) {
       registrar_server: null,
 
       // Transport related parameters
+      connection_recovery: true,
+
       ws_server_max_reconnection: 3,
       ws_server_reconnection_timeout: 4,
 
@@ -981,6 +986,7 @@ UA.configuration_skeleton = (function() {
 
       // Optional user configurable parameters
       "authorization_user",
+      "connection_recovery",
       "connection_recovery_max_interval",
       "connection_recovery_min_interval",
       "display_name",
@@ -1111,6 +1117,12 @@ UA.configuration_check = {
         return;
       } else {
         return authorization_user;
+      }
+    },
+
+    connection_recovery: function(connection_recovery) {
+      if (typeof connection_recovery === 'boolean') {
+        return connection_recovery;
       }
     },
 
