@@ -434,13 +434,16 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
 
-  // Check tones
-  if (!tones || (typeof tones !== 'string' && typeof tones !== 'number') || !tones.toString().match(/^[0-9A-D#*,]+$/i)) {
-    throw new TypeError('Invalid tones: '+ tones);
+  // Convert to string
+  if(typeof tones === 'number') {
+    tones = tones.toString();
   }
 
-  tones = tones.toString();
-
+  // Check tones
+  if (!tones || typeof tones !== 'string' || !tones.match(/^[0-9A-D#*,]+$/i)) {
+    throw new TypeError('Invalid tones: '+ tones);
+  }
+ 
   // Check duration
   if (duration && !JsSIP.Utils.isDecimal(duration)) {
     throw new TypeError('Invalid tone duration: '+ duration);
