@@ -46,6 +46,8 @@ Message.prototype.send = function(target, body, options) {
   eventHandlers = options.eventHandlers || {};
   contentType = options.contentType || 'text/plain';
 
+  this.content_type = contentType;
+
   // Set event handlers
   for (event in eventHandlers) {
     this.on(event, eventHandlers[event]);
@@ -60,6 +62,9 @@ Message.prototype.send = function(target, body, options) {
 
   if(body) {
     this.request.body = body;
+    this.content = body;
+  } else {
+    this.content = null;
   }
 
   request_sender = new JsSIP.RequestSender(this, this.ua);
@@ -145,6 +150,13 @@ Message.prototype.init_incoming = function(request) {
   var transaction;
 
   this.request = request;
+  this.content_type = request.getHeader('Content-Type');
+
+  if (request.body) {
+    this.content = request.body;
+  } else {
+    this.content = null;
+  }
 
   this.newMessage('remote', request);
 
