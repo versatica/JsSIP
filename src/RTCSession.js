@@ -847,7 +847,7 @@ RTCSession.prototype.init_incoming = function(request) {
 
   //Initialize Media Session
   this.rtcMediaHandler = new RTCMediaHandler(this, {
-    RTCConstraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
+    constraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
     });
     
   this.rtcMediaHandler.onMessage(
@@ -990,7 +990,7 @@ RTCSession.prototype.connect = function(target, options) {
   this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
 
   this.rtcMediaHandler = new RTCMediaHandler(this, {
-    RTCConstraints: RTCConstraints,
+    constraints: RTCConstraints,
     stun_servers: stun_servers,
     turn_servers: turn_servers
     });
