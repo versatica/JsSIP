@@ -141,7 +141,7 @@ RTCMediaHandler.prototype = {
     var idx, length, server,
       self = this,
       servers = [],
-      constraints = options.constraints || {},
+      constraints = options.RTCConstraints || {},
       stun_servers = options.stun_servers  || null,
       turn_servers = options.turn_servers || null,
       config = this.session.ua.configuration;
