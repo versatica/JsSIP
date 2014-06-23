@@ -233,14 +233,19 @@ RTCMediaHandler.prototype = {
       function(stream) {
         self.logger.log('got local media stream');
         self.localMedia = stream;
+        self.session.ua.emit('mediaGranted',self.session.ua,constraints);
         onSuccess(stream);
       },
       function(e) {
         self.logger.error('unable to get user media');
         self.logger.error(e);
+        self.session.ua.emit('mediaDenied',self.session.ua,e);
         onFailure();
       }
     );
+
+    this.session.ua.emit('mediaRequested',this.session.ua,constraints);
+
   },
 
   /**
