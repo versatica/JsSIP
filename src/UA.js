@@ -56,7 +56,10 @@ UA = function(configuration) {
     'unregistered',
     'registrationFailed',
     'newRTCSession',
-    'newMessage'
+    'newMessage',
+    'mediaRequested',
+    'mediaDenied',
+    'mediaGranted'
   ];
 
   // Set Accepted Body Types
