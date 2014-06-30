@@ -272,7 +272,7 @@ RTCSession.prototype.answer = function(options) {
     self = this,
     request = this.request,
     extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
-    mediaConstraints = options.mediaConstraints || {'audio':true, 'video':true},
+    mediaConstraints = options.mediaConstraints || {},
     RTCAnswerConstraints = options.RTCAnswerConstraints || {},
     mediaStream = options.mediaStream || null,
 
@@ -370,35 +370,52 @@ RTCSession.prototype.answer = function(options) {
 
   length = this.getRemoteStreams().length;
   
-  for (idx=0; idx<length; idx++) {
-    if (this.getRemoteStreams()[idx].getAudioTracks().length > 0) {
+  // Determine incoming media from remote session description
+  var remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription;
+  var sdp = JsSIP.Parser.parseSDP(remoteDescription.sdp);
+  for(var i in sdp.media) {
+    if(sdp.media[i].type==='audio' && (sdp.media[i].direction==='sendrecv' || sdp.media[i].direction==='recvonly')) {
       hasAudio=true;
     }
-    if (this.getRemoteStreams()[idx].getVideoTracks().length > 0) {
+    if(sdp.media[i].type==='video' && (sdp.media[i].direction==='sendrecv' || sdp.media[i].direction==='recvonly')) {
       hasVideo=true;
     }
   }
-  
-  if (!hasAudio && mediaConstraints.audio === true) {
-    mediaConstraints.audio = false;
-    if (mediaStream) {
-      length = mediaStream.getAudioTracks().length;
-      for (idx=0; idx<length; idx++) {
-        mediaStream.removeTrack(mediaStream.getAudioTracks()[idx]);
-      }
+
+  // Remove audio from mediaStream if suggested by mediaConstraints
+   if (mediaStream && mediaConstraints.audio===false) {
+    length = mediaStream.getAudioTracks().length;
+    for (idx=0; idx<length; idx++) {
+      mediaStream.removeTrack(mediaStream.getAudioTracks()[idx]);
     }
   }
-  
-  if (!hasVideo && mediaConstraints.video === true) {
-    mediaConstraints.video = false;
-    if (mediaStream) {
-      length = mediaStream.getVideoTracks().length;
-      for (idx=0; idx<length; idx++) {
-        mediaStream.removeTrack(mediaStream.getVideoTracks()[idx]);
-      }
+
+  // Remove video from mediaStream if suggested by mediaConstraints
+  if (mediaStream && mediaConstraints.video===false) {
+    length = mediaStream.getVideoTracks().length;
+    for (idx=0; idx<length; idx++) {
+      mediaStream.removeTrack(mediaStream.getVideoTracks()[idx]);
     }
   }
-  
+
+  // Set audio constraints based on incoming stream if not supplied
+  if (mediaConstraints.audio === undefined) {
+    if(hasAudio) {
+      mediaConstraints.audio = true;
+    } else {
+      mediaConstraints.audio = false;
+    }
+  }
+
+  // Set video constraints based on incoming stream if not supplied
+  if (mediaConstraints.video === undefined) {
+    if(hasVideo) {
+      mediaConstraints.video = true;
+    } else {
+      mediaConstraints.video = false;
+    }
+  }
+
   if (mediaStream) {
     userMediaSucceeded(mediaStream);
   } else {
