@@ -368,8 +368,6 @@ RTCSession.prototype.answer = function(options) {
   
   extraHeaders.unshift('Contact: ' + self.contact);
 
-  length = this.getRemoteStreams().length;
-  
   // Determine incoming media from remote session description
   var remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription;
   var sdp = JsSIP.Parser.parseSDP(remoteDescription.sdp);
