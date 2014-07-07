@@ -268,7 +268,7 @@ RTCSession.prototype.terminate = function(options) {
 RTCSession.prototype.answer = function(options) {
   options = options || {};
 
-  var idx, length,
+  var idx, length, sdp, remoteDescription,
     hasAudio = false,
     hasVideo = false,
     self = this,
@@ -371,13 +371,21 @@ RTCSession.prototype.answer = function(options) {
   extraHeaders.unshift('Contact: ' + self.contact);
 
   // Determine incoming media from remote session description
-  var remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription;
-  var sdp = JsSIP.Parser.parseSDP(remoteDescription.sdp);
-  for(var i in sdp.media) {
-    if(sdp.media[i].type==='audio' && (sdp.media[i].direction==='sendrecv' || sdp.media[i].direction==='recvonly')) {
+  remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription || {};
+  sdp = JsSIP.Parser.parseSDP(remoteDescription.sdp || '');
+
+  // Make sure sdp is an array, not the case if there is only one media
+  if(!(sdp.media instanceof Array)) {
+    sdp.media = [sdp.media || []];
+  }
+
+  // Go through all medias in SDP to find offered capabilities to answer with
+  idx = sdp.media.length;
+  while(idx--) {
+    if(sdp.media[idx].type==='audio' && (sdp.media[idx].direction==='sendrecv' || sdp.media[idx].direction==='recvonly')) {
       hasAudio=true;
     }
-    if(sdp.media[i].type==='video' && (sdp.media[i].direction==='sendrecv' || sdp.media[i].direction==='recvonly')) {
+    if(sdp.media[idx].type==='video' && (sdp.media[idx].direction==='sendrecv' || sdp.media[idx].direction==='recvonly')) {
       hasVideo=true;
     }
   }
