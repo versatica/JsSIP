@@ -166,7 +166,8 @@ EventEmitter.prototype = {
   * @param {Array} args
   */
   emit: function(event, sender, data) {
-    var listeners, length, e, idx;
+    var listeners, length, e, idx,
+      self = this;
     
     if (!this.checkEvent(event)) {
       this.logger.error('unable to emit a nonexistent event'+ event);
@@ -184,7 +185,7 @@ EventEmitter.prototype = {
       try {
         listeners[idx].call(null, e);
       } catch(err) {
-        this.logger.error(err.stack);
+        self.logger.error(err.stack);
       }
     }
 
