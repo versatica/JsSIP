@@ -773,7 +773,7 @@ RTCSession.prototype.setACKTimer = function() {
 
   this.timers.ackTimer = window.setTimeout(function() {
     if(self.status === C.STATUS_WAITING_FOR_ACK) {
-      this.logger.log('no ACK received, terminating the call');
+      self.logger.log('no ACK received, terminating the call');
       window.clearTimeout(self.timers.invite2xxTimer);
       self.sendRequest(JsSIP.C.BYE);
       self.ended('remote', null, JsSIP.C.causes.NO_ACK);
