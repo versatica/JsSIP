@@ -268,11 +268,13 @@ RTCSession.prototype.terminate = function(options) {
 RTCSession.prototype.answer = function(options) {
   options = options || {};
 
-  var idx, length, hasAudio, hasVideo,
+  var idx, length, sdp, remoteDescription,
+    hasAudio = false,
+    hasVideo = false,
     self = this,
     request = this.request,
     extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
-    mediaConstraints = options.mediaConstraints || {'audio':true, 'video':true},
+    mediaConstraints = options.mediaConstraints || {},
     RTCAnswerConstraints = options.RTCAnswerConstraints || {},
     mediaStream = options.mediaStream || null,
 
@@ -368,37 +370,56 @@ RTCSession.prototype.answer = function(options) {
   
   extraHeaders.unshift('Contact: ' + self.contact);
 
-  length = this.getRemoteStreams().length;
-  
-  for (idx=0; idx<length; idx++) {
-    if (this.getRemoteStreams()[idx].getAudioTracks().length > 0) {
+  // Determine incoming media from remote session description
+  remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription || {};
+  sdp = JsSIP.Parser.parseSDP(remoteDescription.sdp || '');
+
+  // Make sure sdp is an array, not the case if there is only one media
+  if(!(sdp.media instanceof Array)) {
+    sdp.media = [sdp.media || []];
+  }
+
+  // Go through all medias in SDP to find offered capabilities to answer with
+  idx = sdp.media.length;
+  while(idx--) {
+    if(sdp.media[idx].type === 'audio' &&
+        (sdp.media[idx].direction === 'sendrecv' ||
+         sdp.media[idx].direction === 'recvonly')) {
       hasAudio=true;
     }
-    if (this.getRemoteStreams()[idx].getVideoTracks().length > 0) {
+    if(sdp.media[idx].type === 'video' &&
+        (sdp.media[idx].direction === 'sendrecv' ||
+         sdp.media[idx].direction === 'recvonly')) {
       hasVideo=true;
     }
   }
-  
-  if (!hasAudio && mediaConstraints.audio === true) {
-    mediaConstraints.audio = false;
-    if (mediaStream) {
-      length = mediaStream.getAudioTracks().length;
-      for (idx=0; idx<length; idx++) {
-        mediaStream.removeTrack(mediaStream.getAudioTracks()[idx]);
-      }
+
+  // Remove audio from mediaStream if suggested by mediaConstraints
+   if (mediaStream && mediaConstraints.audio === false) {
+    length = mediaStream.getAudioTracks().length;
+    for (idx=0; idx<length; idx++) {
+      mediaStream.removeTrack(mediaStream.getAudioTracks()[idx]);
     }
   }
-  
-  if (!hasVideo && mediaConstraints.video === true) {
-    mediaConstraints.video = false;
-    if (mediaStream) {
-      length = mediaStream.getVideoTracks().length;
-      for (idx=0; idx<length; idx++) {
-        mediaStream.removeTrack(mediaStream.getVideoTracks()[idx]);
-      }
+
+  // Remove video from mediaStream if suggested by mediaConstraints
+  if (mediaStream && mediaConstraints.video === false) {
+    length = mediaStream.getVideoTracks().length;
+    for (idx=0; idx<length; idx++) {
+      mediaStream.removeTrack(mediaStream.getVideoTracks()[idx]);
     }
   }
-  
+
+  // Set audio constraints based on incoming stream if not supplied
+  if (mediaConstraints.audio === undefined) {
+      mediaConstraints.audio = hasAudio;
+  }
+
+  // Set video constraints based on incoming stream if not supplied
+  if (mediaConstraints.video === undefined) {
+      mediaConstraints.video = hasVideo;
+  }
+
   if (mediaStream) {
     userMediaSucceeded(mediaStream);
   } else {
