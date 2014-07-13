@@ -1350,7 +1350,7 @@ RTCSession.prototype.sendReinvite = function(options) {
       if (mangle) {
         body = mangle(body);
       }
-      
+
       self.dialog.sendRequest(self, JsSIP.C.INVITE, {
         extraHeaders: extraHeaders,
         body: body
