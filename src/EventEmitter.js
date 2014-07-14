@@ -10,27 +10,32 @@
 var
   EventEmitter,
   Event,
-  LOG_PREFIX = JsSIP.name +' | '+ 'EVENT EMITTER' +' | ';
+  logger = new JsSIP.LoggerFactory().getLogger('jssip.eventemitter'),
+  C = {
+    MAX_LISTENERS: 10
+  };
 
 EventEmitter = function(){};
 EventEmitter.prototype = {
   /**
-   * Initialize events dictionary.
+   * Initialize events dictionaries.
    * @param {Array} events
    */
   initEvents: function(events) {
-    var i = events.length;
+    var idx;
+
+    if (!this.logger) {
+      this.logger = logger;
+    }
+
+    this.maxListeners = C.MAX_LISTENERS;
 
     this.events = {};
-    this.onceNotFired = []; // Array containing events with _once_ defined tat didn't fire yet.
-    this.maxListeners = 10;
-    this.events.newListener = function(event) { // Default newListener callback
-      console.log(LOG_PREFIX +'new listener added to event '+ event);
-    };
+    this.oneTimeListeners = {};
 
-    while (i--) {
-      console.log(LOG_PREFIX +'adding event '+ events[i]);
-      this.events[events[i]] = [];
+    for (idx in events) {
+      this.events[events[idx]] = [];
+      this.oneTimeListeners[events[idx]] = [];
     }
   },
 
@@ -40,12 +45,7 @@ EventEmitter.prototype = {
   * @returns {Boolean}
   */
   checkEvent: function(event) {
-    if (!this.events[event]) {
-      console.error(LOG_PREFIX +'no event named '+ event);
-      return false;
-    } else {
-      return true;
-    }
+    return !!this.events[event];
   },
 
   /**
@@ -54,16 +54,21 @@ EventEmitter.prototype = {
   * @param {Function} listener
   */
   addListener: function(event, listener) {
-    if (!this.checkEvent(event)) {
+    if (listener === undefined) {
+      return;
+    } else if (typeof listener !== 'function') {
+      this.logger.error('listener must be a function');
+      return;
+    } else if (!this.checkEvent(event)) {
+      this.logger.error('unable to add a listener to a nonexistent event'+ event);
       return;
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      console.warn(LOG_PREFIX +'max listeners exceeded for event '+ event);
+      this.logger.warn('max listeners exceeded for event '+ event);
     }
 
     this.events[event].push(listener);
-    this.events.newListener.call(null, event);
   },
 
   on: function(event, listener) {
@@ -71,34 +76,43 @@ EventEmitter.prototype = {
   },
 
   /**
-  * Add a one time listener for the event.
-  * The listener is invoked only the first time the event is fired, after which it is removed.
+  * Add a one time listener for the specified event.
+  * The listener is invoked only the next time the event is fired, then it is removed.
   * @param {String} event
   * @param {Function} listener
   */
   once: function(event, listener) {
-    this.events[event].unshift(listener);
-    this.onceNotFired.push(event);
+    this.on(event, listener);
+    this.oneTimeListeners[event].push(listener);
   },
 
   /**
   * Remove a listener from the listener array for the specified event.
-  * Caution: changes array indices in the listener array behind the listener.
+  * Note that the order of the array elements will change after removing the listener
   * @param {String} event
   * @param {Function} listener
   */
   removeListener: function(event, listener) {
-    if (!this.checkEvent(event)) {
+    var events, length,
+      idx = 0;
+
+    if (listener === undefined) {
+      return;
+    } else if (typeof listener !== 'function') {
+      this.logger.error('listener must be a function');
+    } else if (!this.checkEvent(event)) {
+      this.logger.error('unable to remove a listener from a nonexistent event'+ event);
       return;
     }
 
-    var array = this.events[event], i = 0, length = array.length;
+    events = this.events[event];
+    length = events.length;
 
-    while ( i < length ) {
-      if (array[i] && array[i].toString() === listener.toString()) {
-        array.splice(i, 1);
+    while (idx < length) {
+      if (events[idx] === listener) {
+        events.splice(idx,1);
       } else {
-        i++;
+        idx ++;
       }
     }
   },
@@ -109,22 +123,27 @@ EventEmitter.prototype = {
   */
   removeAllListener: function(event) {
     if (!this.checkEvent(event)) {
+      this.logger.error('unable to remove listeners from a nonexistent event'+ event);
       return;
     }
 
     this.events[event] = [];
+    this.oneTimeListeners[event] = [];
   },
 
   /**
   * By default EventEmitter will print a warning
-  * if more than 10 listeners are added for a particular event.
+  * if more than C.MAX_LISTENERS listeners are added for a particular event.
   * This function allows that limit to be modified.
   * @param {Number} listeners
   */
   setMaxListeners: function(listeners) {
-    if (Number(listeners)) {
-      this.maxListeners = listeners;
+    if (typeof listeners !== 'number' || listeners < 0) {
+      this.logger.error('listeners must be a positive number');
+      return;
     }
+
+    this.maxListeners = listeners;
   },
 
   /**
@@ -133,6 +152,11 @@ EventEmitter.prototype = {
   * @returns {Array}  Array of listeners for the specified event.
   */
   listeners: function(event) {
+    if (!this.checkEvent(event)) {
+      this.logger.error('no event '+ event);
+      return;
+    }
+
     return this.events[event];
   },
 
@@ -142,44 +166,39 @@ EventEmitter.prototype = {
   * @param {Array} args
   */
   emit: function(event, sender, data) {
-    var listeners, length, 
-      emitter = this;
-
+    var listeners, length, e, idx,
+      self = this;
+    
     if (!this.checkEvent(event)) {
+      this.logger.error('unable to emit a nonexistent event'+ event);
       return;
     }
 
-    console.log(LOG_PREFIX +'emitting event '+event);
+    this.logger.log('emitting event '+ event);
 
     listeners = this.events[event];
     length = listeners.length;
+    
+    e = new JsSIP.Event(event, sender, data);
 
-    var e = new JsSIP.Event(event, sender, data);
+    listeners.map(function(listener) {
+      return function() {
+        listener.call(null, e);
+      };
+    }).forEach(function(callback) {
+      try {
+        callback();
+      } catch(err) {
+        self.logger.error(err.stack);
+      }
+    });
 
-    window.setTimeout(
-      function(){
-        var idx=0;
-        
-        for (idx; idx<length; idx++) {
-          listeners[idx].call(null, e);
-        }
+    // Remove one time listeners
+    for (idx in this.oneTimeListeners[event]) {
+      this.removeListener(event, this.oneTimeListeners[event][idx]);
+    }
 
-        // Check whether _once_ was defined for the event
-        idx = emitter.onceNotFired.indexOf(event);
-
-        if (idx !== -1) {
-          emitter.onceNotFired.splice(idx,1);
-          emitter.events[event].shift();
-        }
-      }, 0);
-  },
-
-  /**
-  * This function is executed anytime a new listener is added to EventEmitter instance.
-  * @param {Function} listener
-  */
-  newListener: function(listener) {
-    this.events.newListener = listener;
+    this.oneTimeListeners[event] = [];
   }
 };
 
@@ -188,6 +207,8 @@ Event = function(type, sender, data) {
   this.sender= sender;
   this.data = data;
 };
+
+EventEmitter.C = C;
 
 JsSIP.EventEmitter = EventEmitter;
 JsSIP.Event = Event;

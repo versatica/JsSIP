@@ -2,7 +2,7 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.3.7",
+  "version": "0.4.0-devel",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net>",
   "contributors": [
@@ -28,8 +28,10 @@
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-contrib-jshint": "~0.3.0",
     "grunt-contrib-qunit": "~0.2.0",
+    "grunt-browserify": "~1.3.0",
     "pegjs": "0.7.0",
-    "node-minify": "~0.7.2"
+    "node-minify": "~0.7.2",
+    "sdp-transform": "~0.5.3"
   },
   "engines": {
     "node": ">=0.8"

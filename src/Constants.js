@@ -11,10 +11,8 @@ JsSIP.C= {
   USER_AGENT: JsSIP.name +' '+ JsSIP.version,
 
   // SIP scheme
-  SIP: 'sip',
-
-  // Invalid target
-  INVALID_TARGET_URI: 'sip:invalid@invalid',
+  SIP:  'sip',
+  SIPS: 'sips',
 
   // End and Failure causes
   causes: {
@@ -22,7 +20,6 @@ JsSIP.C= {
     CONNECTION_ERROR:         'Connection Error',
     REQUEST_TIMEOUT:          'Request Timeout',
     SIP_FAILURE_CODE:         'SIP Failure Code',
-    INVALID_TARGET:           'Invalid Target',
     INTERNAL_ERROR:           'Internal Error',
 
     // SIP error causes
@@ -37,6 +34,7 @@ JsSIP.C= {
     DIALOG_ERROR:             'Dialog Error',
 
     // Session error causes
+    BYE:                      'Terminated',
     WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
     WEBRTC_ERROR:             'WebRTC Error',
     CANCELED:                 'Canceled',

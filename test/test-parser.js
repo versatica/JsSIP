@@ -193,3 +193,39 @@ test('Parse Event', function() {
   strictEqual(event.event, 'presence');
   deepEqual(event.params, {param1: 'QWe', param2: undefined});
 });
+
+test('Parse host', function() {
+  var data, parsed;
+
+  data = 'versatica.com';
+  ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+  strictEqual(parsed.host_type, 'domain');
+
+  data = 'myhost123';
+  ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+  strictEqual(parsed.host_type, 'domain');
+
+  data = '1.2.3.4';
+  ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+  strictEqual(parsed.host_type, 'IPv4');
+
+  data = '[1:0:fF::432]';
+  ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+  strictEqual(parsed.host_type, 'IPv6');
+
+  data = '1.2.3.444';
+  ok(JsSIP.Grammar.parse(data, 'host') === -1);
+
+  data = 'iñaki.com';
+  ok(JsSIP.Grammar.parse(data, 'host') === -1);
+
+  data = '1.2.3.bar.qwe-asd.foo';
+  ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+  strictEqual(parsed.host_type, 'domain');
+
+  // TODO: This is a valid 'domain' but PEGjs finds a valid IPv4 first and does not move
+  // to 'domain' after IPv4 parsing has failed.
+  data = '1.2.3.4.bar.qwe-asd.foo';
+  ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+  strictEqual(parsed.host_type, 'domain');
+});

@@ -12,77 +12,108 @@
 var RTCMediaHandler = function(session, constraints) {
   constraints = constraints || {};
 
+  this.logger = session.ua.getLogger('jssip.rtcsession.rtcmediahandler', session.id);
   this.session = session;
   this.localMedia = null;
   this.peerConnection = null;
+  this.ready = true;
 
   this.init(constraints);
 };
 
 RTCMediaHandler.prototype = {
+  isReady: function() {
+    return this.ready;
+  },
+  
+  createOffer: function(onSuccess, onFailure, constraints) {
+    var self = this;
 
-  createOffer: function(onSuccess, onFailure) {
-    var
-      self = this,
-      sent = false;
-
-    this.onIceCompleted = function() {
-      if (!sent) {
-        sent = true;
+    function onSetLocalDescriptionSuccess() {
+      if (self.peerConnection.iceGatheringState === 'complete' && self.peerConnection.iceConnectionState === 'connected') {
+        self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
+      } else {
+        self.onIceCompleted = function() {
+          self.onIceCompleted = undefined;
+          self.ready = true;
+          onSuccess(self.peerConnection.localDescription.sdp);
+        };
       }
-    };
+    }
+    
+    this.ready = false;
 
     this.peerConnection.createOffer(
       function(sessionDescription){
         self.setLocalDescription(
           sessionDescription,
-          onFailure
+          onSetLocalDescriptionSuccess,
+          function(e) {
+            self.ready = true;
+            onFailure(e);
+          }
         );
       },
       function(e) {
-        console.error(LOG_PREFIX +'unable to create offer');
-        console.error(e);
-        onFailure();
-      }
+        self.ready = true;
+        self.logger.error('unable to create offer');
+        self.logger.error(e);
+        onFailure(e);
+      },
+      constraints
     );
   },
 
-  createAnswer: function(onSuccess, onFailure) {
-    var
-      self = this,
-      sent = false;
+  createAnswer: function(onSuccess, onFailure, constraints) {
+    var self = this;
 
-    this.onIceCompleted = function() {
-      if (!sent) {
-        sent = true;
+    function onSetLocalDescriptionSuccess() {
+      if (self.peerConnection.iceGatheringState === 'complete' && self.peerConnection.iceConnectionState === 'connected') {
+        self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
+      } else {
+        self.onIceCompleted = function() {
+          self.onIceCompleted = undefined;
+          self.ready = true;
+          onSuccess(self.peerConnection.localDescription.sdp);
+        };
       }
-    };
+    }
+    
+    this.ready = false;
 
     this.peerConnection.createAnswer(
       function(sessionDescription){
         self.setLocalDescription(
           sessionDescription,
-          onFailure
+          onSetLocalDescriptionSuccess,
+          function(e) {
+            self.ready = true;
+            onFailure(e);
+          }
         );
       },
       function(e) {
-        console.error(LOG_PREFIX +'unable to create answer');
-        console.error(e);
-        onFailure();
-      }
+        self.ready = true;
+        self.logger.error('unable to create answer');
+        self.logger.error(e);
+        onFailure(e);
+      },
+      constraints
     );
   },
 
-  setLocalDescription: function(sessionDescription, onFailure) {
+  setLocalDescription: function(sessionDescription, onSuccess, onFailure) {
+    var self = this;
+
     this.peerConnection.setLocalDescription(
       sessionDescription,
-      function(){},
+      onSuccess,
       function(e) {
-        console.error(LOG_PREFIX +'unable to set local description');
-        console.error(e);
-        onFailure();
+        self.logger.error('unable to set local description');
+        self.logger.error(e);
+        onFailure(e);
       }
     );
   },
@@ -91,8 +122,8 @@ RTCMediaHandler.prototype = {
     try {
       this.peerConnection.addStream(stream, constraints);
     } catch(e) {
-      console.error(LOG_PREFIX +'error adding stream');
-      console.error(e);
+      this.logger.error('error adding stream');
+      this.logger.error(e);
       onFailure();
       return;
     }
@@ -104,60 +135,81 @@ RTCMediaHandler.prototype = {
   * peerConnection creation.
   * @param {Function} onSuccess Fired when there are no more ICE candidates
   */
-  init: function(constraints) {
+  init: function(options) {
+    options = options || {};
+    
     var idx, length, server,
       self = this,
       servers = [],
+      constraints = options.constraints || {},
+      stun_servers = options.stun_servers  || null,
+      turn_servers = options.turn_servers || null,
       config = this.session.ua.configuration;
 
-    servers.push({'url': config.stun_servers});
+    if (!stun_servers) {
+      stun_servers = config.stun_servers;
+    }
 
-    length = config.turn_servers.length;
+    if (!turn_servers) {
+      turn_servers = config.turn_servers;
+    }
+    
+    /* Change 'url' to 'urls' whenever this issue is solved:
+     * https://code.google.com/p/webrtc/issues/detail?id=2096
+     */
+    
+    if (stun_servers.length > 0) {
+      servers.push({'url': stun_servers});
+    }
+    
+    length = turn_servers.length;
     for (idx = 0; idx < length; idx++) {
-      server = config.turn_servers[idx];
+      server = turn_servers[idx];
       servers.push({
         'url': server.urls,
         'username': server.username,
-        'credential': server.password
+        'credential': server.credential
       });
     }
 
     this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({'iceServers': servers}, constraints);
 
     this.peerConnection.onaddstream = function(e) {
-      console.log(LOG_PREFIX +'stream added: '+ e.stream.id);
+      self.logger.log('stream added: '+ e.stream.id);
     };
 
     this.peerConnection.onremovestream = function(e) {
-      console.log(LOG_PREFIX +'stream removed: '+ e.stream.id);
+      self.logger.log('stream removed: '+ e.stream.id);
     };
 
     this.peerConnection.onicecandidate = function(e) {
       if (e.candidate) {
-        console.log(LOG_PREFIX +'ICE candidate received: '+ e.candidate.candidate);
+        self.logger.log('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
         self.onIceCompleted();
       }
     };
 
-    // To be deprecated as per https://code.google.com/p/webrtc/issues/detail?id=1393
-    this.peerConnection.ongatheringchange = function(e) {
-      if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
-        self.onIceCompleted();
+    this.peerConnection.oniceconnectionstatechange = function() {
+      self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
+      
+      if (this.iceConnectionState === 'disconnected') {
+        self.session.terminate({
+            cause: JsSIP.C.causes.RTP_TIMEOUT,
+            status_code: 200,
+            reason_phrase: JsSIP.C.causes.RTP_TIMEOUT
+          });
       }
     };
 
-    this.peerConnection.onicechange = function() {
-      console.log(LOG_PREFIX +'ICE connection state changed to "'+ this.iceConnectionState +'"');
-    };
 
     this.peerConnection.onstatechange = function() {
-      console.log(LOG_PREFIX +'PeerConnection state changed to "'+ this.readyState +'"');
+      self.logger.log('PeerConnection state changed to "'+ this.readyState +'"');
     };
   },
 
   close: function() {
-    console.log(LOG_PREFIX + 'closing PeerConnection');
+    this.logger.log('closing PeerConnection');
     if(this.peerConnection) {
       this.peerConnection.close();
 
@@ -175,17 +227,17 @@ RTCMediaHandler.prototype = {
   getUserMedia: function(onSuccess, onFailure, constraints) {
     var self = this;
 
-    console.log(LOG_PREFIX + 'requesting access to local media');
+    this.logger.log('requesting access to local media');
 
     JsSIP.WebRTC.getUserMedia(constraints,
       function(stream) {
-        console.log(LOG_PREFIX + 'got local media stream');
+        self.logger.log('got local media stream');
         self.localMedia = stream;
         onSuccess(stream);
       },
       function(e) {
-        console.error(LOG_PREFIX +'unable to get user media');
-        console.error(e);
+        self.logger.error('unable to get user media');
+        self.logger.error(e);
         onFailure();
       }
     );

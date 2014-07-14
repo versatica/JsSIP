@@ -5,14 +5,17 @@
 /**
  * @augments JsSIP
  * @class Class creating a SIP dialog.
- * @param {JsSIP.Session} session
+ * @param {JsSIP.RTCSession} owner
  * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} message
  * @param {Enum} type UAC / UAS
  * @param {Enum} state JsSIP.Dialog.C.STATUS_EARLY / JsSIP.Dialog.C.STATUS_CONFIRMED
  */
 (function(JsSIP) {
+
+// Load dependencies
+var RequestSender   = @@include('../src/Dialog/RequestSender.js')
+
 var Dialog,
-  LOG_PREFIX = JsSIP.name +' | '+ 'DIALOG' +' | ',
   C = {
     // Dialog states
     STATUS_EARLY:       1,
@@ -20,12 +23,16 @@ var Dialog,
   };
 
 // RFC 3261 12.1
-Dialog = function(session, message, type, state) {
+Dialog = function(owner, message, type, state) {
   var contact;
+  
+  this.uac_pending_reply = false;
+  this.uas_pending_reply = false;
 
   if(!message.hasHeader('contact')) {
-    console.error(LOG_PREFIX +'unable to create a Dialog without Contact header field');
-    return false;
+    return {
+      error: 'unable to create a Dialog without Contact header field'
+    };
   }
 
   if(message instanceof JsSIP.IncomingResponse) {
@@ -52,7 +59,7 @@ Dialog = function(session, message, type, state) {
     this.local_uri = message.parseHeader('to').uri;
     this.remote_uri = message.parseHeader('from').uri;
     this.remote_target = contact.uri;
-    this.route_set = message.getHeaderAll('record-route');
+    this.route_set = message.getHeaders('record-route');
   }
   // RFC 3261 12.1.2
   else if(type === 'UAC') {
@@ -69,12 +76,13 @@ Dialog = function(session, message, type, state) {
     this.local_uri = message.parseHeader('from').uri;
     this.remote_uri = message.parseHeader('to').uri;
     this.remote_target = contact.uri;
-    this.route_set = message.getHeaderAll('record-route').reverse();
+    this.route_set = message.getHeaders('record-route').reverse();
   }
 
-  this.session = session;
-  session.ua.dialogs[this.id.toString()] = this;
-  console.log(LOG_PREFIX +'new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
+  this.logger = owner.ua.getLogger('jssip.dialog', this.id.toString());
+  this.owner = owner;
+  owner.ua.dialogs[this.id.toString()] = this;
+  this.logger.log('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 };
 
 Dialog.prototype = {
@@ -85,17 +93,17 @@ Dialog.prototype = {
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
-    console.log(LOG_PREFIX +'dialog '+ this.id.toString() +'  changed to CONFIRMED state');
+    this.logger.log('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
-      this.route_set = message.getHeaderAll('record-route').reverse();
+      this.route_set = message.getHeaders('record-route').reverse();
     }
   },
 
   terminate: function() {
-    console.log(LOG_PREFIX +'dialog ' + this.id.toString() + ' deleted');
-    delete this.session.ua.dialogs[this.id.toString()];
+    this.logger.log('dialog ' + this.id.toString() + ' deleted');
+    delete this.owner.ua.dialogs[this.id.toString()];
   },
 
   /**
@@ -105,9 +113,9 @@ Dialog.prototype = {
   */
 
   // RFC 3261 12.2.1.1
-  createRequest: function(method, extraHeaders) {
+  createRequest: function(method, extraHeaders, body) {
     var cseq, request;
-    extraHeaders = extraHeaders || [];
+    extraHeaders = extraHeaders && extraHeaders.slice() || [];
 
     if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }
 
@@ -116,7 +124,7 @@ Dialog.prototype = {
     request = new JsSIP.OutgoingRequest(
       method,
       this.remote_target,
-      this.session.ua, {
+      this.owner.ua, {
         'cseq': cseq,
         'call_id': this.id.call_id,
         'from_uri': this.local_uri,
@@ -124,7 +132,7 @@ Dialog.prototype = {
         'to_uri': this.remote_uri,
         'to_tag': this.id.remote_tag,
         'route_set': this.route_set
-      }, extraHeaders);
+      }, extraHeaders, body);
 
     request.dialog = this;
 
@@ -138,9 +146,11 @@ Dialog.prototype = {
 
   // RFC 3261 12.2.2
   checkInDialogRequest: function(request) {
+    var self = this;
+    
     if(!this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
-    } else if(request.method !== JsSIP.C.INVITE && request.cseq < this.remote_seqnum) {
+    } else if(request.cseq < this.remote_seqnum) {
         //Do not try to reply to an ACK request.
         if (request.method !== JsSIP.C.ACK) {
           request.reply(500);
@@ -153,34 +163,63 @@ Dialog.prototype = {
     switch(request.method) {
       // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
       case JsSIP.C.INVITE:
-        if(request.cseq < this.remote_seqnum) {
-          if(this.state === C.STATUS_EARLY) {
-            var retryAfter = (Math.random() * 10 | 0) + 1;
-            request.reply(500, null, ['Retry-After:'+ retryAfter]);
-          } else {
-            request.reply(500);
-          }
-          return false;
-        }
-        // RFC3261 14.2
-        if(this.state === C.STATUS_EARLY) {
+        if (this.uac_pending_reply === true) {
           request.reply(491);
+        } else if (this.uas_pending_reply === true) {
+          var retryAfter = (Math.random() * 10 | 0) + 1;
+          request.reply(500, null, ['Retry-After:'+ retryAfter]);
           return false;
+        } else {
+          this.uas_pending_reply = true;
+          request.server_transaction.on('stateChanged', function stateChanged(e){
+            if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
+                e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
+                e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+                
+              request.server_transaction.removeListener('stateChanged', stateChanged);
+              self.uas_pending_reply = false;
+              
+              if (self.uac_pending_reply === false) {
+                self.owner.onReadyToReinvite();
+              }
+            }
+          });
         }
-        // RFC3261 12.2.2 Replace the dialog`s remote target URI
+        
+        // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
         if(request.hasHeader('contact')) {
-          this.remote_target = request.parseHeader('contact').uri;
+          request.server_transaction.on('stateChanged', function(e){
+            if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED) {
+              self.remote_target = request.parseHeader('contact').uri;
+            }
+          });
         }
         break;
       case JsSIP.C.NOTIFY:
-        // RFC6655 3.2 Replace the dialog`s remote target URI
+        // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
         if(request.hasHeader('contact')) {
-          this.remote_target = request.parseHeader('contact').uri;
+          request.server_transaction.on('stateChanged', function(e){
+            if (e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED) {
+              self.remote_target = request.parseHeader('contact').uri;
+            }
+          });
         }
         break;
     }
 
     return true;
+  },
+
+  sendRequest: function(applicant, method, options) {
+    options = options || {};
+
+    var
+      extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
+      body = options.body || null,
+      request = this.createRequest(method, extraHeaders, body),
+      request_sender = new RequestSender(this, applicant, request);
+
+      request_sender.send();
   },
 
   /**
@@ -192,7 +231,7 @@ Dialog.prototype = {
       return;
     }
 
-    this.session.receiveRequest(request);
+    this.owner.receiveRequest(request);
   }
 };
 

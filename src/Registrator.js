@@ -9,11 +9,12 @@
  * @param {JsSIP.Transport} transport
  */
 (function(JsSIP) {
-var Registrator,
-  LOG_PREFIX = JsSIP.name +' | '+ 'REGISTRATOR' +' | ';
+var Registrator;
 
 Registrator = function(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
+
+  this.logger = ua.getLogger('jssip.registrator');
 
   this.ua = ua;
   this.transport = transport;
@@ -39,6 +40,11 @@ Registrator = function(ua, transport) {
   // Contact header
   this.contact = this.ua.contact.toString();
 
+  // sip.ice media feature tag (RFC 5768)
+  this.contact += ';+sip.ice';
+  
+  this.extraHeaders = [];
+
   if(reg_id) {
     this.contact += ';reg-id='+ reg_id;
     this.contact += ';+sip.instance="<urn:uuid:'+ this.ua.configuration.instance_id+'>"';
@@ -54,9 +60,13 @@ Registrator.prototype = {
       self = this;
 
     options = options || {};
-    extraHeaders = options.extraHeaders || [];
+    
+    if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
+      this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
+    }
+    
+    extraHeaders = this.extraHeaders.slice();
     extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
-    extraHeaders.push('Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua));
 
     this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
         'to_uri': this.to_uri,
@@ -71,7 +81,7 @@ Registrator.prototype = {
     */
     this.receiveResponse = function(response) {
       var contact, expires,
-        contacts = response.countHeader('contact');
+        contacts = response.getHeaders('contact').length;
 
       // Discard responses to older REGISTER/un-REGISTER requests.
       if(response.cseq !== this.cseq) {
@@ -95,7 +105,7 @@ Registrator.prototype = {
 
           // Search the Contact pointing to us and update the expires value accordingly.
           if (!contacts) {
-            console.warn(LOG_PREFIX +'no Contact header in response to REGISTER, response ignored');
+            this.logger.warn('no Contact header in response to REGISTER, response ignored');
             break;
           }
 
@@ -110,7 +120,7 @@ Registrator.prototype = {
           }
 
           if (!contact) {
-            console.warn(LOG_PREFIX +'no Contact header pointing to us, response ignored');
+            this.logger.warn('no Contact header pointing to us, response ignored');
             break;
           }
 
@@ -143,10 +153,10 @@ Registrator.prototype = {
           if(response.hasHeader('min-expires')) {
             // Increase our registration interval to the suggested minimum
             this.expires = response.getHeader('min-expires');
-            // Attempt the registration again immediately 
+            // Attempt the registration again immediately
             this.register();
           } else { //This response MUST contain a Min-Expires header field
-            console.warn(LOG_PREFIX +'423 response received for REGISTER without Min-Expires');
+            this.logger.warn('423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
           }
           break;
@@ -180,12 +190,17 @@ Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      console.warn(LOG_PREFIX +'already unregistered');
+      this.logger.warn('already unregistered');
       return;
     }
 
     options = options || {};
-    extraHeaders = options.extraHeaders || [];
+    
+    if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
+      this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
+    }
+    
+    extraHeaders = this.extraHeaders.slice();
 
     this.registered = false;
 

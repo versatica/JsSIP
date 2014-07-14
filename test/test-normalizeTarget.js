@@ -1,19 +1,14 @@
-test('JsSIP.Utils.normalizeURI()', function() {
+test('JsSIP.Utils.normalizeTarget()', function() {
   var domain = 'jssip.net';
 
   var test_ok = function(given_data, expected) {
-    uri = JsSIP.Utils.normalizeURI(given_data, domain);
+    uri = JsSIP.Utils.normalizeTarget(given_data, domain);
     ok(uri instanceof(JsSIP.URI));
     strictEqual(uri.toString(), expected);
   };
 
   var test_error = function(given_data) {
-    throws(
-      function() {
-        JsSIP.Utils.normalizeURI(given_data, domain);
-      },
-      JsSIP.Exceptions.InvalidTargetError
-    );
+    deepEqual(JsSIP.Utils.normalizeTarget(given_data, domain), undefined);
   };
 
   test_ok('%61lice', 'sip:alice@jssip.net');
@@ -48,11 +43,6 @@ test('JsSIP.Utils.normalizeURI()', function() {
   test_error('ibc@iñaki.com');
   test_error('ibc@aliax.net;;;;;');
 
-  throws(
-    function() {
-      JsSIP.Utils.normalizeURI('alice');
-    },
-    JsSIP.Exceptions.InvalidTargetError
-  );
+  deepEqual(JsSIP.Utils.normalizeTarget('alice'), undefined);
 });
 

@@ -9,7 +9,6 @@
  */
 (function(JsSIP) {
 var UA,
-  LOG_PREFIX = JsSIP.name +' | '+ 'UA' +' | ',
   C = {
     // UA status codes
     STATUS_INIT :                0,
@@ -42,16 +41,17 @@ var UA,
       'application/dtmf-relay'
     ],
 
-    SUPPORTED: 'path, outbound, gruu',
-
     MAX_FORWARDS: 69,
     TAG_LENGTH: 10
   };
 
 UA = function(configuration) {
   var events = [
+    'connecting',
     'connected',
     'disconnected',
+    'newTransaction',
+    'transactionDestroyed',
     'registered',
     'unregistered',
     'registrationFailed',
@@ -61,6 +61,9 @@ UA = function(configuration) {
 
   // Set Accepted Body Types
   C.ACCEPTED_BODY_TYPES = C.ACCEPTED_BODY_TYPES.toString();
+
+  this.log = new JsSIP.LoggerFactory();
+  this.logger = this.getLogger('jssip.ua');
 
   this.cache = {
     credentials: {}
@@ -87,6 +90,46 @@ UA = function(configuration) {
   this.transportRecoverAttempts = 0;
   this.transportRecoveryTimer = null;
 
+  Object.defineProperties(this, {
+    transactionsCount: {
+      get: function() {
+        var type,
+          transactions = ['nist','nict','ist','ict'],
+          count = 0;
+
+        for (type in transactions) {
+          count += Object.keys(this.transactions[transactions[type]]).length;
+        }
+
+        return count;
+      }
+    },
+
+    nictTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['nict']).length;
+      }
+    },
+
+    nistTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['nist']).length;
+      }
+    },
+
+    ictTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['ict']).length;
+      }
+    },
+
+    istTransactionsCount: {
+      get: function() {
+        return Object.keys(this.transactions['ist']).length;
+      }
+    }
+  });
+
   /**
    * Load configuration
    *
@@ -98,6 +141,21 @@ UA = function(configuration) {
     throw new TypeError('Not enough arguments');
   }
 
+  // Apply log configuration if present
+  if (configuration.log) {
+    if (configuration.log.hasOwnProperty('builtinEnabled')) {
+      this.log.builtinEnabled = configuration.log.builtinEnabled;
+    }
+
+    if (configuration.log.hasOwnProperty('level')) {
+      this.log.level = configuration.log.level;
+    }
+
+    if (configuration.log.hasOwnProperty('connector')) {
+      this.log.connector = configuration.log.connector;
+    }
+  }
+
   try {
     this.loadConfig(configuration);
     this.initEvents(events);
@@ -106,11 +164,12 @@ UA = function(configuration) {
     this.error = C.CONFIGURATION_ERROR;
     throw e;
   }
-  
+
   // Initialize registrator
   this.registrator = new JsSIP.Registrator(this);
 };
 UA.prototype = new JsSIP.EventEmitter();
+
 
 //=================
 //  High Level API
@@ -203,23 +262,30 @@ UA.prototype.stop = function() {
   var session, applicant,
     ua = this;
 
-  console.log(LOG_PREFIX +'user requested closure...');
+  function transactionsListener() {
+    if (ua.nistTransactionsCount === 0 && ua.nictTransactionsCount === 0) {
+        ua.removeListener('transactionDestroyed', transactionsListener);
+        ua.transport.disconnect();
+    }
+  }
+
+  this.logger.log('user requested closure...');
 
   if(this.status === C.STATUS_USER_CLOSED) {
-    console.warn('UA already closed');
+    this.logger.warn('UA already closed');
     return;
   }
-  
+
   // Clear transportRecoveryTimer
   window.clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
-  console.log(LOG_PREFIX +'closing registrator');
+  this.logger.log('closing registrator');
   this.registrator.close();
 
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
-    console.log(LOG_PREFIX +'closing session ' + session);
+    this.logger.log('closing session ' + session);
     this.sessions[session].terminate();
   }
 
@@ -229,10 +295,20 @@ UA.prototype.stop = function() {
   }
 
   this.status = C.STATUS_USER_CLOSED;
-  this.shutdownGraceTimer = window.setTimeout(
-    function() { ua.transport.disconnect(); },
-    '5000'
-  );
+
+  /*
+   * If the remaining transactions are all INVITE transactions, there is no need to
+   * wait anymore because every session has already been closed by this method.
+   * - locally originated sessions where terminated (CANCEL or BYE)
+   * - remotely originated sessions where rejected (4XX) or terminated (BYE)
+   * Remaining INVITE transactions belong tho sessions that where answered. This are in
+   * 'accepted' state due to timers 'L' and 'M' defined in [RFC 6026]
+   */
+  if (this.nistTransactionsCount === 0 && this.nictTransactionsCount === 0) {
+    this.transport.disconnect();
+  } else {
+    this.on('transactionDestroyed', transactionsListener);
+  }
 };
 
 /**
@@ -243,20 +319,31 @@ UA.prototype.stop = function() {
 UA.prototype.start = function() {
   var server;
 
-  console.log(LOG_PREFIX +'user requested startup...');
+  this.logger.log('user requested startup...');
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     new JsSIP.Transport(this, server);
   } else if(this.status === C.STATUS_USER_CLOSED) {
-    console.log(LOG_PREFIX +'resuming');
+    this.logger.log('resuming');
     this.status = C.STATUS_READY;
     this.transport.connect();
   } else if (this.status === C.STATUS_READY) {
-    console.log(LOG_PREFIX +'UA is in READY status, not resuming');
+    this.logger.log('UA is in READY status, not resuming');
   } else {
-    console.error('Connection is down. Auto-Recovery system is trying to connect');
+    this.logger.error('Connection is down. Auto-Recovery system is trying to connect');
   }
+};
+
+/**
+ * Normalice a string into a valid SIP request URI
+ *
+ * @param {String} target
+ *
+ * @returns {JsSIP.URI|undefined}
+ */
+UA.prototype.normalizeTarget = function(target) {
+  return JsSIP.Utils.normalizeTarget(target, this.configuration.hostport_params);
 };
 
 
@@ -282,6 +369,10 @@ UA.prototype.getCredentials = function(request) {
   return credentials;
 };
 
+UA.prototype.getLogger = function(category, label) {
+    return this.log.getLogger(category, label);
+};
+
 
 //==========================
 // Event Handlers
@@ -299,7 +390,7 @@ UA.prototype.onTransportClosed = function(transport) {
     client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = JsSIP.Transport.C.STATUS_DISCONNECTED;
-  console.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
+  this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
 
   length = client_transactions.length;
   for (type = 0; type < length; type++) {
@@ -325,7 +416,7 @@ UA.prototype.onTransportClosed = function(transport) {
 UA.prototype.onTransportError = function(transport) {
   var server;
 
-  console.log(LOG_PREFIX +'transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.Transport.C.STATUS_ERROR);
+  this.logger.log('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ JsSIP.Transport.C.STATUS_ERROR);
 
   // Close sessions.
   //Mark this transport as 'down' and try the next one
@@ -365,7 +456,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = JsSIP.Transport.C.STATUS_READY;
-  console.log(LOG_PREFIX +'connection state set to '+ JsSIP.Transport.C.STATUS_READY);
+  this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -373,14 +464,56 @@ UA.prototype.onTransportConnected = function(transport) {
 
   this.status = C.STATUS_READY;
   this.error = null;
-  this.emit('connected', this, {
-    transport: transport
-  });
 
   if(this.configuration.register) {
     this.registrator.onTransportConnected();
   }
+
+  this.emit('connected', this, {
+    transport: transport
+  });
 };
+
+
+/**
+ * Transport connecting event
+ * @private
+ * @param {JsSIP.Transport} transport.
+ * @param {Integer} attempts.
+ */
+UA.prototype.onTransportConnecting = function(transport, attempts) {
+  this.emit('connecting', this, {
+    transport: transport,
+    attempts: attempts
+  });
+};
+
+
+/**
+ * new Transaction
+ * @private
+ * @param {JsSIP.Transaction} transaction.
+ */
+UA.prototype.newTransaction = function(transaction) {
+  this.transactions[transaction.type][transaction.id] = transaction;
+  this.emit('newTransaction', this, {
+    transaction: transaction
+  });
+};
+
+
+/**
+ * new Transaction
+ * @private
+ * @param {JsSIP.Transaction} transaction.
+ */
+UA.prototype.destroyTransaction = function(transaction) {
+  delete this.transactions[transaction.type][transaction.id];
+  this.emit('transactionDestroyed', this, {
+    transaction: transaction
+  });
+};
+
 
 //=========================
 // receiveRequest
@@ -395,12 +528,18 @@ UA.prototype.receiveRequest = function(request) {
   var dialog, session, message,
     method = request.method;
 
-  // Check that Ruri points to us
+  // Check that request URI points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
-    console.warn(LOG_PREFIX +'Request-URI does not point to us');
+    this.logger.warn('Request-URI does not point to us');
     if (request.method !== JsSIP.C.ACK) {
       request.reply_sl(404);
     }
+    return;
+  }
+
+  // Check request URI scheme
+  if(request.ruri.scheme === JsSIP.C.SIPS) {
+    request.reply_sl(416);
     return;
   }
 
@@ -422,34 +561,30 @@ UA.prototype.receiveRequest = function(request) {
    * They are processed as if they had been received outside the dialog.
    */
   if(method === JsSIP.C.OPTIONS) {
-    request.reply(200, null, [
-      'Allow: '+ JsSIP.Utils.getAllowedMethods(this),
-      'Accept: '+ C.ACCEPTED_BODY_TYPES
-    ]);
+    request.reply(200);
   } else if (method === JsSIP.C.MESSAGE) {
     if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
-      request.reply(405, null, ['Allow: '+ JsSIP.Utils.getAllowedMethods(this)]);
+      request.reply(405);
       return;
     }
     message = new JsSIP.Message(this);
     message.init_incoming(request);
+  } else if (method === JsSIP.C.INVITE) {
+    if (!this.checkEvent('newRTCSession') || this.listeners('newRTCSession').length === 0) {
+      request.reply(405);
+      return;
+    }
   }
 
   // Initial Request
   if(!request.to_tag) {
-    if(!this.isRegistered()) {
-      // High user does not want to be contacted
-      request.reply(410);
-      return;
-    }
-
     switch(method) {
       case JsSIP.C.INVITE:
         if(JsSIP.WebRTC.isSupported) {
           session = new JsSIP.RTCSession(this);
           session.init_incoming(request);
         } else {
-          console.warn(LOG_PREFIX +'INVITE received but WebRTC is not supported');
+          this.logger.warn('INVITE received but WebRTC is not supported');
           request.reply(488);
         }
         break;
@@ -462,7 +597,7 @@ UA.prototype.receiveRequest = function(request) {
         if(session) {
           session.receiveRequest(request);
         } else {
-          console.warn(LOG_PREFIX +'received CANCEL request for a non existent session');
+          this.logger.warn('received CANCEL request for a non existent session');
         }
         break;
       case JsSIP.C.ACK:
@@ -487,7 +622,7 @@ UA.prototype.receiveRequest = function(request) {
       if(session) {
         session.receiveRequest(request);
       } else {
-        console.warn(LOG_PREFIX +'received NOTIFY request for a non existent session');
+        this.logger.warn('received NOTIFY request for a non existent session');
         request.reply(481, 'Subscription does not exist');
       }
     }
@@ -616,12 +751,12 @@ UA.prototype.recoverTransport = function(ua) {
   nextRetry = k * ua.configuration.connection_recovery_min_interval;
 
   if (nextRetry > ua.configuration.connection_recovery_max_interval) {
-    console.log(LOG_PREFIX + 'time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
+    this.logger.log('time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
     nextRetry = ua.configuration.connection_recovery_min_interval;
     count = 0;
   }
 
-  console.log(LOG_PREFIX + 'next connection attempt in '+ nextRetry +' seconds');
+  this.logger.log('next connection attempt in '+ nextRetry +' seconds');
 
   this.transportRecoveryTimer = window.setTimeout(
     function(){
@@ -649,7 +784,6 @@ UA.prototype.loadConfig = function(configuration) {
 
       // Registration parameters
       register_expires: 600,
-      register_min_expires: 120,
       register: true,
       registrar_server: null,
 
@@ -697,12 +831,13 @@ UA.prototype.loadConfig = function(configuration) {
     if(configuration.hasOwnProperty(parameter)) {
       value = configuration[parameter];
 
-      // If the parameter value is null, empty string or undefined then apply its default value.
-      if(value === null || value === "" || value === undefined) { continue; }
-      // If it's a number with NaN value then also apply its default value.
-      // NOTE: JS does not allow "value === NaN", the following does the work:
-      else if(typeof(value) === 'number' && window.isNaN(value)) { continue; }
-
+      /* If the parameter value is null, empty string, undefined, empty array
+       * or it's a number with NaN value, then apply its default value.
+       */
+      if (JsSIP.Utils.isEmpty(value)) {
+        continue; 
+      }
+      
       checked_value = UA.configuration_check.optional[parameter](value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
@@ -727,7 +862,9 @@ UA.prototype.loadConfig = function(configuration) {
   }
 
   // Instance-id for GRUU
-  settings.instance_id = JsSIP.Utils.newUUID();
+  if (!settings.instance_id) {
+    settings.instance_id = JsSIP.Utils.newUUID();
+  }
 
   // jssip_id instance parameter. Static random tag of length 5
   settings.jssip_id = JsSIP.Utils.createRandomToken(5);
@@ -758,6 +895,12 @@ UA.prototype.loadConfig = function(configuration) {
   if (settings.hack_ip_in_contact) {
     settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
+  
+  // Set empty Stun Server Set if explicitly passed an empty Array
+  value = configuration.stun_servers;
+  if (value instanceof Array && value.length === 0) {
+    settings.stun_servers = [];
+  }
 
   this.contact = {
     pub_gruu: null,
@@ -777,7 +920,7 @@ UA.prototype.loadConfig = function(configuration) {
         contact += this.pub_gruu || this.uri.toString();
       }
 
-      if (outbound) {
+      if (outbound && (anonymous ? !this.temp_gruu : !this.pub_gruu)) {
         contact += ';ob';
       }
 
@@ -788,19 +931,7 @@ UA.prototype.loadConfig = function(configuration) {
   };
 
   // Fill the value of the configuration_skeleton
-  console.log(LOG_PREFIX + 'configuration parameters after validation:');
   for(parameter in settings) {
-    switch(parameter) {
-      case 'uri':
-      case 'registrar_server':
-        console.log('· ' + parameter + ': ' + settings[parameter]);
-        break;
-      case 'password':
-        console.log('· ' + parameter + ': ' + 'NOT SHOWN');
-        break;
-      default:
-        console.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
-    }
     UA.configuration_skeleton[parameter].value = settings[parameter];
   }
 
@@ -811,9 +942,23 @@ UA.prototype.loadConfig = function(configuration) {
     UA.configuration_skeleton[parameter].value = '';
   }
 
+  this.logger.log('configuration parameters after validation:');
+  for(parameter in settings) {
+    switch(parameter) {
+      case 'uri':
+      case 'registrar_server':
+        this.logger.log('· ' + parameter + ': ' + settings[parameter]);
+        break;
+      case 'password':
+        this.logger.log('· ' + parameter + ': ' + 'NOT SHOWN');
+        break;
+      default:
+        this.logger.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+    }
+  }
+
   return;
 };
-
 
 /**
  * Configuration Object skeleton.
@@ -824,9 +969,7 @@ UA.configuration_skeleton = (function() {
     skeleton = {},
     parameters = [
       // Internal parameters
-      "instance_id",
       "jssip_id",
-      "register_min_expires",
       "ws_server_max_reconnection",
       "ws_server_reconnection_timeout",
       "hostport_params",
@@ -842,6 +985,7 @@ UA.configuration_skeleton = (function() {
       "display_name",
       "hack_via_tcp", // false.
       "hack_ip_in_contact", //false
+      "instance_id",
       "no_answer_timeout", // 30 seconds.
       "password",
       "register_expires", // 600 seconds.
@@ -928,21 +1072,21 @@ UA.configuration_check = {
       length = ws_servers.length;
       for (idx = 0; idx < length; idx++) {
         if (!ws_servers[idx].ws_uri) {
-          console.error(LOG_PREFIX +'missing "ws_uri" attribute in ws_servers parameter');
+          this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
           return;
         }
         if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
-          console.error(LOG_PREFIX +'"weight" attribute in ws_servers parameter must be a Number');
+          this.logger.error('"weight" attribute in ws_servers parameter must be a Number');
           return;
         }
 
         url = JsSIP.Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
-          console.error(LOG_PREFIX +'invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
+          this.logger.error('invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
           return;
         } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
-          console.error(LOG_PREFIX +'invalid URI scheme in ws_servers parameter: ' + url.scheme);
+          this.logger.error('invalid URI scheme in ws_servers parameter: ' + url.scheme);
           return;
         } else {
           ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
@@ -1006,6 +1150,18 @@ UA.configuration_check = {
     hack_ip_in_contact: function(hack_ip_in_contact) {
       if (typeof hack_ip_in_contact === 'boolean') {
         return hack_ip_in_contact;
+      }
+    },
+
+    instance_id: function(instance_id) {
+      if ((/^uuid:/i.test(instance_id))) {
+        instance_id = instance_id.substr(5);
+      }
+
+      if(JsSIP.Grammar.parse(instance_id, 'uuid') === -1) {
+        return;
+      } else {
+        return instance_id;
       }
     },
 
@@ -1088,7 +1244,7 @@ UA.configuration_check = {
     },
 
     turn_servers: function(turn_servers) {
-      var idx, length, turn_server, url;
+      var idx, idx2, length, length2, turn_server, url;
 
       if (turn_servers instanceof Array) {
         // Do nothing
@@ -1099,25 +1255,31 @@ UA.configuration_check = {
       length = turn_servers.length;
       for (idx = 0; idx < length; idx++) {
         turn_server = turn_servers[idx];
-        
+
         // Backward compatibility:
-        //Allow defining the turn_server url with the 'server' property.
+        //Allow defining the turn_server 'urls' with the 'server' property.
         if (turn_server.server) {
           turn_server.urls = [turn_server.server];
         }
-        
-        if (!turn_server.urls || !turn_server.username || !turn_server.password) {
+
+        // Backward compatibility:
+        //Allow defining the turn_server 'credential' with the 'password' property.
+        if (turn_server.password) {
+          turn_server.credential = [turn_server.password];
+        }
+
+        if (!turn_server.urls || !turn_server.username || !turn_server.credential) {
           return;
         }
-        
-        if (!turn_server.urls instanceof Array) {
+
+        if (!(turn_server.urls instanceof Array)) {
           turn_server.urls = [turn_server.urls];
         }
-        
-        length = turn_server.urls.length;
-        for (idx = 0; idx < length; idx++) {
-          url = turn_server.urls[idx];
-          
+
+        length2 = turn_server.urls.length;
+        for (idx2 = 0; idx2 < length2; idx2++) {
+          url = turn_server.urls[idx2];
+
           if (!(/^turns?:/.test(url))) {
             url = 'turn:' + url;
           }

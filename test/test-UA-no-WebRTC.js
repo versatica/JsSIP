@@ -20,14 +20,15 @@ test('UA no WS connection', function() {
   strictEqual(ua.contact.toString({anonymous: true}), '<sip:anonymous@anonymous.invalid;transport=ws>');
   strictEqual(ua.contact.toString({anonymous: true, outbound: true}), '<sip:anonymous@anonymous.invalid;transport=ws;ob>');
 
-  for (parameter in TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START) {
+  for (var parameter in TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START) {
+    console.log("*** testing parameter: " + parameter);
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
-        deepEqual(ua.configuration[parameter].toString(), TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
+        deepEqual(ua.configuration[parameter].toString(), TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
         break;
       default:
-        deepEqual(ua.configuration[parameter], TestJsSIP.Helpers.DEFAULT_JSSIP_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
+        deepEqual(ua.configuration[parameter], TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
     }
   }
 
@@ -44,18 +45,11 @@ test('UA no WS connection', function() {
     }
   });
 
-  ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE', {
-    eventHandlers: {
-      sending: function(e) {
-        var ruri = e.data.request.ruri;
-        ok(ruri instanceof JsSIP.URI);
-        strictEqual(e.data.request.ruri.toString(), JsSIP.C.INVALID_TARGET_URI);
-      },
-      failed: function(e) {
-        strictEqual(e.data.cause, JsSIP.C.causes.INVALID_TARGET);
-      }
-    }
-  });
-
+  throws(
+    function() {
+      ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE');
+    },
+    JsSIP.Exceptions.TypeError
+  );
 });
 
