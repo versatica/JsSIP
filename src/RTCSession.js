@@ -175,6 +175,8 @@ RTCSession.prototype.terminate = function(options) {
         this.request.cancel(cancel_reason);
       }
 
+      this.status = C.STATUS_CANCELED;
+
       this.failed('local', null, JsSIP.C.causes.CANCELED);
       break;
 
@@ -1501,6 +1503,8 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
       );
       break;
     case /^2[0-9]{2}$/.test(response.status_code):
+      this.status = C.STATUS_CONFIRMED;
+
       if(!response.body) {
         this.acceptAndTerminate(response, 400, 'Missing session description');
         this.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
@@ -1520,7 +1524,6 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
          * SDP Answer fits with Offer. Media will start
          */
         function() {
-          session.status = C.STATUS_CONFIRMED;
           session.sendRequest(JsSIP.C.ACK);
           session.started('remote', response);
         },
@@ -1530,7 +1533,6 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
          */
         function(e) {
           session.logger.warn(e);
-          session.status = C.STATUS_CONFIRMED;
           session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
           session.failed('remote', response, JsSIP.C.causes.BAD_MEDIA_DESCRIPTION);
         }
@@ -1614,6 +1616,9 @@ RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason
       extraHeaders: extraHeaders
     });
   }
+
+  // Update session status.
+  this.status = C.STATUS_TERMINATED;
 };
 
 
