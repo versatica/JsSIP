@@ -211,11 +211,14 @@ RTCMediaHandler.prototype = {
   close: function() {
     this.logger.log('closing PeerConnection');
     if(this.peerConnection) {
-      this.peerConnection.close();
-
-      if(this.localMedia) {
-        this.localMedia.stop();
+      // Stop any associated streams
+      var streams = this.peerConnection.getLocalStreams();
+      var idx = streams.length;
+      while(idx--) {
+        streams[idx].stop();
       }
+      // Close the connection
+      this.peerConnection.close();
     }
   },
 
