@@ -29,9 +29,9 @@ RTCMediaHandler.prototype = {
   createOffer: function(onSuccess, onFailure, constraints) {
     var self = this;
 
-    function onSetLocalDescriptionSuccess() {
+    // Fixing incorrect handling of one way video in Chrome
+    function correctDirectionalAttribute() {
       var sdp = JsSIP.Parser.parseSDP(self.peerConnection.localDescription.sdp);
-      // Fixing incorrect handling of one way video in Chrome
       if(constraints && constraints.mandatory && constraints.mandatory.OfferToReceiveVideo===false) {
         for(var i in sdp.media) {
           if(sdp.media[i].type==='video' && sdp.media[i].direction==='sendrecv') {
@@ -39,16 +39,19 @@ RTCMediaHandler.prototype = {
           }
         }
       }
+      return JsSIP.Parser.writeSDP(sdp);
+    }
 
+    function onSetLocalDescriptionSuccess() {
       // Send invitation as soon as ice gathering is complete
       if (self.peerConnection.iceGatheringState === 'complete' && self.peerConnection.iceConnectionState === 'connected') {
         self.ready = true;
-        onSuccess(JsSIP.Parser.writeSDP(sdp));
+        onSuccess(correctDirectionalAttribute());
       } else {
         self.onIceCompleted = function() {
           self.onIceCompleted = undefined;
           self.ready = true;
-          onSuccess(JsSIP.Parser.writeSDP(sdp));
+          onSuccess(correctDirectionalAttribute());
         };
       }
     }
