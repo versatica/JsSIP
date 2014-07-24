@@ -478,6 +478,8 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
     response += 'Accept: '+ JsSIP.UA.C.ACCEPTED_BODY_TYPES +'\r\n';
   } else if (code === 405) {
     response += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
+  } else if (code === 415 ) {
+    response += 'Accept: '+ JsSIP.UA.C.ACCEPTED_BODY_TYPES +'\r\n';
   }
   
   response += 'Supported: ' +  supported +'\r\n';

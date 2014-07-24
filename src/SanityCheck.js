@@ -32,7 +32,6 @@ var sanityCheck,
  *
  * Responses:
  *  - _rfc3261_8_1_3_3_ Multiple Via headers
- *  - _rfc3261_18_1_2_ sent-by mismatch
  *  - _rfc3261_18_3_response_ Body Content-Length
  *
  * All:
@@ -111,14 +110,6 @@ function rfc3261_8_1_3_3() {
   }
 }
 
-function rfc3261_18_1_2() {
-  var via_host = ua.configuration.via_host;
-  if(message.via.host !== via_host) {
-    logger.warn('Via host in the response does not match UA Via host value. Dropping the response');
-    return false;
-  }
-}
-
 function rfc3261_18_3_response() {
   var
     len = JsSIP.Utils.str_utf8_length(message.body),
@@ -177,7 +168,6 @@ requests.push(rfc3261_18_3_request);
 requests.push(rfc3261_8_2_2_2);
 
 responses.push(rfc3261_8_1_3_3);
-responses.push(rfc3261_18_1_2);
 responses.push(rfc3261_18_3_response);
 
 all.push(minimumHeaders);
