@@ -113,6 +113,7 @@ RTCSession = function(ua) {
       }
     }
   };
+
   // Custom session empty object for high level use
   this.data = {};
 
@@ -218,6 +219,7 @@ RTCSession.prototype.terminate = function(options) {
 
         // Save the dialog for later restoration
         dialog = this.dialog;
+
         // Send the BYE as soon as the ACK is received...
         this.receiveRequest = function(request) {
           if(request.method === JsSIP.C.ACK) {
@@ -357,8 +359,6 @@ RTCSession.prototype.answer = function(options) {
   } else if (this.status !== C.STATUS_WAITING_FOR_ANSWER) {
     throw new JsSIP.Exceptions.InvalidStateError(this.status);
   }
-  
-  this.status = C.STATUS_ANSWERED;
 
   this.status = C.STATUS_ANSWERED;
 
@@ -387,11 +387,6 @@ RTCSession.prototype.answer = function(options) {
     if(sdp.media[idx].type === 'audio' &&
         (sdp.media[idx].direction === 'sendrecv' ||
          sdp.media[idx].direction === 'recvonly')) {
-  length = this.getRemoteStreams().length;
-  
-    // JSSIP ISSUE #221
-  /*for (idx=0; idx<length; idx++) {
-    if (this.getRemoteStreams()[idx].getAudioTracks().length > 0) {
       hasAudio=true;
     }
     if(sdp.media[idx].type === 'video' &&
@@ -399,11 +394,6 @@ RTCSession.prototype.answer = function(options) {
          sdp.media[idx].direction === 'recvonly')) {
       hasVideo=true;
     }
-  }*/
-  var remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription;
-  if (remoteDescription) {
-      hasAudio = /^m=audio/m.test(remoteDescription.sdp);
-      hasVideo = /^m=video/m.test(remoteDescription.sdp);
   }
 
   // Remove audio from mediaStream if suggested by mediaConstraints
@@ -476,6 +466,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   if (!tones || typeof tones !== 'string' || !tones.match(/^[0-9A-D#*,]+$/i)) {
     throw new TypeError('Invalid tones: '+ tones);
   }
+
   // Check duration
   if (duration && !JsSIP.Utils.isDecimal(duration)) {
     throw new TypeError('Invalid tone duration: '+ duration);
@@ -565,6 +556,7 @@ RTCSession.prototype.isReadyToReinvite = function() {
   if (!this.rtcMediaHandler.isReady()) {
     return;
   }
+
   // Another INVITE transaction is in progress
   if (this.dialog.uac_pending_reply === true || this.dialog.uas_pending_reply === true) {
     return false;
@@ -572,6 +564,8 @@ RTCSession.prototype.isReadyToReinvite = function() {
     return true;
   }
 };
+
+
 /**
  * Mute
  */
@@ -587,11 +581,13 @@ RTCSession.prototype.mute = function(options) {
     this.audioMuted = true;
     this.toogleMuteAudio(true);
   }
+
   if (this.videoMuted === false && options.video) {
     videoMuted = true;
     this.videoMuted = true;
     this.toogleMuteVideo(true);
   }
+
   if (audioMuted === true || videoMuted === true) {
     this.onmute({
       audio: audioMuted,
@@ -627,6 +623,7 @@ RTCSession.prototype.unmute = function(options) {
       this.toogleMuteVideo(false);
     }
   }
+
   if (audioUnMuted === true || videoUnMuted === true) {
     this.onunmute({
       audio: audioUnMuted,
@@ -752,113 +749,6 @@ RTCSession.prototype.isOnHold = function() {
     remote: this.remote_hold
   };
 };
-
-/**
- * Unhold
- */
-RTCSession.prototype.unhold = function() {
-  
-  if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-    throw new JsSIP.Exceptions.InvalidStateError(this.status);
-  }
-  
-  if (!this.audioMuted) {
-    this.toogleMuteAudio(false);
-  }
-  
-  if (!this.videoMuted) {
-    this.toogleMuteVideo(false);
-  }
-  
-  if (!this.isReadyToReinvite()) {
-    /* If there is a pending 'hold' action, cancel it and don't queue this one
-     * Else, if there isn't any 'unhold' action, add this one to the queue
-     * Else, if there is already an 'unhold' action, skip
-     */
-    if (this.pending_actions.isPending('hold')) {
-      this.pending_actions.pop('hold');
-      return;
-    } else if (!this.pending_actions.isPending('unhold')) {
-      this.pending_actions.push('unhold');
-      return;
-    } else {
-      return;
-    }
-  } else {
-    if (this.local_hold === false) {
-      return;
-    }
-  }
-  
-  this.onunhold('local');
-  
-  this.sendReinvite();
-};
-
-/**
- * isOnHold
- */
-RTCSession.prototype.isOnHold = function() {
-  return {
-    local: this.local_hold,
-    remote: this.remote_hold
-  };
-};
-
-
-/**
- * Session Timers
- */
- 
- 
-/**
- * RFC3261 13.3.1.4
- * Response retransmissions cannot be accomplished by transaction layer
- *  since it is destroyed when receiving the first 2xx answer
- */
-RTCSession.prototype.setInvite2xxTimer = function(request, body) {
-  var
-    self = this,
-    timeout = JsSIP.Timers.T1;
-    
-  this.timers.invite2xxTimer = window.setTimeout(function invite2xxRetransmission() {
-    if (self.status !== C.STATUS_WAITING_FOR_ACK) {
-      return;
-    }
-    
-    request.reply(200, null, ['Contact: '+ self.contact], body);
-    
-    if (timeout < JsSIP.Timers.T2) {
-      timeout = timeout * 2;
-      if (timeout > JsSIP.Timers.T2) {
-        timeout = JsSIP.Timers.T2;
-      }
-    }
-    self.timers.invite2xxTimer = window.setTimeout(
-      invite2xxRetransmission, timeout
-    );
-  }, timeout);
-};
-
-
-/**
- * RFC3261 14.2
- * If a UAS generates a 2xx response and never receives an ACK,
- *  it SHOULD generate a BYE to terminate the dialog.
- */
-RTCSession.prototype.setACKTimer = function() {
-  var self = this;
-
-  this.timers.ackTimer = window.setTimeout(function() {
-    if(self.status === C.STATUS_WAITING_FOR_ACK) {
-      self.logger.log('no ACK received, terminating the call');
-      window.clearTimeout(self.timers.invite2xxTimer);
-      self.sendRequest(JsSIP.C.BYE);
-      self.ended('remote', null, JsSIP.C.causes.NO_ACK);
-    }
-  }, JsSIP.Timers.TIMER_H);
-};
-
 
 
 /**
@@ -1044,6 +934,7 @@ RTCSession.prototype.connect = function(target, options) {
     RTCOfferConstraints = options.RTCOfferConstraints || {},
     stun_servers = options.stun_servers || null,
     turn_servers = options.turn_servers || null;
+
   if (stun_servers) {
     iceServers = JsSIP.UA.configuration_check.optional['stun_servers'](stun_servers);
     if (!iceServers) {
@@ -1052,6 +943,7 @@ RTCSession.prototype.connect = function(target, options) {
       stun_servers = iceServers;
     }
   }
+
   if (turn_servers) {
     iceServers = JsSIP.UA.configuration_check.optional['turn_servers'](turn_servers);
     if (!iceServers){
@@ -1432,32 +1324,6 @@ RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferCon
 
    self.failed('system', null, JsSIP.C.causes.WEBRTC_ERROR);
  };
- 
- this.receiveResponse = this.receiveInviteResponse;
-
- if (mediaStream) {
-   userMediaSucceeded(mediaStream);
- } else {
-   this.rtcMediaHandler.getUserMedia(
-     userMediaSucceeded,
-     userMediaFailed,
-     mediaConstraints
-   );
- }
-};
-
-/**
- * Send Re-INVITE
- * @private
- */
-RTCSession.prototype.sendReinvite = function(options) {
-  options = options || {}; 
-  
-  var
-    self = this,
-    extraHeaders = options.extraHeaders || [],
-    eventHandlers = options.eventHandlers || {},
-    mangle = options.mangle || null;
 
  this.receiveResponse = this.receiveInviteResponse;
 
@@ -1471,7 +1337,6 @@ RTCSession.prototype.sendReinvite = function(options) {
    );
  }
 };
-
 
 /**
  * Send Re-INVITE
@@ -1534,6 +1399,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
 
   // Handle 2XX retransmissions and responses from forked requests
   if (this.dialog && (response.status_code >=200 && response.status_code <=299)) {
+
     /*
      * If it is a retransmission from the endpoint that established
      * the dialog, send an ACK
@@ -1553,6 +1419,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         this.logger.error(dialog.error);
         return;
       }
+
       dialog.sendRequest({
           owner: {status: C.STATUS_TERMINATED},
           onRequestTimeout: function(){},
@@ -1560,6 +1427,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
           onDialogError: function(){},
           receiveResponse: function(){}
         }, JsSIP.C.ACK);
+
       dialog.sendRequest({
           owner: {status: C.STATUS_TERMINATED},
           onRequestTimeout: function(){},
@@ -1592,6 +1460,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
       if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
         break;
       }
+
       // Do nothing with 1xx responses without To tag.
       if(!response.to_tag) {
         this.logger.warn('1xx response received without to tag');
@@ -1605,11 +1474,13 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
           break;
         }
       }
+
       if (!response.body) {
         session.status = C.STATUS_1XX_RECEIVED;
         session.progress('remote', response);
         break;
       }
+
       this.rtcMediaHandler.onMessage(
         'pranswer',
         response.body,
@@ -1692,6 +1563,7 @@ RTCSession.prototype.receiveReinviteResponse = function(response) {
     case /^2[0-9]{2}$/.test(response.status_code):
       this.status = C.STATUS_CONFIRMED;
       this.sendRequest(JsSIP.C.ACK);
+
       if(!response.body) {
         this.reinviteFailed();
         break;
@@ -1756,6 +1628,7 @@ RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason
 RTCSession.prototype.toogleMuteAudio = function(mute) {
   var streamIdx, trackIdx, tracks,
     localStreams = this.getLocalStreams();
+
   for (streamIdx in localStreams) {
     tracks = localStreams[streamIdx].getAudioTracks();
     for (trackIdx in tracks) {
@@ -1770,6 +1643,7 @@ RTCSession.prototype.toogleMuteAudio = function(mute) {
 RTCSession.prototype.toogleMuteVideo = function(mute) {
   var streamIdx, trackIdx, tracks,
     localStreams = this.getLocalStreams();
+
   for (streamIdx in localStreams) {
     tracks = localStreams[streamIdx].getVideoTracks();
     for (trackIdx in tracks) {
@@ -1930,6 +1804,7 @@ RTCSession.prototype.onhold = function(originator) {
   } else {
     this.remote_hold = true;
   }
+
   this.emit('hold', this, {
     originator: originator
   });
@@ -1944,6 +1819,7 @@ RTCSession.prototype.onunhold = function(originator) {
   } else {
     this.remote_hold = false;
   }
+
   this.emit('unhold', this, {
     originator: originator
   });
