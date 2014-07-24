@@ -59,7 +59,7 @@ UA = function(configuration) {
     'newMessage',
     'localMediaRequested',
     'localMediaFailed',
-    'localMediaAquired'
+    'localMediaAcquired'
   ];
 
   // Set Accepted Body Types

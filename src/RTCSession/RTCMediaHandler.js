@@ -232,7 +232,7 @@ RTCMediaHandler.prototype = {
 
     JsSIP.WebRTC.getUserMedia(constraints,
       function (stream) {
-        self.session.ua.emit('localMediaAquired', this, {});
+        self.session.ua.emit('localMediaAcquired', this, {});
         self.logger.log('got local media stream');
         self.localMedia = stream;
         onSuccess(stream);
