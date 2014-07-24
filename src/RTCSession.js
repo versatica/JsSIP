@@ -387,6 +387,11 @@ RTCSession.prototype.answer = function(options) {
     if(sdp.media[idx].type === 'audio' &&
         (sdp.media[idx].direction === 'sendrecv' ||
          sdp.media[idx].direction === 'recvonly')) {
+  length = this.getRemoteStreams().length;
+  
+    // JSSIP ISSUE #221
+  /*for (idx=0; idx<length; idx++) {
+    if (this.getRemoteStreams()[idx].getAudioTracks().length > 0) {
       hasAudio=true;
     }
     if(sdp.media[idx].type === 'video' &&
@@ -394,6 +399,11 @@ RTCSession.prototype.answer = function(options) {
          sdp.media[idx].direction === 'recvonly')) {
       hasVideo=true;
     }
+  }*/
+  var remoteDescription = this.rtcMediaHandler.peerConnection.remoteDescription;
+  if (remoteDescription) {
+      hasAudio = /^m=audio/m.test(remoteDescription.sdp);
+      hasVideo = /^m=video/m.test(remoteDescription.sdp);
   }
 
   // Remove audio from mediaStream if suggested by mediaConstraints
@@ -841,7 +851,7 @@ RTCSession.prototype.setACKTimer = function() {
 
   this.timers.ackTimer = window.setTimeout(function() {
     if(self.status === C.STATUS_WAITING_FOR_ACK) {
-      this.logger.log('no ACK received, terminating the call');
+      self.logger.log('no ACK received, terminating the call');
       window.clearTimeout(self.timers.invite2xxTimer);
       self.sendRequest(JsSIP.C.BYE);
       self.ended('remote', null, JsSIP.C.causes.NO_ACK);
