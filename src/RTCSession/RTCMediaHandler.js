@@ -193,7 +193,7 @@ RTCMediaHandler.prototype = {
     this.peerConnection.oniceconnectionstatechange = function() {
       self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
       
-      if (this.iceConnectionState === 'disconnected') {
+      if (this.iceConnectionState === 'failed') {
         self.session.terminate({
             cause: JsSIP.C.causes.RTP_TIMEOUT,
             status_code: 200,
