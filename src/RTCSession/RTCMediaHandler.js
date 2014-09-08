@@ -29,15 +29,29 @@ RTCMediaHandler.prototype = {
   createOffer: function(onSuccess, onFailure, constraints) {
     var self = this;
 
+    // Fixing incorrect handling of one way video in Chrome
+    function correctDirectionalAttribute() {
+      var sdp = JsSIP.Parser.parseSDP(self.peerConnection.localDescription.sdp);
+      if(constraints && constraints.mandatory && constraints.mandatory.OfferToReceiveVideo===false) {
+        for(var i in sdp.media) {
+          if(sdp.media[i].type==='video' && sdp.media[i].direction==='sendrecv') {
+            sdp.media[i].direction = 'sendonly';
+          }
+        }
+      }
+      return JsSIP.Parser.writeSDP(sdp);
+    }
+
     function onSetLocalDescriptionSuccess() {
+      // Send invitation as soon as ice gathering is complete
       if (self.peerConnection.iceGatheringState === 'complete' && self.peerConnection.iceConnectionState === 'connected') {
         self.ready = true;
-        onSuccess(self.peerConnection.localDescription.sdp);
+        onSuccess(correctDirectionalAttribute());
       } else {
         self.onIceCompleted = function() {
           self.onIceCompleted = undefined;
           self.ready = true;
-          onSuccess(self.peerConnection.localDescription.sdp);
+          onSuccess(correctDirectionalAttribute());
         };
       }
     }
@@ -211,11 +225,14 @@ RTCMediaHandler.prototype = {
   close: function() {
     this.logger.log('closing PeerConnection');
     if(this.peerConnection) {
-      this.peerConnection.close();
-
-      if(this.localMedia) {
-        this.localMedia.stop();
+      // Stop any associated streams
+      var streams = this.peerConnection.getLocalStreams();
+      var idx = streams.length;
+      while(idx--) {
+        streams[idx].stop();
       }
+      // Close the connection
+      this.peerConnection.close();
     }
   },
 
