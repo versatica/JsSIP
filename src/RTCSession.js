@@ -881,7 +881,6 @@ RTCSession.prototype.init_incoming = function(request) {
      * SDP Offer is valid. Fire UA newRTCSession
      */
     function() {
-      request.reply(180, null, ['Contact: ' + self.contact]);
       self.status = C.STATUS_WAITING_FOR_ANSWER;
 
       // Set userNoAnswerTimer
@@ -904,7 +903,16 @@ RTCSession.prototype.init_incoming = function(request) {
         );
       }
 
+      // Fire 'newRTCSession' event.
       self.newRTCSession('remote', request);
+
+      // Reply 180.
+      request.reply(180, null, ['Contact: ' + self.contact]);
+
+      // Fire 'progress' event.
+      // TODO: Document that 'response' field in 'progress' event is null for
+      // incoming calls.
+      self.progress('local', null);
     },
     /*
      * onFailure
