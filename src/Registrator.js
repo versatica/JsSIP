@@ -24,7 +24,7 @@ Registrator = function(ua, transport) {
 
   // Call-ID and CSeq values RFC3261 10.2
   this.call_id = JsSIP.Utils.createRandomToken(22);
-  this.cseq = 80;
+  this.cseq = 0;
 
   // this.to_uri
   this.to_uri = ua.configuration.uri;
@@ -67,6 +67,7 @@ Registrator.prototype = {
     
     extraHeaders = this.extraHeaders.slice();
     extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
+    extraHeaders.push('Expires: '+ this.expires);
 
     this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
         'to_uri': this.to_uri,
@@ -221,6 +222,7 @@ Registrator.prototype = {
         }, extraHeaders);
     } else {
       extraHeaders.push('Contact: '+ this.contact + ';expires=0');
+      extraHeaders.push('Expires: 0');
 
       this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
           'to_uri': this.to_uri,
