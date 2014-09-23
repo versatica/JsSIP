@@ -73,13 +73,12 @@ Transport.prototype = {
     if (this.reconnectTimer !== null) {
       window.clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
+      this.ua.emit('disconnected', this.ua, {
+        transport: this,
+        code: this.lastTransportError.code,
+        reason: this.lastTransportError.reason
+      });
     }
-
-    this.ua.emit('disconnected', this.ua, {
-      transport: this,
-      code: this.lastTransportError.code,
-      reason: this.lastTransportError.reason
-    });
   },
 
   /**

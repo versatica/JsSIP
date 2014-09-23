@@ -193,7 +193,7 @@ Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      this.logger.warn('already unregistered');
+      this.logger.debug('already unregistered');
       return;
     }
 
