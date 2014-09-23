@@ -42,7 +42,7 @@ Registrator = function(ua, transport) {
 
   // sip.ice media feature tag (RFC 5768)
   this.contact += ';+sip.ice';
-  
+
   this.extraHeaders = [];
 
   if(reg_id) {
@@ -60,11 +60,11 @@ Registrator.prototype = {
       self = this;
 
     options = options || {};
-    
+
     if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
       this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
     }
-    
+
     extraHeaders = this.extraHeaders.slice();
     extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
     extraHeaders.push('Expires: '+ this.expires);
@@ -144,10 +144,10 @@ Registrator.prototype = {
             this.ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g,'');
           }
 
-          this.registered = true;
           this.ua.emit('registered', this.ua, {
             response: response
           });
+          this.registered = true;
           break;
         // Interval too brief RFC3261 10.2.8
         case /^423$/.test(response.status_code):
@@ -196,11 +196,11 @@ Registrator.prototype = {
     }
 
     options = options || {};
-    
+
     if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
       this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
     }
-    
+
     extraHeaders = this.extraHeaders.slice();
 
     this.registered = false;
@@ -279,11 +279,11 @@ Registrator.prototype = {
     });
 
     if (this.registered) {
-      this.registered = false;
       this.ua.emit('unregistered', this.ua, {
         response: response || null,
         cause: cause
       });
+      this.registered = false;
     }
   },
 
@@ -291,11 +291,11 @@ Registrator.prototype = {
    * @private
    */
   unregistered: function(response, cause) {
-    this.registered = false;
     this.ua.emit('unregistered', this.ua, {
       response: response || null,
       cause: cause || null
     });
+    this.registered = false;
   },
 
   /**
@@ -309,8 +309,8 @@ Registrator.prototype = {
     }
 
     if(this.registered) {
-      this.registered = false;
       this.ua.emit('unregistered', this.ua);
+      this.registered = false;
     }
   },
 
