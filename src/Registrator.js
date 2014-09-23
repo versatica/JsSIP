@@ -144,10 +144,12 @@ Registrator.prototype = {
             this.ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g,'');
           }
 
-          this.ua.emit('registered', this.ua, {
-            response: response
-          });
-          this.registered = true;
+          if (! this.registered) {
+            this.registered = true;
+            this.ua.emit('registered', this.ua, {
+              response: response
+            });
+          }
           break;
         // Interval too brief RFC3261 10.2.8
         case /^423$/.test(response.status_code):
@@ -279,11 +281,11 @@ Registrator.prototype = {
     });
 
     if (this.registered) {
+      this.registered = false;
       this.ua.emit('unregistered', this.ua, {
         response: response || null,
         cause: cause
       });
-      this.registered = false;
     }
   },
 
@@ -291,11 +293,11 @@ Registrator.prototype = {
    * @private
    */
   unregistered: function(response, cause) {
+    this.registered = false;
     this.ua.emit('unregistered', this.ua, {
       response: response || null,
       cause: cause || null
     });
-    this.registered = false;
   },
 
   /**
@@ -309,8 +311,8 @@ Registrator.prototype = {
     }
 
     if(this.registered) {
-      this.ua.emit('unregistered', this.ua);
       this.registered = false;
+      this.ua.emit('unregistered', this.ua);
     }
   },
 
