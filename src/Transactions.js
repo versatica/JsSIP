@@ -34,6 +34,7 @@ var
 */
 var NonInviteClientTransaction = function(request_sender, request, transport) {
   var via,
+    via_transport,
     events = ['stateChanged'];
 
   this.type = C.NON_INVITE_CLIENT;
@@ -44,7 +45,17 @@ var NonInviteClientTransaction = function(request_sender, request, transport) {
 
   this.logger = request_sender.ua.getLogger('jssip.transaction.nict', this.id);
 
-  via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
+  if (request_sender.ua.configuration.hack_via_tcp) {
+    via_transport = 'TCP';
+  }
+  else if (request_sender.ua.configuration.hack_via_ws) {
+    via_transport = 'WS';
+  }
+  else {
+    via_transport = transport.server.scheme;
+  }
+
+  via = 'SIP/2.0/' + via_transport;
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
   this.request.setHeader('via', via);
@@ -138,6 +149,7 @@ NonInviteClientTransaction.prototype.receiveResponse = function(response) {
 var InviteClientTransaction = function(request_sender, request, transport) {
   var via,
     tr = this,
+    via_transport,
     events = ['stateChanged'];
 
   this.type = C.INVITE_CLIENT;
@@ -148,7 +160,17 @@ var InviteClientTransaction = function(request_sender, request, transport) {
 
   this.logger = request_sender.ua.getLogger('jssip.transaction.ict', this.id);
 
-  via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
+  if (request_sender.ua.configuration.hack_via_tcp) {
+    via_transport = 'TCP';
+  }
+  else if (request_sender.ua.configuration.hack_via_ws) {
+    via_transport = 'WS';
+  }
+  else {
+    via_transport = transport.server.scheme;
+  }
+
+  via = 'SIP/2.0/' + via_transport;
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
   this.request.setHeader('via', via);
@@ -329,7 +351,8 @@ InviteClientTransaction.prototype.receiveResponse = function(response) {
  * @param {JsSIP.Transport} transport
  */
 var AckClientTransaction = function(request_sender, request, transport) {
-  var via;
+  var via,
+    via_transport;
 
   this.transport = transport;
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
@@ -338,7 +361,17 @@ var AckClientTransaction = function(request_sender, request, transport) {
 
   this.logger = request_sender.ua.getLogger('jssip.transaction.nict', this.id);
 
-  via = 'SIP/2.0/' + (request_sender.ua.configuration.hack_via_tcp ? 'TCP' : transport.server.scheme);
+  if (request_sender.ua.configuration.hack_via_tcp) {
+    via_transport = 'TCP';
+  }
+  else if (request_sender.ua.configuration.hack_via_ws) {
+    via_transport = 'WS';
+  }
+  else {
+    via_transport = transport.server.scheme;
+  }
+
+  via = 'SIP/2.0/' + via_transport;
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
   this.request.setHeader('via', via);
@@ -398,7 +431,7 @@ NonInviteServerTransaction.prototype.timer_J = function() {
 NonInviteServerTransaction.prototype.onTransportError = function() {
   if (!this.transportError) {
     this.transportError = true;
-    
+
     this.logger.log('transport error occurred, deleting non-INVITE server transaction ' + this.id);
 
     window.clearTimeout(this.J);
@@ -483,7 +516,7 @@ var InviteServerTransaction = function(request, ua) {
   ua.newTransaction(this);
 
   this.resendProvisionalTimer = null;
-  
+
   request.reply(100);
 
   this.initEvents(events);
@@ -501,7 +534,7 @@ InviteServerTransaction.prototype.timer_H = function() {
   if(this.state === C.STATUS_COMPLETED) {
     this.logger.warn('transactions', 'ACK for INVITE server transaction was never received, call will be terminated');
   }
-  
+
   this.stateChanged(C.STATUS_TERMINATED);
   this.ua.destroyTransaction(this);
 };
@@ -531,11 +564,11 @@ InviteServerTransaction.prototype.onTransportError = function() {
       window.clearInterval(this.resendProvisionalTimer);
       this.resendProvisionalTimer = null;
     }
-    
+
     window.clearTimeout(this.L);
     window.clearTimeout(this.H);
     window.clearTimeout(this.I);
-    
+
     this.stateChanged(C.STATUS_TERMINATED);
     this.ua.destroyTransaction(this);
   }
@@ -576,7 +609,7 @@ InviteServerTransaction.prototype.receiveResponse = function(status_code, respon
         this.L = window.setTimeout(function() {
           tr.timer_L();
         }, JsSIP.Timers.TIMER_L);
-        
+
         if (this.resendProvisionalTimer !== null) {
           window.clearInterval(this.resendProvisionalTimer);
           this.resendProvisionalTimer = null;
@@ -601,7 +634,7 @@ InviteServerTransaction.prototype.receiveResponse = function(status_code, respon
           window.clearInterval(this.resendProvisionalTimer);
           this.resendProvisionalTimer = null;
         }
-        
+
         if(!this.transport.send(response)) {
           this.onTransportError();
           if (onFailure) {

@@ -806,6 +806,7 @@ UA.prototype.loadConfig = function(configuration) {
 
       // Hacks
       hack_via_tcp: false,
+      hack_via_ws: false,
       hack_ip_in_contact: false
     };
 
@@ -835,9 +836,9 @@ UA.prototype.loadConfig = function(configuration) {
        * or it's a number with NaN value, then apply its default value.
        */
       if (JsSIP.Utils.isEmpty(value)) {
-        continue; 
+        continue;
       }
-      
+
       checked_value = UA.configuration_check.optional[parameter](value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
@@ -895,7 +896,7 @@ UA.prototype.loadConfig = function(configuration) {
   if (settings.hack_ip_in_contact) {
     settings.via_host = JsSIP.Utils.getRandomTestNetIP();
   }
-  
+
   // Set empty Stun Server Set if explicitly passed an empty Array
   value = configuration.stun_servers;
   if (value instanceof Array && value.length === 0) {
@@ -983,12 +984,13 @@ UA.configuration_skeleton = (function() {
       "connection_recovery_max_interval",
       "connection_recovery_min_interval",
       "display_name",
-      "hack_via_tcp", // false.
+      "hack_via_tcp", // false
+      "hack_via_ws", // false
       "hack_ip_in_contact", //false
       "instance_id",
-      "no_answer_timeout", // 30 seconds.
+      "no_answer_timeout", // 30 seconds
       "password",
-      "register_expires", // 600 seconds.
+      "register_expires", // 600 seconds
       "registrar_server",
       "stun_servers",
       "trace_sip",
@@ -1144,6 +1146,12 @@ UA.configuration_check = {
     hack_via_tcp: function(hack_via_tcp) {
       if (typeof hack_via_tcp === 'boolean') {
         return hack_via_tcp;
+      }
+    },
+
+    hack_via_ws: function(hack_via_ws) {
+      if (typeof hack_via_ws === 'boolean') {
+        return hack_via_ws;
       }
     },
 
