@@ -63,7 +63,8 @@ Transport.prototype = {
     if(this.ws) {
       // Clear reconnectTimer
       window.clearTimeout(this.reconnectTimer);
-      
+      this.reconnectTimer = null;
+
       this.closed = true;
       this.logger.log('closing WebSocket ' + this.server.ws_uri);
       this.ws.close();
@@ -72,12 +73,13 @@ Transport.prototype = {
     if (this.reconnectTimer !== null) {
       window.clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
-      this.ua.emit('disconnected', this.ua, {
-        transport: this,
-        code: this.lastTransportError.code,
-        reason: this.lastTransportError.reason
-      });
     }
+
+    this.ua.emit('disconnected', this.ua, {
+      transport: this,
+      code: this.lastTransportError.code,
+      reason: this.lastTransportError.reason
+    });
   },
 
   /**
@@ -101,7 +103,7 @@ Transport.prototype = {
 
     try {
       this.ws = new WebSocket(this.server.ws_uri, 'sip');
-      
+
       this.ws.binaryType = 'arraybuffer';
 
       this.ws.onopen = function() {
