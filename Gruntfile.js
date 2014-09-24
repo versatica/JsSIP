@@ -194,11 +194,12 @@ module.exports = function(grunt) {
       done();  // Tell grunt that async task has succeeded.
     });
   });
-  
-  // Task for building jssip-devel.js (uncompressed), jssip-X.Y.Z.js (uncompressed)
-  // and jssip-X.Y.Z.min.js (minified).
-  // Both jssip-devel.js and jssip-X.Y.Z.js are the same file with different name.
-  grunt.registerTask('build', ['browserify', 'concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'concat:post_dist', 'uglify:dist']);
+
+  // Task for building jssip-X.Y.Z.js (uncompressed).
+  grunt.registerTask('dist', ['browserify', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'concat:post_dist']);
+
+  // Task for building jssip-X.Y.Z.min.js (minified).
+  grunt.registerTask('min', ['browserify', 'concat:dist', 'includereplace:dist', 'jshint:dist', 'concat:post_dist', 'uglify:dist']);
 
   // Task for building jssip-devel.js (uncompressed).
   grunt.registerTask('devel', ['browserify', 'concat:devel', 'includereplace:devel', 'jshint:devel', 'concat:post_devel']);
@@ -211,7 +212,7 @@ module.exports = function(grunt) {
   // Doc: http://manuel.manuelles.nl/blog/2012/06/22/integrate-travis-ci-into-grunt/
   grunt.registerTask('travis', ['grammar', 'devel', 'test']);
 
-  // Default task is an alias for 'build'.
-  grunt.registerTask('default', ['build']);
+  // Default task is an alias for 'devel'.
+  grunt.registerTask('default', ['devel']);
 
 };
