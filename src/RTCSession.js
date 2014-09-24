@@ -151,7 +151,7 @@ RTCSession.prototype.terminate = function(options) {
     case C.STATUS_NULL:
     case C.STATUS_INVITE_SENT:
     case C.STATUS_1XX_RECEIVED:
-      this.logger.log('canceling RTCSession');
+      this.logger.debug('canceling RTCSession');
 
       if (status_code && (status_code < 200 || status_code >= 700)) {
         throw new TypeError('Invalid status_code: '+ status_code);
@@ -165,13 +165,10 @@ RTCSession.prototype.terminate = function(options) {
         this.isCanceled = true;
         this.cancelReason = cancel_reason;
       } else if (this.status === C.STATUS_INVITE_SENT) {
-        if(this.received_100) {
-          this.request.cancel(cancel_reason);
-        } else {
-          this.isCanceled = true;
-          this.cancelReason = cancel_reason;
-        }
+        this.isCanceled = true;
+        this.cancelReason = cancel_reason;
       } else if(this.status === C.STATUS_1XX_RECEIVED) {
+        console.warn("---------- 176: request.cancel()");
         this.request.cancel(cancel_reason);
       }
 
@@ -183,7 +180,7 @@ RTCSession.prototype.terminate = function(options) {
       // - UAS -
     case C.STATUS_WAITING_FOR_ANSWER:
     case C.STATUS_ANSWERED:
-      this.logger.log('rejecting RTCSession');
+      this.logger.debug('rejecting RTCSession');
 
       status_code = status_code || 480;
 
@@ -197,7 +194,7 @@ RTCSession.prototype.terminate = function(options) {
 
     case C.STATUS_WAITING_FOR_ACK:
     case C.STATUS_CONFIRMED:
-      this.logger.log('terminating RTCSession');
+      this.logger.debug('terminating RTCSession');
 
       reason_phrase = options.reason_phrase || JsSIP.C.REASON_PHRASE[status_code] || '';
 
@@ -796,7 +793,7 @@ RTCSession.prototype.setACKTimer = function() {
 
   this.timers.ackTimer = window.setTimeout(function() {
     if(self.status === C.STATUS_WAITING_FOR_ACK) {
-      self.logger.log('no ACK received, terminating the call');
+      self.logger.debug('no ACK received, terminating the call');
       window.clearTimeout(self.timers.invite2xxTimer);
       self.sendRequest(JsSIP.C.BYE);
       self.ended('remote', null, JsSIP.C.causes.NO_ACK);
@@ -994,7 +991,6 @@ RTCSession.prototype.connect = function(target, options) {
 
   // OutgoingSession specific parameters
   this.isCanceled = false;
-  this.received_100 = false;
 
   requestParams = {from_tag: this.from_tag};
 
@@ -1044,7 +1040,7 @@ RTCSession.prototype.close = function() {
     return;
   }
 
-  this.logger.log('closing INVITE session ' + this.id);
+  this.logger.debug('closing INVITE session ' + this.id);
 
   // 1st Step. Terminate media.
   if (this.rtcMediaHandler){
@@ -1246,7 +1242,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP.C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
-          this.logger.log('re-INVITE received');
+          this.logger.debug('re-INVITE received');
           this.receiveReinvite(request);
         }
         break;
@@ -1446,12 +1442,13 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
       return;
     }
 
-  } else if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
-    return;
   }
 
   // Proceed to cancellation if the user requested.
   if(this.isCanceled) {
+    // Remove the flag. We are done.
+    this.isCanceled = false;
+
     if(response.status_code >= 100 && response.status_code < 200) {
       this.request.cancel(this.cancelReason);
     } else if(response.status_code >= 200 && response.status_code < 299) {
@@ -1460,9 +1457,12 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
     return;
   }
 
+  if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
+    return;
+  }
+
   switch(true) {
     case /^100$/.test(response.status_code):
-      this.received_100 = true;
       break;
     case /^1[0-9]{2}$/.test(response.status_code):
       if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
@@ -1483,9 +1483,10 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         }
       }
 
+      this.status = C.STATUS_1XX_RECEIVED;
+      this.progress('remote', response);
+
       if (!response.body) {
-        session.status = C.STATUS_1XX_RECEIVED;
-        session.progress('remote', response);
         break;
       }
 
@@ -1496,10 +1497,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         * OnSuccess.
         * SDP Answer fits with Offer.
         */
-        function() {
-          session.status = C.STATUS_1XX_RECEIVED;
-          session.progress('remote', response);
-        },
+        function() { },
         /*
         * OnFailure.
         * SDP Answer does not fit with Offer.

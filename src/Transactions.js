@@ -83,7 +83,7 @@ NonInviteClientTransaction.prototype.send = function() {
 };
 
 NonInviteClientTransaction.prototype.onTransportError = function() {
-  this.logger.log('transport error occurred, deleting non-INVITE client transaction ' + this.id);
+  this.logger.debug('transport error occurred, deleting non-INVITE client transaction ' + this.id);
   window.clearTimeout(this.F);
   window.clearTimeout(this.K);
   this.stateChanged(C.STATUS_TERMINATED);
@@ -92,7 +92,7 @@ NonInviteClientTransaction.prototype.onTransportError = function() {
 };
 
 NonInviteClientTransaction.prototype.timer_F = function() {
-  this.logger.log('Timer F expired for non-INVITE client transaction ' + this.id);
+  this.logger.debug('Timer F expired for non-INVITE client transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
   this.request_sender.ua.destroyTransaction(this);
   this.request_sender.onRequestTimeout();
@@ -205,7 +205,7 @@ InviteClientTransaction.prototype.send = function() {
 };
 
 InviteClientTransaction.prototype.onTransportError = function() {
-  this.logger.log('transport error occurred, deleting INVITE client transaction ' + this.id);
+  this.logger.debug('transport error occurred, deleting INVITE client transaction ' + this.id);
   window.clearTimeout(this.B);
   window.clearTimeout(this.D);
   window.clearTimeout(this.M);
@@ -219,7 +219,7 @@ InviteClientTransaction.prototype.onTransportError = function() {
 
 // RFC 6026 7.2
 InviteClientTransaction.prototype.timer_M = function() {
-  this.logger.log('Timer M expired for INVITE client transaction ' + this.id);
+  this.logger.debug('Timer M expired for INVITE client transaction ' + this.id);
 
   if(this.state === C.STATUS_ACCEPTED) {
     window.clearTimeout(this.B);
@@ -230,7 +230,7 @@ InviteClientTransaction.prototype.timer_M = function() {
 
 // RFC 3261 17.1.1
 InviteClientTransaction.prototype.timer_B = function() {
-  this.logger.log('Timer B expired for INVITE client transaction ' + this.id);
+  this.logger.debug('Timer B expired for INVITE client transaction ' + this.id);
   if(this.state === C.STATUS_CALLING) {
     this.stateChanged(C.STATUS_TERMINATED);
     this.request_sender.ua.destroyTransaction(this);
@@ -239,7 +239,7 @@ InviteClientTransaction.prototype.timer_B = function() {
 };
 
 InviteClientTransaction.prototype.timer_D = function() {
-  this.logger.log('Timer D expired for INVITE client transaction ' + this.id);
+  this.logger.debug('Timer D expired for INVITE client transaction ' + this.id);
   window.clearTimeout(this.B);
   this.stateChanged(C.STATUS_TERMINATED);
   this.request_sender.ua.destroyTransaction(this);
@@ -305,9 +305,6 @@ InviteClientTransaction.prototype.receiveResponse = function(response) {
       case C.STATUS_CALLING:
         this.stateChanged(C.STATUS_PROCEEDING);
         this.request_sender.receiveResponse(response);
-        if(this.cancel) {
-          this.transport.send(this.cancel);
-        }
         break;
       case C.STATUS_PROCEEDING:
         this.request_sender.receiveResponse(response);
@@ -385,7 +382,7 @@ AckClientTransaction.prototype.send = function() {
 };
 
 AckClientTransaction.prototype.onTransportError = function() {
-  this.logger.log('transport error occurred, for an ACK client transaction ' + this.id);
+  this.logger.debug('transport error occurred, for an ACK client transaction ' + this.id);
   this.request_sender.onTransportError();
 };
 
@@ -423,7 +420,7 @@ NonInviteServerTransaction.prototype.stateChanged = function(state) {
 };
 
 NonInviteServerTransaction.prototype.timer_J = function() {
-  this.logger.log('Timer J expired for non-INVITE server transaction ' + this.id);
+  this.logger.debug('Timer J expired for non-INVITE server transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
   this.ua.destroyTransaction(this);
 };
@@ -432,7 +429,7 @@ NonInviteServerTransaction.prototype.onTransportError = function() {
   if (!this.transportError) {
     this.transportError = true;
 
-    this.logger.log('transport error occurred, deleting non-INVITE server transaction ' + this.id);
+    this.logger.debug('transport error occurred, deleting non-INVITE server transaction ' + this.id);
 
     window.clearTimeout(this.J);
     this.stateChanged(C.STATUS_TERMINATED);
@@ -529,10 +526,10 @@ InviteServerTransaction.prototype.stateChanged = function(state) {
 };
 
 InviteServerTransaction.prototype.timer_H = function() {
-  this.logger.log('Timer H expired for INVITE server transaction ' + this.id);
+  this.logger.debug('Timer H expired for INVITE server transaction ' + this.id);
 
   if(this.state === C.STATUS_COMPLETED) {
-    this.logger.warn('transactions', 'ACK for INVITE server transaction was never received, call will be terminated');
+    this.logger.log('transactions', 'ACK for INVITE server transaction was never received, call will be terminated');
   }
 
   this.stateChanged(C.STATUS_TERMINATED);
@@ -546,7 +543,7 @@ InviteServerTransaction.prototype.timer_I = function() {
 
 // RFC 6026 7.1
 InviteServerTransaction.prototype.timer_L = function() {
-  this.logger.log('Timer L expired for INVITE server transaction ' + this.id);
+  this.logger.debug('Timer L expired for INVITE server transaction ' + this.id);
 
   if(this.state === C.STATUS_ACCEPTED) {
     this.stateChanged(C.STATUS_TERMINATED);
@@ -558,7 +555,7 @@ InviteServerTransaction.prototype.onTransportError = function() {
   if (!this.transportError) {
     this.transportError = true;
 
-    this.logger.log('transport error occurred, deleting INVITE server transaction ' + this.id);
+    this.logger.debug('transport error occurred, deleting INVITE server transaction ' + this.id);
 
     if (this.resendProvisionalTimer !== null) {
       window.clearInterval(this.resendProvisionalTimer);
