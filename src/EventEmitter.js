@@ -170,17 +170,17 @@ EventEmitter.prototype = {
   emit: function(event, sender, data) {
     var listeners, length, e, idx,
       self = this;
-    
+
     if (!this.checkEvent(event)) {
       this.logger.error('unable to emit a nonexistent event'+ event);
       return;
     }
 
-    this.logger.log('emitting event '+ event);
+    this.logger.debug('emitting event '+ event);
 
     listeners = this.events[event];
     length = listeners.length;
-    
+
     e = new JsSIP.Event(event, sender, data);
 
     listeners.map(function(listener) {

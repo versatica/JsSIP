@@ -390,7 +390,7 @@ UA.prototype.onTransportClosed = function(transport) {
     client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = JsSIP.Transport.C.STATUS_DISCONNECTED;
-  this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
+  this.logger.debug('connection state set to '+ JsSIP.Transport.C.STATUS_DISCONNECTED);
 
   length = client_transactions.length;
   for (type = 0; type < length; type++) {
@@ -456,7 +456,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = JsSIP.Transport.C.STATUS_READY;
-  this.logger.log('connection state set to '+ JsSIP.Transport.C.STATUS_READY);
+  this.logger.debug('connection state set to '+ JsSIP.Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -943,18 +943,18 @@ UA.prototype.loadConfig = function(configuration) {
     UA.configuration_skeleton[parameter].value = '';
   }
 
-  this.logger.log('configuration parameters after validation:');
+  this.logger.debug('configuration parameters after validation:');
   for(parameter in settings) {
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
-        this.logger.log('· ' + parameter + ': ' + settings[parameter]);
+        this.logger.debug('· ' + parameter + ': ' + settings[parameter]);
         break;
       case 'password':
-        this.logger.log('· ' + parameter + ': ' + 'NOT SHOWN');
+        this.logger.debug('· ' + parameter + ': ' + 'NOT SHOWN');
         break;
       default:
-        this.logger.log('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
+        this.logger.debug('· ' + parameter + ': ' + window.JSON.stringify(settings[parameter]));
     }
   }
 

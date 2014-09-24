@@ -25,7 +25,7 @@ RTCMediaHandler.prototype = {
   isReady: function() {
     return this.ready;
   },
-  
+
   createOffer: function(onSuccess, onFailure, constraints) {
     var self = this;
 
@@ -41,7 +41,7 @@ RTCMediaHandler.prototype = {
         };
       }
     }
-    
+
     this.ready = false;
 
     this.peerConnection.createOffer(
@@ -80,7 +80,7 @@ RTCMediaHandler.prototype = {
         };
       }
     }
-    
+
     this.ready = false;
 
     this.peerConnection.createAnswer(
@@ -137,7 +137,7 @@ RTCMediaHandler.prototype = {
   */
   init: function(options) {
     options = options || {};
-    
+
     var idx, length, server,
       self = this,
       servers = [],
@@ -153,15 +153,15 @@ RTCMediaHandler.prototype = {
     if (!turn_servers) {
       turn_servers = config.turn_servers;
     }
-    
+
     /* Change 'url' to 'urls' whenever this issue is solved:
      * https://code.google.com/p/webrtc/issues/detail?id=2096
      */
-    
+
     if (stun_servers.length > 0) {
       servers.push({'url': stun_servers});
     }
-    
+
     length = turn_servers.length;
     for (idx = 0; idx < length; idx++) {
       server = turn_servers[idx];
@@ -175,24 +175,24 @@ RTCMediaHandler.prototype = {
     this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({'iceServers': servers}, constraints);
 
     this.peerConnection.onaddstream = function(e) {
-      self.logger.log('stream added: '+ e.stream.id);
+      self.logger.debug('stream added: '+ e.stream.id);
     };
 
     this.peerConnection.onremovestream = function(e) {
-      self.logger.log('stream removed: '+ e.stream.id);
+      self.logger.debug('stream removed: '+ e.stream.id);
     };
 
     this.peerConnection.onicecandidate = function(e) {
       if (e.candidate) {
-        self.logger.log('ICE candidate received: '+ e.candidate.candidate);
+        self.logger.debug('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
         self.onIceCompleted();
       }
     };
 
     this.peerConnection.oniceconnectionstatechange = function() {
-      self.logger.log('ICE connection state changed to "'+ this.iceConnectionState +'"');
-      
+      self.logger.debug('ICE connection state changed to "'+ this.iceConnectionState +'"');
+
       if (this.iceConnectionState === 'failed') {
         self.session.terminate({
             cause: JsSIP.C.causes.RTP_TIMEOUT,
@@ -204,12 +204,12 @@ RTCMediaHandler.prototype = {
 
 
     this.peerConnection.onstatechange = function() {
-      self.logger.log('PeerConnection state changed to "'+ this.readyState +'"');
+      self.logger.debug('PeerConnection state changed to "'+ this.readyState +'"');
     };
   },
 
   close: function() {
-    this.logger.log('closing PeerConnection');
+    this.logger.debug('closing PeerConnection');
     if(this.peerConnection) {
       this.peerConnection.close();
 
@@ -227,11 +227,11 @@ RTCMediaHandler.prototype = {
   getUserMedia: function(onSuccess, onFailure, constraints) {
     var self = this;
 
-    this.logger.log('requesting access to local media');
+    this.logger.debug('requesting access to local media');
 
     JsSIP.WebRTC.getUserMedia(constraints,
       function(stream) {
-        self.logger.log('got local media stream');
+        self.logger.debug('got local media stream');
         self.localMedia = stream;
         onSuccess(stream);
       },

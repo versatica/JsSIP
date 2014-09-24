@@ -25,7 +25,7 @@ var Dialog,
 // RFC 3261 12.1
 Dialog = function(owner, message, type, state) {
   var contact;
-  
+
   this.uac_pending_reply = false;
   this.uas_pending_reply = false;
 
@@ -82,7 +82,7 @@ Dialog = function(owner, message, type, state) {
   this.logger = owner.ua.getLogger('jssip.dialog', this.id.toString());
   this.owner = owner;
   owner.ua.dialogs[this.id.toString()] = this;
-  this.logger.log('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
+  this.logger.debug('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 };
 
 Dialog.prototype = {
@@ -93,7 +93,7 @@ Dialog.prototype = {
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
-    this.logger.log('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
+    this.logger.debug('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -102,7 +102,7 @@ Dialog.prototype = {
   },
 
   terminate: function() {
-    this.logger.log('dialog ' + this.id.toString() + ' deleted');
+    this.logger.debug('dialog ' + this.id.toString() + ' deleted');
     delete this.owner.ua.dialogs[this.id.toString()];
   },
 
@@ -147,7 +147,7 @@ Dialog.prototype = {
   // RFC 3261 12.2.2
   checkInDialogRequest: function(request) {
     var self = this;
-    
+
     if(!this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
     } else if(request.cseq < this.remote_seqnum) {
@@ -175,17 +175,17 @@ Dialog.prototype = {
             if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
                 e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
                 e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
-                
+
               request.server_transaction.removeListener('stateChanged', stateChanged);
               self.uas_pending_reply = false;
-              
+
               if (self.uac_pending_reply === false) {
                 self.owner.onReadyToReinvite();
               }
             }
           });
         }
-        
+
         // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
         if(request.hasHeader('contact')) {
           request.server_transaction.on('stateChanged', function(e){
