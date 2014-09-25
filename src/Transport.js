@@ -182,7 +182,7 @@ Transport.prototype = {
       }
     } else {
       // This is the first connection attempt
-      //Network error
+      // May be a network error (or may be UA.stop() was called)
       this.ua.onTransportError(this);
     }
   },

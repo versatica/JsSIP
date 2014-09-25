@@ -428,6 +428,11 @@ UA.prototype.onTransportError = function(transport) {
     reason: transport.lastTransportError.reason
   });
 
+  // Don't attempt to recover the connection if the user closes the UA.
+  if (this.status === C.STATUS_USER_CLOSED) {
+    return;
+  }
+
   server = this.getNextWsServer();
 
   if(server) {
