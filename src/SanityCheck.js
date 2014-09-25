@@ -71,31 +71,45 @@ function rfc3261_8_2_2_2() {
     call_id = message.call_id,
     cseq = message.cseq;
 
-  if(!message.to_tag) {
-    if(message.method === JsSIP.C.INVITE) {
-      tr = ua.transactions.ist[message.via_branch];
-      if(!tr) {
-        return;
-      } else {
-        for(idx in ua.transactions.ist) {
-          tr = ua.transactions.ist[idx];
-          if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-            reply(482);
-            return false;
-          }
+  // Accept any in-dialog request.
+  if(message.to_tag) {
+    return;
+  }
+
+  // INVITE request.
+  if (message.method === JsSIP.C.INVITE) {
+    // If the branch matches the key of any IST then assume it is a retransmission
+    // and ignore the INVITE.
+    // TODO: we should reply the last response.
+    if (ua.transactions.ist[message.via_branch]) {
+      return false;
+    }
+    // Otherwise check whether it is a merged request.
+    else {
+      for(idx in ua.transactions.ist) {
+        tr = ua.transactions.ist[idx];
+        if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
+          reply(482);
+          return false;
         }
       }
-    } else {
-      tr = ua.transactions.nist[message.via_branch];
-      if(!tr) {
-        return;
-      } else {
-        for(idx in ua.transactions.nist) {
-          tr = ua.transactions.nist[idx];
-          if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-            reply(482);
-            return false;
-          }
+    }
+  }
+  // Non INVITE request.
+  else {
+    // If the branch matches the key of any NIST then assume it is a retransmission
+    // and ignore the request.
+    // TODO: we should reply the last response.
+    if (ua.transactions.nist[message.via_branch]) {
+      return false;
+    }
+    // Otherwise check whether it is a merged request.
+    else {
+      for(idx in ua.transactions.nist) {
+        tr = ua.transactions.nist[idx];
+        if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
+          reply(482);
+          return false;
         }
       }
     }
