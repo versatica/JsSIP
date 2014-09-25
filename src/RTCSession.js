@@ -168,7 +168,6 @@ RTCSession.prototype.terminate = function(options) {
         this.isCanceled = true;
         this.cancelReason = cancel_reason;
       } else if(this.status === C.STATUS_1XX_RECEIVED) {
-        console.warn("---------- 176: request.cancel()");
         this.request.cancel(cancel_reason);
       }
 
