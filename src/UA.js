@@ -87,6 +87,9 @@ UA = function(configuration) {
     ict: {}
   };
 
+  // Custom UA empty object for high level use
+  this.data = {};
+
   this.transportRecoverAttempts = 0;
   this.transportRecoveryTimer = null;
 
@@ -314,7 +317,7 @@ UA.prototype.stop = function() {
 /**
  * Connect to the WS server if status = STATUS_INIT.
  * Resume UA after being closed.
- *
+ * @returns {Boolean} true if the start action takes place, false otherwise
  */
 UA.prototype.start = function() {
   var server;
@@ -324,14 +327,18 @@ UA.prototype.start = function() {
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     new JsSIP.Transport(this, server);
+    return true;
   } else if(this.status === C.STATUS_USER_CLOSED) {
     this.logger.log('resuming');
     this.status = C.STATUS_READY;
     this.transport.connect();
+    return true;
   } else if (this.status === C.STATUS_READY) {
     this.logger.log('UA is in READY status, not resuming');
+    return false;
   } else {
     this.logger.error('Connection is down. Auto-Recovery system is trying to connect');
+    return false;
   }
 };
 
@@ -508,7 +515,7 @@ UA.prototype.newTransaction = function(transaction) {
 
 
 /**
- * new Transaction
+ * Transaction destroyed.
  * @private
  * @param {JsSIP.Transaction} transaction.
  */
@@ -556,7 +563,7 @@ UA.prototype.receiveRequest = function(request) {
   // Create the server transaction
   if(method === JsSIP.C.INVITE) {
     new JsSIP.Transactions.InviteServerTransaction(request, this);
-  } else if(method !== JsSIP.C.ACK) {
+  } else if(method !== JsSIP.C.ACK && method !== JsSIP.C.CANCEL) {
     new JsSIP.Transactions.NonInviteServerTransaction(request, this);
   }
 
