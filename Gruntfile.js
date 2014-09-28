@@ -1,14 +1,19 @@
-/*global module:false*/
+/* global module:false */
+
 
 /*
  * Usage:
  *
- * `grunt`: alias for `grunt dist`.
+ * grunt devel:   Build the JsSIP Grammar and SDP components.
  *
- * `grunt dist`: Generate builds/jssip-X.Y.Z.js and builds/jssip-last.js symlink
- *               pointing to it.
+ * grunt dist:    Generate builds/jssip-X.Y.Z.js and a builds/jssip-last.js
+ *                symlink pointing to it.
  *
- * `grunt min`: Generate builds/jssip-X.Y.Z.min.js.
+ * grunt min:     Generate builds/jssip-X.Y.Z.min.js.
+ *
+ * grunt watch:   Watch for changes in the src/ directory and run "grunt dist".
+ *
+ * grunt:         Alias for "grunt dist".
  */
 
 
@@ -132,8 +137,8 @@ module.exports = function(grunt) {
 				jquery: true,
 				worker: true,
 				globals: {
-					module: true,
-					define: true
+					module: false,  // false means that "module" is defined elsewhere and cannot override it.
+					define: false
 				}
 			},
 			// Lint JS files separately.
@@ -143,8 +148,8 @@ module.exports = function(grunt) {
 					unused: false,
 					ignores: [],
 					globals: {
-						// target: true,  // TODO: Add it when 'target' is given instead of 'window'.
-						JsSIP: true
+						// target: false,  // TODO: Add it when 'target' is given instead of 'window'.
+						JsSIP: true  // true means that "JsSIP" is defined here.
 					}
 				}
 			}
@@ -226,8 +231,7 @@ module.exports = function(grunt) {
 
 
 	// Task for building src/Grammar/dist/Grammar.js.
-	// NOTE: This task is not included in "grunt dist" and is intended for
-	// developers.
+	// NOTE: This task is not included in "grunt dist".
 	grunt.registerTask("grammar", function() {
 		var done = this.async();  // This is an async task.
 		var sys = require("sys");
@@ -263,13 +267,14 @@ module.exports = function(grunt) {
 	});
 
 	// Generate src/SDP/dist/SDP.js.
-	// NOTE: This task is not included in "grunt dist" and is intended for
-	// developers.
+	// NOTE: This task is not included in "grunt dist".
 	grunt.registerTask("sdp", [ "browserify:sdp" ]);
 
+	// Build both JsSIP Grammar and SDP components.
+	grunt.registerTask("devel", [ "grammar", "sdp" ]);
+
 	// Taks for building builds/jssip-X.Y.Z.js and builds/jssip-last.js symlink.
-	// NOTE: This task assumes that "grammar" and "sdp" tasks have been
-	// already executed.
+	// NOTE: This task assumes that "devel" task has been already executed.
 	grunt.registerTask("dist", [
 		"jshint:each_file",
 		"concat:dist",
@@ -279,19 +284,18 @@ module.exports = function(grunt) {
 	]);
 
 	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
+	// NOTE: This task assumes that "devel" and "dist" tasks have been already executed.
 	grunt.registerTask("min", [ "uglify:dist"]);
 
 	// Test tasks.
+	// NOTE: This task assumes that "devel" and "dist" tasks have been already executed.
 	grunt.registerTask("testNoWebRTC", [ "qunit:noWebRTC" ]);
 	grunt.registerTask("test", [ "testNoWebRTC" ]);
-
-	// Build the Grammar and SDP files.
-	grunt.registerTask("devel", [ "grammar", "sdp" ]);
 
 	// Build builds nice documentation using JsDoc3.
 	grunt.registerTask("doc", [ "jsdoc:docstrap" ]);
 
-	// Travis CI task.
+	// Task for Travis CI.
 	grunt.registerTask("travis", [ "test" ]);
 
 	// Default task points to "dist" task.
