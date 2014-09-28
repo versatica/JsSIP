@@ -3,7 +3,14 @@
 language: node_js
 
 node_js:
-  - 0.8
+  - 0.10
+
+before_install: npm install -g grunt-cli
+
+install: npm install
+
+# We want that Travis also checks the "devel" task.
+before_script: grunt devel dist
 
 notifications:
   email:

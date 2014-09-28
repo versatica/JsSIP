@@ -262,6 +262,12 @@ module.exports = function(grunt) {
 	grunt.registerTask("testNoWebRTC", [ "qunit:noWebRTC" ]);
 	grunt.registerTask("test", [ "testNoWebRTC" ]);
 
+	// Build the Grammar and SDP files.
+	grunt.registerTask("devel", [ "grammar", "sdp" ]);
+
+	// Travis CI task.
+	grunt.registerTask("travis", [ "test" ]);
+
 	// Default task points to "dist" task.
 	grunt.registerTask("default", [ "dist" ]);
 };
