@@ -1,5 +1,4 @@
-
-(function() {
+(function(JsSIP) {
 
 var Logger = function(logger, category, label) {
   this.logger = logger;
@@ -24,5 +23,5 @@ Logger.prototype.error = function(content) {
   this.logger.error(this.category, this.label, content);
 };
 
-return Logger;
-}());
+JsSIP.Logger = Logger;
+}(JsSIP));

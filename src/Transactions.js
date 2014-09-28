@@ -249,16 +249,16 @@ InviteClientTransaction.prototype.sendACK = function(response) {
   var tr = this;
 
   this.ack = 'ACK ' + this.request.ruri + ' SIP/2.0\r\n';
-  this.ack += 'Via: ' + this.request.headers['Via'].toString() + '\r\n';
+  this.ack += 'Via: ' + this.request.headers.Via.toString() + '\r\n';
 
-  if(this.request.headers['Route']) {
-    this.ack += 'Route: ' + this.request.headers['Route'].toString() + '\r\n';
+  if(this.request.headers.Route) {
+    this.ack += 'Route: ' + this.request.headers.Route.toString() + '\r\n';
   }
 
   this.ack += 'To: ' + response.getHeader('to') + '\r\n';
-  this.ack += 'From: ' + this.request.headers['From'].toString() + '\r\n';
+  this.ack += 'From: ' + this.request.headers.From.toString() + '\r\n';
   this.ack += 'Call-ID: ' + this.request.headers['Call-ID'].toString() + '\r\n';
-  this.ack += 'CSeq: ' + this.request.headers['CSeq'].toString().split(' ')[0];
+  this.ack += 'CSeq: ' + this.request.headers.CSeq.toString().split(' ')[0];
   this.ack += ' ACK\r\n';
   this.ack += 'Content-Length: 0\r\n\r\n';
 
@@ -271,16 +271,16 @@ InviteClientTransaction.prototype.cancel_request = function(tr, reason) {
   var request = tr.request;
 
   this.cancel = JsSIP.C.CANCEL + ' ' + request.ruri + ' SIP/2.0\r\n';
-  this.cancel += 'Via: ' + request.headers['Via'].toString() + '\r\n';
+  this.cancel += 'Via: ' + request.headers.Via.toString() + '\r\n';
 
-  if(this.request.headers['Route']) {
-    this.cancel += 'Route: ' + request.headers['Route'].toString() + '\r\n';
+  if(this.request.headers.Route) {
+    this.cancel += 'Route: ' + request.headers.Route.toString() + '\r\n';
   }
 
-  this.cancel += 'To: ' + request.headers['To'].toString() + '\r\n';
-  this.cancel += 'From: ' + request.headers['From'].toString() + '\r\n';
+  this.cancel += 'To: ' + request.headers.To.toString() + '\r\n';
+  this.cancel += 'From: ' + request.headers.From.toString() + '\r\n';
   this.cancel += 'Call-ID: ' + request.headers['Call-ID'].toString() + '\r\n';
-  this.cancel += 'CSeq: ' + request.headers['CSeq'].toString().split(' ')[0] +
+  this.cancel += 'CSeq: ' + request.headers.CSeq.toString().split(' ')[0] +
   ' CANCEL\r\n';
 
   if(reason) {

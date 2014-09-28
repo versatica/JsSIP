@@ -940,7 +940,7 @@ RTCSession.prototype.connect = function(target, options) {
     turn_servers = options.turn_servers || null;
 
   if (stun_servers) {
-    iceServers = JsSIP.UA.configuration_check.optional['stun_servers'](stun_servers);
+    iceServers = JsSIP.UA.configuration_check.optional.stun_servers(stun_servers);
     if (!iceServers) {
       throw new TypeError('Invalid stun_servers: '+ stun_servers);
     } else {
@@ -949,7 +949,7 @@ RTCSession.prototype.connect = function(target, options) {
   }
 
   if (turn_servers) {
-    iceServers = JsSIP.UA.configuration_check.optional['turn_servers'](turn_servers);
+    iceServers = JsSIP.UA.configuration_check.optional.turn_servers(turn_servers);
     if (!iceServers){
       throw new TypeError('Invalid turn_servers: '+ turn_servers);
     } else {

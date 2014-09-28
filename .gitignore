@@ -1,2 +1,3 @@
-dist/
+builds/
 node_modules/
+NO_GIT/

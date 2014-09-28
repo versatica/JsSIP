@@ -28,11 +28,6 @@ Transport = function(ua, server) {
   this.connected = false;
   this.reconnectTimer = null;
   this.lastTransportError = {};
-
-  this.ua.transport = this;
-
-  // Connect
-  this.connect();
 };
 
 Transport.prototype = {

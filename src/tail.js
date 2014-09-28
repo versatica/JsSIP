@@ -7,7 +7,7 @@ if (typeof module === "object" && module && typeof module.exports === "object") 
 } else {
   // Otherwise expose JsSIP to the global object as usual.
   window.JsSIP = JsSIP;
-  
+
   // Register as a named AMD module, since JsSIP can be concatenated with other
   // files that may use define, but not via a proper concatenation script that
   // understands anonymous AMD modules. A named AMD is safest and most robust
@@ -19,4 +19,4 @@ if (typeof module === "object" && module && typeof module.exports === "object") 
   }
 }
 
-})(window);
+}(window));

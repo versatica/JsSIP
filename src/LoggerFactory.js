@@ -1,7 +1,4 @@
-
 (function(JsSIP) {
-
-var Logger = @@include('../src/Logger.js')
 
 var LoggerFactory = function() {
   var logger,
@@ -77,16 +74,16 @@ LoggerFactory.prototype.print = function(target, category, label, content) {
   prefix.push('');
 
   if (typeof content === 'string') {
-    target.call(console, prefix.join(' | ') + content);
+    target.call(window.console, prefix.join(' | ') + content);
   } else {
-    target.call(console, content);
+    target.call(window.console, content);
   }
 };
 
 LoggerFactory.prototype.debug = function(category, label, content) {
   if (this.level === 3) {
     if (this.builtinEnabled) {
-      this.print(console.debug, category, label, content);
+      this.print(window.console.debug, category, label, content);
     }
 
     if (this.connector) {
@@ -98,7 +95,7 @@ LoggerFactory.prototype.debug = function(category, label, content) {
 LoggerFactory.prototype.log = function(category, label, content) {
   if (this.level >= 2) {
     if (this.builtinEnabled) {
-      this.print(console.log, category, label, content);
+      this.print(window.console.log, category, label, content);
     }
 
     if (this.connector) {
@@ -110,7 +107,7 @@ LoggerFactory.prototype.log = function(category, label, content) {
 LoggerFactory.prototype.warn = function(category, label, content) {
   if (this.level >= 1) {
     if (this.builtinEnabled) {
-      this.print(console.warn, category, label, content);
+      this.print(window.console.warn, category, label, content);
     }
 
     if (this.connector) {
@@ -121,7 +118,7 @@ LoggerFactory.prototype.warn = function(category, label, content) {
 
 LoggerFactory.prototype.error = function(category, label, content) {
   if (this.builtinEnabled) {
-    this.print(console.error,category, label, content);
+    this.print(window.console.error,category, label, content);
   }
 
   if (this.connector) {
@@ -133,11 +130,11 @@ LoggerFactory.prototype.getLogger = function(category, label) {
   var logger;
 
   if (label && this.level === 3) {
-    return new Logger(this, category, label);
+    return new JsSIP.Logger(this, category, label);
   } else if (this.loggers[category]) {
     return this.loggers[category];
   } else {
-    logger = new Logger(this, category);
+    logger = new JsSIP.Logger(this, category);
     this.loggers[category] = logger;
     return logger;
   }

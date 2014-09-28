@@ -35,34 +35,39 @@ Make sure you have `grunt` installed by testing:
 $ grunt -version
 ```
 
-Finally, run `grunt` command with no arguments to get a complete version of JsSIP:
+Finally, run `grunt dist` (or just `grunt`) to get an uncompressed version of JsSIP located at `builds/jssip-X.Y.Z.js` and a symlink `builds/jssip-last.js` pointing to it:
 ```
-$ grunt
+$ grunt dist
 ```
 
-The built version of JsSIP will be available in the `dist/` subdirectory in both flavors: normal (uncompressed)  and minified, both linted with [JSLint](http://jslint.com/). There will be also a file named `dist/jssip-devel.js` which is an exact copy of the uncompressed file.
-
-
-## Development version
-
-Run `grunt devel` for just generating the `dist/jssip-devel.js` file. An uncompressed JsSIP source file named `jssip-devel.js` will be created in `dist` directory.
+In order to get a minified/production version of JsSIP run `grunt min` (note that you must have executed `grunt dist` before):
+```
+$ grunt min
+```
 
 
 ## Test units
 
-JsSIP includes test units based on [QUnit](http://qunitjs.com/). Test units use the `dist/jssip-devel.js` file. Run the tests as follows:
+JsSIP includes test units based on [QUnit](http://qunitjs.com/). Test units use the `builds/jssip-last.js` file. Run the tests as follows:
 ```
 $ grunt test
-
-Running "qunit:noWebRTC" (qunit) task
-Testing testNoWebRTC.html.........OK
->> 250 assertions passed (177ms)
 ```
 
-## Changes in JsSIP grammar
 
-If you modify `src/Grammar/src/Grammar.pegjs` then you need to recompile JsSIP grammar files. For that run the following task:
+## Development
+
+### Changes in JsSIP Grammar
+
+If you modify `src/Grammar/src/Grammar.pegjs` then you need to recompile JsSIP Grammar file:
 ```
 $ grunt grammar
+```
+And then build JsSIP again as explained above.
+
+### Changes in JsSIP SDP
+
+If you modify `src/SDP/main.js` then you need to recompile JsSIP SDP file:
+```
+$ grunt sdp
 ```
 And then build JsSIP again as explained above.

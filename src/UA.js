@@ -110,25 +110,25 @@ UA = function(configuration) {
 
     nictTransactionsCount: {
       get: function() {
-        return Object.keys(this.transactions['nict']).length;
+        return Object.keys(this.transactions.nict).length;
       }
     },
 
     nistTransactionsCount: {
       get: function() {
-        return Object.keys(this.transactions['nist']).length;
+        return Object.keys(this.transactions.nist).length;
       }
     },
 
     ictTransactionsCount: {
       get: function() {
-        return Object.keys(this.transactions['ict']).length;
+        return Object.keys(this.transactions.ict).length;
       }
     },
 
     istTransactionsCount: {
       get: function() {
-        return Object.keys(this.transactions['ist']).length;
+        return Object.keys(this.transactions.ist).length;
       }
     }
   });
@@ -322,11 +322,12 @@ UA.prototype.stop = function() {
 UA.prototype.start = function() {
   var server;
 
-  this.logger.log('user requested startup...');
+  this.logger.debug('user requested startup...');
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
-    new JsSIP.Transport(this, server);
+    this.transport = new JsSIP.Transport(this, server);
+    this.transport.connect();
     return true;
   } else if(this.status === C.STATUS_USER_CLOSED) {
     this.logger.log('resuming');
@@ -443,7 +444,8 @@ UA.prototype.onTransportError = function(transport) {
   server = this.getNextWsServer();
 
   if(server) {
-    new JsSIP.Transport(this, server);
+    this.transport = new JsSIP.Transport(this, server);
+    this.transport.connect();
   }else {
     this.closeSessionsOnTransportError();
     if (!this.error || this.error !== C.NETWORK_ERROR) {
@@ -562,9 +564,9 @@ UA.prototype.receiveRequest = function(request) {
 
   // Create the server transaction
   if(method === JsSIP.C.INVITE) {
-    new JsSIP.Transactions.InviteServerTransaction(request, this);
+    JsSIP.Transactions.InviteServerTransaction(request, this);
   } else if(method !== JsSIP.C.ACK && method !== JsSIP.C.CANCEL) {
-    new JsSIP.Transactions.NonInviteServerTransaction(request, this);
+    JsSIP.Transactions.NonInviteServerTransaction(request, this);
   }
 
   /* RFC3261 12.2.2
@@ -773,7 +775,8 @@ UA.prototype.recoverTransport = function(ua) {
   this.transportRecoveryTimer = window.setTimeout(
     function(){
       ua.transportRecoverAttempts = count + 1;
-      new JsSIP.Transport(ua, server);
+      ua.transport = new JsSIP.Transport(ua, server);
+      ua.transport.connect();
     }, nextRetry * 1000);
 };
 
@@ -1023,7 +1026,7 @@ UA.configuration_skeleton = (function() {
     };
   }
 
-  skeleton['register'] = {
+  skeleton.register = {
     value: '',
     writable: true,
     configurable: false
@@ -1266,9 +1269,7 @@ UA.configuration_check = {
     turn_servers: function(turn_servers) {
       var idx, idx2, length, length2, turn_server, url;
 
-      if (turn_servers instanceof Array) {
-        // Do nothing
-      } else {
+      if (! turn_servers instanceof Array) {
         turn_servers = [turn_servers];
       }
 

@@ -117,7 +117,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
       for (idx = 0; idx < length; idx++) {
         header = parsed[idx];
         message.addHeader('contact', headerValue.substring(header.possition, header.offset));
-        message.headers['Contact'][message.getHeaders('contact').length - 1].parsed = header.parsed;
+        message.headers.Contact[message.getHeaders('contact').length - 1].parsed = header.parsed;
       }
       break;
     case 'content-length':

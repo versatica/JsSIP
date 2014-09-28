@@ -5,6 +5,8 @@ JsSIP uses [PEG.js](http://pegjs.majda.cz/) to build its SIP parser grammar, a P
 
 ### Compiling JsSIP Grammar
 
+In the main directory:
+
 ```
 $ grunt grammar
 ```
