@@ -306,7 +306,10 @@ UA.prototype.stop = function() {
    * 'accepted' state due to timers 'L' and 'M' defined in [RFC 6026]
    */
   if (this.nistTransactionsCount === 0 && this.nictTransactionsCount === 0) {
-	this.transport.disconnect();
+  	// Wait a JS iteration so CANCEL can be sent for outgoing non established sessions.
+  	window.setTimeout(function() {
+		ua.transport.disconnect();
+	});
   } else {
 	this.on('transactionDestroyed', transactionsListener);
   }

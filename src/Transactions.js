@@ -156,6 +156,7 @@ var InviteClientTransaction = function(request_sender, request, transport) {
 
   this.request_sender.ua.newTransaction(this);
 
+  // TODO: Adding here the cancel() method is a hack that must be fixed.
   // Add the cancel property to the request.
   //Will be called from the request instance, not the transaction itself.
   this.request.cancel = function(reason) {
