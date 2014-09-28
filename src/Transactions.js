@@ -707,7 +707,6 @@ var checkTransaction = function(ua, request) {
           return true;
         }
       }
-
       // ACK to 2XX Response.
       else {
         return false;

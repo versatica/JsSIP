@@ -99,7 +99,7 @@ OutgoingRequest.prototype = {
   setHeader: function(name, value) {
     this.headers[JsSIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
   },
-  
+
   /**
    * Get the value of the given header name at the given position.
    * @param {String} name header name
@@ -123,7 +123,7 @@ OutgoingRequest.prototype = {
         }
       }
     }
-    
+
     return;
   },
 
@@ -164,7 +164,7 @@ OutgoingRequest.prototype = {
   hasHeader: function(name) {
     var regexp, idx,
       length = this.extraHeaders.length;
-    
+
     if (this.headers[JsSIP.Utils.headerize(name)]) {
       return true;
     } else {
@@ -175,12 +175,12 @@ OutgoingRequest.prototype = {
         }
       }
     }
-    
+
     return false;
   },
-  
+
   toString: function() {
-    var msg = '', header, length, idx, 
+    var msg = '', header, length, idx,
       supported = [];
 
     msg += this.method + ' ' + this.ruri + ' SIP/2.0\r\n';
@@ -208,12 +208,12 @@ OutgoingRequest.prototype = {
         }
         break;
     }
-    
+
     supported.push('outbound');
-    
+
     // Allow
     msg += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
-    
+
     msg += 'Supported: ' +  supported +'\r\n';
     msg += 'User-Agent: ' + JsSIP.C.USER_AGENT +'\r\n';
 
@@ -460,7 +460,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   for (idx = 0; idx < length; idx++) {
     response += extraHeaders[idx].trim() +'\r\n';
   }
-  
+
   // Supported
   switch (this.method) {
     case JsSIP.C.INVITE:
@@ -469,9 +469,9 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
       }
       break;
   }
-  
+
   supported.push('outbound');
-  
+
   // Allow and Accept
   if (this.method === JsSIP.C.OPTIONS) {
     response += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
@@ -481,7 +481,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   } else if (code === 415 ) {
     response += 'Accept: '+ JsSIP.UA.C.ACCEPTED_BODY_TYPES +'\r\n';
   }
-  
+
   response += 'Supported: ' +  supported +'\r\n';
 
   if(body) {
