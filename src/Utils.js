@@ -1,7 +1,3 @@
-/**
- * @fileoverview Utils
- */
-
 (function(JsSIP) {
 var Utils;
 
@@ -74,9 +70,6 @@ Utils= {
   * Accepts 'sip', 'sips' and 'tel' URIs and convert them into 'sip'.
   * Detects the domain part (if given) and properly hex-escapes the user portion.
   * If the user portion has only 'tel' number symbols the user portion is clean of 'tel' visual separators.
-  * @private
-  * @param {String} target
-  * @param {String} [domain]
   */
   normalizeTarget: function(target, domain) {
     var uri, target_array, target_user, target_domain;
@@ -135,8 +128,6 @@ Utils= {
 
   /**
   * Hex-escape a SIP URI user.
-  * @private
-  * @param {String} user
   */
   escapeUser: function(user) {
     // Don't hex-escape ':' (%3A), '+' (%2B), '?' (%3F"), '/' (%2F).
@@ -179,7 +170,6 @@ Utils= {
 
   /**
   * Generate a random Test-Net IP (http://tools.ietf.org/html/rfc5735)
-  * @private
   */
   getRandomTestNetIP: function() {
     function getOctet(from,to) {

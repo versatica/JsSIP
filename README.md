@@ -1,6 +1,6 @@
 <a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner.png"/></a>
 
-[![Build Status](https://travis-ci.org/versatica/JsSIP.png?branch=master)](https://travis-ci.org/versatica/JsSIP)
+[![Build Status](https://travis-ci.org/versatica/JsSIP.png?branch=new-design)](https://travis-ci.org/versatica/JsSIP)
 
 ## Overview
 

@@ -1,11 +1,3 @@
-/**
- * @fileoverview Request
- */
-
-/**
- * @class Request
- * @param {JsSIP.RTCSession} session
- */
 (function(JsSIP) {
 
 var Request = function(session) {
@@ -43,13 +35,13 @@ Request.prototype.send = function(method, options) {
     this.owner.status !== JsSIP.RTCSession.C.STATUS_TERMINATED) {
     throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
   }
-  
-  /* 
-   * Allow sending BYE in TERMINATED status since the RTCSession 
+
+  /*
+   * Allow sending BYE in TERMINATED status since the RTCSession
    * could had been terminated before the ACK had arrived.
    * RFC3261 Section 15, Paragraph 2
    */
-  else if (this.owner.status === C.STATUS_TERMINATED && method !== JsSIP.C.BYE) {
+  else if (this.owner.status === JsSIP.RTCSession.C.STATUS_TERMINATED && method !== JsSIP.C.BYE) {
     throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
   }
 
@@ -64,9 +56,6 @@ Request.prototype.send = function(method, options) {
   });
 };
 
-/**
- * @private
- */
 Request.prototype.receiveResponse = function(response) {
   var cause;
 
@@ -96,9 +85,6 @@ Request.prototype.receiveResponse = function(response) {
   }
 };
 
-/**
- * @private
- */
 Request.prototype.onRequestTimeout = function() {
   this.emit('failed', this, {
     originator: 'system',
@@ -107,9 +93,6 @@ Request.prototype.onRequestTimeout = function() {
   this.owner.onRequestTimeout();
 };
 
-/**
- * @private
- */
 Request.prototype.onTransportError = function() {
   this.emit('failed', this, {
     originator: 'system',
@@ -118,9 +101,6 @@ Request.prototype.onTransportError = function() {
   this.owner.onTransportError();
 };
 
-/**
- * @private
- */
 Request.prototype.onDialogError = function(response) {
   this.emit('failed', this, {
     originator: 'remote',
@@ -130,5 +110,5 @@ Request.prototype.onDialogError = function(response) {
   this.owner.onDialogError(response);
 };
 
-return Request;
+JsSIP.RTCSession.Request = Request;
 }(JsSIP));

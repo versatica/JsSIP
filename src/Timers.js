@@ -1,10 +1,3 @@
-/**
- * @fileoverview SIP TIMERS
- */
-
-/**
- * @augments JsSIP
- */
 (function(JsSIP) {
 var Timers,
   T1 = 500,

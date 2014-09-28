@@ -1,17 +1,5 @@
-/**
- * @fileoverview Session
- */
-
-/**
- * @augments JsSIP
- * @class Invite Session
- */
 (function(JsSIP) {
 
-// Load dependencies
-var Request         = @@include('../src/RTCSession/Request.js')
-var RTCMediaHandler = @@include('../src/RTCSession/RTCMediaHandler.js')
-var DTMF            = @@include('../src/RTCSession/DTMF.js')
 
 var RTCSession,
   C = {
@@ -128,7 +116,6 @@ RTCSession.prototype = new JsSIP.EventEmitter();
 
 /**
  * Terminate the call.
- * @param {Object} [options]
  */
 RTCSession.prototype.terminate = function(options) {
   options = options || {};
@@ -261,7 +248,6 @@ RTCSession.prototype.terminate = function(options) {
 
 /**
  * Answer the call.
- * @param {Object} [options]
  */
 RTCSession.prototype.answer = function(options) {
   options = options || {};
@@ -431,9 +417,6 @@ RTCSession.prototype.answer = function(options) {
 
 /**
  * Send a DTMF
- *
- * @param {String|Number} tones
- * @param {Object} [options]
  */
 RTCSession.prototype.sendDTMF = function(tones, options) {
   var duration, interToneGap,
@@ -467,13 +450,13 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   if (duration && !JsSIP.Utils.isDecimal(duration)) {
     throw new TypeError('Invalid tone duration: '+ duration);
   } else if (!duration) {
-    duration = DTMF.C.DEFAULT_DURATION;
-  } else if (duration < DTMF.C.MIN_DURATION) {
-    this.logger.warn('"duration" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_DURATION+ ' milliseconds');
-    duration = DTMF.C.MIN_DURATION;
-  } else if (duration > DTMF.C.MAX_DURATION) {
-    this.logger.warn('"duration" value is greater than the maximum allowed, setting it to '+ DTMF.C.MAX_DURATION +' milliseconds');
-    duration = DTMF.C.MAX_DURATION;
+    duration = JsSIP.RTCSession.DTMF.C.DEFAULT_DURATION;
+  } else if (duration < JsSIP.RTCSession.DTMF.C.MIN_DURATION) {
+    this.logger.warn('"duration" value is lower than the minimum allowed, setting it to '+ JsSIP.RTCSession.DTMF.C.MIN_DURATION+ ' milliseconds');
+    duration = JsSIP.RTCSession.DTMF.C.MIN_DURATION;
+  } else if (duration > JsSIP.RTCSession.DTMF.C.MAX_DURATION) {
+    this.logger.warn('"duration" value is greater than the maximum allowed, setting it to '+ JsSIP.RTCSession.DTMF.C.MAX_DURATION +' milliseconds');
+    duration = JsSIP.RTCSession.DTMF.C.MAX_DURATION;
   } else {
     duration = Math.abs(duration);
   }
@@ -483,10 +466,10 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   if (interToneGap && !JsSIP.Utils.isDecimal(interToneGap)) {
     throw new TypeError('Invalid interToneGap: '+ interToneGap);
   } else if (!interToneGap) {
-    interToneGap = DTMF.C.DEFAULT_INTER_TONE_GAP;
-  } else if (interToneGap < DTMF.C.MIN_INTER_TONE_GAP) {
-    this.logger.warn('"interToneGap" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
-    interToneGap = DTMF.C.MIN_INTER_TONE_GAP;
+    interToneGap = JsSIP.RTCSession.DTMF.C.DEFAULT_INTER_TONE_GAP;
+  } else if (interToneGap < JsSIP.RTCSession.DTMF.C.MIN_INTER_TONE_GAP) {
+    this.logger.warn('"interToneGap" value is lower than the minimum allowed, setting it to '+ JsSIP.RTCSession.DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
+    interToneGap = JsSIP.RTCSession.DTMF.C.MIN_INTER_TONE_GAP;
   } else {
     interToneGap = Math.abs(interToneGap);
   }
@@ -516,7 +499,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
     if (tone === ',') {
       timeout = 2000;
     } else {
-      var dtmf = new DTMF(self);
+      var dtmf = new JsSIP.RTCSession.DTMF(self);
       dtmf.on('failed', function(){self.tones = null;});
       dtmf.send(tone, options);
       timeout = duration + interToneGap;
@@ -532,20 +515,15 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
 
 /**
  * Send a generic in-dialog Request
- *
- * @param {String} method
- * @param {Object} [options]
  */
 RTCSession.prototype.sendRequest = function(method, options) {
-  var request = new Request(this);
+  var request = new JsSIP.RTCSession.Request(this);
 
   request.send(method, options);
 };
 
 /**
  * Check if RTCSession is ready for a re-INVITE
- *
- * @returns {Boolean}
  */
 RTCSession.prototype.isReadyToReinvite = function() {
   // rtcMediaHandler is not ready
@@ -822,9 +800,6 @@ RTCSession.prototype.getRemoteStreams = function() {
  * Session Management
  */
 
-/**
-* @private
-*/
 RTCSession.prototype.init_incoming = function(request) {
   var expires,
     self = this,
@@ -865,7 +840,7 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   //Initialize Media Session
-  this.rtcMediaHandler = new RTCMediaHandler(this, {
+  this.rtcMediaHandler = new JsSIP.RTCSession.RTCMediaHandler(this, {
     constraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
     });
 
@@ -922,9 +897,6 @@ RTCSession.prototype.init_incoming = function(request) {
   );
 };
 
-/**
- * @private
- */
 RTCSession.prototype.connect = function(target, options) {
   options = options || {};
 
@@ -1015,7 +987,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
 
-  this.rtcMediaHandler = new RTCMediaHandler(this, {
+  this.rtcMediaHandler = new JsSIP.RTCSession.RTCMediaHandler(this, {
     constraints: RTCConstraints,
     stun_servers: stun_servers,
     turn_servers: turn_servers
@@ -1029,9 +1001,6 @@ RTCSession.prototype.connect = function(target, options) {
   this.sendInitialRequest(mediaConstraints, RTCOfferConstraints, mediaStream);
 };
 
-/**
-* @private
-*/
 RTCSession.prototype.close = function() {
   var idx;
 
@@ -1074,7 +1043,6 @@ RTCSession.prototype.close = function() {
 
 /**
  * Dialog Management
- * @private
  */
 RTCSession.prototype.createDialog = function(message, type, early) {
   var dialog, early_dialog,
@@ -1130,7 +1098,6 @@ RTCSession.prototype.createDialog = function(message, type, early) {
 
 /**
  * In dialog INVITE Reception
- * @private
  */
 
 RTCSession.prototype.receiveReinvite = function(request) {
@@ -1201,7 +1168,6 @@ RTCSession.prototype.receiveReinvite = function(request) {
 
 /**
  * In dialog Request Reception
- * @private
  */
 RTCSession.prototype.receiveRequest = function(request) {
   var contentType;
@@ -1249,7 +1215,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         if(this.status === C.STATUS_CONFIRMED || this.status === C.STATUS_WAITING_FOR_ACK) {
           contentType = request.getHeader('content-type');
           if (contentType && (contentType.match(/^application\/dtmf-relay/i))) {
-            new DTMF(this).init_incoming(request);
+            new JsSIP.RTCSession.DTMF(this).init_incoming(request);
           }
         }
     }
@@ -1259,7 +1225,6 @@ RTCSession.prototype.receiveRequest = function(request) {
 
 /**
  * Initial Request Sender
- * @private
  */
 RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferConstraints, mediaStream) {
   var
@@ -1343,7 +1308,6 @@ RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferCon
 
 /**
  * Send Re-INVITE
- * @private
  */
 RTCSession.prototype.sendReinvite = function(options) {
   options = options || {};
@@ -1394,7 +1358,6 @@ RTCSession.prototype.sendReinvite = function(options) {
 
 /**
  * Reception of Response for Initial INVITE
- * @private
  */
 RTCSession.prototype.receiveInviteResponse = function(response) {
   var cause, dialog,
@@ -1551,7 +1514,6 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
 
 /**
  * Reception of Response for in-dialog INVITE
- * @private
  */
 RTCSession.prototype.receiveReinviteResponse = function(response) {
   var
@@ -1603,9 +1565,6 @@ RTCSession.prototype.receiveReinviteResponse = function(response) {
 
 
 
-/**
-* @private
-*/
 RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason_phrase) {
   var extraHeaders = [];
 
@@ -1627,9 +1586,6 @@ RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason
 };
 
 
-/*
- * @private
- */
 RTCSession.prototype.toogleMuteAudio = function(mute) {
   var streamIdx, trackIdx, tracks,
     localStreams = this.getLocalStreams();
@@ -1642,9 +1598,6 @@ RTCSession.prototype.toogleMuteAudio = function(mute) {
   }
 };
 
-/*
- * @private
- */
 RTCSession.prototype.toogleMuteVideo = function(mute) {
   var streamIdx, trackIdx, tracks,
     localStreams = this.getLocalStreams();
@@ -1661,9 +1614,6 @@ RTCSession.prototype.toogleMuteVideo = function(mute) {
  * Session Callbacks
  */
 
-/**
-* @private
-*/
 RTCSession.prototype.onTransportError = function() {
   if(this.status !== C.STATUS_TERMINATED) {
     if (this.status === C.STATUS_CONFIRMED) {
@@ -1674,9 +1624,6 @@ RTCSession.prototype.onTransportError = function() {
   }
 };
 
-/**
-* @private
-*/
 RTCSession.prototype.onRequestTimeout = function() {
   if(this.status !== C.STATUS_TERMINATED) {
     if (this.status === C.STATUS_CONFIRMED) {
@@ -1687,9 +1634,6 @@ RTCSession.prototype.onRequestTimeout = function() {
   }
 };
 
-/**
- * @private
- */
 RTCSession.prototype.onDialogError = function(response) {
   if(this.status !== C.STATUS_TERMINATED) {
     if (this.status === C.STATUS_CONFIRMED) {
@@ -1704,9 +1648,6 @@ RTCSession.prototype.onDialogError = function(response) {
  * Internal Callbacks
  */
 
-/**
- * @private
- */
 RTCSession.prototype.newRTCSession = function(originator, request) {
   var session = this,
     event_name = 'newRTCSession';
@@ -1728,9 +1669,6 @@ RTCSession.prototype.newRTCSession = function(originator, request) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.connecting = function(request) {
   var session = this,
   event_name = 'connecting';
@@ -1740,9 +1678,6 @@ RTCSession.prototype.connecting = function(request) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.progress = function(originator, response) {
   var session = this,
     event_name = 'progress';
@@ -1753,9 +1688,6 @@ RTCSession.prototype.progress = function(originator, response) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.started = function(originator, message) {
   var session = this,
     event_name = 'started';
@@ -1768,9 +1700,6 @@ RTCSession.prototype.started = function(originator, message) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.ended = function(originator, message, cause) {
   var session = this,
     event_name = 'ended';
@@ -1785,9 +1714,6 @@ RTCSession.prototype.ended = function(originator, message, cause) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.failed = function(originator, message, cause) {
   var session = this,
     event_name = 'failed';
@@ -1800,9 +1726,6 @@ RTCSession.prototype.failed = function(originator, message, cause) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.onhold = function(originator) {
   if (originator === 'local') {
     this.local_hold = true;
@@ -1815,9 +1738,6 @@ RTCSession.prototype.onhold = function(originator) {
   });
 };
 
-/**
- * @private
- */
 RTCSession.prototype.onunhold = function(originator) {
   if (originator === 'local') {
     this.local_hold = false;
@@ -1830,9 +1750,6 @@ RTCSession.prototype.onunhold = function(originator) {
   });
 };
 
-/*
- * @private
- */
 RTCSession.prototype.onmute = function(options) {
   this.emit('muted', this, {
     audio: options.audio,
@@ -1840,9 +1757,6 @@ RTCSession.prototype.onmute = function(options) {
   });
 };
 
-/*
- * @private
- */
 RTCSession.prototype.onunmute = function(options) {
   this.emit('unmuted', this, {
     audio: options.audio,
@@ -1850,9 +1764,6 @@ RTCSession.prototype.onunmute = function(options) {
   });
 };
 
-/*
- * @private
- */
 RTCSession.prototype.onReadyToReinvite = function() {
   var action = (this.pending_actions.length() > 0)? this.pending_actions.shift() : null;
 

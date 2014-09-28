@@ -1,16 +1,3 @@
-/**
- * @fileoverview Incoming SIP Message Sanity Check
- */
-
-/**
- * SIP message sanity check.
- * @augments JsSIP
- * @function
- * @param {JsSIP.IncomingMessage} message
- * @param {JsSIP.UA} ua
- * @param {JsSIP.Transport} transport
- * @returns {Boolean}
- */
 (function(JsSIP) {
 var sanityCheck,
  logger,

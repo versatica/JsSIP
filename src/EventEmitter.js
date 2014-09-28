@@ -1,11 +1,3 @@
-/**
- * @fileoverview EventEmitter
- */
-
-/**
- * @augments JsSIP
- * @class Class creating an event emitter.
- */
 (function(JsSIP) {
 var
   EventEmitter,
@@ -19,7 +11,7 @@ EventEmitter = function(){};
 EventEmitter.prototype = {
   /**
    * Initialize events dictionaries.
-   * @param {Array} events
+   * -param {Array} events
    */
   initEvents: function(events) {
     var idx, length;
@@ -41,19 +33,15 @@ EventEmitter.prototype = {
   },
 
   /**
-  * Check whether an event exists or not.
-  * @param {String} event
-  * @returns {Boolean}
-  */
+   * Check whether an event exists or not.
+   */
   checkEvent: function(event) {
     return !!this.events[event];
   },
 
   /**
-  * Add a listener to the end of the listeners array for the specified event.
-  * @param {String} event
-  * @param {Function} listener
-  */
+   * Add a listener to the end of the listeners array for the specified event.
+   */
   addListener: function(event, listener) {
     if (listener === undefined) {
       return;
@@ -77,22 +65,18 @@ EventEmitter.prototype = {
   },
 
   /**
-  * Add a one time listener for the specified event.
-  * The listener is invoked only the next time the event is fired, then it is removed.
-  * @param {String} event
-  * @param {Function} listener
-  */
+   * Add a one time listener for the specified event.
+   * The listener is invoked only the next time the event is fired, then it is removed.
+   */
   once: function(event, listener) {
     this.on(event, listener);
     this.oneTimeListeners[event].push(listener);
   },
 
   /**
-  * Remove a listener from the listener array for the specified event.
-  * Note that the order of the array elements will change after removing the listener
-  * @param {String} event
-  * @param {Function} listener
-  */
+   * Remove a listener from the listener array for the specified event.
+   * Note that the order of the array elements will change after removing the listener
+   */
   removeListener: function(event, listener) {
     var events, length,
       idx = 0;
@@ -120,9 +104,8 @@ EventEmitter.prototype = {
   },
 
   /**
-  * Remove all listeners from the listener array for the specified event.
-  * @param {String} event
-  */
+   * Remove all listeners from the listener array for the specified event.
+   */
   removeAllListener: function(event) {
     if (!this.checkEvent(event)) {
       this.logger.error('unable to remove listeners from a nonexistent event'+ event);
@@ -134,11 +117,10 @@ EventEmitter.prototype = {
   },
 
   /**
-  * By default EventEmitter will print a warning
-  * if more than C.MAX_LISTENERS listeners are added for a particular event.
-  * This function allows that limit to be modified.
-  * @param {Number} listeners
-  */
+   * By default EventEmitter will print a warning
+   * if more than C.MAX_LISTENERS listeners are added for a particular event.
+   * This function allows that limit to be modified.
+   */
   setMaxListeners: function(listeners) {
     if (typeof listeners !== 'number' || listeners < 0) {
       this.logger.error('listeners must be a positive number');
@@ -149,10 +131,8 @@ EventEmitter.prototype = {
   },
 
   /**
-  * Get the listeners for a specific event.
-  * @param {String} event
-  * @returns {Array}  Array of listeners for the specified event.
-  */
+   * Get the listeners for a specific event.
+   */
   listeners: function(event) {
     if (!this.checkEvent(event)) {
       this.logger.error('no event '+ event);
@@ -163,10 +143,8 @@ EventEmitter.prototype = {
   },
 
   /**
-  * Execute each of the listeners in order with the supplied arguments.
-  * @param {String} events
-  * @param {Array} args
-  */
+   * Execute each of the listeners in order with the supplied arguments.
+   */
   emit: function(event, sender, data) {
     var listeners, length, e, idx,
       self = this;

@@ -25,7 +25,6 @@
 	"devDependencies": {
 		"grunt": "~0.4.5",
 		"grunt-contrib-concat": "~0.5.0",
-		"grunt-include-replace": "~2.0.0",
 		"grunt-contrib-jshint": "~0.10.0",
 		"grunt-contrib-uglify": "~0.6.0",
 		"grunt-browserify": "~3.0.1",
@@ -33,7 +32,8 @@
 		"grunt-contrib-watch": "~0.6.1",
 		"pegjs": "0.7.0",
 		"sdp-transform": "~0.6.1",
-		"grunt-contrib-symlink": "~0.3.0"
+		"grunt-contrib-symlink": "~0.3.0",
+		"grunt-jsdoc": "~0.5.7"
 	},
 	"scripts": {
 		"test": "grunt travis --verbose"

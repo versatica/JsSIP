@@ -447,13 +447,6 @@ module.exports = function (session, opts) {
 };
 
 },{"./grammar":1}],5:[function(require,module,exports){
-/**
- * @fileoverview SDP Parser
- *
- * https://github.com/clux/sdp-transform
- * 
- */
-
 (function(JsSIP) {
 
   var parser = require('sdp-transform');

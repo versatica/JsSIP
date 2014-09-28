@@ -1,13 +1,3 @@
-/**
- * @fileoverview Transport
- */
-
-/**
- * @augments JsSIP
- * @class Transport
- * @param {JsSIP.UA} ua
- * @param {Object} server ws_server Object
- */
 (function(JsSIP) {
 var Transport,
   C = {
@@ -33,8 +23,6 @@ Transport = function(ua, server) {
 Transport.prototype = {
   /**
    * Send a message.
-   * @param {JsSIP.OutgoingRequest|String} msg
-   * @returns {Boolean}
    */
   send: function(msg) {
     var message = msg.toString();
@@ -126,10 +114,6 @@ Transport.prototype = {
 
   // Transport Event Handlers
 
-  /**
-  * @event
-  * @param {event} e
-  */
   onOpen: function() {
     this.connected = true;
 
@@ -147,10 +131,6 @@ Transport.prototype = {
     this.ua.onTransportConnected(this);
   },
 
-  /**
-  * @event
-  * @param {event} e
-  */
   onClose: function(e) {
     var connected_before = this.connected;
 
@@ -182,10 +162,6 @@ Transport.prototype = {
     }
   },
 
-  /**
-  * @event
-  * @param {event} e
-  */
   onMessage: function(e) {
     var message, transaction,
       data = e.data;
@@ -260,17 +236,12 @@ Transport.prototype = {
     }
   },
 
-  /**
-  * @event
-  * @param {event} e
-  */
   onError: function(e) {
     this.logger.warn('WebSocket connection error: ' + e);
   },
 
   /**
   * Reconnection attempt logic.
-  * @private
   */
   reConnect: function() {
     var transport = this;

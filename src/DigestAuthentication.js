@@ -1,14 +1,3 @@
-
-/**
- * @fileoverview SIP Digest Authentication
- */
-
-/**
- * SIP Digest Authentication.
- * @augments JsSIP.
- * @function Digest Authentication
- * @param {JsSIP.UA} ua
- */
 (function(JsSIP) {
 var DigestAuthentication;
 
@@ -27,9 +16,6 @@ DigestAuthentication = function(ua) {
 * Performs Digest authentication given a SIP request and the challenge
 * received in a response to that request.
 * Returns true if credentials were successfully generated, false otherwise.
-*
-* @param {JsSIP.OutgoingRequest} request
-* @param {Object} challenge
 */
 DigestAuthentication.prototype.authenticate = function(request, challenge) {
   // Inspect and validate the challenge.
@@ -97,7 +83,6 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
 /**
 * Generate Digest 'response' value.
-* @private
 */
 DigestAuthentication.prototype.calculateResponse = function() {
   var ha1, ha2;
@@ -157,7 +142,6 @@ DigestAuthentication.prototype.toString = function() {
 
 /**
 * Generate the 'nc' value as required by Digest in this.ncHex by reading this.nc.
-* @private
 */
 DigestAuthentication.prototype.updateNcHex = function() {
   var hex = Number(this.nc).toString(16);

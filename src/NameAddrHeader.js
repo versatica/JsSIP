@@ -1,16 +1,3 @@
-/**
- * @fileoverview JsSIP NameAddrHeader
- */
-
-/**
- * @augments JsSIP
- * @class Class creating a Name Address SIP header.
- *
- * @param {JsSIP.URI} uri
- * @param {String} [display_name]
- * @param {Object} [parameters]
- *
- */
 (function(JsSIP) {
 var NameAddrHeader;
 
@@ -39,6 +26,7 @@ NameAddrHeader = function(uri, display_name, parameters) {
     }
   });
 };
+
 NameAddrHeader.prototype = {
   setParam: function(key, value) {
     if (key) {
@@ -101,8 +89,6 @@ NameAddrHeader.prototype = {
 /**
   * Parse the given string and returns a JsSIP.NameAddrHeader instance or undefined if
   * it is an invalid NameAddrHeader.
-  * @public
-  * @param {String} name_addr_header
   */
 NameAddrHeader.parse = function(name_addr_header) {
   name_addr_header = JsSIP.Grammar.parse(name_addr_header,'Name_Addr_Header');

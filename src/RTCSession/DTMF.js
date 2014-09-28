@@ -1,11 +1,3 @@
-/**
- * @fileoverview DTMF
- */
-
-/**
- * @class DTMF
- * @param {JsSIP.RTCSession} session
- */
 (function(JsSIP) {
 
 var DTMF,
@@ -95,9 +87,6 @@ DTMF.prototype.send = function(tone, options) {
   });
 };
 
-/**
- * @private
- */
 DTMF.prototype.receiveResponse = function(response) {
   var cause;
 
@@ -124,9 +113,6 @@ DTMF.prototype.receiveResponse = function(response) {
   }
 };
 
-/**
- * @private
- */
 DTMF.prototype.onRequestTimeout = function() {
   this.emit('failed', this, {
     originator: 'system',
@@ -135,9 +121,6 @@ DTMF.prototype.onRequestTimeout = function() {
   this.owner.onRequestTimeout();
 };
 
-/**
- * @private
- */
 DTMF.prototype.onTransportError = function() {
   this.emit('failed', this, {
     originator: 'system',
@@ -146,9 +129,6 @@ DTMF.prototype.onTransportError = function() {
   this.owner.onTransportError();
 };
 
-/**
- * @private
- */
 DTMF.prototype.onDialogError = function(response) {
   this.emit('failed', this, {
     originator: 'remote',
@@ -158,9 +138,6 @@ DTMF.prototype.onDialogError = function(response) {
   this.owner.onDialogError(response);
 };
 
-/**
- * @private
- */
 DTMF.prototype.init_incoming = function(request) {
   var body,
     reg_tone = /^(Signal\s*?=\s*?)([0-9A-D#*]{1})(\s)?.*/,
@@ -195,5 +172,5 @@ DTMF.prototype.init_incoming = function(request) {
 };
 
 DTMF.C = C;
-return DTMF;
+JsSIP.RTCSession.DTMF = DTMF;
 }(JsSIP));

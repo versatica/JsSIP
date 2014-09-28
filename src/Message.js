@@ -1,12 +1,3 @@
-/**
- * @fileoverview Message
- */
-
-/**
- * @augments JsSIP
- * @class Class creating SIP MESSAGE request.
- * @param {JsSIP.UA} ua
- */
 (function(JsSIP) {
 var Message;
 
@@ -74,9 +65,6 @@ Message.prototype.send = function(target, body, options) {
   request_sender.send();
 };
 
-/**
-* @private
-*/
 Message.prototype.receiveResponse = function(response) {
   var cause;
 
@@ -109,9 +97,6 @@ Message.prototype.receiveResponse = function(response) {
 };
 
 
-/**
-* @private
-*/
 Message.prototype.onRequestTimeout = function() {
   if(this.closed) {
     return;
@@ -122,9 +107,6 @@ Message.prototype.onRequestTimeout = function() {
   });
 };
 
-/**
-* @private
-*/
 Message.prototype.onTransportError = function() {
   if(this.closed) {
     return;
@@ -135,17 +117,11 @@ Message.prototype.onTransportError = function() {
   });
 };
 
-/**
-* @private
-*/
 Message.prototype.close = function() {
   this.closed = true;
   delete this.ua.applicants[this];
 };
 
-/**
- * @private
- */
 Message.prototype.init_incoming = function(request) {
   var transaction;
 
@@ -188,9 +164,6 @@ Message.prototype.accept = function(options) {
 /**
  * Reject the incoming Message
  * Only valid for incoming Messages
- *
- * @param {Number} status_code
- * @param {String} [reason_phrase]
  */
 Message.prototype.reject = function(options) {
   options = options || {};
@@ -216,9 +189,6 @@ Message.prototype.reject = function(options) {
  * Internal Callbacks
  */
 
-/**
- * @private
- */
 Message.prototype.newMessage = function(originator, request) {
   var message = this,
     event_name = 'newMessage';

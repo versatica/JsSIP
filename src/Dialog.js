@@ -1,19 +1,4 @@
-/**
- * @fileoverview SIP Dialog
- */
-
-/**
- * @augments JsSIP
- * @class Class creating a SIP dialog.
- * @param {JsSIP.RTCSession} owner
- * @param {JsSIP.IncomingRequest|JsSIP.IncomingResponse} message
- * @param {Enum} type UAC / UAS
- * @param {Enum} state JsSIP.Dialog.C.STATUS_EARLY / JsSIP.Dialog.C.STATUS_CONFIRMED
- */
 (function(JsSIP) {
-
-// Load dependencies
-var RequestSender   = @@include('../src/Dialog/RequestSender.js')
 
 var Dialog,
   C = {
@@ -86,10 +71,6 @@ Dialog = function(owner, message, type, state) {
 };
 
 Dialog.prototype = {
-  /**
-   * @param {JsSIP.IncomingMessage} message
-   * @param {Enum} UAC/UAS
-   */
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
@@ -105,12 +86,6 @@ Dialog.prototype = {
     this.logger.debug('dialog ' + this.id.toString() + ' deleted');
     delete this.owner.ua.dialogs[this.id.toString()];
   },
-
-  /**
-  * @param {String} method request method
-  * @param {Object} extraHeaders extra headers
-  * @returns {JsSIP.OutgoingRequest}
-  */
 
   // RFC 3261 12.2.1.1
   createRequest: function(method, extraHeaders, body) {
@@ -138,11 +113,6 @@ Dialog.prototype = {
 
     return request;
   },
-
-  /**
-  * @param {JsSIP.IncomingRequest} request
-  * @returns {Boolean}
-  */
 
   // RFC 3261 12.2.2
   checkInDialogRequest: function(request) {
@@ -217,14 +187,11 @@ Dialog.prototype = {
       extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
       body = options.body || null,
       request = this.createRequest(method, extraHeaders, body),
-      request_sender = new RequestSender(this, applicant, request);
+      request_sender = new JsSIP.Dialog.RequestSender(this, applicant, request);
 
       request_sender.send();
   },
 
-  /**
-  * @param {JsSIP.IncomingRequest} request
-  */
   receiveRequest: function(request) {
     //Check in-dialog request
     if(!this.checkInDialogRequest(request)) {

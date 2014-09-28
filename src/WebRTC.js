@@ -1,7 +1,3 @@
-/**
- * @fileoverview WebRTC
- */
-
 (function(JsSIP) {
 var WebRTC;
 

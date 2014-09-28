@@ -1,13 +1,3 @@
-/**
- * @fileoverview Registrator Agent
- */
-
-/**
- * @augments JsSIP
- * @class Class creating a registrator agent.
- * @param {JsSIP.UA} ua
- * @param {JsSIP.Transport} transport
- */
 (function(JsSIP) {
 var Registrator;
 
@@ -52,9 +42,6 @@ Registrator = function(ua, transport) {
 };
 
 Registrator.prototype = {
-  /**
-   * @param {Object} [options]
-   */
   register: function(options) {
     var request_sender, cause, extraHeaders,
       self = this;
@@ -77,9 +64,6 @@ Registrator.prototype = {
 
     request_sender = new JsSIP.RequestSender(this, this.ua);
 
-    /**
-    * @private
-    */
     this.receiveResponse = function(response) {
       var contact, expires,
         contacts = response.getHeaders('contact').length;
@@ -169,16 +153,10 @@ Registrator.prototype = {
       }
     };
 
-    /**
-    * @private
-    */
     this.onRequestTimeout = function() {
       this.registrationFailure(null, JsSIP.C.causes.REQUEST_TIMEOUT);
     };
 
-    /**
-    * @private
-    */
     this.onTransportError = function() {
       this.registrationFailure(null, JsSIP.C.causes.CONNECTION_ERROR);
     };
@@ -186,9 +164,6 @@ Registrator.prototype = {
     request_sender.send();
   },
 
-  /**
-  * @param {Object} [options]
-  */
   unregister: function(options) {
     var extraHeaders;
 
@@ -235,9 +210,6 @@ Registrator.prototype = {
 
     var request_sender = new JsSIP.RequestSender(this, this.ua);
 
-    /**
-    * @private
-    */
     this.receiveResponse = function(response) {
       var cause;
 
@@ -254,16 +226,10 @@ Registrator.prototype = {
       }
     };
 
-    /**
-    * @private
-    */
     this.onRequestTimeout = function() {
       this.unregistered(null, JsSIP.C.causes.REQUEST_TIMEOUT);
     };
 
-    /**
-    * @private
-    */
     this.onTransportError = function() {
       this.unregistered(null, JsSIP.C.causes.CONNECTION_ERROR);
     };
@@ -271,9 +237,6 @@ Registrator.prototype = {
     request_sender.send();
   },
 
-  /**
-  * @private
-  */
   registrationFailure: function(response, cause) {
     this.ua.emit('registrationFailed', this.ua, {
       response: response || null,
@@ -289,9 +252,6 @@ Registrator.prototype = {
     }
   },
 
-  /**
-   * @private
-   */
   unregistered: function(response, cause) {
     this.registered = false;
     this.ua.emit('unregistered', this.ua, {
@@ -300,9 +260,6 @@ Registrator.prototype = {
     });
   },
 
-  /**
-  * @private
-  */
   onTransportClosed: function() {
     this.registered_before = this.registered;
     if (this.registrationTimer !== null) {
@@ -316,16 +273,10 @@ Registrator.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   onTransportConnected: function() {
     this.register();
   },
 
-  /**
-  * @private
-  */
   close: function() {
     this.registered_before = this.registered;
     this.unregister();

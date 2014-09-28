@@ -1,10 +1,3 @@
-/**
- * @fileoverview SDP Parser
- *
- * https://github.com/clux/sdp-transform
- * 
- */
-
 (function(JsSIP) {
 
   var parser = require('sdp-transform');

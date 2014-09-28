@@ -1,15 +1,17 @@
-/**
- * @fileoverview Exceptions
- */
-
-/**
- * JsSIP Exceptions.
- * @augments JsSIP
- */
 (function(JsSIP) {
 var Exceptions;
 
+
+/**
+ * @namespace Exceptions
+ * @memberOf JsSIP
+ */
 Exceptions= {
+  /**
+   * Exception thrown when a valid parameter is given to the JsSIP.UA constructor.
+   * @class ConfigurationError
+   * @memberOf JsSIP.Exceptions
+   */
   ConfigurationError: (function(){
     var exception = function(parameter, value) {
       this.code = 1;
@@ -42,7 +44,7 @@ Exceptions= {
     exception.prototype = new Error();
     return exception;
   }()),
-  
+
   NotReadyError: (function(){
     var exception = function(message) {
       this.code = 4;

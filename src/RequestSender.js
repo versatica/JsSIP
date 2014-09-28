@@ -1,14 +1,3 @@
-
-/**
- * @fileoverview Request Sender
- */
-
-/**
- * @augments JsSIP
- * @class Class creating a request sender.
- * @param {Object} applicant
- * @param {JsSIP.UA} ua
- */
 (function(JsSIP) {
 var RequestSender;
 
@@ -49,7 +38,6 @@ RequestSender.prototype = {
   /**
   * Callback fired when receiving a request timeout error from the client transaction.
   * To be re-defined by the applicant.
-  * @event
   */
   onRequestTimeout: function() {
     this.applicant.onRequestTimeout();
@@ -58,7 +46,6 @@ RequestSender.prototype = {
   /**
   * Callback fired when receiving a transport error from the client transaction.
   * To be re-defined by the applicant.
-  * @event
   */
   onTransportError: function() {
     this.applicant.onTransportError();
@@ -67,7 +54,6 @@ RequestSender.prototype = {
   /**
   * Called from client transaction when receiving a correct response to the request.
   * Authenticate request if needed or pass the response back to the applicant.
-  * @param {JsSIP.IncomingResponse} response
   */
   receiveResponse: function(response) {
     var cseq, challenge, authorization_header_name,

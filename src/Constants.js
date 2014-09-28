@@ -1,12 +1,3 @@
-/**
- * @fileoverview JsSIP Constants
- */
-
-/**
- * JsSIP Constants.
- * @augments JsSIP
- */
-
 JsSIP.C= {
   USER_AGENT: JsSIP.name +' '+ JsSIP.version,
 

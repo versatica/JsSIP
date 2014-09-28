@@ -1,11 +1,7 @@
-/**
- * @fileoverview RTCMediaHandler
- */
-
 /* RTCMediaHandler
- * @class PeerConnection helper Class.
- * @param {JsSIP.RTCSession} session
- * @param {Object} [contraints]
+ * -class PeerConnection helper Class.
+ * -param {JsSIP.RTCSession} session
+ * -param {Object} [contraints]
  */
 (function(JsSIP){
 
@@ -133,7 +129,6 @@ RTCMediaHandler.prototype = {
 
   /**
   * peerConnection creation.
-  * @param {Function} onSuccess Fired when there are no more ICE candidates
   */
   init: function(options) {
     options = options || {};
@@ -220,9 +215,9 @@ RTCMediaHandler.prototype = {
   },
 
   /**
-  * @param {Object} mediaConstraints
-  * @param {Function} onSuccess
-  * @param {Function} onFailure
+  * -param {Object} mediaConstraints
+  * -param {Function} onSuccess
+  * -param {Function} onFailure
   */
   getUserMedia: function(onSuccess, onFailure, constraints) {
     var self = this;
@@ -245,10 +240,10 @@ RTCMediaHandler.prototype = {
 
   /**
   * Message reception.
-  * @param {String} type
-  * @param {String} sdp
-  * @param {Function} onSuccess
-  * @param {Function} onFailure
+  * -param {String} type
+  * -param {String} sdp
+  * -param {Function} onSuccess
+  * -param {Function} onFailure
   */
   onMessage: function(type, body, onSuccess, onFailure) {
     this.peerConnection.setRemoteDescription(
@@ -259,6 +254,5 @@ RTCMediaHandler.prototype = {
   }
 };
 
-// Return since it will be assigned to a variable.
-return RTCMediaHandler;
+JsSIP.RTCSession.RTCMediaHandler = RTCMediaHandler;
 }(JsSIP));

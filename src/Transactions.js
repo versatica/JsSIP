@@ -1,10 +1,5 @@
 /**
- * @fileoverview SIP Transactions
- */
-
-/**
  * SIP Transactions module.
- * @augments JsSIP
  */
 (function(JsSIP) {
 var
@@ -25,13 +20,6 @@ var
     INVITE_SERVER: 'ist'
   };
 
-/**
-* @augments JsSIP.Transactions
-* @class Non Invite Client Transaction
-* @param {JsSIP.RequestSender} request_sender
-* @param {JsSIP.OutgoingRequest} request
-* @param {JsSIP.Transport} transport
-*/
 var NonInviteClientTransaction = function(request_sender, request, transport) {
   var via,
     via_transport,
@@ -137,15 +125,6 @@ NonInviteClientTransaction.prototype.receiveResponse = function(response) {
   }
 };
 
-
-
-/**
-* @augments JsSIP.Transactions
-* @class Invite Client Transaction
-* @param {JsSIP.RequestSender} request_sender
-* @param {JsSIP.OutgoingRequest} request
-* @param {JsSIP.Transport} transport
-*/
 var InviteClientTransaction = function(request_sender, request, transport) {
   var via,
     tr = this,
@@ -339,14 +318,6 @@ InviteClientTransaction.prototype.receiveResponse = function(response) {
   }
 };
 
-
-/**
- * @augments JsSIP.Transactions
- * @class ACK Client Transaction
- * @param {JsSIP.RequestSender} request_sender
- * @param {JsSIP.OutgoingRequest} request
- * @param {JsSIP.Transport} transport
- */
 var AckClientTransaction = function(request_sender, request, transport) {
   var via,
     via_transport;
@@ -386,13 +357,6 @@ AckClientTransaction.prototype.onTransportError = function() {
   this.request_sender.onTransportError();
 };
 
-
-/**
-* @augments JsSIP.Transactions
-* @class Non Invite Server Transaction
-* @param {JsSIP.IncomingRequest} request
-* @param {JsSIP.UA} ua
-*/
 var NonInviteServerTransaction = function(request, ua) {
   var events = ['stateChanged'];
 
@@ -489,12 +453,6 @@ NonInviteServerTransaction.prototype.receiveResponse = function(status_code, res
   }
 };
 
-/**
-* @augments JsSIP.Transactions
-* @class Invite Server Transaction
-* @param {JsSIP.IncomingRequest} request
-* @param {JsSIP.UA} ua
-*/
 var InviteServerTransaction = function(request, ua) {
   var events = ['stateChanged'];
 
@@ -652,11 +610,6 @@ InviteServerTransaction.prototype.receiveResponse = function(status_code, respon
 };
 
 /**
- * @function
- * @param {JsSIP.UA} ua
- * @param {JsSIP.IncomingRequest} request
- *
- * @return {boolean}
  * INVITE:
  *  _true_ if retransmission
  *  _false_ new request

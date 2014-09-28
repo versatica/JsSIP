@@ -13,9 +13,8 @@
 
 
 module.exports = function(grunt) {
-	// Source files.
+	// JavaScript files defining the JsSIP namespace.
 	var jsFiles = [
-		"src/head.js",
 		"src/JsSIP.js",
 		"src/Logger.js",
 		"src/LoggerFactory.js",
@@ -29,27 +28,47 @@ module.exports = function(grunt) {
 		"src/URI.js",
 		"src/NameAddrHeader.js",
 		"src/Transactions.js",
-		"src/Dialogs.js",
+		"src/Dialog.js",
+		"src/Dialog/RequestSender.js",
 		"src/RequestSender.js",
 		"src/Registrator.js",
 		"src/RTCSession.js",
+		"src/RTCSession/RTCMediaHandler.js",
+		"src/RTCSession/Request.js",
+		"src/RTCSession/DTMF.js",
 		"src/Message.js",
 		"src/UA.js",
 		"src/Utils.js",
 		"src/SanityCheck.js",
 		"src/DigestAuthentication.js",
-		"src/WebRTC.js",
-		"src/tail.js"
+		"src/WebRTC.js"
 	];
+
+	// JavaScript files to concatenate.
+	var concatFiles = (function() {
+		var files = [];
+
+		files.push("src/_head.js");
+		files = files.concat(jsFiles);
+		files.push("src/_tail.js");
+
+		return files;
+	}());
+
+	// Files for documentation.
+	var docFiles = [
+		"README.md"
+	].concat(jsFiles);
 
 	// Banner.
 	var banner = require("fs").readFileSync("src/banner.txt").toString();
 
-	// TODO: remove
+	// Generated builds.
 	var builds = {
 		dist: "builds/<%= pkg.name %>-<%= pkg.version %>.js",
 		last: "builds/<%= pkg.name %>-last.js",
 	};
+
 
 	// Project configuration.
 	grunt.initConfig({
@@ -62,7 +81,7 @@ module.exports = function(grunt) {
 
 		concat: {
 			dist: {
-				src: jsFiles,
+				src: concatFiles,
 				dest: builds.dist,
 				options: {
 					banner: "<%= meta.banner %>",
@@ -86,13 +105,6 @@ module.exports = function(grunt) {
 			},
 		},
 
-		includereplace: {
-			dist: {
-				src: builds.dist,
-				dest: "./"
-			}
-		},
-
 		jshint: {
 			dist: builds.dist,
 			// Default options.
@@ -106,7 +118,7 @@ module.exports = function(grunt) {
 				noarg: true,
 				noempty: true,
 				nonbsp:  true,
-				nonew: true,
+				// nonew: true,  // TODO: Enable when fixed.
 				plusplus: false,
 				undef: true,
 				unused: true,
@@ -129,14 +141,7 @@ module.exports = function(grunt) {
 				src: jsFiles,
 				options: {
 					unused: false,
-					ignores: [
-						"src/head.js",
-						"src/tail.js",
-						// Ignore files using @@ (includereplace).
-						// TODO: I hate includereplace.
-						"src/Dialogs.js",
-						"src/RTCSession.js"
-					],
+					ignores: [],
 					globals: {
 						// target: true,  // TODO: Add it when 'target' is given instead of 'window'.
 						JsSIP: true
@@ -186,19 +191,38 @@ module.exports = function(grunt) {
 				src: builds.dist,
 				dest: builds.last
 			}
+		},
+
+		jsdoc : {
+			basic: {
+				src: docFiles,
+				options: {
+					destination: "doc/basic/",
+					private: false
+				}
+			},
+			docstrap: {
+				src: docFiles,
+				options: {
+					destination: "doc/docstrap/",
+					private: false,
+					template: "node_modules/grunt-jsdoc/node_modules/ink-docstrap/template",
+					configure: "jsdoc.conf.json"
+				}
+			}
 		}
 	});
 
 
 	// Load Grunt plugins.
 	grunt.loadNpmTasks("grunt-contrib-concat");
-	grunt.loadNpmTasks("grunt-include-replace");
 	grunt.loadNpmTasks("grunt-contrib-jshint");
 	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.loadNpmTasks("grunt-browserify");
 	grunt.loadNpmTasks("grunt-contrib-qunit");
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	grunt.loadNpmTasks("grunt-contrib-symlink");
+	grunt.loadNpmTasks("grunt-jsdoc");
 
 
 	// Task for building src/Grammar/dist/Grammar.js.
@@ -249,7 +273,6 @@ module.exports = function(grunt) {
 	grunt.registerTask("dist", [
 		"jshint:each_file",
 		"concat:dist",
-		"includereplace:dist",
 		"jshint:dist",
 		"concat:post_dist",
 		"symlink:last"
@@ -264,6 +287,9 @@ module.exports = function(grunt) {
 
 	// Build the Grammar and SDP files.
 	grunt.registerTask("devel", [ "grammar", "sdp" ]);
+
+	// Build builds nice documentation using JsDoc3.
+	grunt.registerTask("doc", [ "jsdoc:docstrap" ]);
 
 	// Travis CI task.
 	grunt.registerTask("travis", [ "test" ]);

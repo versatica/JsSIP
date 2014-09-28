@@ -1,4 +1,5 @@
-builds/
 node_modules/
 npm-debug.log
+builds/
+doc/
 NO_GIT/

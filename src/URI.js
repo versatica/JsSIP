@@ -1,17 +1,10 @@
 /**
- * @fileoverview SIP URI
- */
-
-/**
- * @augments JsSIP
- * @class Class creating a SIP URI.
- *
- * @param {String} [scheme]
- * @param {String} [user]
- * @param {String} host
- * @param {String} [port]
- * @param {Object} [parameters]
- * @param {Object} [headers]
+ * -param {String} [scheme]
+ * -param {String} [user]
+ * -param {String} host
+ * -param {String} [port]
+ * -param {Object} [parameters]
+ * -param {Object} [headers]
  *
  */
 (function(JsSIP) {
@@ -195,8 +188,6 @@ URI.prototype = {
 /**
   * Parse the given string and returns a JsSIP.URI instance or undefined if
   * it is an invalid URI.
-  * @public
-  * @param {String} uri
   */
 URI.parse = function(uri) {
   uri = JsSIP.Grammar.parse(uri,'SIP_URI');

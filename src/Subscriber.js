@@ -1,37 +1,17 @@
-
-/**
- * @fileoverview SIP Subscriber (SIP-Specific Event Notifications RFC6665)
- */
-
-
-/**
- * @augments JsSIP
- * @class Class creating a SIP Subscriber.
- */
-
 JsSIP.Subscriber = function(ua) {
   this.logger = ua.getLogger('jssip.subscriber')
 };
 
 JsSIP.Subscriber.prototype = {
-  /**
-   * @private
-   */
   initSubscriber: function(){
     this.N = null;
     this.subscriptions = {};
   },
 
-  /**
-  * @private
-  */
   timer_N: function(){
     this.close();
   },
 
-  /**
-  * @private
-  */
   close: function() {
     var subscription;
 
@@ -52,9 +32,6 @@ JsSIP.Subscriber.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   onSubscriptionTerminate: function(subscription) {
 
     delete this.subscriptions[subscription.id];
@@ -146,7 +123,6 @@ JsSIP.Subscriber.prototype = {
   /**
   * Every Session needs a 'terminate' method in order to be called by JsSIP.UA
   * when user fires JsSIP.UA.close()
-  * @private
   */
   terminate: function() {
     this.unsubscribe();
@@ -160,9 +136,6 @@ JsSIP.Subscriber.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   receiveRequest: function(request) {
     var subscription_state, expires;
 
@@ -190,9 +163,6 @@ JsSIP.Subscriber.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   matchEvent: function(request) {
     var event;
 
@@ -220,10 +190,6 @@ JsSIP.Subscriber.prototype = {
   }
 };
 
-/**
- * @augments JsSIP
- * @class Class creating a SIP Subscription.
- */
 JsSIP.Subscription = function (subscriber, request, state, expires) {
 
     this.id = null;
@@ -254,9 +220,6 @@ JsSIP.Subscription = function (subscriber, request, state, expires) {
 };
 
 JsSIP.Subscription.prototype = {
-  /**
-  * @private
-  */
   timer_N: function(){
     if (this.state === 'terminated') {
       this.close();
@@ -268,9 +231,6 @@ JsSIP.Subscription.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   close: function() {
     this.state = 'terminated';
     this.terminateDialog();
@@ -278,9 +238,6 @@ JsSIP.Subscription.prototype = {
     this.subscriber.onSubscriptionTerminate(this);
   },
 
-  /**
-  * @private
-  */
   createConfirmedDialog: function(message, type) {
     var local_tag, remote_tag, id, dialog;
 
@@ -301,9 +258,6 @@ JsSIP.Subscription.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   terminateDialog: function() {
     if(this.dialog) {
       this.dialog.terminate();
@@ -311,9 +265,6 @@ JsSIP.Subscription.prototype = {
     }
   },
 
-  /**
-  * @private
-  */
   receiveRequest: function(request, initial) {
     var subscription_state,
       subscription = this;
