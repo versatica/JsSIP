@@ -260,15 +260,10 @@ UA.prototype.sendMessage = function(target, body, options) {
  *
  */
 UA.prototype.stop = function() {
-  var session, applicant,
-	ua = this;
-
-  function transactionsListener() {
-	if (ua.nistTransactionsCount === 0 && ua.nictTransactionsCount === 0) {
-		ua.removeListener('transactionDestroyed', transactionsListener);
-		ua.transport.disconnect();
-	}
-  }
+  var session;
+  var applicant;
+  var num_sessions;
+  var ua = this;
 
   this.logger.log('user requested closure...');
 
@@ -284,6 +279,9 @@ UA.prototype.stop = function() {
   this.logger.log('closing registrator');
   this.registrator.close();
 
+  // If there are session wait a bit so CANCEL/BYE can be sent and their responses received.
+  num_sessions = Object.keys(this.sessions).length;
+
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
 	this.logger.log('closing session ' + session);
@@ -297,21 +295,15 @@ UA.prototype.stop = function() {
 
   this.status = C.STATUS_USER_CLOSED;
 
-  /*
-   * If the remaining transactions are all INVITE transactions, there is no need to
-   * wait anymore because every session has already been closed by this method.
-   * - locally originated sessions where terminated (CANCEL or BYE)
-   * - remotely originated sessions where rejected (4XX) or terminated (BYE)
-   * Remaining INVITE transactions belong tho sessions that where answered. This are in
-   * 'accepted' state due to timers 'L' and 'M' defined in [RFC 6026]
-   */
-  if (this.nistTransactionsCount === 0 && this.nictTransactionsCount === 0) {
-  	// Wait a JS iteration so CANCEL can be sent for outgoing non established sessions.
-  	window.setTimeout(function() {
-		ua.transport.disconnect();
-	});
-  } else {
-	this.on('transactionDestroyed', transactionsListener);
+  // If there are no pending non-INVITE client or server transactions and no
+  // sessions, then disconnect now. Otherwise wait for 2 seconds.
+  if (this.nistTransactionsCount === 0 && this.nictTransactionsCount === 0 && num_sessions === 0) {
+  	ua.transport.disconnect();
+  }
+  else {
+    window.setTimeout(function() {
+      ua.transport.disconnect();
+    }, 2000);
   }
 };
 
