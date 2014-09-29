@@ -9,7 +9,7 @@
 * Lightweight! (~140KB)
 * Easy to use and powerful user API
 * Works with OverSIP, Kamailio, Asterisk and repro (reSIProcate) servers ([more info](http://jssip.net/documentation/misc/interoperability))
-* Written by the authors of [draft-ietf-sipcore-sip-websocket](http://tools.ietf.org/html/draft-ietf-sipcore-sip-websocket) and [OverSIP](http://www.oversip.net)
+* Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](http://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
 
 
 ## Getting Started
