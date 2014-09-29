@@ -1,4 +1,4 @@
-<a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner-new.png"/></a>
+<p align="center"><a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner-new.png"/></a></p>
 
 [![Build Status](https://travis-ci.org/versatica/JsSIP.png?branch=new-design)](https://travis-ci.org/versatica/JsSIP)
 
@@ -95,17 +95,17 @@ Check our **Tryit JsSIP** online demo:
 
 ## Authors
 
-### José Luis Millán
+#### José Luis Millán
 
 * Main author. Core Designer and Developer.
 * <jmillan@aliax.net> (Github [@jmillan](https://github.com/jmillan))
 
-### Iñaki Baz Castillo
+#### Iñaki Baz Castillo
 
 * Core Designer and Developer.
 * <ibc@aliax.net> (Github [@ibc](https://github.com/ibc))
 
-### Saúl Ibarra Corretgé
+#### Saúl Ibarra Corretgé
 
 * Core Designer.
 * <saghul@gmail.com> (Github [@saghul](https://github.com/saghul))
