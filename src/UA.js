@@ -45,8 +45,7 @@ C = {
 
 /**
  * The User-Agent class.
- * @class UA
- * @memberof JsSIP
+ * @class JsSIP.UA
  * @param {Object} configuration Configuration parameters.
  * @throws {JsSIP.Exceptions.ConfigurationError} If a configuration parameter is invalid.
  * @throws {TypeError} If no configuration is given.
@@ -186,9 +185,9 @@ UA.prototype = new JsSIP.EventEmitter();
  *
  *
  */
-UA.prototype.register = function(options) {
+UA.prototype.register = function() {
   this.configuration.register = true;
-  this.registrator.register(options);
+  this.registrator.register();
 };
 
 /**
@@ -197,6 +196,13 @@ UA.prototype.register = function(options) {
 UA.prototype.unregister = function(options) {
   this.configuration.register = false;
   this.registrator.unregister(options);
+};
+
+/**
+ * Get the Registrator instance.
+ */
+UA.prototype.registrator = function() {
+  return this.registrator;
 };
 
 /**

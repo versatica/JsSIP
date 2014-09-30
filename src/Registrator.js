@@ -33,7 +33,11 @@ Registrator = function(ua, transport) {
   // sip.ice media feature tag (RFC 5768)
   this.contact += ';+sip.ice';
 
+  // Custom headers for REGISTER and un-REGISTER.
   this.extraHeaders = [];
+
+  // Custom Contact header params for REGISTER and un-REGISTER.
+  this.extraContactParams = "";
 
   if(reg_id) {
     this.contact += ';reg-id='+ reg_id;
@@ -42,18 +46,37 @@ Registrator = function(ua, transport) {
 };
 
 Registrator.prototype = {
-  register: function(options) {
+  setExtraHeaders: function(extraHeaders) {
+    if (! extraHeaders instanceof Array) {
+      extraHeaders = [];
+    }
+
+    this.extraHeaders = extraHeaders.slice();
+  },
+
+  setExtraContactParams: function(extraContactParams) {
+    if (! extraContactParams instanceof Object) {
+      extraContactParams = {};
+    }
+
+    // Reset it.
+    this.extraContactParams = "";
+
+    for(var param_key in extraContactParams) {
+      var param_value = extraContactParams[param_key];
+      this.extraContactParams += (";" + param_key);
+      if (param_value) {
+        this.extraContactParams += ("=" + param_value);
+      }
+    }
+  },
+
+  register: function() {
     var request_sender, cause, extraHeaders,
       self = this;
 
-    options = options || {};
-
-    if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
-      this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
-    }
-
     extraHeaders = this.extraHeaders.slice();
-    extraHeaders.push('Contact: '+ this.contact + ';expires=' + this.expires);
+    extraHeaders.push('Contact: ' + this.contact + ';expires=' + this.expires + this.extraContactParams);
     extraHeaders.push('Expires: '+ this.expires);
 
     this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
@@ -174,12 +197,6 @@ Registrator.prototype = {
 
     options = options || {};
 
-    if (options.extraHeaders && Object.keys(options.extraHeaders).length !== 0) {
-      this.extraHeaders = options.extraHeaders && options.extraHeaders.slice();
-    }
-
-    extraHeaders = this.extraHeaders.slice();
-
     this.registered = false;
 
     // Clear the registration timer.
@@ -188,8 +205,10 @@ Registrator.prototype = {
       this.registrationTimer = null;
     }
 
+    extraHeaders = this.extraHeaders.slice();
+
     if(options.all) {
-      extraHeaders.push('Contact: *');
+      extraHeaders.push('Contact: *' + this.extraContactParams);
       extraHeaders.push('Expires: 0');
 
       this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
@@ -198,7 +217,7 @@ Registrator.prototype = {
           'cseq': (this.cseq += 1)
         }, extraHeaders);
     } else {
-      extraHeaders.push('Contact: '+ this.contact + ';expires=0');
+      extraHeaders.push('Contact: '+ this.contact + ';expires=0' + this.extraContactParams);
       extraHeaders.push('Expires: 0');
 
       this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
