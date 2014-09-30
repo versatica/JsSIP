@@ -186,7 +186,6 @@ UA.prototype = new JsSIP.EventEmitter();
  *
  */
 UA.prototype.register = function() {
-  this.configuration.register = true;
   this.registrator.register();
 };
 
@@ -194,7 +193,6 @@ UA.prototype.register = function() {
  * Unregister.
  */
 UA.prototype.unregister = function(options) {
-  this.configuration.register = false;
   this.registrator.unregister(options);
 };
 
@@ -468,7 +466,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.error = null;
 
   if(this.configuration.register) {
-	this.registrator.onTransportConnected();
+	this.registrator.register();
   }
 
   this.emit('connected', this, {

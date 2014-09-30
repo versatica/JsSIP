@@ -292,13 +292,12 @@ Registrator.prototype = {
     }
   },
 
-  onTransportConnected: function() {
-    this.register();
-  },
-
   close: function() {
-    this.registered_before = this.registered;
-    this.unregister();
+    this.registered_before = false;
+
+    if (this.registered) {
+      this.unregister();
+    }
   }
 };
 
