@@ -1165,6 +1165,15 @@ RTCSession.prototype.receiveReinvite = function(request) {
   }
 };
 
+/**
+ * In dialog UPDATE Reception
+ */
+
+RTCSession.prototype.receiveUpdate = function(request) {
+  // TODO:
+
+  request.reply(501, "TODO");
+};
 
 /**
  * In dialog Request Reception
@@ -1204,20 +1213,50 @@ RTCSession.prototype.receiveRequest = function(request) {
           request.reply(200);
           this.ended('remote', request, JsSIP.C.causes.BYE);
         }
+        else if (this.status === C.STATUS_INVITE_RECEIVED) {
+          request.reply(200);
+          this.request.reply(487, 'BYE Received');
+          this.ended('remote', request, JsSIP.C.causes.BYE);
+        }
+        else {
+          request.reply(403, 'Wrong Status');
+        }
         break;
       case JsSIP.C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
           this.logger.debug('re-INVITE received');
           this.receiveReinvite(request);
         }
+        else {
+          request.reply(403, 'Wrong Status');
+        }
         break;
       case JsSIP.C.INFO:
-        if(this.status === C.STATUS_CONFIRMED || this.status === C.STATUS_WAITING_FOR_ACK) {
+        if(this.status === C.STATUS_CONFIRMED || this.status === C.STATUS_WAITING_FOR_ACK || this.status === C.STATUS_INVITE_RECEIVED) {
           contentType = request.getHeader('content-type');
           if (contentType && (contentType.match(/^application\/dtmf-relay/i))) {
             new JsSIP.RTCSession.DTMF(this).init_incoming(request);
           }
+          else {
+            request.reply(415);
+          }
         }
+        else {
+          request.reply(403, 'Wrong Status');
+        }
+        break;
+      // TODO
+      case JsSIP.C.UPDATE:
+        if(this.status === C.STATUS_CONFIRMED) {
+          this.logger.debug('UPDATE received');
+          this.receiveUpdate(request);
+        }
+        else {
+          request.reply(403, 'Wrong Status');
+        }
+        break;
+      default:
+        request.reply(501);
     }
   }
 };

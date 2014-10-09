@@ -130,51 +130,49 @@ Dialog.prototype = {
       this.remote_seqnum = request.cseq;
     }
 
-    switch(request.method) {
-      // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
-      case JsSIP.C.INVITE:
-        if (this.uac_pending_reply === true) {
-          request.reply(491);
-        } else if (this.uas_pending_reply === true) {
-          var retryAfter = (Math.random() * 10 | 0) + 1;
-          request.reply(500, null, ['Retry-After:'+ retryAfter]);
-          return false;
-        } else {
-          this.uas_pending_reply = true;
-          request.server_transaction.on('stateChanged', function stateChanged(e){
-            if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
-                e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
-                e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+    // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
+    if (request.method === JsSIP.C.INVITE || (request.method === JsSIP.C.UPDATE && request.body)) {
+      if (this.uac_pending_reply === true) {
+        request.reply(491);
+      } else if (this.uas_pending_reply === true) {
+        var retryAfter = (Math.random() * 10 | 0) + 1;
+        request.reply(500, null, ['Retry-After:'+ retryAfter]);
+        return false;
+      } else {
+        this.uas_pending_reply = true;
+        request.server_transaction.on('stateChanged', function stateChanged(e){
+          if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
+              e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
+              e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
 
-              request.server_transaction.removeListener('stateChanged', stateChanged);
-              self.uas_pending_reply = false;
+            request.server_transaction.removeListener('stateChanged', stateChanged);
+            self.uas_pending_reply = false;
 
-              if (self.uac_pending_reply === false) {
-                self.owner.onReadyToReinvite();
-              }
+            if (self.uac_pending_reply === false) {
+              self.owner.onReadyToReinvite();
             }
-          });
-        }
+          }
+        });
+      }
 
-        // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
-        if(request.hasHeader('contact')) {
-          request.server_transaction.on('stateChanged', function(e){
-            if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED) {
-              self.remote_target = request.parseHeader('contact').uri;
-            }
-          });
-        }
-        break;
-      case JsSIP.C.NOTIFY:
-        // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
-        if(request.hasHeader('contact')) {
-          request.server_transaction.on('stateChanged', function(e){
-            if (e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED) {
-              self.remote_target = request.parseHeader('contact').uri;
-            }
-          });
-        }
-        break;
+      // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
+      if(request.hasHeader('contact')) {
+        request.server_transaction.on('stateChanged', function(e){
+          if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED) {
+            self.remote_target = request.parseHeader('contact').uri;
+          }
+        });
+      }
+    }
+    else if (request.method === JsSIP.C.NOTIFY) {
+      // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
+      if(request.hasHeader('contact')) {
+        request.server_transaction.on('stateChanged', function(e){
+          if (e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED) {
+            self.remote_target = request.parseHeader('contact').uri;
+          }
+        });
+      }
     }
 
     return true;

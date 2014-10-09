@@ -28,7 +28,8 @@ C = {
 		'ACK',
 		'CANCEL',
 		'BYE',
-		'OPTIONS'
+		'OPTIONS',
+		'UPDATE'
 	],
 
 	// TODO: NO
