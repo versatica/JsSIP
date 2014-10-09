@@ -206,32 +206,34 @@ Transport.prototype = {
     }
 
     // Do some sanity check
-    if(JsSIP.sanityCheck(message, this.ua, this)) {
-      if(message instanceof JsSIP.IncomingRequest) {
-        message.transport = this;
-        this.ua.receiveRequest(message);
-      } else if(message instanceof JsSIP.IncomingResponse) {
-        /* Unike stated in 18.1.2, if a response does not match
-        * any transaction, it is discarded here and no passed to the core
-        * in order to be discarded there.
-        */
-        switch(message.method) {
-          case JsSIP.C.INVITE:
-            transaction = this.ua.transactions.ict[message.via_branch];
-            if(transaction) {
-              transaction.receiveResponse(message);
-            }
-            break;
-          case JsSIP.C.ACK:
-            // Just in case ;-)
-            break;
-          default:
-            transaction = this.ua.transactions.nict[message.via_branch];
-            if(transaction) {
-              transaction.receiveResponse(message);
-            }
-            break;
-        }
+    if(! JsSIP.sanityCheck(message, this.ua, this)) {
+      return;
+    }
+
+    if(message instanceof JsSIP.IncomingRequest) {
+      message.transport = this;
+      this.ua.receiveRequest(message);
+    } else if(message instanceof JsSIP.IncomingResponse) {
+      /* Unike stated in 18.1.2, if a response does not match
+      * any transaction, it is discarded here and no passed to the core
+      * in order to be discarded there.
+      */
+      switch(message.method) {
+        case JsSIP.C.INVITE:
+          transaction = this.ua.transactions.ict[message.via_branch];
+          if(transaction) {
+            transaction.receiveResponse(message);
+          }
+          break;
+        case JsSIP.C.ACK:
+          // Just in case ;-)
+          break;
+        default:
+          transaction = this.ua.transactions.nict[message.via_branch];
+          if(transaction) {
+            transaction.receiveResponse(message);
+          }
+          break;
       }
     }
   },
