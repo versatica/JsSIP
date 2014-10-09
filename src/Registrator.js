@@ -22,7 +22,7 @@ Registrator = function(ua, transport) {
   this.registrationTimer = null;
 
   // Set status
-  this.registered = this.registered_before = false;
+  this.registered = false;
 
   // Save into ua instance
   this.ua.registrator = this;
@@ -280,7 +280,6 @@ Registrator.prototype = {
   },
 
   onTransportClosed: function() {
-    this.registered_before = this.registered;
     if (this.registrationTimer !== null) {
       window.clearTimeout(this.registrationTimer);
       this.registrationTimer = null;
@@ -293,8 +292,6 @@ Registrator.prototype = {
   },
 
   close: function() {
-    this.registered_before = false;
-
     if (this.registered) {
       this.unregister();
     }
