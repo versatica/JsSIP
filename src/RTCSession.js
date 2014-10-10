@@ -22,7 +22,8 @@ RTCSession = function(ua) {
   'connecting',
   'progress',
   'failed',
-  'started',
+  'accepted',
+  'confirmed',
   'ended',
   'newDTMF',
   'hold',
@@ -310,7 +311,7 @@ RTCSession.prototype.answer = function(options) {
 
           self.setInvite2xxTimer(request, body);
           self.setACKTimer();
-          self.started('local');
+          self.accepted('local');
         },
 
         // run for reply failure callback
@@ -1107,62 +1108,68 @@ RTCSession.prototype.receiveReinvite = function(request) {
     contentType = request.getHeader('Content-Type'),
     hold = true;
 
-  if (request.body) {
-    if (contentType !== 'application/sdp') {
-      this.logger.warn('invalid Content-Type');
-      request.reply(415);
-      return;
-    }
-
-    sdp = JsSIP.Parser.parseSDP(request.body);
-
-    for (idx=0; idx < sdp.media.length; idx++) {
-      direction = sdp.direction || sdp.media[idx].direction || 'sendrecv';
-
-      if (direction !== 'sendonly' && direction !== 'inactive') {
-        hold = false;
-      }
-    }
-
-    this.rtcMediaHandler.onMessage(
-      'offer',
-      request.body,
-      /*
-      * onSuccess
-      * SDP Offer is valid
-      */
-      function() {
-        self.rtcMediaHandler.createAnswer(
-          function(body) {
-            request.reply(200, null, ['Contact: ' + self.contact], body,
-              function() {
-                self.status = C.STATUS_WAITING_FOR_ACK;
-                self.setInvite2xxTimer(request, body);
-                self.setACKTimer();
-
-                if (self.remote_hold === true && hold === false) {
-                  self.onunhold('remote');
-                } else if (self.remote_hold === false && hold === true) {
-                  self.onhold('remote');
-                }
-              }
-            );
-          },
-          function() {
-            request.reply(500);
-          }
-        );
-      },
-      /*
-       * onFailure
-       * Bad media description
-       */
-      function(e) {
-        self.logger.error(e);
-        request.reply(488);
-      }
-    );
+  if (! request.body) {
+    this.logger.warn('re-INVITE without body not implemented');
+    request.reply(415, 're-INVITE Without Body Not Implemented');
+    return;
   }
+
+  if (contentType !== 'application/sdp') {
+    this.logger.warn('invalid Content-Type');
+    request.reply(415);
+    return;
+  }
+
+  sdp = JsSIP.Parser.parseSDP(request.body);
+
+  for (idx=0; idx < sdp.media.length; idx++) {
+    direction = sdp.direction || sdp.media[idx].direction || 'sendrecv';
+
+    if (direction !== 'sendonly' && direction !== 'inactive') {
+      hold = false;
+    }
+  }
+
+  this.rtcMediaHandler.onMessage(
+    'offer',
+    request.body,
+    /*
+    * onSuccess
+    * SDP Offer is valid
+    */
+    function() {
+      self.rtcMediaHandler.createAnswer(
+        // onSuccess
+        function(body) {
+          request.reply(200, null, ['Contact: ' + self.contact], body,
+            function() {
+              self.status = C.STATUS_WAITING_FOR_ACK;
+              self.setInvite2xxTimer(request, body);
+              self.setACKTimer();
+
+              if (self.remote_hold === true && hold === false) {
+                self.onunhold('remote');
+              } else if (self.remote_hold === false && hold === true) {
+                self.onhold('remote');
+              }
+            }
+          );
+        },
+        // onFailure
+        function() {
+          request.reply(500);
+        }
+      );
+    },
+    /*
+     * onFailure
+     * Bad media description
+     */
+    function(e) {
+      self.logger.error(e);
+      request.reply(488);
+    }
+  );
 };
 
 /**
@@ -1170,9 +1177,67 @@ RTCSession.prototype.receiveReinvite = function(request) {
  */
 
 RTCSession.prototype.receiveUpdate = function(request) {
-  // TODO:
+  var
+    sdp, idx, direction,
+    // self = this,
+    contentType = request.getHeader('Content-Type'),
+    hold = true;
 
-  request.reply(501, "TODO");
+  if (! request.body) {
+    request.reply(200);
+    return;
+  }
+
+  if (contentType !== 'application/sdp') {
+    this.logger.warn('invalid Content-Type');
+    request.reply(415);
+    return;
+  }
+
+  sdp = JsSIP.Parser.parseSDP(request.body);
+
+  for (idx=0; idx < sdp.media.length; idx++) {
+    direction = sdp.direction || sdp.media[idx].direction || 'sendrecv';
+
+    if (direction !== 'sendonly' && direction !== 'inactive') {
+      hold = false;
+    }
+  }
+
+  this.rtcMediaHandler.onMessage(
+    'offer',
+    request.body,
+    /*
+    * onSuccess
+    * SDP Offer is valid
+    */
+    function() {
+      self.rtcMediaHandler.createAnswer(
+        function(body) {
+          request.reply(200, null, ['Contact: ' + self.contact], body,
+            function() {
+              if (self.remote_hold === true && hold === false) {
+                self.onunhold('remote');
+              } else if (self.remote_hold === false && hold === true) {
+                self.onhold('remote');
+              }
+            }
+          );
+        },
+        function() {
+          request.reply(500);
+        }
+      );
+    },
+    /*
+     * onFailure
+     * Bad media description
+     */
+    function(e) {
+      self.logger.error(e);
+      request.reply(488);
+    }
+  );
 };
 
 /**
@@ -1206,6 +1271,7 @@ RTCSession.prototype.receiveRequest = function(request) {
           window.clearTimeout(this.timers.ackTimer);
           window.clearTimeout(this.timers.invite2xxTimer);
           this.status = C.STATUS_CONFIRMED;
+          this.confirmed('remote', request);
         }
         break;
       case JsSIP.C.BYE:
@@ -1531,8 +1597,11 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
          * SDP Answer fits with Offer. Media will start
          */
         function() {
-          session.sendRequest(JsSIP.C.ACK);
-          session.started('remote', response);
+          var ack;
+
+          session.accepted('remote', response);
+          ack = session.sendRequest(JsSIP.C.ACK);
+          session.confirmed('local', null);
         },
         /*
          * onFailure
@@ -1727,15 +1796,25 @@ RTCSession.prototype.progress = function(originator, response) {
   });
 };
 
-RTCSession.prototype.started = function(originator, message) {
+RTCSession.prototype.accepted = function(originator, message) {
   var session = this,
-    event_name = 'started';
+    event_name = 'accepted';
 
   session.start_time = new Date();
 
   session.emit(event_name, session, {
     originator: originator,
     response: message || null
+  });
+};
+
+RTCSession.prototype.confirmed = function(originator, ack) {
+  var session = this,
+    event_name = 'confirmed';
+
+  session.emit(event_name, session, {
+    originator: originator,
+    ack: ack || null
   });
 };
 
