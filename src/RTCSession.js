@@ -1179,7 +1179,7 @@ RTCSession.prototype.receiveReinvite = function(request) {
 RTCSession.prototype.receiveUpdate = function(request) {
   var
     sdp, idx, direction,
-    // self = this,
+    self = this,
     contentType = request.getHeader('Content-Type'),
     hold = true;
 
