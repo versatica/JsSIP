@@ -58,6 +58,7 @@ UA = function(configuration) {
   'disconnected',
   'newTransaction',
   'transactionDestroyed',
+  'connectionFailed',
   'registered',
   'unregistered',
   'registrationFailed',
@@ -423,7 +424,7 @@ UA.prototype.onTransportError = function(transport) {
   // Mark this transport as 'down' and try the next one
   transport.server.status = JsSIP.Transport.C.STATUS_ERROR;
 
-  this.emit('disconnected', this, {
+  this.emit('connectionFailed', this, {
     transport: transport,
     code: transport.lastTransportError.code,
     reason: transport.lastTransportError.reason
@@ -431,6 +432,11 @@ UA.prototype.onTransportError = function(transport) {
 
   // Don't attempt to recover the connection if the user closes the UA.
   if (this.status === C.STATUS_USER_CLOSED) {
+    return;
+  }
+
+  // No reconnection possibility by config
+  if(!this.configuration.connection_autorecovery) {
     return;
   }
 
@@ -771,6 +777,7 @@ UA.prototype.loadConfig = function(configuration) {
     ws_server_max_reconnection: 3,
     ws_server_reconnection_timeout: 4,
 
+    connection_autorecovery: true,
     connection_recovery_min_interval: 2,
     connection_recovery_max_interval: 30,
 
@@ -960,6 +967,7 @@ UA.configuration_skeleton = (function() {
 
     // Optional user configurable parameters
     "authorization_user",
+    "connection_autorecovery",
     "connection_recovery_max_interval",
     "connection_recovery_min_interval",
     "display_name",
@@ -1089,6 +1097,12 @@ UA.configuration_check = {
       return;
     } else {
       return authorization_user;
+    }
+  },
+
+  connection_autorecovery: function(connection_autorecovery) {
+    if (typeof connection_autorecovery === 'boolean') {
+      return connection_autorecovery;
     }
   },
 

@@ -250,7 +250,7 @@ Transport.prototype = {
 
     this.reconnection_attempts += 1;
 
-    if(this.reconnection_attempts > this.ua.configuration.ws_server_max_reconnection) {
+    if(this.reconnection_attempts > this.ua.configuration.ws_server_max_reconnection || !this.ua.configuration.connection_autorecovery) {
       this.logger.warn('maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
       this.ua.onTransportError(this);
     } else {
