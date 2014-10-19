@@ -21,6 +21,7 @@ JsSIP.C= {
     NOT_FOUND:                'Not Found',
     ADDRESS_INCOMPLETE:       'Address Incomplete',
     INCOMPATIBLE_SDP:         'Incompatible SDP',
+    MISSING_SDP:              'Missing SDP',
     AUTHENTICATION_ERROR:     'Authentication Error',
     DIALOG_ERROR:             'Dialog Error',
 
