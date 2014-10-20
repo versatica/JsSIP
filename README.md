@@ -47,10 +47,10 @@ var eventHandlers = {
   'ended': function(e){
     console.log('call ended with cause: '+ e.data.cause);
   },
-  'started': function(e){
+  'confirmed': function(e){
     var rtcSession = e.sender;
 
-    console.log('call started');
+    console.log('call confirmed');
 
     // Attach local stream to selfView
     if (rtcSession.getLocalStreams().length > 0) {
