@@ -4,7 +4,7 @@ var
   Event,
   logger = new JsSIP.LoggerFactory().getLogger('jssip.eventemitter'),
   C = {
-    MAX_LISTENERS: 10
+    MAX_LISTENERS: 50
   };
 
 EventEmitter = function(){};
