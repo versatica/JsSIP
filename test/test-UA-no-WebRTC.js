@@ -21,7 +21,7 @@ test('UA no WS connection', function() {
   strictEqual(ua.contact.toString({anonymous: true, outbound: true}), '<sip:anonymous@anonymous.invalid;transport=ws;ob>');
 
   for (var parameter in TestJsSIP.Helpers.UA_CONFIGURATION_AFTER_START) {
-    console.log("*** testing parameter: " + parameter);
+    console.log('- testing parameter: ' + parameter);
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
@@ -34,11 +34,6 @@ test('UA no WS connection', function() {
 
   ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
     eventHandlers: {
-      sending: function(e) {
-        var ruri = e.data.request.ruri;
-        ok(ruri instanceof JsSIP.URI);
-        strictEqual(e.data.request.ruri.toString(), 'sip:test@' + ua.configuration.uri.host);
-      },
       failed: function(e) {
         strictEqual(e.data.cause, JsSIP.C.causes.CONNECTION_ERROR);
       }

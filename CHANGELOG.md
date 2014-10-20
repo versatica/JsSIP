@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-Version 1.0.0 (released in ???)
+Version 0.4.0 (released in ???)
 -------------------------------
 
 TODO
