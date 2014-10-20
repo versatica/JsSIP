@@ -19,17 +19,17 @@ var RTCSession,
 
 RTCSession = function(ua) {
   var events = [
-  'connecting',
-  'progress',
-  'failed',
-  'accepted',
-  'confirmed',
-  'ended',
-  'newDTMF',
-  'hold',
-  'unhold',
-  'muted',
-  'unmuted'
+    'connecting',
+    'progress',
+    'failed',
+    'accepted',
+    'confirmed',
+    'ended',
+    'newDTMF',
+    'hold',
+    'unhold',
+    'muted',
+    'unmuted'
   ];
 
   this.ua = ua;
@@ -1375,7 +1375,6 @@ RTCSession.prototype.receiveRequest = function(request) {
           request.reply(403, 'Wrong Status');
         }
         break;
-      // TODO
       case JsSIP.C.UPDATE:
         if(this.status === C.STATUS_CONFIRMED) {
           this.logger.debug('UPDATE received');

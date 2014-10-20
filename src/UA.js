@@ -13,7 +13,6 @@ C = {
   CONFIGURATION_ERROR:  1,
   NETWORK_ERROR:        2,
 
-  // TODO: NO
   /* UA events and corresponding SIP Methods.
   * Dynamically added to 'Allow' header field if the
   * corresponding event handler is set.
@@ -23,7 +22,6 @@ C = {
     'newMessage': 'MESSAGE'
   },
 
-  // TODO: NO
   ALLOWED_METHODS: [
     'ACK',
     'CANCEL',
@@ -32,13 +30,11 @@ C = {
     'UPDATE'
   ],
 
-  // TODO: NO
   ACCEPTED_BODY_TYPES: [
     'application/sdp',
     'application/dtmf-relay'
   ],
 
-  // TODO: NO
   MAX_FORWARDS: 69,
   TAG_LENGTH: 10
 };
