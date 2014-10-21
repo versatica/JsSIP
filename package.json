@@ -1,7 +1,7 @@
 {
 	"name": "jssip",
 	"description": "the Javascript SIP library",
-	"version": "0.4.0-pre",
+	"version": "0.4.0",
 	"homepage": "http://jssip.net",
 	"author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
 	"contributors": [

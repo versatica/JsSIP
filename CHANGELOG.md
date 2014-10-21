@@ -1,14 +1,13 @@
 CHANGELOG
 =========
 
-Version 0.4.0 (released in ???)
--------------------------------
+Version 0.4.0 (released in 2014-10-21)
+--------------------------------------
 
 * (http://jssip.net/documentation/0.4.x/api/session) Hold/Unhold implementation
 * (http://jssip.net/documentation/0.4.x/api/session) Mute/Unmute implementation
 * (http://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#instance_id) New 'instance_id' configuration parameter
 * (http://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#log) New 'log' configuration parameter
-
 * [(34b235c)](https://github.com/versatica/JsSIP/commit/34b235c) Fix #246. Increase the event emiter max listener number to 50
 * [(9a1ebdf)](https://github.com/versatica/JsSIP/commit/9a1ebdf) Late SDP implementation. Handle SDP-less incoming INVITEs
 * [(f0cc4c1)](https://github.com/versatica/JsSIP/commit/f0cc4c1) Fix #253. RTCSession: instead of "started" emit "accepted" when 2XX and "confirmed" when ACK
