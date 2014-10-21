@@ -1,0 +1,18 @@
+{
+  "name": "jssip",
+  "version": "0.4.0",
+  "main": "builds/jssip-0.4.0.min.js",
+  "license": "MIT",
+  "ignore": [
+    "test",
+    "*.md",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "keywords": [
+    "sip",
+    "websocket",
+    "webrtc",
+    "library"
+  ],
+}
