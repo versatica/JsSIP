@@ -4,8 +4,41 @@ CHANGELOG
 Version 0.4.0 (released in ???)
 -------------------------------
 
-TODO
+* (http://jssip.net/documentation/0.4.x/api/session) Hold/Unhold implementation
+* (http://jssip.net/documentation/0.4.x/api/session) Mute/Unmute implementation
+* (http://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#instance_id) New 'instance_id' configuration parameter
+* (http://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#log) New 'log' configuration parameter
 
+* [(34b235c)](https://github.com/versatica/JsSIP/commit/34b235c) Fix #246. Increase the event emiter max listener number to 50
+* [(9a1ebdf)](https://github.com/versatica/JsSIP/commit/9a1ebdf) Late SDP implementation. Handle SDP-less incoming INVITEs
+* [(f0cc4c1)](https://github.com/versatica/JsSIP/commit/f0cc4c1) Fix #253. RTCSession: instead of "started" emit "accepted" when 2XX and "confirmed" when ACK
+* [(f0cc4c1)](https://github.com/versatica/JsSIP/commit/f0cc4c1) Fix #253. RTCSession: accept SDP renegotiation on incoming UPDATE requests.
+* [(177f38d)](https://github.com/versatica/JsSIP/commit/177f38d) Fix #248. Improve transaction handling on CANCEL
+* [(f9ef522)](https://github.com/versatica/JsSIP/commit/f9ef522) Fix detection of incoming merged requests (don't generate 482 for retransmissions).
+* [(3789d5b)](https://github.com/versatica/JsSIP/commit/3789d5b) Fix #245. Improve late CANCEL
+* [(2274a7d)](https://github.com/versatica/JsSIP/commit/2274a7d) Add hack_via_ws option to force "WS" in Via header when the server has wss:// scheme.
+* [(c9e8764)](https://github.com/versatica/JsSIP/commit/c9e8764) Fire 'progress' (originator = local) when receiving an incoming call.
+* [(39949e0)](https://github.com/versatica/JsSIP/commit/39949e0) Fix #242. fine tune the ICE state check for createAnswer/createOffer
+* [(80c32f3)](https://github.com/versatica/JsSIP/commit/80c32f3) Fix #240. ICE connection RTP timeout status fix
+* [(1f4d36d)](https://github.com/versatica/JsSIP/commit/1f4d36d) Remove RFC 3261 18.1.2 sanity check (sent-by host mismatch in Via header).
+* [(62e8323)](https://github.com/versatica/JsSIP/commit/62e8323) Fix #176. Update to the latest IceServer definition
+* [(caf20f9)](https://github.com/versatica/JsSIP/commit/caf20f9) Fix #163. Stop transport revocery on UA.stop().
+* [(2f3769b)](https://github.com/versatica/JsSIP/commit/2f3769b) Fix #148: WebSocket reconnection behaviour
+* [(d7c3c9c)](https://github.com/versatica/JsSIP/commit/d7c3c9c) Use plain 'for' loops instead of 'for in' loops on arrays
+* [(a327be3)](https://github.com/versatica/JsSIP/commit/a327be3) Fix. INFO-based DTMF fixes
+* [(d141864)](https://github.com/versatica/JsSIP/commit/d141864) Fix #133. Incorrect REGISTER Contact header value  after transport disconnection
+* [(f4a29e9)](https://github.com/versatica/JsSIP/commit/f4a29e9) Improvements to 2xx retransmission behaviour
+* [(3fc4efa)](https://github.com/versatica/JsSIP/commit/3fc4efa) Fix #107. Stop spamming provisional responses
+* [(7c2abe0)](https://github.com/versatica/JsSIP/commit/7c2abe0) Fix. Permit receiving a 200 OK to a INVITE before any 1XX provisional
+* [(5c644a6)](https://github.com/versatica/JsSIP/commit/5c644a6) Improvements to min-expires fix
+* [(4bfc34c)](https://github.com/versatica/JsSIP/commit/4bfc34c) Fix handling of 423 response to REGISTER
+* [(3e84eaf)](https://github.com/versatica/JsSIP/commit/3e84eaf) Fix #112. Enhance CANCEL request processing
+* [(1740e5e)](https://github.com/versatica/JsSIP/commit/1740e5e) Fix #117. Clear registration timer before re-setting it
+* [(dad84a1)](https://github.com/versatica/JsSIP/commit/dad84a1) Fix #111. Create confirmed dialog before setting remote description.
+* [(15d83bb)](https://github.com/versatica/JsSIP/commit/15d83bb) Fix #100. 'originator' property was missing in RTCSession 'started' event data object. Thanks @gavllew
+* [(b5c08dc)](https://github.com/versatica/JsSIP/commit/b5c08dc) Fix #99. Do not close the RTCSession if it has been accepted and the WS disconnects
+* [(46eef46)](https://github.com/versatica/JsSIP/commit/46eef46) Fix #90. Don't log password
+* [(9ca4bc9)](https://github.com/versatica/JsSIP/commit/9ca4bc9) Fix #89. Do not send a To tag in '100 Trying' responses
 
 Version 0.3.0 (released in 2013-03-18)
 -------------------------------
