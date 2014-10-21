@@ -16,3 +16,8 @@ Here the list of contributors with code and patches to JsSIP project. Thanks a l
 JsSIP Debian and Ubuntu packaging
 
 * [Daniel Pocock](https://github.com/dpocock)
+
+
+JsSIP Bower packaging
+
+* [Linda Nichols](https://github.com/lynnaloo)
