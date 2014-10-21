@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 0.4.1 (released in 2014-10-21)
+--------------------------------------
+
+This version is included into the [Bower](http://bower.io/) registry which means `$ bower install jssip`.
+
 Version 0.4.0 (released in 2014-10-21)
 --------------------------------------
 
