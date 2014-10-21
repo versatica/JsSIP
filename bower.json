@@ -1,0 +1,30 @@
+{
+  "name": "jssip",
+  "version": "0.4.0",
+  "description": "the Javascript SIP library",
+  "main": "builds/jssip-0.4.0.min.js",
+  "homepage": "http://jssip.net",
+  "authors": [
+    "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
+    "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
+    "Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
+  ],
+  "keywords": [
+    "sip",
+    "websocket",
+    "webrtc",
+    "library"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/versatica/JsSIP.git"
+  },
+  "ignore": [
+    "node_modules",
+    "test",
+    "src",
+    "Gruntfile.js",
+    "package.json"
+  ]
+}
