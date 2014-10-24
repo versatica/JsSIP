@@ -181,7 +181,9 @@ RTCMediaHandler.prototype = {
       if (e.candidate) {
         self.logger.debug('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
-        self.onIceCompleted();
+        setTimeout(function() {
+          self.onIceCompleted();
+        });
       }
     };
 
