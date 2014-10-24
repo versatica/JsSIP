@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 0.4.2 (released in 2014-10-24)
+--------------------------------------
+
+* [(ca7702e)](https://github.com/versatica/JsSIP/commit/ca7702e) Fix #257. RTCMediaHandler: fire onIceCompleted() on next tick to avoid events race conditions in Firefox 33.
+
 Version 0.4.1 (released in 2014-10-21)
 --------------------------------------
 

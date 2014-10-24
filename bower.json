@@ -2,7 +2,7 @@
   "name": "jssip",
   "version": "0.4.1",
   "description": "the Javascript SIP library",
-  "main": "builds/jssip-0.4.1.min.js",
+  "main": "builds/jssip-0.4.2.min.js",
   "homepage": "http://jssip.net",
   "authors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

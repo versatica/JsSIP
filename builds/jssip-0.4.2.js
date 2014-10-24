@@ -1,5 +1,5 @@
 /*
- * JsSIP 0.4.1
+ * JsSIP 0.4.2
  * Copyright (c) 2012-2014 José Luis Millán - Versatica <http://www.versatica.com>
  * Homepage: http://jssip.net
  * License: http://jssip.net/license
@@ -32,7 +32,7 @@ Object.defineProperties(JsSIP, {
 	 * console.log(JsSIP.version)
 	 */
 	version: {
-		get: function(){ return '0.4.1'; }
+		get: function(){ return '0.4.2'; }
 	}
 });
 
@@ -5586,7 +5586,9 @@ RTCMediaHandler.prototype = {
       if (e.candidate) {
         self.logger.debug('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
-        self.onIceCompleted();
+        setTimeout(function() {
+          self.onIceCompleted();
+        });
       }
     };
 
