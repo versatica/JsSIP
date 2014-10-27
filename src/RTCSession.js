@@ -1634,7 +1634,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         */
         function(e) {
           session.logger.warn(e);
-          this.earlyDialogs[response.call_id + response.from_tag + response.to_tag].terminate();
+          session.earlyDialogs[response.call_id + response.from_tag + response.to_tag].terminate();
         }
       );
       break;

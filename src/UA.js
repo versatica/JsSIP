@@ -794,7 +794,7 @@ UA.prototype.loadConfig = function(configuration) {
       throw new JsSIP.Exceptions.ConfigurationError(parameter);
     } else {
       value = configuration[parameter];
-      checked_value = UA.configuration_check.mandatory[parameter](value);
+      checked_value = UA.configuration_check.mandatory[parameter].call(this, value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
       } else {
@@ -815,7 +815,7 @@ UA.prototype.loadConfig = function(configuration) {
         continue;
       }
 
-      checked_value = UA.configuration_check.optional[parameter](value);
+      checked_value = UA.configuration_check.optional[parameter].call(this, value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
       } else {
