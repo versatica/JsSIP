@@ -1,5 +1,5 @@
 JsSIP.C= {
-  USER_AGENT: JsSIP.name +' '+ JsSIP.version,
+  USER_AGENT: '<%= pkg.title %>' +' '+ JsSIP.version,
 
   // SIP scheme
   SIP:  'sip',
