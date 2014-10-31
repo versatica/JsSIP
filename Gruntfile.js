@@ -117,6 +117,7 @@ module.exports = function(grunt) {
 				// DOC: http://www.jshint.com/docs/options/
 				curly: true,
 				eqeqeq: true,
+				forin: true,
 				immed: true,
 				latedef: true,
 				newcap: true,
