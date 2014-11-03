@@ -1523,7 +1523,6 @@ RTCSession.prototype.sendReinvite = function(options) {
   }
 
   extraHeaders.push('Contact: ' + this.contact);
-  extraHeaders.push('Allow: ' + JsSIP_C.ALLOWED_METHODS);
   extraHeaders.push('Content-Type: application/sdp');
 
   this.receiveResponse = this.receiveReinviteResponse;
