@@ -26,9 +26,9 @@ var configuration = {
   'password': 'superpassword'
 };
 
-var coolPhone = new JsSIP.UA(configuration);
+var ua = new JsSIP.UA(configuration);
 
-coolPhone.start();
+ua.start();
 
 
 // Make an audio/video call:
@@ -71,10 +71,10 @@ var options = {
 };
 
 
-coolPhone.call('sip:bob@example.com', options);
+ua.call('sip:bob@example.com', options);
 ```
 
-Want to see more? Check the full [Getting Started](http://jssip.net/documentation/0.3.x/getting_started/) section in the project website.
+Want to see more? Check the full documentation at http://jssip.net/documentation/.
 
 
 ## Online Demo
