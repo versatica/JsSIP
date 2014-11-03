@@ -879,31 +879,31 @@ UA.prototype.loadConfig = function(configuration) {
   }
 
   this.contact = {
-  pub_gruu: null,
-  temp_gruu: null,
-  uri: new URI('sip', Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
-  toString: function(options) {
-    options = options || {};
+    pub_gruu: null,
+    temp_gruu: null,
+    uri: new URI('sip', Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
+    toString: function(options) {
+      options = options || {};
 
-    var
-    anonymous = options.anonymous || null,
-    outbound = options.outbound || null,
-    contact = '<';
+      var
+      anonymous = options.anonymous || null,
+      outbound = options.outbound || null,
+      contact = '<';
 
-    if (anonymous) {
-      contact += this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
-    } else {
-      contact += this.pub_gruu || this.uri.toString();
+      if (anonymous) {
+        contact += this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
+      } else {
+        contact += this.pub_gruu || this.uri.toString();
+      }
+
+      if (outbound && (anonymous ? !this.temp_gruu : !this.pub_gruu)) {
+        contact += ';ob';
+      }
+
+      contact += '>';
+
+      return contact;
     }
-
-    if (outbound && (anonymous ? !this.temp_gruu : !this.pub_gruu)) {
-      contact += ';ob';
-    }
-
-    contact += '>';
-
-    return contact;
-  }
   };
 
   // Fill the value of the configuration_skeleton
@@ -939,7 +939,6 @@ UA.prototype.loadConfig = function(configuration) {
 /**
  * Configuration Object skeleton.
  */
-// TODO: This must not exposed!
 UA.configuration_skeleton = (function() {
   var idx,  parameter,
   skeleton = {},

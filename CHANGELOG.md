@@ -1,10 +1,11 @@
 CHANGELOG
 =========
 
-Version 0.4.4 (released in 2014-11-03)
+Version 0.5.0 (released in 2014-11-03)
 --------------------------------------
 
-* Node-fied. JsSIP is now built as a Node project.
+* JsSIP runs in Node!
+* The internal design of JsSIP has also been modified, becoming a real Node project in which the "browser version" (`jssip-0.5.0.js` or `jssip-0.5.0.min.js`) is generated with [browserify](http://browserify.org). This also means that the browser version can be loaded with AMD or CommonJS loaders.
 
 Version 0.4.3 (released in 2014-10-29)
 --------------------------------------

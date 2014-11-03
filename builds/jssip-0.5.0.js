@@ -1,5 +1,5 @@
 /*
- * JsSIP 0.4.4
+ * JsSIP 0.5.0
  * Copyright (c) 2012-2014 José Luis Millán - Versatica <http://www.versatica.com>
  * Homepage: http://jssip.net
  * License: http://jssip.net/license
@@ -503,7 +503,7 @@ module.exports={
 	"name": "jssip",
 	"title": "JsSIP",
 	"description": "the Javascript SIP library",
-	"version": "0.4.4",
+	"version": "0.5.0",
 	"homepage": "http://jssip.net",
 	"author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
 	"contributors": [
@@ -528,7 +528,8 @@ module.exports={
 		"url": "https://github.com/versatica/JsSIP/issues"
 	},
 	"dependencies": {
-		"sdp-transform": "~0.6.1"
+		"sdp-transform": "~0.6.1",
+		"ws": "~0.4.32"
 	},
 	"devDependencies": {
 		"grunt": "~0.4.5",
@@ -19100,7 +19101,7 @@ var Parser = require('./Parser');
 var UA = require('./UA');
 var SIPMessage = require('./SIPMessage');
 var sanityCheck = require('./sanityCheck');
-// Condicional module load.
+// Conditional module loading.
 var WebSocket;  // jshint ignore:line
 var isNode = false;
 if (global.WebSocket) {
@@ -19109,7 +19110,6 @@ if (global.WebSocket) {
 else {
   WebSocket = require('ws');  // jshint ignore:line
   isNode = true;
-  global.WS = WebSocket;
 }
 
 
@@ -20167,7 +20167,7 @@ UA.prototype.loadConfig = function(configuration) {
     hack_ip_in_contact: false,
 
     // Options for Node.
-    node_ws_options: null
+    node_ws_options: {}
   };
 
   // Pre-Configuration
@@ -20264,31 +20264,31 @@ UA.prototype.loadConfig = function(configuration) {
   }
 
   this.contact = {
-  pub_gruu: null,
-  temp_gruu: null,
-  uri: new URI('sip', Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
-  toString: function(options) {
-    options = options || {};
+    pub_gruu: null,
+    temp_gruu: null,
+    uri: new URI('sip', Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
+    toString: function(options) {
+      options = options || {};
 
-    var
-    anonymous = options.anonymous || null,
-    outbound = options.outbound || null,
-    contact = '<';
+      var
+      anonymous = options.anonymous || null,
+      outbound = options.outbound || null,
+      contact = '<';
 
-    if (anonymous) {
-      contact += this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
-    } else {
-      contact += this.pub_gruu || this.uri.toString();
+      if (anonymous) {
+        contact += this.temp_gruu || 'sip:anonymous@anonymous.invalid;transport=ws';
+      } else {
+        contact += this.pub_gruu || this.uri.toString();
+      }
+
+      if (outbound && (anonymous ? !this.temp_gruu : !this.pub_gruu)) {
+        contact += ';ob';
+      }
+
+      contact += '>';
+
+      return contact;
     }
-
-    if (outbound && (anonymous ? !this.temp_gruu : !this.pub_gruu)) {
-      contact += ';ob';
-    }
-
-    contact += '>';
-
-    return contact;
-  }
   };
 
   // Fill the value of the configuration_skeleton

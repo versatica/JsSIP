@@ -4,11 +4,12 @@
 
 ## Overview
 
+* Runs in the browser and Node.
 * SIP over [WebSocket](http://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
 * Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)), instant messaging and presence
 * Lightweight! (~140KB)
 * Easy to use and powerful user API
-* Works with OverSIP, Kamailio, Asterisk and repro (reSIProcate) servers ([more info](http://jssip.net/documentation/misc/interoperability))
+* Works with OverSIP, Kamailio, Asterisk. Mobicents and repro (reSIProcate) servers ([more info](http://jssip.net/documentation/misc/interoperability))
 * Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](http://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
 
 
@@ -90,7 +91,9 @@ Check our **Tryit JsSIP** online demo:
 
 ## Download
 
-* [jssip.net/download](http://jssip.net/download/)
+* As Node module: `$ npm install jssip`
+* As Bower module: `$ bower install jssip`
+* Manually: [jssip.net/download](http://jssip.net/download/)
 
 
 ## Authors

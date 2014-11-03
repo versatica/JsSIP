@@ -23,7 +23,7 @@ var Parser = require('./Parser');
 var UA = require('./UA');
 var SIPMessage = require('./SIPMessage');
 var sanityCheck = require('./sanityCheck');
-// Condicional module load.
+// Conditional module loading.
 var WebSocket;  // jshint ignore:line
 var isNode = false;
 if (global.WebSocket) {
@@ -32,7 +32,6 @@ if (global.WebSocket) {
 else {
   WebSocket = require('ws');  // jshint ignore:line
   isNode = true;
-  global.WS = WebSocket;
 }
 
 
