@@ -27,7 +27,8 @@
 		"url": "https://github.com/versatica/JsSIP/issues"
 	},
 	"dependencies": {
-		"sdp-transform": "~0.6.1"
+		"sdp-transform": "~0.6.1",
+		"ws": "~0.4.32"
 	},
 	"devDependencies": {
 		"grunt": "~0.4.5",

@@ -10,7 +10,7 @@ before_install: npm install -g grunt-cli
 install: npm install
 
 # We want that Travis also checks the "devel" task.
-before_script: grunt devel dist
+before_script: grunt devel dist min
 
 notifications:
   email:
