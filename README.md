@@ -4,7 +4,7 @@
 
 ## Overview
 
-* Runs in the browser and Node.
+* Runs in the browser and Node.js.
 * SIP over [WebSocket](http://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
 * Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)), instant messaging and presence
 * Lightweight! (~140KB)

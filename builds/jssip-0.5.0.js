@@ -20324,7 +20324,6 @@ UA.prototype.loadConfig = function(configuration) {
 /**
  * Configuration Object skeleton.
  */
-// TODO: This must not exposed!
 UA.configuration_skeleton = (function() {
   var idx,  parameter,
   skeleton = {},
