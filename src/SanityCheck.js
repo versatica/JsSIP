@@ -1,10 +1,62 @@
-(function(JsSIP) {
-var sanityCheck,
- logger,
- message, ua, transport,
- requests = [],
- responses = [],
- all = [];
+module.exports = sanityCheck;
+
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('./Constants');
+var SIPMessage = require('./SIPMessage');
+var Utils = require('./Utils');
+
+
+var logger,
+  message, ua, transport,
+  requests = [],
+  responses = [],
+  all = [];
+
+
+function sanityCheck(m, u, t) {
+  var len, pass;
+
+  message = m;
+  ua = u;
+  transport = t;
+
+  logger = ua.getLogger('jssip.sanitycheck');
+
+  len = all.length;
+  while(len--) {
+    pass = all[len](message);
+    if(pass === false) {
+      return false;
+    }
+  }
+
+  if(message instanceof SIPMessage.IncomingRequest) {
+    len = requests.length;
+    while(len--) {
+      pass = requests[len](message);
+      if(pass === false) {
+        return false;
+      }
+    }
+  }
+
+  else if(message instanceof SIPMessage.IncomingResponse) {
+    len = responses.length;
+    while(len--) {
+      pass = responses[len](message);
+      if(pass === false) {
+        return false;
+      }
+    }
+  }
+
+  //Everything is OK
+  return true;
+}
+
 
 /*
  * Sanity Check for incoming Messages
@@ -43,7 +95,7 @@ function rfc3261_16_3_4() {
 }
 
 function rfc3261_18_3_request() {
-  var len = JsSIP.Utils.str_utf8_length(message.body),
+  var len = Utils.str_utf8_length(message.body),
   contentLength = message.getHeader('content-length');
 
   if(len < contentLength) {
@@ -64,7 +116,7 @@ function rfc3261_8_2_2_2() {
   }
 
   // INVITE request.
-  if (message.method === JsSIP.C.INVITE) {
+  if (message.method === JsSIP_C.INVITE) {
     // If the branch matches the key of any IST then assume it is a retransmission
     // and ignore the INVITE.
     // TODO: we should reply the last response.
@@ -113,7 +165,7 @@ function rfc3261_8_1_3_3() {
 
 function rfc3261_18_3_response() {
   var
-    len = JsSIP.Utils.str_utf8_length(message.body),
+    len = Utils.str_utf8_length(message.body),
     contentLength = message.getHeader('content-length');
 
     if(len < contentLength) {
@@ -139,7 +191,7 @@ function minimumHeaders() {
 // Reply
 function reply(status_code) {
   var to,
-    response = "SIP/2.0 " + status_code + " " + JsSIP.C.REASON_PHRASE[status_code] + "\r\n",
+    response = "SIP/2.0 " + status_code + " " + JsSIP_C.REASON_PHRASE[status_code] + "\r\n",
     vias = message.getHeaders('via'),
     length = vias.length,
     idx = 0;
@@ -151,7 +203,7 @@ function reply(status_code) {
   to = message.getHeader('To');
 
   if(!message.to_tag) {
-    to += ';tag=' + JsSIP.Utils.newTag();
+    to += ';tag=' + Utils.newTag();
   }
 
   response += "To: " + to + "\r\n";
@@ -163,6 +215,7 @@ function reply(status_code) {
   transport.send(response);
 }
 
+
 requests.push(rfc3261_8_2_2_1);
 requests.push(rfc3261_16_3_4);
 requests.push(rfc3261_18_3_request);
@@ -172,47 +225,3 @@ responses.push(rfc3261_8_1_3_3);
 responses.push(rfc3261_18_3_response);
 
 all.push(minimumHeaders);
-
-sanityCheck = function(m, u, t) {
-  var len, pass;
-
-  message = m;
-  ua = u;
-  transport = t;
-
-  logger = ua.getLogger('jssip.sanitycheck');
-
-  len = all.length;
-  while(len--) {
-    pass = all[len](message);
-    if(pass === false) {
-      return false;
-    }
-  }
-
-  if(message instanceof JsSIP.IncomingRequest) {
-    len = requests.length;
-    while(len--) {
-      pass = requests[len](message);
-      if(pass === false) {
-        return false;
-      }
-    }
-  }
-
-  else if(message instanceof JsSIP.IncomingResponse) {
-    len = responses.length;
-    while(len--) {
-      pass = responses[len](message);
-      if(pass === false) {
-        return false;
-      }
-    }
-  }
-
-  //Everything is OK
-  return true;
-};
-
-JsSIP.sanityCheck = sanityCheck;
-}(JsSIP));

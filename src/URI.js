@@ -1,3 +1,14 @@
+module.exports = URI;
+
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('./Constants');
+var Utils = require('./Utils');
+var Grammar = require('./Grammar');
+
+
 /**
  * -param {String} [scheme]
  * -param {String} [user]
@@ -7,10 +18,7 @@
  * -param {Object} [headers]
  *
  */
-(function(JsSIP) {
-var URI;
-
-URI = function(scheme, user, host, port, parameters, headers) {
+function URI(scheme, user, host, port, parameters, headers) {
   var param, header;
 
   // Checks
@@ -19,7 +27,7 @@ URI = function(scheme, user, host, port, parameters, headers) {
   }
 
   // Initialize parameters
-  scheme = scheme || JsSIP.C.SIP;
+  scheme = scheme || JsSIP_C.SIP;
   this.parameters = {};
   this.headers = {};
 
@@ -60,7 +68,9 @@ URI = function(scheme, user, host, port, parameters, headers) {
       }
     }
   });
-};
+}
+
+
 URI.prototype = {
   setParam: function(key, value) {
     if(key) {
@@ -95,24 +105,24 @@ URI.prototype = {
   },
 
   setHeader: function(name, value) {
-    this.headers[JsSIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
+    this.headers[Utils.headerize(name)] = (value instanceof Array) ? value : [value];
   },
 
   getHeader: function(name) {
     if(name) {
-      return this.headers[JsSIP.Utils.headerize(name)];
+      return this.headers[Utils.headerize(name)];
     }
   },
 
   hasHeader: function(name) {
     if(name) {
-      return (this.headers.hasOwnProperty(JsSIP.Utils.headerize(name)) && true) || false;
+      return (this.headers.hasOwnProperty(Utils.headerize(name)) && true) || false;
     }
   },
 
   deleteHeader: function(header) {
     var value;
-    header = JsSIP.Utils.headerize(header);
+    header = Utils.headerize(header);
     if(this.headers.hasOwnProperty(header)) {
       value = this.headers[header];
       delete this.headers[header];
@@ -130,8 +140,8 @@ URI.prototype = {
       this.user,
       this.host,
       this.port,
-      window.JSON.parse(window.JSON.stringify(this.parameters)),
-      window.JSON.parse(window.JSON.stringify(this.headers)));
+      JSON.parse(JSON.stringify(this.parameters)),
+      JSON.parse(JSON.stringify(this.headers)));
   },
 
   toString: function(){
@@ -140,7 +150,7 @@ URI.prototype = {
 
     uri  = this.scheme + ':';
     if (this.user) {
-      uri += JsSIP.Utils.escapeUser(this.user) + '@';
+      uri += Utils.escapeUser(this.user) + '@';
     }
     uri += this.host;
     if (this.port || this.port === 0) {
@@ -173,7 +183,7 @@ URI.prototype = {
 
       aor  = this.scheme + ':';
       if (this.user) {
-        aor += JsSIP.Utils.escapeUser(this.user) + '@';
+        aor += Utils.escapeUser(this.user) + '@';
       }
       aor += this.host;
       if (show_port && (this.port || this.port === 0)) {
@@ -190,7 +200,7 @@ URI.prototype = {
   * it is an invalid URI.
   */
 URI.parse = function(uri) {
-  uri = JsSIP.Grammar.parse(uri,'SIP_URI');
+  uri = Grammar.parse(uri,'SIP_URI');
 
   if (uri !== -1) {
     return uri;
@@ -198,6 +208,3 @@ URI.parse = function(uri) {
     return undefined;
   }
 };
-
-JsSIP.URI = URI;
-}(JsSIP));

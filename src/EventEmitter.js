@@ -1,13 +1,29 @@
-(function(JsSIP) {
+module.exports = EventEmitter;
+
+
+function EventEmitter() {}
+
+
+/**
+ * Dependencies.
+ */
+var LoggerFactory = require('./LoggerFactory');
+
+
+function Event(type, sender, data) {
+  this.type = type;
+  this.sender= sender;
+  this.data = data;
+}
+
+
 var
-  EventEmitter,
-  Event,
-  logger = new JsSIP.LoggerFactory().getLogger('jssip.eventemitter'),
+  logger = new LoggerFactory().getLogger('jssip.eventemitter'),
   C = {
     MAX_LISTENERS: 50
   };
 
-EventEmitter = function(){};
+
 EventEmitter.prototype = {
   /**
    * Initialize events dictionaries.
@@ -159,7 +175,7 @@ EventEmitter.prototype = {
     listeners = this.events[event];
     length = listeners.length;
 
-    e = new JsSIP.Event(event, sender, data);
+    e = new Event(event, sender, data);
 
     listeners.map(function(listener) {
       return function() {
@@ -181,15 +197,3 @@ EventEmitter.prototype = {
     this.oneTimeListeners[event] = [];
   }
 };
-
-Event = function(type, sender, data) {
-  this.type = type;
-  this.sender= sender;
-  this.data = data;
-};
-
-EventEmitter.C = C;
-
-JsSIP.EventEmitter = EventEmitter;
-JsSIP.Event = Event;
-}(JsSIP));

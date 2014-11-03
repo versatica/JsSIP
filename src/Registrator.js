@@ -1,7 +1,16 @@
-(function(JsSIP) {
-var Registrator;
+module.exports = Registrator;
 
-Registrator = function(ua, transport) {
+
+/**
+ * Dependecies
+ */
+var Utils = require('./Utils');
+var JsSIP_C = require('./Constants');
+var SIPMessage = require('./SIPMessage');
+var RequestSender = require('./RequestSender');
+
+
+function Registrator(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
 
   this.logger = ua.getLogger('jssip.registrator');
@@ -13,7 +22,7 @@ Registrator = function(ua, transport) {
   this.expires = ua.configuration.register_expires;
 
   // Call-ID and CSeq values RFC3261 10.2
-  this.call_id = JsSIP.Utils.createRandomToken(22);
+  this.call_id = Utils.createRandomToken(22);
   this.cseq = 0;
 
   // this.to_uri
@@ -43,7 +52,8 @@ Registrator = function(ua, transport) {
     this.contact += ';reg-id='+ reg_id;
     this.contact += ';+sip.instance="<urn:uuid:'+ this.ua.configuration.instance_id+'>"';
   }
-};
+}
+
 
 Registrator.prototype = {
   setExtraHeaders: function(extraHeaders) {
@@ -79,13 +89,13 @@ Registrator.prototype = {
     extraHeaders.push('Contact: ' + this.contact + ';expires=' + this.expires + this.extraContactParams);
     extraHeaders.push('Expires: '+ this.expires);
 
-    this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
+    this.request = new SIPMessage.OutgoingRequest(JsSIP_C.REGISTER, this.registrar, this.ua, {
         'to_uri': this.to_uri,
         'call_id': this.call_id,
         'cseq': (this.cseq += 1)
       }, extraHeaders);
 
-    request_sender = new JsSIP.RequestSender(this, this.ua);
+    request_sender = new RequestSender(this, this.ua);
 
     this.receiveResponse = function(response) {
       var contact, expires,
@@ -98,7 +108,7 @@ Registrator.prototype = {
 
       // Clear registration timer
       if (this.registrationTimer !== null) {
-        window.clearTimeout(this.registrationTimer);
+        clearTimeout(this.registrationTimer);
         this.registrationTimer = null;
       }
 
@@ -138,7 +148,7 @@ Registrator.prototype = {
 
           // Re-Register before the expiration interval has elapsed.
           // For that, decrease the expires value. ie: 3 seconds
-          this.registrationTimer = window.setTimeout(function() {
+          this.registrationTimer = setTimeout(function() {
             self.registrationTimer = null;
             self.register();
           }, (expires * 1000) - 3000);
@@ -167,21 +177,21 @@ Registrator.prototype = {
             this.register();
           } else { //This response MUST contain a Min-Expires header field
             this.logger.warn('423 response received for REGISTER without Min-Expires');
-            this.registrationFailure(response, JsSIP.C.causes.SIP_FAILURE_CODE);
+            this.registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
           }
           break;
         default:
-          cause = JsSIP.Utils.sipErrorCause(response.status_code);
+          cause = Utils.sipErrorCause(response.status_code);
           this.registrationFailure(response, cause);
       }
     };
 
     this.onRequestTimeout = function() {
-      this.registrationFailure(null, JsSIP.C.causes.REQUEST_TIMEOUT);
+      this.registrationFailure(null, JsSIP_C.causes.REQUEST_TIMEOUT);
     };
 
     this.onTransportError = function() {
-      this.registrationFailure(null, JsSIP.C.causes.CONNECTION_ERROR);
+      this.registrationFailure(null, JsSIP_C.causes.CONNECTION_ERROR);
     };
 
     request_sender.send();
@@ -201,7 +211,7 @@ Registrator.prototype = {
 
     // Clear the registration timer.
     if (this.registrationTimer !== null) {
-      window.clearTimeout(this.registrationTimer);
+      clearTimeout(this.registrationTimer);
       this.registrationTimer = null;
     }
 
@@ -211,7 +221,7 @@ Registrator.prototype = {
       extraHeaders.push('Contact: *' + this.extraContactParams);
       extraHeaders.push('Expires: 0');
 
-      this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
+      this.request = new SIPMessage.OutgoingRequest(JsSIP_C.REGISTER, this.registrar, this.ua, {
           'to_uri': this.to_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
@@ -220,14 +230,14 @@ Registrator.prototype = {
       extraHeaders.push('Contact: '+ this.contact + ';expires=0' + this.extraContactParams);
       extraHeaders.push('Expires: 0');
 
-      this.request = new JsSIP.OutgoingRequest(JsSIP.C.REGISTER, this.registrar, this.ua, {
+      this.request = new SIPMessage.OutgoingRequest(JsSIP_C.REGISTER, this.registrar, this.ua, {
           'to_uri': this.to_uri,
           'call_id': this.call_id,
           'cseq': (this.cseq += 1)
         }, extraHeaders);
     }
 
-    var request_sender = new JsSIP.RequestSender(this, this.ua);
+    var request_sender = new RequestSender(this, this.ua);
 
     this.receiveResponse = function(response) {
       var cause;
@@ -240,17 +250,17 @@ Registrator.prototype = {
           this.unregistered(response);
           break;
         default:
-          cause = JsSIP.Utils.sipErrorCause(response.status_code);
+          cause = Utils.sipErrorCause(response.status_code);
           this.unregistered(response, cause);
       }
     };
 
     this.onRequestTimeout = function() {
-      this.unregistered(null, JsSIP.C.causes.REQUEST_TIMEOUT);
+      this.unregistered(null, JsSIP_C.causes.REQUEST_TIMEOUT);
     };
 
     this.onTransportError = function() {
-      this.unregistered(null, JsSIP.C.causes.CONNECTION_ERROR);
+      this.unregistered(null, JsSIP_C.causes.CONNECTION_ERROR);
     };
 
     request_sender.send();
@@ -281,7 +291,7 @@ Registrator.prototype = {
 
   onTransportClosed: function() {
     if (this.registrationTimer !== null) {
-      window.clearTimeout(this.registrationTimer);
+      clearTimeout(this.registrationTimer);
       this.registrationTimer = null;
     }
 
@@ -298,5 +308,3 @@ Registrator.prototype = {
   }
 };
 
-JsSIP.Registrator = Registrator;
-}(JsSIP));

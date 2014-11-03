@@ -4,7 +4,7 @@
 /*
  * Usage:
  *
- * grunt devel:   Build the JsSIP Grammar and SDP components.
+ * grunt devel:   Build the JsSIP Grammar.
  *
  * grunt dist:    Generate builds/jssip-X.Y.Z.js and a builds/jssip-last.js
  *                symlink pointing to it.
@@ -18,53 +18,6 @@
 
 
 module.exports = function(grunt) {
-	// JavaScript files defining the JsSIP namespace.
-	var jsFiles = [
-		'src/JsSIP.js',
-		'src/Logger.js',
-		'src/LoggerFactory.js',
-		'src/EventEmitter.js',
-		'src/Constants.js',
-		'src/Exceptions.js',
-		'src/Timers.js',
-		'src/Transport.js',
-		'src/Parser.js',
-		'src/SIPMessage.js',
-		'src/URI.js',
-		'src/NameAddrHeader.js',
-		'src/Transactions.js',
-		'src/Dialog.js',
-		'src/Dialog/RequestSender.js',
-		'src/RequestSender.js',
-		'src/Registrator.js',
-		'src/RTCSession.js',
-		'src/RTCSession/RTCMediaHandler.js',
-		'src/RTCSession/Request.js',
-		'src/RTCSession/DTMF.js',
-		'src/Message.js',
-		'src/UA.js',
-		'src/Utils.js',
-		'src/SanityCheck.js',
-		'src/DigestAuthentication.js',
-		'src/WebRTC.js'
-	];
-
-	// JavaScript files to concatenate.
-	var concatFiles = (function() {
-		var files = [];
-
-		files.push('src/_head.js');
-		files = files.concat(jsFiles);
-		files.push('src/_tail.js');
-
-		return files;
-	}());
-
-	// Files for documentation.
-	var docFiles = [
-		'README.md'
-	].concat(jsFiles);
-
 	// Banner.
 	var banner = require('fs').readFileSync('src/banner.txt').toString();
 
@@ -74,51 +27,24 @@ module.exports = function(grunt) {
 		last: 'builds/<%= pkg.name %>-last.js',
 	};
 
+	var package_json = grunt.file.readJSON('package.json');
 
 	// Project configuration.
 	grunt.initConfig({
-
 		pkg: grunt.file.readJSON('package.json'),
 
 		meta: {
 			banner: banner
 		},
 
-		concat: {
-			dist: {
-				src: concatFiles,
-				dest: builds.dist,
-				options: {
-					banner: '<%= meta.banner %>',
-					separator: '\n\n',
-					process: true
-				},
-				nonull: true
-			},
-			post_dist: {
-				src: [
-					builds.dist,
-					'src/Grammar/dist/Grammar.js',
-					'src/SDP/dist/SDP.js'
-				],
-				dest: builds.dist,
-				options: {
-					separator: '\n\n',
-					process: true
-				},
-				nonull: true
-			},
-		},
-
 		jshint: {
-			dist: builds.dist,
 			// Default options.
 			options: {
 				// DOC: http://www.jshint.com/docs/options/
 				curly: true,
 				eqeqeq: true,
 				immed: true,
-				latedef: true,
+				latedef: 'nofunc',  // Allow functions to be used before defined (it is valid).
 				newcap: true,
 				noarg: true,
 				noempty: true,
@@ -128,30 +54,64 @@ module.exports = function(grunt) {
 				undef: true,
 				unused: true,
 				boss: false,
-				eqnull: true,
+				eqnull: false,
 				funcscope: false,
 				sub: false,
 				supernew: false,
 				browser: true,
 				devel: true,
-				jquery: true,
-				worker: true,
+				node: true,
+				nonstandard: true,  // Allow 'unescape()' and 'escape()'.
 				globals: {
-					module: false,  // false means that 'module' is defined elsewhere and cannot override it.
-					define: false
+					webkitRTCPeerConnection: false,
+					mozRTCPeerConnection: false,
+					RTCPeerConnection: false,
+					webkitRTCSessionDescription: false,
+					mozRTCSessionDescription: false,
+					RTCSessionDescription: false
 				}
 			},
+			// Lint the resulting dist build.
+			dist: builds.dist,
 			// Lint JS files separately.
 			each_file: {
-				src: jsFiles,
+				src: [ 'src/**/*.js' ],
 				options: {
-					unused: false,
-					ignores: [],
-					globals: {
-						// target: false,  // TODO: Add it when 'target' is given instead of 'window'.
-						JsSIP: true  // true means that 'JsSIP' is defined here.
+					ignores: [ 'src/Grammar.js' ]
+				}
+			}
+		},
+
+		browserify: {
+			dist: {
+				files: {
+					'builds/<%= pkg.name %>-<%= pkg.version %>.js': [ 'src/JsSIP.js' ]
+				},
+				options: {
+					browserifyOptions: {
+						standalone: 'JsSIP'
 					}
 				}
+			}
+		},
+
+		concat: {
+			dist: {
+				src: builds.dist,
+				dest: builds.dist,
+				options: {
+					banner: '<%= meta.banner %>',
+					separator: '\n\n',
+					process: true
+				},
+				nonull: true
+			}
+		},
+
+		nodeunit: {
+			all: [ 'test/*.js' ],
+			options: {
+				reporter: 'default'
 			}
 		},
 
@@ -166,21 +126,9 @@ module.exports = function(grunt) {
 			}
 		},
 
-		browserify: {
-			sdp: {
-				files: {
-					'src/SDP/dist/SDP.js': [ 'src/SDP/main.js' ]
-				}
-			}
-		},
-
-		qunit: {
-			noWebRTC: [ 'test/run-TestNoWebRTC.html' ]
-		},
-
 		watch: {
 			dist: {
-				files: jsFiles,
+				files: [ 'src/**/*.js' ],
 				tasks: [ 'dist' ],
 				options: {
 					nospawn: true
@@ -198,16 +146,16 @@ module.exports = function(grunt) {
 			}
 		},
 
-		jsdoc : {
+		jsdoc: {
 			basic: {
-				src: docFiles,
+				src: [ 'README.md', 'src/**/*.js' ],
 				options: {
 					destination: 'doc/basic/',
 					private: false
 				}
 			},
 			docstrap: {
-				src: docFiles,
+				src: [ 'README.md', 'src/**/*.js' ],
 				options: {
 					destination: 'doc/docstrap/',
 					private: false,
@@ -220,13 +168,13 @@ module.exports = function(grunt) {
 
 
 	// Load Grunt plugins.
-	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
+	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-contrib-nodeunit');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-browserify');
-	grunt.loadNpmTasks('grunt-contrib-qunit');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-symlink');
+	grunt.loadNpmTasks('grunt-browserify');
 	grunt.loadNpmTasks('grunt-jsdoc');
 
 
@@ -246,8 +194,7 @@ module.exports = function(grunt) {
 				'else\n' +
 					'PEGJS_BIN="pegjs";\n' +
 				'fi &&\n' +
-				'mkdir -p src/Grammar/dist\n' +
-				'$PEGJS_BIN -e JsSIP.Grammar src/Grammar/src/Grammar.pegjs src/Grammar/dist/Grammar.js',
+				'$PEGJS_BIN src/Grammar.pegjs src/Grammar.js',
 			function(error, stdout, stderr) {
 			if (error) {
 				sys.print('ERROR: ' + stderr);
@@ -258,45 +205,40 @@ module.exports = function(grunt) {
 			// Then modify the generated Grammar.js file with custom changes.
 			console.log('grammar task: applying custom changes to Grammar.js...');
 			var fs = require('fs');
-			var grammar = fs.readFileSync('src/Grammar/dist/Grammar.js').toString();
+			var grammar = fs.readFileSync('src/Grammar.js').toString();
 			var modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
-			fs.writeFileSync('src/Grammar/dist/Grammar.js', modified_grammar);
+			fs.writeFileSync('src/Grammar.js', modified_grammar);
 			console.log('OK');
 			done();  // Tell grunt that async task has succeeded.
 		});
 	});
 
-	// Generate src/SDP/dist/SDP.js.
+	// Build both JsSIP Grammar.
 	// NOTE: This task is not included in 'grunt dist'.
-	grunt.registerTask('sdp', [ 'browserify:sdp' ]);
-
-	// Build both JsSIP Grammar and SDP components.
-	grunt.registerTask('devel', [ 'grammar', 'sdp' ]);
+	grunt.registerTask('devel', [ 'grammar' ]);
 
 	// Taks for building builds/jssip-X.Y.Z.js and builds/jssip-last.js symlink.
-	// NOTE: This task assumes that 'devel' task has been already executed.
+	// NOTE: This task assumes that 'grunt devel' has been already executed.
 	grunt.registerTask('dist', [
 		'jshint:each_file',
+		'browserify:dist',
 		'concat:dist',
-		'jshint:dist',
-		'concat:post_dist',
-		'symlink:last'
+		'symlink:last',
+		'test'
 	]);
 
-	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
-	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
-	grunt.registerTask('min', [ 'uglify:dist']);
-
-	// Test tasks.
-	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
-	grunt.registerTask('testNoWebRTC', [ 'qunit:noWebRTC' ]);
-	grunt.registerTask('test', [ 'testNoWebRTC' ]);
+	// Test task (nodeunit).
+	grunt.registerTask('test', [ 'nodeunit:all' ]);
 
 	// Build builds nice documentation using JsDoc3.
 	grunt.registerTask('doc', [ 'jsdoc:docstrap' ]);
 
 	// Task for Travis CI.
 	grunt.registerTask('travis', [ 'test' ]);
+
+	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
+	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
+	grunt.registerTask('min', [ 'uglify:dist']);
 
 	// Default task points to 'dist' task.
 	grunt.registerTask('default', [ 'dist' ]);

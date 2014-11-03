@@ -1,7 +1,16 @@
-(function(JsSIP) {
-var RequestSender;
+module.exports = RequestSender;
 
-RequestSender = function(applicant, ua) {
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('./Constants');
+var UA = require('./UA');
+var DigestAuthentication = require('./DigestAuthentication');
+var Transactions = require('./Transactions');
+
+
+function RequestSender(applicant, ua) {
   this.logger = ua.getLogger('jssip.requestsender');
   this.ua = ua;
   this.applicant = applicant;
@@ -12,10 +21,11 @@ RequestSender = function(applicant, ua) {
   this.staled = false;
 
   // If ua is in closing process or even closed just allow sending Bye and ACK
-  if (ua.status === JsSIP.UA.C.STATUS_USER_CLOSED && (this.method !== JsSIP.C.BYE || this.method !== JsSIP.C.ACK)) {
+  if (ua.status === UA.C.STATUS_USER_CLOSED && (this.method !== JsSIP_C.BYE || this.method !== JsSIP_C.ACK)) {
     this.onTransportError();
   }
-};
+}
+
 
 /**
 * Create the client transaction and send the message.
@@ -24,13 +34,13 @@ RequestSender.prototype = {
   send: function() {
     switch(this.method) {
       case "INVITE":
-        this.clientTransaction = new JsSIP.Transactions.InviteClientTransaction(this, this.request, this.ua.transport);
+        this.clientTransaction = new Transactions.InviteClientTransaction(this, this.request, this.ua.transport);
         break;
       case "ACK":
-        this.clientTransaction = new JsSIP.Transactions.AckClientTransaction(this, this.request, this.ua.transport);
+        this.clientTransaction = new Transactions.AckClientTransaction(this, this.request, this.ua.transport);
         break;
       default:
-        this.clientTransaction = new JsSIP.Transactions.NonInviteClientTransaction(this, this.request, this.ua.transport);
+        this.clientTransaction = new Transactions.NonInviteClientTransaction(this, this.request, this.ua.transport);
     }
     this.clientTransaction.send();
   },
@@ -83,7 +93,7 @@ RequestSender.prototype = {
 
       if (!this.challenged || (!this.staled && challenge.stale === true)) {
         if (!this.credentials) {
-          this.credentials = new JsSIP.DigestAuthentication(this.ua);
+          this.credentials = new DigestAuthentication(this.ua);
         }
 
         // Verify that the challenge is really valid.
@@ -97,7 +107,7 @@ RequestSender.prototype = {
           this.staled = true;
         }
 
-        if (response.method === JsSIP.C.REGISTER) {
+        if (response.method === JsSIP_C.REGISTER) {
           cseq = this.applicant.cseq += 1;
         } else if (this.request.dialog){
           cseq = this.request.dialog.local_seqnum += 1;
@@ -117,6 +127,3 @@ RequestSender.prototype = {
     }
   }
 };
-
-JsSIP.RequestSender = RequestSender;
-}(JsSIP));

@@ -1,11 +1,18 @@
+module.exports = RTCMediaHandler;
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('../Constants');
+var WebRTC = require('../WebRTC');
+
+
 /* RTCMediaHandler
  * -class PeerConnection helper Class.
- * -param {JsSIP.RTCSession} session
+ * -param {RTCSession} session
  * -param {Object} [contraints]
  */
-(function(JsSIP){
-
-var RTCMediaHandler = function(session, constraints) {
+function RTCMediaHandler(session, constraints) {
   constraints = constraints || {};
 
   this.logger = session.ua.getLogger('jssip.rtcsession.rtcmediahandler', session.id);
@@ -15,7 +22,8 @@ var RTCMediaHandler = function(session, constraints) {
   this.ready = true;
 
   this.init(constraints);
-};
+}
+
 
 RTCMediaHandler.prototype = {
   isReady: function() {
@@ -167,7 +175,7 @@ RTCMediaHandler.prototype = {
       });
     }
 
-    this.peerConnection = new JsSIP.WebRTC.RTCPeerConnection({'iceServers': servers}, constraints);
+    this.peerConnection = new WebRTC.RTCPeerConnection({'iceServers': servers}, constraints);
 
     this.peerConnection.onaddstream = function(e) {
       self.logger.debug('stream added: '+ e.stream.id);
@@ -192,9 +200,9 @@ RTCMediaHandler.prototype = {
 
       if (this.iceConnectionState === 'failed') {
         self.session.terminate({
-            cause: JsSIP.C.causes.RTP_TIMEOUT,
+            cause: JsSIP_C.causes.RTP_TIMEOUT,
             status_code: 200,
-            reason_phrase: JsSIP.C.causes.RTP_TIMEOUT
+            reason_phrase: JsSIP_C.causes.RTP_TIMEOUT
           });
       }
     };
@@ -226,7 +234,7 @@ RTCMediaHandler.prototype = {
 
     this.logger.debug('requesting access to local media');
 
-    JsSIP.WebRTC.getUserMedia(constraints,
+    WebRTC.getUserMedia(constraints,
       function(stream) {
         self.logger.debug('got local media stream');
         self.localMedia = stream;
@@ -249,12 +257,9 @@ RTCMediaHandler.prototype = {
   */
   onMessage: function(type, body, onSuccess, onFailure) {
     this.peerConnection.setRemoteDescription(
-      new JsSIP.WebRTC.RTCSessionDescription({type: type, sdp:body}),
+      new WebRTC.RTCSessionDescription({type: type, sdp:body}),
       onSuccess,
       onFailure
     );
   }
 };
-
-JsSIP.RTCSession.RTCMediaHandler = RTCMediaHandler;
-}(JsSIP));

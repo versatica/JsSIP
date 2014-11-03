@@ -1,21 +1,30 @@
-(function(JsSIP) {
-var
-  OutgoingRequest,
-  IncomingMessage,
-  IncomingRequest,
-  IncomingResponse;
+module.exports = {
+  OutgoingRequest: OutgoingRequest,
+  IncomingRequest: IncomingRequest,
+  IncomingResponse: IncomingResponse
+};
+
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('./Constants');
+var Utils = require('./Utils');
+var NameAddrHeader = require('./NameAddrHeader');
+var Grammar = require('./Grammar');
+
 
 /**
  * -param {String} method request method
  * -param {String} ruri request uri
- * -param {JsSIP.UA} ua
+ * -param {UA} ua
  * -param {Object} params parameters that will have priority over ua.configuration parameters:
  * <br>
  *  - cseq, call_id, from_tag, from_uri, from_display_name, to_uri, to_tag, route_set
  * -param {Object} [headers] extra headers
  * -param {String} [body]
  */
-OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
+function OutgoingRequest(method, ruri, ua, params, extraHeaders, body) {
   var
     to,
     from,
@@ -51,13 +60,13 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   this.setHeader('via', '');
 
   // Max-Forwards
-  this.setHeader('max-forwards', JsSIP.UA.C.MAX_FORWARDS);
+  this.setHeader('max-forwards', JsSIP_C.MAX_FORWARDS);
 
   // To
   to = (params.to_display_name || params.to_display_name === 0) ? '"' + params.to_display_name + '" ' : '';
   to += '<' + (params.to_uri || ruri) + '>';
   to += params.to_tag ? ';tag=' + params.to_tag : '';
-  this.to = new JsSIP.NameAddrHeader.parse(to);
+  this.to = new NameAddrHeader.parse(to);
   this.setHeader('to', to);
 
   // From
@@ -69,12 +78,12 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
     from = '';
   }
   from += '<' + (params.from_uri || ua.configuration.uri) + '>;tag=';
-  from += params.from_tag || JsSIP.Utils.newTag();
-  this.from = new JsSIP.NameAddrHeader.parse(from);
+  from += params.from_tag || Utils.newTag();
+  this.from = new NameAddrHeader.parse(from);
   this.setHeader('from', from);
 
   // Call-ID
-  call_id = params.call_id || (ua.configuration.jssip_id + JsSIP.Utils.createRandomToken(15));
+  call_id = params.call_id || (ua.configuration.jssip_id + Utils.createRandomToken(15));
   this.call_id = call_id;
   this.setHeader('call-id', call_id);
 
@@ -82,7 +91,7 @@ OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
   cseq = params.cseq || Math.floor(Math.random() * 10000);
   this.cseq = cseq;
   this.setHeader('cseq', cseq + ' ' + method);
-};
+}
 
 OutgoingRequest.prototype = {
   /**
@@ -91,7 +100,7 @@ OutgoingRequest.prototype = {
    * -param {String | Array} value header value
    */
   setHeader: function(name, value) {
-    this.headers[JsSIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
+    this.headers[Utils.headerize(name)] = (value instanceof Array) ? value : [value];
   },
 
   /**
@@ -102,7 +111,7 @@ OutgoingRequest.prototype = {
   getHeader: function(name) {
     var regexp, idx,
       length = this.extraHeaders.length,
-      header = this.headers[JsSIP.Utils.headerize(name)];
+      header = this.headers[Utils.headerize(name)];
 
     if(header) {
       if(header[0]) {
@@ -128,7 +137,7 @@ OutgoingRequest.prototype = {
    */
   getHeaders: function(name) {
     var idx, length, regexp,
-      header = this.headers[JsSIP.Utils.headerize(name)],
+      header = this.headers[Utils.headerize(name)],
       result = [];
 
     if (header) {
@@ -159,7 +168,7 @@ OutgoingRequest.prototype = {
     var regexp, idx,
       length = this.extraHeaders.length;
 
-    if (this.headers[JsSIP.Utils.headerize(name)]) {
+    if (this.headers[Utils.headerize(name)]) {
       return true;
     } else {
       regexp = new RegExp('^\\s*'+ name +'\\s*:','i');
@@ -193,10 +202,10 @@ OutgoingRequest.prototype = {
 
     // Supported
     switch (this.method) {
-      case JsSIP.C.REGISTER:
+      case JsSIP_C.REGISTER:
         supported.push('path', 'gruu');
         break;
-      case JsSIP.C.INVITE:
+      case JsSIP_C.INVITE:
         if (this.ua.contact.pub_gruu || this.ua.contact.temp_gruu) {
           supported.push('gruu');
         }
@@ -206,13 +215,13 @@ OutgoingRequest.prototype = {
     supported.push('outbound');
 
     // Allow
-    msg += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
+    msg += 'Allow: '+ JsSIP_C.ALLOWED_METHODS +'\r\n';
 
     msg += 'Supported: ' +  supported +'\r\n';
-    msg += 'User-Agent: ' + JsSIP.C.USER_AGENT +'\r\n';
+    msg += 'User-Agent: ' + JsSIP_C.USER_AGENT +'\r\n';
 
     if(this.body) {
-      length = JsSIP.Utils.str_utf8_length(this.body);
+      length = Utils.str_utf8_length(this.body);
       msg += 'Content-Length: ' + length + '\r\n\r\n';
       msg += this.body;
     } else {
@@ -223,7 +232,8 @@ OutgoingRequest.prototype = {
   }
 };
 
-IncomingMessage = function(){
+
+function IncomingMessage(){
   this.data = null;
   this.headers = null;
   this.method =  null;
@@ -236,7 +246,7 @@ IncomingMessage = function(){
   this.to = null;
   this.to_tag = null;
   this.body = null;
-};
+}
 
 IncomingMessage.prototype = {
   /**
@@ -246,7 +256,7 @@ IncomingMessage.prototype = {
   addHeader: function(name, value) {
     var header = { raw: value };
 
-    name = JsSIP.Utils.headerize(name);
+    name = Utils.headerize(name);
 
     if(this.headers[name]) {
       this.headers[name].push(header);
@@ -259,7 +269,7 @@ IncomingMessage.prototype = {
    * Get the value of the given header name at the given position.
    */
   getHeader: function(name) {
-    var header = this.headers[JsSIP.Utils.headerize(name)];
+    var header = this.headers[Utils.headerize(name)];
 
     if(header) {
       if(header[0]) {
@@ -275,7 +285,7 @@ IncomingMessage.prototype = {
    */
   getHeaders: function(name) {
     var idx, length,
-      header = this.headers[JsSIP.Utils.headerize(name)],
+      header = this.headers[Utils.headerize(name)],
       result = [];
 
     if(!header) {
@@ -294,7 +304,7 @@ IncomingMessage.prototype = {
    * Verify the existence of the given header.
    */
   hasHeader: function(name) {
-    return(this.headers[JsSIP.Utils.headerize(name)]) ? true : false;
+    return(this.headers[Utils.headerize(name)]) ? true : false;
   },
 
   /**
@@ -306,7 +316,7 @@ IncomingMessage.prototype = {
   parseHeader: function(name, idx) {
     var header, value, parsed;
 
-    name = JsSIP.Utils.headerize(name);
+    name = Utils.headerize(name);
 
     idx = idx || 0;
 
@@ -326,7 +336,7 @@ IncomingMessage.prototype = {
     }
 
     //substitute '-' by '_' for grammar rule matching.
-    parsed = JsSIP.Grammar.parse(value, name.replace(/-/g, '_'));
+    parsed = Grammar.parse(value, name.replace(/-/g, '_'));
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
@@ -358,7 +368,7 @@ IncomingMessage.prototype = {
   */
   setHeader: function(name, value) {
     var header = { raw: value };
-    this.headers[JsSIP.Utils.headerize(name)] = [header];
+    this.headers[Utils.headerize(name)] = [header];
   },
 
   toString: function() {
@@ -366,14 +376,16 @@ IncomingMessage.prototype = {
   }
 };
 
-IncomingRequest = function(ua) {
+
+function IncomingRequest(ua) {
   this.logger = ua.getLogger('jssip.sipmessage');
   this.ua = ua;
   this.headers = {};
   this.ruri = null;
   this.transport = null;
   this.server_transaction = null;
-};
+}
+
 IncomingRequest.prototype = new IncomingMessage();
 
 /**
@@ -402,12 +414,12 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
     throw new TypeError('Invalid reason_phrase: '+ reason);
   }
 
-  reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
+  reason = reason || JsSIP_C.REASON_PHRASE[code] || '';
   extraHeaders = extraHeaders && extraHeaders.slice() || [];
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
-  if(this.method === JsSIP.C.INVITE && code > 100 && code <= 200) {
+  if(this.method === JsSIP_C.INVITE && code > 100 && code <= 200) {
     rr = this.getHeaders('record-route');
     length = rr.length;
 
@@ -424,7 +436,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   }
 
   if(!this.to_tag && code > 100) {
-    to += ';tag=' + JsSIP.Utils.newTag();
+    to += ';tag=' + Utils.newTag();
   } else if(this.to_tag && !this.s('to').hasParam('tag')) {
     to += ';tag=' + this.to_tag;
   }
@@ -441,7 +453,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
 
   // Supported
   switch (this.method) {
-    case JsSIP.C.INVITE:
+    case JsSIP_C.INVITE:
       if (this.ua.contact.pub_gruu || this.ua.contact.temp_gruu) {
         supported.push('gruu');
       }
@@ -451,19 +463,19 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
   supported.push('outbound');
 
   // Allow and Accept
-  if (this.method === JsSIP.C.OPTIONS) {
-    response += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
-    response += 'Accept: '+ JsSIP.UA.C.ACCEPTED_BODY_TYPES +'\r\n';
+  if (this.method === JsSIP_C.OPTIONS) {
+    response += 'Allow: '+ JsSIP_C.ALLOWED_METHODS +'\r\n';
+    response += 'Accept: '+ JsSIP_C.ACCEPTED_BODY_TYPES +'\r\n';
   } else if (code === 405) {
-    response += 'Allow: '+ JsSIP.Utils.getAllowedMethods(this.ua) +'\r\n';
+    response += 'Allow: '+ JsSIP_C.ALLOWED_METHODS +'\r\n';
   } else if (code === 415 ) {
-    response += 'Accept: '+ JsSIP.UA.C.ACCEPTED_BODY_TYPES +'\r\n';
+    response += 'Accept: '+ JsSIP_C.ACCEPTED_BODY_TYPES +'\r\n';
   }
 
   response += 'Supported: ' +  supported +'\r\n';
 
   if(body) {
-    length = JsSIP.Utils.str_utf8_length(body);
+    length = Utils.str_utf8_length(body);
     response += 'Content-Type: application/sdp\r\n';
     response += 'Content-Length: ' + length + '\r\n\r\n';
     response += body;
@@ -495,7 +507,7 @@ IncomingRequest.prototype.reply_sl = function(code, reason) {
     throw new TypeError('Invalid reason_phrase: '+ reason);
   }
 
-  reason = reason || JsSIP.C.REASON_PHRASE[code] || '';
+  reason = reason || JsSIP_C.REASON_PHRASE[code] || '';
 
   response = 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
 
@@ -506,7 +518,7 @@ IncomingRequest.prototype.reply_sl = function(code, reason) {
   to = this.getHeader('To');
 
   if(!this.to_tag && code > 100) {
-    to += ';tag=' + JsSIP.Utils.newTag();
+    to += ';tag=' + Utils.newTag();
   } else if(this.to_tag && !this.s('to').hasParam('tag')) {
     to += ';tag=' + this.to_tag;
   }
@@ -521,15 +533,11 @@ IncomingRequest.prototype.reply_sl = function(code, reason) {
 };
 
 
-IncomingResponse = function(ua) {
+function IncomingResponse(ua) {
   this.logger = ua.getLogger('jssip.sipmessage');
   this.headers = {};
   this.status_code = null;
   this.reason_phrase = null;
-};
-IncomingResponse.prototype = new IncomingMessage();
+}
 
-JsSIP.OutgoingRequest = OutgoingRequest;
-JsSIP.IncomingRequest = IncomingRequest;
-JsSIP.IncomingResponse = IncomingResponse;
-}(JsSIP));
+IncomingResponse.prototype = new IncomingMessage();

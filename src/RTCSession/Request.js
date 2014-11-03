@@ -1,18 +1,30 @@
-(function(JsSIP) {
+module.exports = Request;
 
-var Request = function(session) {
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('../Constants');
+var EventEmitter = require('../EventEmitter');
+var Exceptions = require('../Exceptions');
+var RTCSession = require('../RTCSession');
+var Utils = require('../Utils');
+
+
+function Request(session) {
   var events = [
-  'progress',
-  'succeeded',
-  'failed'
+    'progress',
+    'succeeded',
+    'failed'
   ];
 
   this.owner = session;
 
   this.logger = session.ua.getLogger('jssip.rtcsession.request', session.id);
   this.initEvents(events);
-};
-Request.prototype = new JsSIP.EventEmitter();
+}
+
+
+Request.prototype = new EventEmitter();
 
 
 Request.prototype.send = function(method, options) {
@@ -28,12 +40,12 @@ Request.prototype.send = function(method, options) {
   }
 
   // Check RTCSession Status
-  if (this.owner.status !== JsSIP.RTCSession.C.STATUS_1XX_RECEIVED &&
-    this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
-    this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ACK &&
-    this.owner.status !== JsSIP.RTCSession.C.STATUS_CONFIRMED &&
-    this.owner.status !== JsSIP.RTCSession.C.STATUS_TERMINATED) {
-    throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
+  if (this.owner.status !== RTCSession.C.STATUS_1XX_RECEIVED &&
+    this.owner.status !== RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
+    this.owner.status !== RTCSession.C.STATUS_WAITING_FOR_ACK &&
+    this.owner.status !== RTCSession.C.STATUS_CONFIRMED &&
+    this.owner.status !== RTCSession.C.STATUS_TERMINATED) {
+    throw new Exceptions.InvalidStateError(this.owner.status);
   }
 
   /*
@@ -41,8 +53,8 @@ Request.prototype.send = function(method, options) {
    * could had been terminated before the ACK had arrived.
    * RFC3261 Section 15, Paragraph 2
    */
-  else if (this.owner.status === JsSIP.RTCSession.C.STATUS_TERMINATED && method !== JsSIP.C.BYE) {
-    throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
+  else if (this.owner.status === RTCSession.C.STATUS_TERMINATED && method !== JsSIP_C.BYE) {
+    throw new Exceptions.InvalidStateError(this.owner.status);
   }
 
   // Set event handlers
@@ -75,7 +87,7 @@ Request.prototype.receiveResponse = function(response) {
       break;
 
     default:
-      cause = JsSIP.Utils.sipErrorCause(response.status_code);
+      cause = Utils.sipErrorCause(response.status_code);
       this.emit('failed', this, {
         originator: 'remote',
         response: response,
@@ -88,7 +100,7 @@ Request.prototype.receiveResponse = function(response) {
 Request.prototype.onRequestTimeout = function() {
   this.emit('failed', this, {
     originator: 'system',
-    cause: JsSIP.C.causes.REQUEST_TIMEOUT
+    cause: JsSIP_C.causes.REQUEST_TIMEOUT
   });
   this.owner.onRequestTimeout();
 };
@@ -96,7 +108,7 @@ Request.prototype.onRequestTimeout = function() {
 Request.prototype.onTransportError = function() {
   this.emit('failed', this, {
     originator: 'system',
-    cause: JsSIP.C.causes.CONNECTION_ERROR
+    cause: JsSIP_C.causes.CONNECTION_ERROR
   });
   this.owner.onTransportError();
 };
@@ -105,10 +117,7 @@ Request.prototype.onDialogError = function(response) {
   this.emit('failed', this, {
     originator: 'remote',
     response: response,
-    cause: JsSIP.C.causes.DIALOG_ERROR
+    cause: JsSIP_C.causes.DIALOG_ERROR
   });
   this.owner.onDialogError(response);
 };
-
-JsSIP.RTCSession.Request = Request;
-}(JsSIP));

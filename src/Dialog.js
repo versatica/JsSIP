@@ -1,14 +1,29 @@
-(function(JsSIP) {
+module.exports = Dialog;
 
-var Dialog,
-  C = {
-    // Dialog states
-    STATUS_EARLY:       1,
-    STATUS_CONFIRMED:   2
-  };
+
+var C = {
+  // Dialog states
+  STATUS_EARLY:       1,
+  STATUS_CONFIRMED:   2
+};
+
+/**
+ * Expose C object.
+ */
+Dialog.C = C;
+
+
+/**
+ * Dependencies.
+ */
+var SIPMessage = require('./SIPMessage');
+var JsSIP_C = require('./Constants');
+var Transactions = require('./Transactions');
+var Dialog_RequestSender = require('./Dialog/RequestSender');
+
 
 // RFC 3261 12.1
-Dialog = function(owner, message, type, state) {
+function Dialog(owner, message, type, state) {
   var contact;
 
   this.uac_pending_reply = false;
@@ -20,7 +35,7 @@ Dialog = function(owner, message, type, state) {
     };
   }
 
-  if(message instanceof JsSIP.IncomingResponse) {
+  if(message instanceof SIPMessage.IncomingResponse) {
     state = (message.status_code < 200) ? C.STATUS_EARLY : C.STATUS_CONFIRMED;
   } else {
     // Create confirmed dialog if state is not defined
@@ -68,7 +83,8 @@ Dialog = function(owner, message, type, state) {
   this.owner = owner;
   owner.ua.dialogs[this.id.toString()] = this;
   this.logger.debug('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
-};
+}
+
 
 Dialog.prototype = {
   update: function(message, type) {
@@ -94,9 +110,9 @@ Dialog.prototype = {
 
     if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }
 
-    cseq = (method === JsSIP.C.CANCEL || method === JsSIP.C.ACK) ? this.local_seqnum : this.local_seqnum += 1;
+    cseq = (method === JsSIP_C.CANCEL || method === JsSIP_C.ACK) ? this.local_seqnum : this.local_seqnum += 1;
 
-    request = new JsSIP.OutgoingRequest(
+    request = new SIPMessage.OutgoingRequest(
       method,
       this.remote_target,
       this.owner.ua, {
@@ -122,7 +138,7 @@ Dialog.prototype = {
       this.remote_seqnum = request.cseq;
     } else if(request.cseq < this.remote_seqnum) {
         //Do not try to reply to an ACK request.
-        if (request.method !== JsSIP.C.ACK) {
+        if (request.method !== JsSIP_C.ACK) {
           request.reply(500);
         }
         return false;
@@ -131,7 +147,7 @@ Dialog.prototype = {
     }
 
     // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
-    if (request.method === JsSIP.C.INVITE || (request.method === JsSIP.C.UPDATE && request.body)) {
+    if (request.method === JsSIP_C.INVITE || (request.method === JsSIP_C.UPDATE && request.body)) {
       if (this.uac_pending_reply === true) {
         request.reply(491);
       } else if (this.uas_pending_reply === true) {
@@ -141,9 +157,9 @@ Dialog.prototype = {
       } else {
         this.uas_pending_reply = true;
         request.server_transaction.on('stateChanged', function stateChanged(e){
-          if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
-              e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
-              e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+          if (e.sender.state === Transactions.C.STATUS_ACCEPTED ||
+              e.sender.state === Transactions.C.STATUS_COMPLETED ||
+              e.sender.state === Transactions.C.STATUS_TERMINATED) {
 
             request.server_transaction.removeListener('stateChanged', stateChanged);
             self.uas_pending_reply = false;
@@ -158,17 +174,17 @@ Dialog.prototype = {
       // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
       if(request.hasHeader('contact')) {
         request.server_transaction.on('stateChanged', function(e){
-          if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED) {
+          if (e.sender.state === Transactions.C.STATUS_ACCEPTED) {
             self.remote_target = request.parseHeader('contact').uri;
           }
         });
       }
     }
-    else if (request.method === JsSIP.C.NOTIFY) {
+    else if (request.method === JsSIP_C.NOTIFY) {
       // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
       if(request.hasHeader('contact')) {
         request.server_transaction.on('stateChanged', function(e){
-          if (e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED) {
+          if (e.sender.state === Transactions.C.STATUS_COMPLETED) {
             self.remote_target = request.parseHeader('contact').uri;
           }
         });
@@ -185,7 +201,7 @@ Dialog.prototype = {
       extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
       body = options.body || null,
       request = this.createRequest(method, extraHeaders, body),
-      request_sender = new JsSIP.Dialog.RequestSender(this, applicant, request);
+      request_sender = new Dialog_RequestSender(this, applicant, request);
 
       request_sender.send();
   },
@@ -199,7 +215,3 @@ Dialog.prototype = {
     this.owner.receiveRequest(request);
   }
 };
-
-Dialog.C = C;
-JsSIP.Dialog = Dialog;
-}(JsSIP));

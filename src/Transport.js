@@ -1,14 +1,31 @@
-(function(JsSIP) {
-var Transport,
-  C = {
-    // Transport status codes
-    STATUS_READY:        0,
-    STATUS_DISCONNECTED: 1,
-    STATUS_ERROR:        2
-  };
+module.exports = Transport;
 
-Transport = function(ua, server) {
 
+var C = {
+  // Transport status codes
+  STATUS_READY:        0,
+  STATUS_DISCONNECTED: 1,
+  STATUS_ERROR:        2
+};
+
+
+/**
+ * Expose C object.
+ */
+Transport.C = C;
+
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('./Constants');
+var Parser = require('./Parser');
+var UA = require('./UA');
+var SIPMessage = require('./SIPMessage');
+var sanityCheck = require('./sanityCheck');
+
+
+function Transport(ua, server) {
   this.logger = ua.getLogger('jssip.transport');
   this.ua = ua;
   this.ws = null;
@@ -18,7 +35,7 @@ Transport = function(ua, server) {
   this.connected = false;
   this.reconnectTimer = null;
   this.lastTransportError = {};
-};
+}
 
 Transport.prototype = {
   /**
@@ -45,7 +62,7 @@ Transport.prototype = {
   disconnect: function() {
     if(this.ws) {
       // Clear reconnectTimer
-      window.clearTimeout(this.reconnectTimer);
+      clearTimeout(this.reconnectTimer);
       // TODO: should make this.reconnectTimer = null here?
 
       this.closed = true;
@@ -55,7 +72,7 @@ Transport.prototype = {
 
     // TODO: Why this??
     if (this.reconnectTimer !== null) {
-      window.clearTimeout(this.reconnectTimer);
+      clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
       this.ua.emit('disconnected', this.ua, {
         transport: this,
@@ -120,7 +137,7 @@ Transport.prototype = {
     this.logger.debug('WebSocket ' + this.server.ws_uri + ' connected');
     // Clear reconnectTimer since we are not disconnected
     if (this.reconnectTimer !== null) {
-      window.clearTimeout(this.reconnectTimer);
+      clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
     // Reset reconnection_attempts
@@ -195,37 +212,37 @@ Transport.prototype = {
       }
     }
 
-    message = JsSIP.Parser.parseMessage(data, this.ua);
+    message = Parser.parseMessage(data, this.ua);
 
-    if (!message) {
+    if (! message) {
       return;
     }
 
-    if(this.ua.status === JsSIP.UA.C.STATUS_USER_CLOSED && message instanceof JsSIP.IncomingRequest) {
+    if(this.ua.status === UA.C.STATUS_USER_CLOSED && message instanceof SIPMessage.IncomingRequest) {
       return;
     }
 
     // Do some sanity check
-    if(! JsSIP.sanityCheck(message, this.ua, this)) {
+    if(! sanityCheck(message, this.ua, this)) {
       return;
     }
 
-    if(message instanceof JsSIP.IncomingRequest) {
+    if(message instanceof SIPMessage.IncomingRequest) {
       message.transport = this;
       this.ua.receiveRequest(message);
-    } else if(message instanceof JsSIP.IncomingResponse) {
+    } else if(message instanceof SIPMessage.IncomingResponse) {
       /* Unike stated in 18.1.2, if a response does not match
       * any transaction, it is discarded here and no passed to the core
       * in order to be discarded there.
       */
       switch(message.method) {
-        case JsSIP.C.INVITE:
+        case JsSIP_C.INVITE:
           transaction = this.ua.transactions.ict[message.via_branch];
           if(transaction) {
             transaction.receiveResponse(message);
           }
           break;
-        case JsSIP.C.ACK:
+        case JsSIP_C.ACK:
           // Just in case ;-)
           break;
         default:
@@ -256,14 +273,10 @@ Transport.prototype = {
     } else {
       this.logger.log('trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
 
-      this.reconnectTimer = window.setTimeout(function() {
+      this.reconnectTimer = setTimeout(function() {
         transport.connect();
         transport.reconnectTimer = null;
       }, this.ua.configuration.ws_server_reconnection_timeout * 1000);
     }
   }
 };
-
-Transport.C = C;
-JsSIP.Transport = Transport;
-}(JsSIP));

@@ -1,14 +1,15 @@
-(function(JsSIP) {
+module.exports = LoggerFactory;
 
-var LoggerFactory = function() {
+
+/**
+ * Dependencies.
+ */
+var Logger = require('./Logger');
+
+
+function LoggerFactory() {
   var logger,
-    levels = {
-    'error': 0,
-    'warn': 1,
-    'log': 2,
-    'debug': 3
-    },
-
+    levels = { 'error': 0, 'warn': 1, 'log': 2, 'debug': 3 },
     level = 2,
     builtinEnabled = true,
     connector = null;
@@ -25,7 +26,7 @@ var LoggerFactory = function() {
         if (typeof value === 'boolean') {
           builtinEnabled = value;
         } else {
-          logger.error('invalid "builtinEnabled" parameter value: '+ window.JSON.stringify(value));
+          logger.error('invalid "builtinEnabled" parameter value: '+ JSON.stringify(value));
         }
       }
     },
@@ -40,7 +41,7 @@ var LoggerFactory = function() {
         } else if (levels.hasOwnProperty(value)) {
           level = levels[value];
         } else {
-          logger.error('invalid "level" parameter value: '+ window.JSON.stringify(value));
+          logger.error('invalid "level" parameter value: '+ JSON.stringify(value));
         }
       }
     },
@@ -53,12 +54,13 @@ var LoggerFactory = function() {
         } else if (typeof value === 'function') {
           connector = value;
         } else {
-          logger.error('invalid "connector" parameter value: '+ window.JSON.stringify(value));
+          logger.error('invalid "connector" parameter value: '+ JSON.stringify(value));
         }
       }
     }
   });
-};
+}
+
 
 LoggerFactory.prototype.print = function(target, category, label, content) {
   var prefix = [];
@@ -74,16 +76,16 @@ LoggerFactory.prototype.print = function(target, category, label, content) {
   prefix.push('');
 
   if (typeof content === 'string') {
-    target.call(window.console, prefix.join(' | ') + content);
+    target.call(console, prefix.join(' | ') + content);
   } else {
-    target.call(window.console, content);
+    target.call(console, content);
   }
 };
 
 LoggerFactory.prototype.debug = function(category, label, content) {
   if (this.level === 3) {
     if (this.builtinEnabled) {
-      this.print(window.console.debug, category, label, content);
+      this.print(console.debug, category, label, content);
     }
 
     if (this.connector) {
@@ -95,7 +97,7 @@ LoggerFactory.prototype.debug = function(category, label, content) {
 LoggerFactory.prototype.log = function(category, label, content) {
   if (this.level >= 2) {
     if (this.builtinEnabled) {
-      this.print(window.console.log, category, label, content);
+      this.print(console.log, category, label, content);
     }
 
     if (this.connector) {
@@ -107,7 +109,7 @@ LoggerFactory.prototype.log = function(category, label, content) {
 LoggerFactory.prototype.warn = function(category, label, content) {
   if (this.level >= 1) {
     if (this.builtinEnabled) {
-      this.print(window.console.warn, category, label, content);
+      this.print(console.warn, category, label, content);
     }
 
     if (this.connector) {
@@ -118,7 +120,7 @@ LoggerFactory.prototype.warn = function(category, label, content) {
 
 LoggerFactory.prototype.error = function(category, label, content) {
   if (this.builtinEnabled) {
-    this.print(window.console.error,category, label, content);
+    this.print(console.error,category, label, content);
   }
 
   if (this.connector) {
@@ -130,15 +132,12 @@ LoggerFactory.prototype.getLogger = function(category, label) {
   var logger;
 
   if (label && this.level === 3) {
-    return new JsSIP.Logger(this, category, label);
+    return new Logger(this, category, label);
   } else if (this.loggers[category]) {
     return this.loggers[category];
   } else {
-    logger = new JsSIP.Logger(this, category);
+    logger = new Logger(this, category);
     this.loggers[category] = logger;
     return logger;
   }
 };
-
-JsSIP.LoggerFactory = LoggerFactory;
-}(JsSIP));

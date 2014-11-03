@@ -1,7 +1,15 @@
-(function(JsSIP) {
-var RequestSender;
+module.exports = DialogRequestSender;
 
-RequestSender = function(dialog, applicant, request) {
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('../Constants');
+var Transactions = require('../Transactions');
+var RTCSession = require('../RTCSession');
+var RequestSender = require('../RequestSender');
+
+
+function DialogRequestSender(dialog, applicant, request) {
 
   this.dialog = dialog;
   this.applicant = applicant;
@@ -10,23 +18,24 @@ RequestSender = function(dialog, applicant, request) {
   // RFC3261 14.1 Modifying an Existing Session. UAC Behavior.
   this.reattempt = false;
   this.reattemptTimer = null;
-};
+}
 
-RequestSender.prototype = {
+
+DialogRequestSender.prototype = {
   send: function() {
     var
       self = this,
-      request_sender = new JsSIP.RequestSender(this, this.dialog.owner.ua);
+      request_sender = new RequestSender(this, this.dialog.owner.ua);
 
     request_sender.send();
 
     // RFC3261 14.2 Modifying an Existing Session -UAC BEHAVIOR-
-    if (this.request.method === JsSIP.C.INVITE && request_sender.clientTransaction.state !== JsSIP.Transactions.C.STATUS_TERMINATED) {
+    if (this.request.method === JsSIP_C.INVITE && request_sender.clientTransaction.state !== Transactions.C.STATUS_TERMINATED) {
       this.dialog.uac_pending_reply = true;
       request_sender.clientTransaction.on('stateChanged', function stateChanged(e){
-        if (e.sender.state === JsSIP.Transactions.C.STATUS_ACCEPTED ||
-            e.sender.state === JsSIP.Transactions.C.STATUS_COMPLETED ||
-            e.sender.state === JsSIP.Transactions.C.STATUS_TERMINATED) {
+        if (e.sender.state === Transactions.C.STATUS_ACCEPTED ||
+            e.sender.state === Transactions.C.STATUS_COMPLETED ||
+            e.sender.state === Transactions.C.STATUS_TERMINATED) {
 
           request_sender.clientTransaction.removeListener('stateChanged', stateChanged);
           self.dialog.uac_pending_reply = false;
@@ -53,14 +62,14 @@ RequestSender.prototype = {
     // RFC3261 12.2.1.2 408 or 481 is received for a request within a dialog.
     if (response.status_code === 408 || response.status_code === 481) {
       this.applicant.onDialogError(response);
-    } else if (response.method === JsSIP.C.INVITE && response.status_code === 491) {
+    } else if (response.method === JsSIP_C.INVITE && response.status_code === 491) {
       if (this.reattempt) {
         this.applicant.receiveResponse(response);
       } else {
         this.request.cseq.value = this.dialog.local_seqnum += 1;
-        this.reattemptTimer = window.setTimeout(
+        this.reattemptTimer = setTimeout(
           function() {
-            if (self.applicant.owner.status !== JsSIP.RTCSession.C.STATUS_TERMINATED) {
+            if (self.applicant.owner.status !== RTCSession.C.STATUS_TERMINATED) {
               self.reattempt = true;
               self.request_sender.send();
             }
@@ -73,6 +82,3 @@ RequestSender.prototype = {
     }
   }
 };
-
-JsSIP.Dialog.RequestSender = RequestSender;
-}(JsSIP));

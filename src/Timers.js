@@ -1,10 +1,9 @@
-(function(JsSIP) {
-var Timers,
-  T1 = 500,
+var T1 = 500,
   T2 = 4000,
   T4 = 5000;
 
-Timers = {
+
+var Timers = {
   T1: T1,
   T2: T2,
   T4: T4,
@@ -20,5 +19,5 @@ Timers = {
   PROVISIONAL_RESPONSE_INTERVAL: 60000  // See RFC 3261 Section 13.3.1.1
 };
 
-JsSIP.Timers = Timers;
-}(JsSIP));
+
+module.exports = Timers;

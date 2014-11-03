@@ -1,5 +1,5 @@
-JsSIP.C= {
-  USER_AGENT: JsSIP.name +' '+ JsSIP.version,
+var C = {
+  USER_AGENT: '<%= pkg.title %> <%= pkg.version %>',
 
   // SIP scheme
   SIP:  'sip',
@@ -138,5 +138,12 @@ JsSIP.C= {
     603: 'Decline',
     604: 'Does Not Exist Anywhere',
     606: 'Not Acceptable'
-  }
+  },
+
+  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS',
+  ACCEPTED_BODY_TYPES: 'application/sdp, application/dtmf-relay',
+  MAX_FORWARDS: 69
 };
+
+
+module.exports = C;

@@ -1,44 +1,44 @@
-(function(JsSIP) {
-var WebRTC;
+var WebRTC = {};
 
-WebRTC = {};
+module.exports = WebRTC;
+
 
 // getUserMedia
-if (window.navigator.webkitGetUserMedia) {
-  WebRTC.getUserMedia = window.navigator.webkitGetUserMedia.bind(navigator);
+if (typeof navigator !== 'undefined' && navigator.webkitGetUserMedia) {
+  WebRTC.getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
 }
-else if (window.navigator.mozGetUserMedia) {
-  WebRTC.getUserMedia = window.navigator.mozGetUserMedia.bind(navigator);
+else if (typeof navigator !== 'undefined' && navigator.mozGetUserMedia) {
+  WebRTC.getUserMedia = navigator.mozGetUserMedia.bind(navigator);
 }
-else if (window.navigator.getUserMedia) {
-  WebRTC.getUserMedia = window.navigator.getUserMedia.bind(navigator);
+else if (typeof navigator !== 'undefined' && navigator.getUserMedia) {
+  WebRTC.getUserMedia = navigator.getUserMedia.bind(navigator);
 }
 
 // RTCPeerConnection
-if (window.webkitRTCPeerConnection) {
-  WebRTC.RTCPeerConnection = window.webkitRTCPeerConnection;
+if (typeof webkitRTCPeerConnection !== 'undefined') {
+  WebRTC.RTCPeerConnection = webkitRTCPeerConnection;
 }
-else if (window.mozRTCPeerConnection) {
-  WebRTC.RTCPeerConnection = window.mozRTCPeerConnection;
+else if (typeof mozRTCPeerConnection !== 'undefined') {
+  WebRTC.RTCPeerConnection = mozRTCPeerConnection;
 }
-else if (window.RTCPeerConnection) {
-  WebRTC.RTCPeerConnection = window.RTCPeerConnection;
+else if (typeof RTCPeerConnection !== 'undefined') {
+  WebRTC.RTCPeerConnection = RTCPeerConnection;
 }
 
 // RTCSessionDescription
-if (window.webkitRTCSessionDescription) {
-  WebRTC.RTCSessionDescription = window.webkitRTCSessionDescription;
+if (typeof webkitRTCSessionDescription !== 'undefined') {
+  WebRTC.RTCSessionDescription = webkitRTCSessionDescription;
 }
-else if (window.mozRTCSessionDescription) {
-  WebRTC.RTCSessionDescription = window.mozRTCSessionDescription;
+else if (typeof mozRTCSessionDescription !== 'undefined') {
+  WebRTC.RTCSessionDescription = mozRTCSessionDescription;
 }
-else if (window.RTCSessionDescription) {
-  WebRTC.RTCSessionDescription = window.RTCSessionDescription;
+else if (typeof RTCSessionDescription !== 'undefined') {
+  WebRTC.RTCSessionDescription = RTCSessionDescription;
 }
 
 // New syntax for getting streams in Chrome M26.
 if (WebRTC.RTCPeerConnection && WebRTC.RTCPeerConnection.prototype) {
-  if (!WebRTC.RTCPeerConnection.prototype.getLocalStreams) {
+  if (! WebRTC.RTCPeerConnection.prototype.getLocalStreams) {
     WebRTC.RTCPeerConnection.prototype.getLocalStreams = function() {
       return this.localStreams;
     };
@@ -55,6 +55,3 @@ if (WebRTC.getUserMedia && WebRTC.RTCPeerConnection && WebRTC.RTCSessionDescript
 else {
   WebRTC.isSupported = false;
 }
-
-JsSIP.WebRTC = WebRTC;
-}(JsSIP));

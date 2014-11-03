@@ -1,15 +1,31 @@
-(function(JsSIP) {
+module.exports = DTMF;
 
-var DTMF,
-  C = {
-    MIN_DURATION:            70,
-    MAX_DURATION:            6000,
-    DEFAULT_DURATION:        100,
-    MIN_INTER_TONE_GAP:      50,
-    DEFAULT_INTER_TONE_GAP:  500
-  };
 
-DTMF = function(session) {
+var C = {
+  MIN_DURATION:            70,
+  MAX_DURATION:            6000,
+  DEFAULT_DURATION:        100,
+  MIN_INTER_TONE_GAP:      50,
+  DEFAULT_INTER_TONE_GAP:  500
+};
+
+/**
+ * Expose C object.
+ */
+DTMF.C = C;
+
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('../Constants');
+var EventEmitter = require('../EventEmitter');
+var Exceptions = require('../Exceptions');
+var RTCSession = require('../RTCSession');
+var Utils = require('../Utils');
+
+
+function DTMF(session) {
   var events = [
   'succeeded',
   'failed'
@@ -22,8 +38,10 @@ DTMF = function(session) {
   this.duration = null;
 
   this.initEvents(events);
-};
-DTMF.prototype = new JsSIP.EventEmitter();
+}
+
+
+DTMF.prototype = new EventEmitter();
 
 
 DTMF.prototype.send = function(tone, options) {
@@ -36,9 +54,9 @@ DTMF.prototype.send = function(tone, options) {
   this.direction = 'outgoing';
 
   // Check RTCSession Status
-  if (this.owner.status !== JsSIP.RTCSession.C.STATUS_CONFIRMED &&
-    this.owner.status !== JsSIP.RTCSession.C.STATUS_WAITING_FOR_ACK) {
-    throw new JsSIP.Exceptions.InvalidStateError(this.owner.status);
+  if (this.owner.status !== RTCSession.C.STATUS_CONFIRMED &&
+    this.owner.status !== RTCSession.C.STATUS_WAITING_FOR_ACK) {
+    throw new Exceptions.InvalidStateError(this.owner.status);
   }
 
   // Get DTMF options
@@ -81,7 +99,7 @@ DTMF.prototype.send = function(tone, options) {
     request: this.request
   });
 
-  this.owner.dialog.sendRequest(this, JsSIP.C.INFO, {
+  this.owner.dialog.sendRequest(this, JsSIP_C.INFO, {
     extraHeaders: extraHeaders,
     body: body
   });
@@ -103,7 +121,7 @@ DTMF.prototype.receiveResponse = function(response) {
       break;
 
     default:
-      cause = JsSIP.Utils.sipErrorCause(response.status_code);
+      cause = Utils.sipErrorCause(response.status_code);
       this.emit('failed', this, {
         originator: 'remote',
         response: response,
@@ -116,7 +134,7 @@ DTMF.prototype.receiveResponse = function(response) {
 DTMF.prototype.onRequestTimeout = function() {
   this.emit('failed', this, {
     originator: 'system',
-    cause: JsSIP.C.causes.REQUEST_TIMEOUT
+    cause: JsSIP_C.causes.REQUEST_TIMEOUT
   });
   this.owner.onRequestTimeout();
 };
@@ -124,7 +142,7 @@ DTMF.prototype.onRequestTimeout = function() {
 DTMF.prototype.onTransportError = function() {
   this.emit('failed', this, {
     originator: 'system',
-    cause: JsSIP.C.causes.CONNECTION_ERROR
+    cause: JsSIP_C.causes.CONNECTION_ERROR
   });
   this.owner.onTransportError();
 };
@@ -133,7 +151,7 @@ DTMF.prototype.onDialogError = function(response) {
   this.emit('failed', this, {
     originator: 'remote',
     response: response,
-    cause: JsSIP.C.causes.DIALOG_ERROR
+    cause: JsSIP_C.causes.DIALOG_ERROR
   });
   this.owner.onDialogError(response);
 };
@@ -170,7 +188,3 @@ DTMF.prototype.init_incoming = function(request) {
     });
   }
 };
-
-DTMF.C = C;
-JsSIP.RTCSession.DTMF = DTMF;
-}(JsSIP));

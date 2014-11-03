@@ -1,14 +1,28 @@
-(function(JsSIP) {
-var Message;
+module.exports = Message;
 
-Message = function(ua) {
+
+function Message(ua) {
   this.ua = ua;
   this.logger = ua.getLogger('jssip.message');
 
   // Custom message empty object for high level use
   this.data = {};
-};
-Message.prototype = new JsSIP.EventEmitter();
+}
+
+
+/**
+ * Dependencies.
+ */
+var JsSIP_C = require('./Constants');
+var EventEmitter = require('./EventEmitter');
+var SIPMessage = require('./SIPMessage');
+var Utils = require('./Utils');
+var RequestSender = require('./RequestSender');
+var Transactions = require('./Transactions');
+var Exceptions = require('./Exceptions');
+
+
+Message.prototype = new EventEmitter();
 
 
 Message.prototype.send = function(target, body, options) {
@@ -49,7 +63,7 @@ Message.prototype.send = function(target, body, options) {
 
   extraHeaders.push('Content-Type: '+ contentType);
 
-  this.request = new JsSIP.OutgoingRequest(JsSIP.C.MESSAGE, target, this.ua, null, extraHeaders);
+  this.request = new SIPMessage.OutgoingRequest(JsSIP_C.MESSAGE, target, this.ua, null, extraHeaders);
 
   if(body) {
     this.request.body = body;
@@ -58,7 +72,7 @@ Message.prototype.send = function(target, body, options) {
     this.content = null;
   }
 
-  request_sender = new JsSIP.RequestSender(this, this.ua);
+  request_sender = new RequestSender(this, this.ua);
 
   this.newMessage('local', this.request);
 
@@ -86,7 +100,7 @@ Message.prototype.receiveResponse = function(response) {
 
     default:
       delete this.ua.applicants[this];
-      cause = JsSIP.Utils.sipErrorCause(response.status_code);
+      cause = Utils.sipErrorCause(response.status_code);
       this.emit('failed', this, {
         originator: 'remote',
         response: response,
@@ -103,7 +117,7 @@ Message.prototype.onRequestTimeout = function() {
   }
   this.emit('failed', this, {
     originator: 'system',
-    cause: JsSIP.C.causes.REQUEST_TIMEOUT
+    cause: JsSIP_C.causes.REQUEST_TIMEOUT
   });
 };
 
@@ -113,7 +127,7 @@ Message.prototype.onTransportError = function() {
   }
   this.emit('failed', this, {
     originator: 'system',
-    cause: JsSIP.C.causes.CONNECTION_ERROR
+    cause: JsSIP_C.causes.CONNECTION_ERROR
   });
 };
 
@@ -138,7 +152,7 @@ Message.prototype.init_incoming = function(request) {
 
   transaction = this.ua.transactions.nist[request.via_branch];
 
-  if (transaction && (transaction.state === JsSIP.Transactions.C.STATUS_TRYING || transaction.state === JsSIP.Transactions.C.STATUS_PROCEEDING)) {
+  if (transaction && (transaction.state === Transactions.C.STATUS_TRYING || transaction.state === Transactions.C.STATUS_PROCEEDING)) {
     request.reply(200);
   }
 };
@@ -155,7 +169,7 @@ Message.prototype.accept = function(options) {
     body = options.body;
 
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.NotSupportedError('"accept" not supported for outgoing Message');
+    throw new Exceptions.NotSupportedError('"accept" not supported for outgoing Message');
   }
 
   this.request.reply(200, null, extraHeaders, body);
@@ -175,7 +189,7 @@ Message.prototype.reject = function(options) {
     body = options.body;
 
   if (this.direction !== 'incoming') {
-    throw new JsSIP.Exceptions.NotSupportedError('"reject" not supported for outgoing Message');
+    throw new Exceptions.NotSupportedError('"reject" not supported for outgoing Message');
   }
 
   if (status_code < 300 || status_code >= 700) {
@@ -209,6 +223,3 @@ Message.prototype.newMessage = function(originator, request) {
     request: request
   });
 };
-
-JsSIP.Message = Message;
-}(JsSIP));

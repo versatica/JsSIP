@@ -1,9 +1,19 @@
+var Parser = {};
+
+module.exports = Parser;
+
+
+/**
+ * Dependencies.
+ */
+var sdp_transform = require('sdp-transform');
+var Grammar = require('./Grammar');
+var SIPMessage = require('./SIPMessage');
+
+
 /**
  * Extract and parse every header of a SIP message.
  */
-(function(JsSIP) {
-var Parser;
-
 function getHeader(data, headerStart) {
   var
     // 'start' position of the header.
@@ -78,7 +88,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
       }
       break;
     case 'record-route':
-      parsed = JsSIP.Grammar.parse(headerValue, 'Record_Route');
+      parsed = Grammar.parse(headerValue, 'Record_Route');
 
       if (parsed === -1) {
         parsed = undefined;
@@ -101,7 +111,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
       break;
     case 'contact':
     case 'm':
-      parsed = JsSIP.Grammar.parse(headerValue, 'Contact');
+      parsed = Grammar.parse(headerValue, 'Contact');
 
       if (parsed === -1) {
         parsed = undefined;
@@ -130,7 +140,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
       if(parsed) {
         message.cseq = parsed.value;
       }
-      if(message instanceof JsSIP.IncomingResponse) {
+      if(message instanceof SIPMessage.IncomingResponse) {
         message.method = parsed.method;
       }
       break;
@@ -161,10 +171,10 @@ function parseHeader(message, data, headerStart, headerEnd) {
   }
 }
 
+
 /**
  * Parse SIP Message
  */
-Parser = {};
 Parser.parseMessage = function(data, ua) {
   var message, firstLine, contentLength, bodyStart, parsed,
     headerStart = 0,
@@ -178,17 +188,17 @@ Parser.parseMessage = function(data, ua) {
 
   // Parse first line. Check if it is a Request or a Reply.
   firstLine = data.substring(0, headerEnd);
-  parsed = JsSIP.Grammar.parse(firstLine, 'Request_Response');
+  parsed = Grammar.parse(firstLine, 'Request_Response');
 
   if(parsed === -1) {
     logger.warn('error parsing first line of SIP message: "' + firstLine + '"');
     return;
   } else if(!parsed.status_code) {
-    message = new JsSIP.IncomingRequest(ua);
+    message = new SIPMessage.IncomingRequest(ua);
     message.method = parsed.method;
     message.ruri = parsed.uri;
   } else {
-    message = new JsSIP.IncomingResponse(ua);
+    message = new SIPMessage.IncomingResponse(ua);
     message.status_code = parsed.status_code;
     message.reason_phrase = parsed.reason_phrase;
   }
@@ -237,5 +247,12 @@ Parser.parseMessage = function(data, ua) {
   return message;
 };
 
-JsSIP.Parser = Parser;
-}(JsSIP));
+
+/**
+ * sdp-transform features.
+ */
+Parser.parseSDP = sdp_transform.parse;
+Parser.writeSDP = sdp_transform.write;
+Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
+Parser.parsePayloads = sdp_transform.parsePayloads;
+Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
