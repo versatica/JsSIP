@@ -48,7 +48,7 @@ function Transport(ua, server) {
   this.lastTransportError = {};
 
   if (isNode) {
-    this.ws_options = this.ua.configuration.node_ws_options || {};
+    this.ws_options = this.ua.configuration.node_ws_options;
     this.ws_options.protocol = 'sip';
     this.ws_options.headers = {
       'User-Agent': JsSIP_C.USER_AGENT

@@ -782,7 +782,7 @@ UA.prototype.loadConfig = function(configuration) {
     hack_ip_in_contact: false,
 
     // Options for Node.
-    node_ws_options: null
+    node_ws_options: {}
   };
 
   // Pre-Configuration
