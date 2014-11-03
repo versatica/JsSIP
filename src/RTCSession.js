@@ -374,6 +374,7 @@ RTCSession.prototype.answer = function(options) {
       self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
     };
 
+  this.data = options.data || {};
 
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
@@ -957,6 +958,8 @@ RTCSession.prototype.connect = function(target, options) {
     RTCOfferConstraints = options.RTCOfferConstraints || {},
     stun_servers = options.stun_servers || null,
     turn_servers = options.turn_servers || null;
+
+  this.data = options.data || {};
 
   if (stun_servers) {
     iceServers = UA.configuration_check.optional.stun_servers(stun_servers);
