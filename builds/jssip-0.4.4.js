@@ -21235,6 +21235,17 @@ var logger,
   all = [];
 
 
+requests.push(rfc3261_8_2_2_1);
+requests.push(rfc3261_16_3_4);
+requests.push(rfc3261_18_3_request);
+requests.push(rfc3261_8_2_2_2);
+
+responses.push(rfc3261_8_1_3_3);
+responses.push(rfc3261_18_3_response);
+
+all.push(minimumHeaders);
+
+
 function sanityCheck(m, u, t) {
   var len, pass;
 
@@ -21433,17 +21444,6 @@ function reply(status_code) {
 
   transport.send(response);
 }
-
-
-requests.push(rfc3261_8_2_2_1);
-requests.push(rfc3261_16_3_4);
-requests.push(rfc3261_18_3_request);
-requests.push(rfc3261_8_2_2_2);
-
-responses.push(rfc3261_8_1_3_3);
-responses.push(rfc3261_18_3_response);
-
-all.push(minimumHeaders);
 
 },{"./Constants":5,"./SIPMessage":24,"./Utils":30}]},{},[12])(12)
 });
