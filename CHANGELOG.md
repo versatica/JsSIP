@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 0.4.3 (released in 2014-10-29)
+--------------------------------------
+
+* [(3b1ee11)](https://github.com/versatica/JsSIP/commit/3b1ee11) Fix references to 'this'.
+
 Version 0.4.2 (released in 2014-10-24)
 --------------------------------------
 
