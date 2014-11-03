@@ -14956,86 +14956,87 @@ RTCSession.prototype.answer = function(options) {
     RTCAnswerConstraints = options.RTCAnswerConstraints || {},
     mediaStream = options.mediaStream || null,
 
-    // User media succeeded
-    userMediaSucceeded = function(stream) {
-      self.rtcMediaHandler.addStream(
-        stream,
-        streamAdditionSucceeded,
-        streamAdditionFailed
+  // User media succeeded
+  userMediaSucceeded = function(stream) {
+    self.rtcMediaHandler.addStream(
+      stream,
+      streamAdditionSucceeded,
+      streamAdditionFailed
+    );
+  },
+
+  // User media failed
+  userMediaFailed = function() {
+    request.reply(480);
+    self.failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
+  },
+
+  // rtcMediaHandler.addStream successfully added
+  streamAdditionSucceeded = function() {
+    self.connecting(request);
+
+    if (self.status === C.STATUS_TERMINATED) {
+      return;
+    }
+
+    if (self.late_sdp) {
+      self.rtcMediaHandler.createOffer(
+        sdpCreationSucceeded,
+        sdpCreationFailed,
+        RTCAnswerConstraints
       );
-    },
-
-    // User media failed
-    userMediaFailed = function() {
-      request.reply(480);
-      self.failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
-    },
-
-    // rtcMediaHandler.addStream successfully added
-    streamAdditionSucceeded = function() {
-      self.connecting(request);
-
-      if (self.status === C.STATUS_TERMINATED) {
-        return;
-      }
-
-      if (self.late_sdp) {
-        self.rtcMediaHandler.createOffer(
-          sdpCreationSucceeded,
-          sdpCreationFailed,
-          RTCAnswerConstraints
-        );
-      } else {
-        self.rtcMediaHandler.createAnswer(
-          sdpCreationSucceeded,
-          sdpCreationFailed,
-          RTCAnswerConstraints
-        );
-      }
-    },
-
-    // rtcMediaHandler.addStream failed
-    streamAdditionFailed = function() {
-      if (self.status === C.STATUS_TERMINATED) {
-        return;
-      }
-
-      self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
-    },
-
-    // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer succeeded
-    sdpCreationSucceeded = function(body) {
-      var
-        // run for reply success callback
-        replySucceeded = function() {
-          self.status = C.STATUS_WAITING_FOR_ACK;
-
-          self.setInvite2xxTimer(request, body);
-          self.setACKTimer();
-          self.accepted('local');
-        },
-
-        // run for reply failure callback
-        replyFailed = function() {
-          self.failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
-        };
-
-      request.reply(200, null, extraHeaders,
-        body,
-        replySucceeded,
-        replyFailed
+    } else {
+      self.rtcMediaHandler.createAnswer(
+        sdpCreationSucceeded,
+        sdpCreationFailed,
+        RTCAnswerConstraints
       );
-    },
+    }
+  },
 
-    // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer failed
-    sdpCreationFailed = function() {
-      if (self.status === C.STATUS_TERMINATED) {
-        return;
-      }
+  // rtcMediaHandler.addStream failed
+  streamAdditionFailed = function() {
+    if (self.status === C.STATUS_TERMINATED) {
+      return;
+    }
 
-      self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
-    };
+    self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
+  },
 
+  // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer succeeded
+  sdpCreationSucceeded = function(body) {
+    var
+      // run for reply success callback
+      replySucceeded = function() {
+        self.status = C.STATUS_WAITING_FOR_ACK;
+
+        self.setInvite2xxTimer(request, body);
+        self.setACKTimer();
+        self.accepted('local');
+      },
+
+      // run for reply failure callback
+      replyFailed = function() {
+        self.failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
+      };
+
+    request.reply(200, null, extraHeaders,
+      body,
+      replySucceeded,
+      replyFailed
+    );
+  },
+
+  // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer failed
+  sdpCreationFailed = function() {
+    if (self.status === C.STATUS_TERMINATED) {
+      return;
+    }
+
+    self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
+  };
+
+  this.data = options.data || {};
 
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
@@ -15620,6 +15621,8 @@ RTCSession.prototype.connect = function(target, options) {
     stun_servers = options.stun_servers || null,
     turn_servers = options.turn_servers || null;
 
+  this.data = options.data || {};
+
   if (stun_servers) {
     iceServers = UA.configuration_check.optional.stun_servers(stun_servers);
     if (!iceServers) {
@@ -16185,7 +16188,6 @@ RTCSession.prototype.sendReinvite = function(options) {
   }
 
   extraHeaders.push('Contact: ' + this.contact);
-  extraHeaders.push('Allow: ' + JsSIP_C.ALLOWED_METHODS);
   extraHeaders.push('Content-Type: application/sdp');
 
   this.receiveResponse = this.receiveReinviteResponse;
@@ -16321,7 +16323,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         */
         function(e) {
           session.logger.warn(e);
-          this.earlyDialogs[response.call_id + response.from_tag + response.to_tag].terminate();
+          session.earlyDialogs[response.call_id + response.from_tag + response.to_tag].terminate();
         }
       );
       break;
@@ -20060,7 +20062,7 @@ UA.prototype.loadConfig = function(configuration) {
       throw new Exceptions.ConfigurationError(parameter);
     } else {
       value = configuration[parameter];
-      checked_value = UA.configuration_check.mandatory[parameter](value);
+      checked_value = UA.configuration_check.mandatory[parameter].call(this, value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
       } else {
@@ -20081,7 +20083,7 @@ UA.prototype.loadConfig = function(configuration) {
         continue;
       }
 
-      checked_value = UA.configuration_check.optional[parameter](value);
+      checked_value = UA.configuration_check.optional[parameter].call(this, value);
       if (checked_value !== undefined) {
         settings[parameter] = checked_value;
       } else {

@@ -13,6 +13,8 @@
  *
  * grunt watch:   Watch for changes in the src/ directory and run 'grunt dist'.
  *
+ * grunt test:    Grunt Node test units.
+ *
  * grunt:         Alias for 'grunt dist'.
  */
 
@@ -71,8 +73,6 @@ module.exports = function(grunt) {
 					RTCSessionDescription: false
 				}
 			},
-			// Lint the resulting dist build.
-			dist: builds.dist,
 			// Lint JS files separately.
 			each_file: {
 				src: [ 'src/**/*.js' ],
@@ -178,7 +178,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-jsdoc');
 
 
-	// Task for building src/Grammar/dist/Grammar.js.
+	// Task for building src/Grammar.js.
 	// NOTE: This task is not included in 'grunt dist'.
 	grunt.registerTask('grammar', function() {
 		var done = this.async();  // This is an async task.
@@ -213,32 +213,24 @@ module.exports = function(grunt) {
 		});
 	});
 
-	// Build both JsSIP Grammar.
-	// NOTE: This task is not included in 'grunt dist'.
 	grunt.registerTask('devel', [ 'grammar' ]);
-
-	// Taks for building builds/jssip-X.Y.Z.js and builds/jssip-last.js symlink.
-	// NOTE: This task assumes that 'grunt devel' has been already executed.
-	grunt.registerTask('dist', [
-		'jshint:each_file',
-		'browserify:dist',
-		'concat:dist',
-		'symlink:last',
-		'test'
-	]);
 
 	// Test task (nodeunit).
 	grunt.registerTask('test', [ 'nodeunit:all' ]);
+
+	// Taks for building builds/jssip-X.Y.Z.js and builds/jssip-last.js symlink.
+	// NOTE: This task assumes that 'grunt devel' has been already executed.
+	grunt.registerTask('dist', [ 'jshint:each_file', 'browserify:dist', 'concat:dist', 'symlink:last', 'test' ]);
+
+	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
+	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
+	grunt.registerTask('min', [ 'uglify:dist']);
 
 	// Build builds nice documentation using JsDoc3.
 	grunt.registerTask('doc', [ 'jsdoc:docstrap' ]);
 
 	// Task for Travis CI.
 	grunt.registerTask('travis', [ 'test' ]);
-
-	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
-	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
-	grunt.registerTask('min', [ 'uglify:dist']);
 
 	// Default task points to 'dist' task.
 	grunt.registerTask('default', [ 'dist' ]);

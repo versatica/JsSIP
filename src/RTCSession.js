@@ -294,85 +294,85 @@ RTCSession.prototype.answer = function(options) {
     RTCAnswerConstraints = options.RTCAnswerConstraints || {},
     mediaStream = options.mediaStream || null,
 
-    // User media succeeded
-    userMediaSucceeded = function(stream) {
-      self.rtcMediaHandler.addStream(
-        stream,
-        streamAdditionSucceeded,
-        streamAdditionFailed
+  // User media succeeded
+  userMediaSucceeded = function(stream) {
+    self.rtcMediaHandler.addStream(
+      stream,
+      streamAdditionSucceeded,
+      streamAdditionFailed
+    );
+  },
+
+  // User media failed
+  userMediaFailed = function() {
+    request.reply(480);
+    self.failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
+  },
+
+  // rtcMediaHandler.addStream successfully added
+  streamAdditionSucceeded = function() {
+    self.connecting(request);
+
+    if (self.status === C.STATUS_TERMINATED) {
+      return;
+    }
+
+    if (self.late_sdp) {
+      self.rtcMediaHandler.createOffer(
+        sdpCreationSucceeded,
+        sdpCreationFailed,
+        RTCAnswerConstraints
       );
-    },
-
-    // User media failed
-    userMediaFailed = function() {
-      request.reply(480);
-      self.failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
-    },
-
-    // rtcMediaHandler.addStream successfully added
-    streamAdditionSucceeded = function() {
-      self.connecting(request);
-
-      if (self.status === C.STATUS_TERMINATED) {
-        return;
-      }
-
-      if (self.late_sdp) {
-        self.rtcMediaHandler.createOffer(
-          sdpCreationSucceeded,
-          sdpCreationFailed,
-          RTCAnswerConstraints
-        );
-      } else {
-        self.rtcMediaHandler.createAnswer(
-          sdpCreationSucceeded,
-          sdpCreationFailed,
-          RTCAnswerConstraints
-        );
-      }
-    },
-
-    // rtcMediaHandler.addStream failed
-    streamAdditionFailed = function() {
-      if (self.status === C.STATUS_TERMINATED) {
-        return;
-      }
-
-      self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
-    },
-
-    // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer succeeded
-    sdpCreationSucceeded = function(body) {
-      var
-        // run for reply success callback
-        replySucceeded = function() {
-          self.status = C.STATUS_WAITING_FOR_ACK;
-
-          self.setInvite2xxTimer(request, body);
-          self.setACKTimer();
-          self.accepted('local');
-        },
-
-        // run for reply failure callback
-        replyFailed = function() {
-          self.failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
-        };
-
-      request.reply(200, null, extraHeaders,
-        body,
-        replySucceeded,
-        replyFailed
+    } else {
+      self.rtcMediaHandler.createAnswer(
+        sdpCreationSucceeded,
+        sdpCreationFailed,
+        RTCAnswerConstraints
       );
-    },
+    }
+  },
 
-    // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer failed
-    sdpCreationFailed = function() {
-      if (self.status === C.STATUS_TERMINATED) {
-        return;
-      }
+  // rtcMediaHandler.addStream failed
+  streamAdditionFailed = function() {
+    if (self.status === C.STATUS_TERMINATED) {
+      return;
+    }
 
-      self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
-    };
+    self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
+  },
+
+  // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer succeeded
+  sdpCreationSucceeded = function(body) {
+    var
+      // run for reply success callback
+      replySucceeded = function() {
+        self.status = C.STATUS_WAITING_FOR_ACK;
+
+        self.setInvite2xxTimer(request, body);
+        self.setACKTimer();
+        self.accepted('local');
+      },
+
+      // run for reply failure callback
+      replyFailed = function() {
+        self.failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
+      };
+
+    request.reply(200, null, extraHeaders,
+      body,
+      replySucceeded,
+      replyFailed
+    );
+  },
+
+  // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer failed
+  sdpCreationFailed = function() {
+    if (self.status === C.STATUS_TERMINATED) {
+      return;
+    }
+
+    self.failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
+  };
 
   this.data = options.data || {};
 

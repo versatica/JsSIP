@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 0.4.4 (released in 2014-11-03)
+--------------------------------------
+
+* Node-fied. JsSIP is now built as a Node project.
+
 Version 0.4.3 (released in 2014-10-29)
 --------------------------------------
 
