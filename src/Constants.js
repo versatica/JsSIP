@@ -1,5 +1,7 @@
+var pkg = require('../package.json');
+
 var C = {
-  USER_AGENT: '<%= pkg.title %> <%= pkg.version %>',
+  USER_AGENT: pkg.title + ' ' + pkg.version,
 
   // SIP scheme
   SIP:  'sip',

@@ -163,6 +163,9 @@ function UA(configuration) {
     this.error = C.CONFIGURATION_ERROR;
     throw e;
   }
+
+  // Initialize registrator
+  this._registrator = new Registrator(this);
 }
 
 
@@ -181,9 +184,6 @@ UA.prototype.start = function() {
   var server;
 
   this.logger.debug('user requested startup...');
-
-  // Initialize registrator
-  this.registrator = new Registrator(this);
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
@@ -208,9 +208,7 @@ UA.prototype.start = function() {
  */
 UA.prototype.register = function() {
   this.dynConfiguration.register = true;
-  if (this.registrator) {
-    this.registrator.register();
-  }
+  this._registrator.register();
 };
 
 /**
@@ -218,23 +216,21 @@ UA.prototype.register = function() {
  */
 UA.prototype.unregister = function(options) {
   this.dynConfiguration.register = false;
-  if (this.registrator) {
-    this.registrator.unregister(options);
-  }
+  this._registrator.unregister(options);
 };
 
 /**
  * Get the Registrator instance.
  */
 UA.prototype.registrator = function() {
-  return this.registrator;
+  return this._registrator;
 };
 
 /**
  * Registration state.
  */
 UA.prototype.isRegistered = function() {
-  if(this.registrator && this.registrator.registered) {
+  if(this._registrator.registered) {
     return true;
   } else {
     return false;
@@ -310,10 +306,8 @@ UA.prototype.stop = function() {
   clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
-  if (this.registrator) {
-    this.logger.debug('closing registrator');
-    this.registrator.close();
-  }
+  this.logger.debug('closing registrator');
+  this._registrator.close();
 
   // If there are session wait a bit so CANCEL/BYE can be sent and their responses received.
   num_sessions = Object.keys(this.sessions).length;
@@ -471,8 +465,8 @@ UA.prototype.onTransportConnected = function(transport) {
     transport: transport
   });
 
-  if(this.registrator && this.dynConfiguration.register) {
-    this.registrator.register();
+  if(this.dynConfiguration.register) {
+    this._registrator.register();
   }
 };
 
@@ -714,9 +708,7 @@ UA.prototype.closeSessionsOnTransportError = function() {
     this.sessions[idx].onTransportError();
   }
   // Call registrator _onTransportClosed_
-  if (this.registrator) {
-    this.registrator.onTransportClosed();
-  }
+  this._registrator.onTransportClosed();
 };
 
 UA.prototype.recoverTransport = function(ua) {
@@ -787,7 +779,10 @@ UA.prototype.loadConfig = function(configuration) {
     // Hacks
     hack_via_tcp: false,
     hack_via_ws: false,
-    hack_ip_in_contact: false
+    hack_ip_in_contact: false,
+
+    // Options for Node.
+    node_ws_options: null
   };
 
   // Pre-Configuration
@@ -969,6 +964,7 @@ UA.configuration_skeleton = (function() {
     "hack_ip_in_contact", //false
     "instance_id",
     "no_answer_timeout", // 30 seconds
+    "node_ws_options",
     "password",
     "register_expires", // 600 seconds
     "registrar_server",
@@ -1006,280 +1002,284 @@ UA.configuration_skeleton = (function() {
 UA.configuration_check = {
   mandatory: {
 
-  uri: function(uri) {
-    var parsed;
+    uri: function(uri) {
+      var parsed;
 
-    if (!/^sip:/i.test(uri)) {
-      uri = JsSIP_C.SIP + ':' + uri;
-    }
-    parsed = URI.parse(uri);
-
-    if(!parsed) {
-      return;
-    } else if(!parsed.user) {
-      return;
-    } else {
-      return parsed;
-    }
-  },
-
-  ws_servers: function(ws_servers) {
-    var idx, length, url;
-
-    /* Allow defining ws_servers parameter as:
-     *  String: "host"
-     *  Array of Strings: ["host1", "host2"]
-     *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
-     *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
-     */
-    if (typeof ws_servers === 'string') {
-      ws_servers = [{ws_uri: ws_servers}];
-    } else if (ws_servers instanceof Array) {
-      length = ws_servers.length;
-      for (idx = 0; idx < length; idx++) {
-        if (typeof ws_servers[idx] === 'string') {
-          ws_servers[idx] = {ws_uri: ws_servers[idx]};
-        }
+      if (!/^sip:/i.test(uri)) {
+        uri = JsSIP_C.SIP + ':' + uri;
       }
-    } else {
-      return;
-    }
+      parsed = URI.parse(uri);
 
-    if (ws_servers.length === 0) {
-      return false;
-    }
-
-    length = ws_servers.length;
-    for (idx = 0; idx < length; idx++) {
-      if (!ws_servers[idx].ws_uri) {
-        this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
+      if(!parsed) {
         return;
-      }
-      if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
-        this.logger.error('"weight" attribute in ws_servers parameter must be a Number');
-        return;
-      }
-
-      url = Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
-
-      if(url === -1) {
-        this.logger.error('invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
-        return;
-      } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
-        this.logger.error('invalid URI scheme in ws_servers parameter: ' + url.scheme);
+      } else if(!parsed.user) {
         return;
       } else {
-        ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
+        return parsed;
+      }
+    },
 
-        if (!ws_servers[idx].weight) {
-          ws_servers[idx].weight = 0;
+    ws_servers: function(ws_servers) {
+      var idx, length, url;
+
+      /* Allow defining ws_servers parameter as:
+       *  String: "host"
+       *  Array of Strings: ["host1", "host2"]
+       *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
+       *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
+       */
+      if (typeof ws_servers === 'string') {
+        ws_servers = [{ws_uri: ws_servers}];
+      } else if (ws_servers instanceof Array) {
+        length = ws_servers.length;
+        for (idx = 0; idx < length; idx++) {
+          if (typeof ws_servers[idx] === 'string') {
+            ws_servers[idx] = {ws_uri: ws_servers[idx]};
+          }
+        }
+      } else {
+        return;
+      }
+
+      if (ws_servers.length === 0) {
+        return false;
+      }
+
+      length = ws_servers.length;
+      for (idx = 0; idx < length; idx++) {
+        if (!ws_servers[idx].ws_uri) {
+          this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
+          return;
+        }
+        if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
+          this.logger.error('"weight" attribute in ws_servers parameter must be a Number');
+          return;
         }
 
-        ws_servers[idx].status = 0;
-        ws_servers[idx].scheme = url.scheme.toUpperCase();
+        url = Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
+
+        if(url === -1) {
+          this.logger.error('invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
+          return;
+        } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
+          this.logger.error('invalid URI scheme in ws_servers parameter: ' + url.scheme);
+          return;
+        } else {
+          ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
+
+          if (!ws_servers[idx].weight) {
+            ws_servers[idx].weight = 0;
+          }
+
+          ws_servers[idx].status = 0;
+          ws_servers[idx].scheme = url.scheme.toUpperCase();
+        }
       }
+      return ws_servers;
     }
-    return ws_servers;
-  }
   },
 
   optional: {
 
-  authorization_user: function(authorization_user) {
-    if(Grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
-      return;
-    } else {
-      return authorization_user;
-    }
-  },
-
-  connection_recovery_max_interval: function(connection_recovery_max_interval) {
-    var value;
-    if(Utils.isDecimal(connection_recovery_max_interval)) {
-      value = Number(connection_recovery_max_interval);
-      if(value > 0) {
-        return value;
-      }
-    }
-  },
-
-  connection_recovery_min_interval: function(connection_recovery_min_interval) {
-    var value;
-    if(Utils.isDecimal(connection_recovery_min_interval)) {
-      value = Number(connection_recovery_min_interval);
-      if(value > 0) {
-        return value;
-      }
-    }
-  },
-
-  display_name: function(display_name) {
-    if(Grammar.parse('"' + display_name + '"', 'display_name') === -1) {
-      return;
-    } else {
-      return display_name;
-    }
-  },
-
-  hack_via_tcp: function(hack_via_tcp) {
-    if (typeof hack_via_tcp === 'boolean') {
-      return hack_via_tcp;
-    }
-  },
-
-  hack_via_ws: function(hack_via_ws) {
-    if (typeof hack_via_ws === 'boolean') {
-      return hack_via_ws;
-    }
-  },
-
-  hack_ip_in_contact: function(hack_ip_in_contact) {
-    if (typeof hack_ip_in_contact === 'boolean') {
-      return hack_ip_in_contact;
-    }
-  },
-
-  instance_id: function(instance_id) {
-    if ((/^uuid:/i.test(instance_id))) {
-      instance_id = instance_id.substr(5);
-    }
-
-    if(Grammar.parse(instance_id, 'uuid') === -1) {
-      return;
-    } else {
-      return instance_id;
-    }
-  },
-
-  no_answer_timeout: function(no_answer_timeout) {
-    var value;
-    if (Utils.isDecimal(no_answer_timeout)) {
-      value = Number(no_answer_timeout);
-      if (value > 0) {
-        return value;
-      }
-    }
-  },
-
-  password: function(password) {
-    return String(password);
-  },
-
-  register: function(register) {
-    if (typeof register === 'boolean') {
-      return register;
-    }
-  },
-
-  register_expires: function(register_expires) {
-    var value;
-    if (Utils.isDecimal(register_expires)) {
-      value = Number(register_expires);
-      if (value > 0) {
-        return value;
-      }
-    }
-  },
-
-  registrar_server: function(registrar_server) {
-    var parsed;
-
-    if (!/^sip:/i.test(registrar_server)) {
-      registrar_server = JsSIP_C.SIP + ':' + registrar_server;
-    }
-    parsed = URI.parse(registrar_server);
-
-    if(!parsed) {
-      return;
-    } else if(parsed.user) {
-      return;
-    } else {
-      return parsed;
-    }
-  },
-
-  stun_servers: function(stun_servers) {
-    var idx, length, stun_server;
-
-    if (typeof stun_servers === 'string') {
-      stun_servers = [stun_servers];
-    } else if (!(stun_servers instanceof Array)) {
-      return;
-    }
-
-    length = stun_servers.length;
-    for (idx = 0; idx < length; idx++) {
-      stun_server = stun_servers[idx];
-      if (!(/^stuns?:/.test(stun_server))) {
-        stun_server = 'stun:' + stun_server;
-      }
-
-      if(Grammar.parse(stun_server, 'stun_URI') === -1) {
+    authorization_user: function(authorization_user) {
+      if(Grammar.parse('"'+ authorization_user +'"', 'quoted_string') === -1) {
         return;
       } else {
-        stun_servers[idx] = stun_server;
+        return authorization_user;
       }
-    }
-    return stun_servers;
-  },
+    },
 
-  trace_sip: function(trace_sip) {
-    if (typeof trace_sip === 'boolean') {
-      return trace_sip;
-    }
-  },
+    connection_recovery_max_interval: function(connection_recovery_max_interval) {
+      var value;
+      if(Utils.isDecimal(connection_recovery_max_interval)) {
+        value = Number(connection_recovery_max_interval);
+        if(value > 0) {
+          return value;
+        }
+      }
+    },
 
-  turn_servers: function(turn_servers) {
-    var idx, idx2, length, length2, turn_server, url;
+    connection_recovery_min_interval: function(connection_recovery_min_interval) {
+      var value;
+      if(Utils.isDecimal(connection_recovery_min_interval)) {
+        value = Number(connection_recovery_min_interval);
+        if(value > 0) {
+          return value;
+        }
+      }
+    },
 
-    if (! turn_servers instanceof Array) {
-      turn_servers = [turn_servers];
-    }
+    display_name: function(display_name) {
+      if(Grammar.parse('"' + display_name + '"', 'display_name') === -1) {
+        return;
+      } else {
+        return display_name;
+      }
+    },
 
-    length = turn_servers.length;
-    for (idx = 0; idx < length; idx++) {
-      turn_server = turn_servers[idx];
+    hack_via_tcp: function(hack_via_tcp) {
+      if (typeof hack_via_tcp === 'boolean') {
+        return hack_via_tcp;
+      }
+    },
 
-      // Backward compatibility:
-      //Allow defining the turn_server 'urls' with the 'server' property.
-      if (turn_server.server) {
-        turn_server.urls = [turn_server.server];
+    hack_via_ws: function(hack_via_ws) {
+      if (typeof hack_via_ws === 'boolean') {
+        return hack_via_ws;
+      }
+    },
+
+    hack_ip_in_contact: function(hack_ip_in_contact) {
+      if (typeof hack_ip_in_contact === 'boolean') {
+        return hack_ip_in_contact;
+      }
+    },
+
+    instance_id: function(instance_id) {
+      if ((/^uuid:/i.test(instance_id))) {
+        instance_id = instance_id.substr(5);
       }
 
-      // Backward compatibility:
-      //Allow defining the turn_server 'credential' with the 'password' property.
-      if (turn_server.password) {
-        turn_server.credential = [turn_server.password];
+      if(Grammar.parse(instance_id, 'uuid') === -1) {
+        return;
+      } else {
+        return instance_id;
       }
+    },
 
-      if (!turn_server.urls || !turn_server.username || !turn_server.credential) {
+    no_answer_timeout: function(no_answer_timeout) {
+      var value;
+      if (Utils.isDecimal(no_answer_timeout)) {
+        value = Number(no_answer_timeout);
+        if (value > 0) {
+          return value;
+        }
+      }
+    },
+
+    node_ws_options: function(node_ws_options) {
+      return (typeof node_ws_options === 'object') ? node_ws_options : {};
+    },
+
+    password: function(password) {
+      return String(password);
+    },
+
+    register: function(register) {
+      if (typeof register === 'boolean') {
+        return register;
+      }
+    },
+
+    register_expires: function(register_expires) {
+      var value;
+      if (Utils.isDecimal(register_expires)) {
+        value = Number(register_expires);
+        if (value > 0) {
+          return value;
+        }
+      }
+    },
+
+    registrar_server: function(registrar_server) {
+      var parsed;
+
+      if (!/^sip:/i.test(registrar_server)) {
+        registrar_server = JsSIP_C.SIP + ':' + registrar_server;
+      }
+      parsed = URI.parse(registrar_server);
+
+      if(!parsed) {
+        return;
+      } else if(parsed.user) {
+        return;
+      } else {
+        return parsed;
+      }
+    },
+
+    stun_servers: function(stun_servers) {
+      var idx, length, stun_server;
+
+      if (typeof stun_servers === 'string') {
+        stun_servers = [stun_servers];
+      } else if (!(stun_servers instanceof Array)) {
         return;
       }
 
-      if (!(turn_server.urls instanceof Array)) {
-        turn_server.urls = [turn_server.urls];
-      }
-
-      length2 = turn_server.urls.length;
-      for (idx2 = 0; idx2 < length2; idx2++) {
-        url = turn_server.urls[idx2];
-
-        if (!(/^turns?:/.test(url))) {
-          url = 'turn:' + url;
+      length = stun_servers.length;
+      for (idx = 0; idx < length; idx++) {
+        stun_server = stun_servers[idx];
+        if (!(/^stuns?:/.test(stun_server))) {
+          stun_server = 'stun:' + stun_server;
         }
 
-        if(Grammar.parse(url, 'turn_URI') === -1) {
+        if(Grammar.parse(stun_server, 'stun_URI') === -1) {
+          return;
+        } else {
+          stun_servers[idx] = stun_server;
+        }
+      }
+      return stun_servers;
+    },
+
+    trace_sip: function(trace_sip) {
+      if (typeof trace_sip === 'boolean') {
+        return trace_sip;
+      }
+    },
+
+    turn_servers: function(turn_servers) {
+      var idx, idx2, length, length2, turn_server, url;
+
+      if (! turn_servers instanceof Array) {
+        turn_servers = [turn_servers];
+      }
+
+      length = turn_servers.length;
+      for (idx = 0; idx < length; idx++) {
+        turn_server = turn_servers[idx];
+
+        // Backward compatibility:
+        //Allow defining the turn_server 'urls' with the 'server' property.
+        if (turn_server.server) {
+          turn_server.urls = [turn_server.server];
+        }
+
+        // Backward compatibility:
+        //Allow defining the turn_server 'credential' with the 'password' property.
+        if (turn_server.password) {
+          turn_server.credential = [turn_server.password];
+        }
+
+        if (!turn_server.urls || !turn_server.username || !turn_server.credential) {
           return;
         }
+
+        if (!(turn_server.urls instanceof Array)) {
+          turn_server.urls = [turn_server.urls];
+        }
+
+        length2 = turn_server.urls.length;
+        for (idx2 = 0; idx2 < length2; idx2++) {
+          url = turn_server.urls[idx2];
+
+          if (!(/^turns?:/.test(url))) {
+            url = 'turn:' + url;
+          }
+
+          if(Grammar.parse(url, 'turn_URI') === -1) {
+            return;
+          }
+        }
+      }
+      return turn_servers;
+    },
+
+    use_preloaded_route: function(use_preloaded_route) {
+      if (typeof use_preloaded_route === 'boolean') {
+        return use_preloaded_route;
       }
     }
-    return turn_servers;
-  },
-
-  use_preloaded_route: function(use_preloaded_route) {
-    if (typeof use_preloaded_route === 'boolean') {
-      return use_preloaded_route;
-    }
-  }
   }
 };

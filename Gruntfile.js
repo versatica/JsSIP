@@ -23,21 +23,17 @@ module.exports = function(grunt) {
 	// Banner.
 	var banner = require('fs').readFileSync('src/banner.txt').toString();
 
+	var path = require('path');
+
 	// Generated builds.
 	var builds = {
 		dist: 'builds/<%= pkg.name %>-<%= pkg.version %>.js',
 		last: 'builds/<%= pkg.name %>-last.js',
 	};
 
-	var package_json = grunt.file.readJSON('package.json');
-
 	// Project configuration.
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
-
-		meta: {
-			banner: banner
-		},
 
 		jshint: {
 			// Default options.
@@ -89,7 +85,8 @@ module.exports = function(grunt) {
 				},
 				options: {
 					browserifyOptions: {
-						standalone: 'JsSIP'
+						standalone: 'JsSIP',
+						externalRequireName: 'KKKK'
 					}
 				}
 			}
@@ -100,9 +97,8 @@ module.exports = function(grunt) {
 				src: builds.dist,
 				dest: builds.dist,
 				options: {
-					banner: '<%= meta.banner %>',
-					separator: '\n\n',
-					process: true
+					banner: banner,
+					separator: '\n\n'
 				},
 				nonull: true
 			}
@@ -122,7 +118,7 @@ module.exports = function(grunt) {
 				}
 			},
 			options: {
-				banner: '<%= meta.banner %>'
+				banner: banner
 			}
 		},
 
@@ -188,13 +184,16 @@ module.exports = function(grunt) {
 
 		// First compile JsSIP grammar with PEGjs.
 		console.log('grammar task: compiling JsSIP PEGjs grammar into Grammar.js...');
+		var local_pegjs = path.resolve('./node_modules/.bin/pegjs');
+		var Grammar_pegjs = path.resolve('src/Grammar.pegjs');
+		var Grammar_js = path.resolve('src/Grammar.js');
 		child = exec('' +
-				'if [ -x "./node_modules/pegjs/bin/pegjs" ] ; then\n' +
-					'PEGJS_BIN="./node_modules/.bin/pegjs";\n' +
+				'if [ -x "' + local_pegjs + '" ] ; then\n' +
+					'PEGJS_BIN="' + local_pegjs + '";\n' +
 				'else\n' +
 					'PEGJS_BIN="pegjs";\n' +
 				'fi &&\n' +
-				'$PEGJS_BIN src/Grammar.pegjs src/Grammar.js',
+				'$PEGJS_BIN ' + Grammar_pegjs + ' ' + Grammar_js,
 			function(error, stdout, stderr) {
 			if (error) {
 				sys.print('ERROR: ' + stderr);

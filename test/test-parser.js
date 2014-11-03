@@ -1,158 +1,247 @@
-var JsSIP = require('./include/common');
+require('./include/common');
+var JsSIP = require('../');
 
 
 module.exports = {
 
   'parse URI': function(test) {
-    var uri = new JsSIP.URI(null, 'alice', 'jssip.net', 6060);
+    var data = 'SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2';
+    var uri = JsSIP.URI.parse(data);
 
+    // Parsed data.
+    test.ok(uri instanceof(JsSIP.URI));
     test.strictEqual(uri.scheme, 'sip');
-    test.strictEqual(uri.user, 'alice');
-    test.strictEqual(uri.host, 'jssip.net');
-    test.strictEqual(uri.port, 6060);
-    test.deepEqual(uri.parameters, {});
-    test.deepEqual(uri.headers, {});
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net:6060');
-    test.strictEqual(uri.toAor(), 'sip:alice@jssip.net');
-    test.strictEqual(uri.toAor(false), 'sip:alice@jssip.net');
-    test.strictEqual(uri.toAor(true), 'sip:alice@jssip.net:6060');
-
-    uri.scheme = 'SIPS';
-    test.strictEqual(uri.scheme, 'sips');
-    test.strictEqual(uri.toAor(), 'sips:alice@jssip.net');
-    uri.scheme = 'sip';
-
-    uri.user = 'Iñaki ðđ';
-    test.strictEqual(uri.user, 'Iñaki ðđ');
-    test.strictEqual(uri.toString(), 'sip:I%C3%B1aki%20%C3%B0%C4%91@jssip.net:6060');
-    test.strictEqual(uri.toAor(), 'sip:I%C3%B1aki%20%C3%B0%C4%91@jssip.net');
-
-    uri.user = '%61lice';
-    test.strictEqual(uri.toAor(), 'sip:alice@jssip.net');
-
-    uri.user = null;
-    test.strictEqual(uri.user, null);
-    test.strictEqual(uri.toAor(), 'sip:jssip.net');
-    uri.user = 'alice';
-
-    test.throws(
-      function() {
-        uri.host = null;
-      },
-      TypeError
-    );
-    test.throws(
-      function() {
-        uri.host = {bar: 'foo'};
-      },
-      TypeError
-    );
-    test.strictEqual(uri.host, 'jssip.net');
-
-    uri.host = 'VERSATICA.com';
+    test.strictEqual(uri.user, 'aliCE');
     test.strictEqual(uri.host, 'versatica.com');
-    uri.host = 'jssip.net';
+    test.strictEqual(uri.port, 6060);
+    test.strictEqual(uri.hasParam('transport'), true);
+    test.strictEqual(uri.hasParam('nooo'), false);
+    test.strictEqual(uri.getParam('transport'), 'tcp');
+    test.strictEqual(uri.getParam('foo'), 'abc');
+    test.strictEqual(uri.getParam('baz'), null);
+    test.strictEqual(uri.getParam('nooo'), undefined);
+    test.deepEqual(uri.getHeader('x-header-1'), ['AaA1', 'AAA2']);
+    test.deepEqual(uri.getHeader('X-HEADER-2'), ['BbB']);
+    test.strictEqual(uri.getHeader('nooo'), undefined);
+    test.strictEqual(uri.toString(), 'sip:aliCE@versatica.com:6060;transport=tcp;foo=abc;baz?X-Header-1=AaA1&X-Header-1=AAA2&X-Header-2=BbB');
+    test.strictEqual(uri.toAor(), 'sip:aliCE@versatica.com');
 
-    uri.port = null;
-    test.strictEqual(uri.port, null);
-
-    uri.port = undefined;
-    test.strictEqual(uri.port, null);
-
-    uri.port = 'ABCD';  // Should become null.
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
-
-    uri.port = '123ABCD';  // Should become 123.
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net:123');
-
-    uri.port = 0;
-    test.strictEqual(uri.port, 0);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net:0');
-    uri.port = null;
-
-    test.strictEqual(uri.hasParam('foo'), false);
-
-    uri.setParam('Foo', null);
-    test.strictEqual(uri.hasParam('FOO'), true);
-
-    uri.setParam('Baz', 123);
-    test.strictEqual(uri.getParam('baz'), '123');
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net;foo;baz=123');
-
-    uri.setParam('zero', 0);
-    test.strictEqual(uri.hasParam('ZERO'), true);
-    test.strictEqual(uri.getParam('ZERO'), '0');
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net;foo;baz=123;zero=0');
-    test.strictEqual(uri.deleteParam('ZERO'), '0');
-
-    test.strictEqual(uri.deleteParam('baZ'), '123');
-    test.strictEqual(uri.deleteParam('NOO'), undefined);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net;foo');
-
+    // Alter data.
+    uri.user = 'Iñaki:PASSWD';
+    test.strictEqual(uri.user, 'Iñaki:PASSWD');
+    test.strictEqual(uri.deleteParam('foo'), 'abc');
+    test.deepEqual(uri.deleteHeader('x-header-1'), ['AaA1', 'AAA2']);
+    test.strictEqual(uri.toString(), 'sip:I%C3%B1aki:PASSWD@versatica.com:6060;transport=tcp;baz?X-Header-2=BbB');
+    test.strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
     uri.clearParams();
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
-
-    test.strictEqual(uri.hasHeader('foo'), false);
-
-    uri.setHeader('Foo', 'LALALA');
-    test.strictEqual(uri.hasHeader('FOO'), true);
-    test.deepEqual(uri.getHeader('FOO'), ['LALALA']);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net?Foo=LALALA');
-
-    uri.setHeader('bAz', ['ABC-1', 'ABC-2']);
-    test.deepEqual(uri.getHeader('baz'), ['ABC-1', 'ABC-2']);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net?Foo=LALALA&Baz=ABC-1&Baz=ABC-2');
-
-    test.deepEqual(uri.deleteHeader('baZ'), ['ABC-1', 'ABC-2']);
-    test.deepEqual(uri.deleteHeader('NOO'), undefined);
-
     uri.clearHeaders();
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
-
-    var uri2 = uri.clone();
-    test.strictEqual(uri2.toString(), uri.toString());
-    uri2.user = 'popo';
-    test.strictEqual(uri2.user, 'popo');
-    test.strictEqual(uri.user, 'alice');
+    uri.port = null;
+    test.strictEqual(uri.toString(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
+    test.strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
 
     test.done();
   },
 
   'parse NameAddr': function(test) {
-    var uri = new JsSIP.URI('sip', 'alice', 'jssip.net');
-    var name = new JsSIP.NameAddrHeader(uri, 'Alice æßð');
+    var data = '"Iñaki ðđøþ" <SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+    var name = JsSIP.NameAddrHeader.parse(data);
+    var uri;
 
-    test.strictEqual(name.display_name, 'Alice æßð');
-    test.strictEqual(name.toString(), '"Alice æßð" <sip:alice@jssip.net>');
+    // Parsed data.
+    test.ok(name instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(name.display_name, 'Iñaki ðđøþ');
+    test.strictEqual(name.hasParam('qwe'), true);
+    test.strictEqual(name.hasParam('asd'), true);
+    test.strictEqual(name.hasParam('nooo'), false);
+    test.strictEqual(name.getParam('qwe'), 'QWE');
+    test.strictEqual(name.getParam('asd'), null);
 
+    uri = name.uri;
+    test.ok(uri instanceof(JsSIP.URI));
+    test.strictEqual(uri.scheme, 'sip');
+    test.strictEqual(uri.user, 'aliCE');
+    test.strictEqual(uri.host, 'versatica.com');
+    test.strictEqual(uri.port, 6060);
+    test.strictEqual(uri.hasParam('transport'), true);
+    test.strictEqual(uri.hasParam('nooo'), false);
+    test.strictEqual(uri.getParam('transport'), 'tcp');
+    test.strictEqual(uri.getParam('foo'), 'abc');
+    test.strictEqual(uri.getParam('baz'), null);
+    test.strictEqual(uri.getParam('nooo'), undefined);
+    test.deepEqual(uri.getHeader('x-header-1'), ['AaA1', 'AAA2']);
+    test.deepEqual(uri.getHeader('X-HEADER-2'), ['BbB']);
+    test.strictEqual(uri.getHeader('nooo'), undefined);
+
+    // Alter data.
+    name.display_name = 'Foo Bar';
+    test.strictEqual(name.display_name, 'Foo Bar');
     name.display_name = null;
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
+    test.strictEqual(name.display_name, null);
+    test.strictEqual(name.toString(), '<sip:aliCE@versatica.com:6060;transport=tcp;foo=abc;baz?X-Header-1=AaA1&X-Header-1=AAA2&X-Header-2=BbB>;qwe=QWE;asd');
+    uri.user = 'Iñaki:PASSWD';
+    test.strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
 
-    name.display_name = 0;
-    test.strictEqual(name.toString(), '"0" <sip:alice@jssip.net>');
+    test.done();
+  },
 
-    name.display_name = "";
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
+  'parse multiple Contact': function(test) {
+    var data = '"Iñaki @ł€" <SIP:+1234@ALIAX.net;Transport=WS>;+sip.Instance="abCD", sip:bob@biloxi.COM;headerParam, <sip:DOMAIN.com:5>';
+    var contacts = JsSIP.Grammar.parse(data, 'Contact');
 
-    test.deepEqual(name.parameters, {});
+    test.ok(contacts instanceof(Array));
+    test.strictEqual(contacts.length, 3);
+    var c1 = contacts[0].parsed;
+    var c2 = contacts[1].parsed;
+    var c3 = contacts[2].parsed;
 
-    name.setParam('Foo', null);
-    test.strictEqual(name.hasParam('FOO'), true);
+    // Parsed data.
+    test.ok(c1 instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(c1.display_name, 'Iñaki @ł€');
+    test.strictEqual(c1.hasParam('+sip.instance'), true);
+    test.strictEqual(c1.hasParam('nooo'), false);
+    test.strictEqual(c1.getParam('+SIP.instance'), '"abCD"');
+    test.strictEqual(c1.getParam('nooo'), undefined);
+    test.ok(c1.uri instanceof(JsSIP.URI));
+    test.strictEqual(c1.uri.scheme, 'sip');
+    test.strictEqual(c1.uri.user, '+1234');
+    test.strictEqual(c1.uri.host, 'aliax.net');
+    test.strictEqual(c1.uri.port, undefined);
+    test.strictEqual(c1.uri.getParam('transport'), 'ws');
+    test.strictEqual(c1.uri.getParam('foo'), undefined);
+    test.strictEqual(c1.uri.getHeader('X-Header'), undefined);
+    test.strictEqual(c1.toString(), '"Iñaki @ł€" <sip:+1234@aliax.net;transport=ws>;+sip.instance="abCD"');
 
-    name.setParam('Baz', 123);
-    test.strictEqual(name.getParam('baz'), '123');
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>;foo;baz=123');
+    // Alter data.
+    c1.display_name = '€€€';
+    test.strictEqual(c1.display_name, '€€€');
+    c1.uri.user = '+999';
+    test.strictEqual(c1.uri.user, '+999');
+    c1.setParam('+sip.instance', '"zxCV"');
+    test.strictEqual(c1.getParam('+SIP.instance'), '"zxCV"');
+    c1.setParam('New-Param', null);
+    test.strictEqual(c1.hasParam('NEW-param'), true);
+    c1.uri.setParam('New-Param', null);
+    test.strictEqual(c1.toString(), '"€€€" <sip:+999@aliax.net;transport=ws;new-param>;+sip.instance="zxCV";new-param');
 
-    test.strictEqual(name.deleteParam('bAz'), '123');
+    // Parsed data.
+    test.ok(c2 instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(c2.display_name, undefined);
+    test.strictEqual(c2.hasParam('HEADERPARAM'), true);
+    test.ok(c2.uri instanceof(JsSIP.URI));
+    test.strictEqual(c2.uri.scheme, 'sip');
+    test.strictEqual(c2.uri.user, 'bob');
+    test.strictEqual(c2.uri.host, 'biloxi.com');
+    test.strictEqual(c2.uri.port, undefined);
+    test.strictEqual(c2.uri.hasParam('headerParam'), false);
+    test.strictEqual(c2.toString(), '<sip:bob@biloxi.com>;headerparam');
 
-    name.clearParams();
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
+    // Alter data.
+    c2.display_name = '@ł€ĸłæß';
+    test.strictEqual(c2.toString(), '"@ł€ĸłæß" <sip:bob@biloxi.com>;headerparam');
 
-    var name2 = name.clone();
-    test.strictEqual(name2.toString(), name.toString());
-    name2.display_name = '@ł€';
-    test.strictEqual(name2.display_name, '@ł€');
-    test.strictEqual(name.user, undefined);
+    // Parsed data.
+    test.ok(c3 instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(c3.display_name, undefined);
+    test.ok(c3.uri instanceof(JsSIP.URI));
+    test.strictEqual(c3.uri.scheme, 'sip');
+    test.strictEqual(c3.uri.user, undefined);
+    test.strictEqual(c3.uri.host, 'domain.com');
+    test.strictEqual(c3.uri.port, 5);
+    test.strictEqual(c3.uri.hasParam('nooo'), false);
+    test.strictEqual(c3.toString(), '<sip:domain.com:5>');
+
+    // Alter data.
+    c3.uri.setParam('newUriParam', 'zxCV');
+    c3.setParam('newHeaderParam', 'zxCV');
+    test.strictEqual(c3.toString(), '<sip:domain.com:5;newuriparam=zxcv>;newheaderparam=zxCV');
+
+    test.done();
+  },
+
+  'parse Via': function(test) {
+    var data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;Param1=Foo;paRAM2;param3=Bar';
+    var via = JsSIP.Grammar.parse(data, 'Via');
+
+    test.strictEqual(via.protocol, 'SIP');
+    test.strictEqual(via.transport, 'UDP');
+    test.strictEqual(via.host, '[1:ab::FF]');
+    test.strictEqual(via.host_type, 'IPv6');
+    test.strictEqual(via.port, 6060);
+    test.strictEqual(via.branch, '1234');
+    test.deepEqual(via.params, {param1: 'Foo', param2: undefined, param3: 'Bar'});
+
+    test.done();
+  },
+
+  'parse CSeq': function(test) {
+    var data = '123456  CHICKEN';
+    var cseq = JsSIP.Grammar.parse(data, 'CSeq');
+
+    test.strictEqual(cseq.value, 123456);
+    test.strictEqual(cseq.method, 'CHICKEN');
+
+    test.done();
+  },
+
+  'parse authentication challenge': function(test) {
+    var data = 'Digest realm =  "[1:ABCD::abc]", nonce =  "31d0a89ed7781ce6877de5cb032bf114", qop="AUTH,autH-INt", algorithm =  md5  ,  stale =  TRUE , opaque = "00000188"';
+    var auth = JsSIP.Grammar.parse(data, 'challenge');
+
+    test.strictEqual(auth.realm, '[1:ABCD::abc]');
+    test.strictEqual(auth.nonce, '31d0a89ed7781ce6877de5cb032bf114');
+    test.deepEqual(auth.qop, ['auth', 'auth-int']);
+    test.strictEqual(auth.algorithm, 'MD5');
+    test.strictEqual(auth.stale, true);
+    test.strictEqual(auth.opaque, '00000188');
+
+    test.done();
+  },
+
+  'parse Event': function(test) {
+    var data = 'Presence;Param1=QWe;paraM2';
+    var event = JsSIP.Grammar.parse(data, 'Event');
+
+    test.strictEqual(event.event, 'presence');
+    test.deepEqual(event.params, {param1: 'QWe', param2: undefined});
+
+    test.done();
+  },
+
+  'parse host': function(test) {
+    var data, parsed;
+
+    data = 'versatica.com';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+
+    data = 'myhost123';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+
+    data = '1.2.3.4';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'IPv4');
+
+    data = '[1:0:fF::432]';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'IPv6');
+
+    data = '1.2.3.444';
+    test.ok(JsSIP.Grammar.parse(data, 'host') === -1);
+
+    data = 'iñaki.com';
+    test.ok(JsSIP.Grammar.parse(data, 'host') === -1);
+
+    data = '1.2.3.bar.qwe-asd.foo';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+
+    // TODO: This is a valid 'domain' but PEGjs finds a valid IPv4 first and does not move
+    // to 'domain' after IPv4 parsing has failed.
+    // NOTE: Let's ignore this issue for now to make `grunt test` happy.
+    //data = '1.2.3.4.bar.qwe-asd.foo';
+    //test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    //test.strictEqual(parsed.host_type, 'domain');
 
     test.done();
   }

@@ -23,6 +23,17 @@ var Parser = require('./Parser');
 var UA = require('./UA');
 var SIPMessage = require('./SIPMessage');
 var sanityCheck = require('./sanityCheck');
+// Condicional module load.
+var WebSocket;  // jshint ignore:line
+var isNode = false;
+if (global.WebSocket) {
+  WebSocket = global.WebSocket;  // jshint ignore:line
+}
+else {
+  WebSocket = require('ws');  // jshint ignore:line
+  isNode = true;
+  global.WS = WebSocket;
+}
 
 
 function Transport(ua, server) {
@@ -35,6 +46,14 @@ function Transport(ua, server) {
   this.connected = false;
   this.reconnectTimer = null;
   this.lastTransportError = {};
+
+  if (isNode) {
+    this.ws_options = this.ua.configuration.node_ws_options || {};
+    this.ws_options.protocol = 'sip';
+    this.ws_options.headers = {
+      'User-Agent': JsSIP_C.USER_AGENT
+    };
+  }
 }
 
 Transport.prototype = {
@@ -102,9 +121,13 @@ Transport.prototype = {
       (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
 
     try {
-      this.ws = new WebSocket(this.server.ws_uri, 'sip');
-
-      this.ws.binaryType = 'arraybuffer';
+      if (! isNode) {
+        this.ws = new WebSocket(this.server.ws_uri, 'sip');
+        this.ws.binaryType = 'arraybuffer';
+      }
+      else {
+        this.ws = new WebSocket(this.server.ws_uri, this.ws_options);
+      }
 
       this.ws.onopen = function() {
         transport.onOpen();

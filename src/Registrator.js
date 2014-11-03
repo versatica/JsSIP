@@ -33,9 +33,6 @@ function Registrator(ua, transport) {
   // Set status
   this.registered = false;
 
-  // Save into ua instance
-  this.ua.registrator = this;
-
   // Contact header
   this.contact = this.ua.contact.toString();
 

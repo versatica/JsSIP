@@ -16,9 +16,12 @@ var JsSIP = {
 module.exports = JsSIP;
 
 
+var pkg = require('../package.json');
+
+
 Object.defineProperties(JsSIP, {
   name: {
-    get: function(){ return '<%= pkg.title %>'; }
+    get: function(){ return pkg.title; }
   },
 
   /**
@@ -31,6 +34,6 @@ Object.defineProperties(JsSIP, {
    * console.log(JsSIP.version)
    */
   version: {
-    get: function(){ return '<%= pkg.version %>'; }
+    get: function(){ return pkg.version; }
   }
 });

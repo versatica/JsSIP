@@ -1,7 +1,9 @@
-var JsSIP = require('./include/common');
+require('./include/common');
+var JsSIP = require('../');
 
 
 module.exports = {
+
   'valid targets': function(test) {
     var domain = 'jssip.net';
 
@@ -57,4 +59,5 @@ module.exports = {
 
     test.done();
   }
+
 };

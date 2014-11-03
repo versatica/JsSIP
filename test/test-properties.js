@@ -1,8 +1,10 @@
-var JsSIP = require('./include/common');
+require('./include/common');
+var JsSIP = require('../');
 var pkg = require('../package.json');
 
 
 module.exports = {
+
   'name': function(test) {
     test.equal(JsSIP.name, pkg.title);
     test.done();
@@ -12,4 +14,5 @@ module.exports = {
     test.equal(JsSIP.version, pkg.version);
     test.done();
   }
+
 };

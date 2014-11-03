@@ -1,11 +1,4 @@
-(function(window) {
-var TestJsSIP = (function() {
-  "use string";
-  return {};
-}());
-
-
-TestJsSIP.Helpers = {
+module.exports = {
 
   UA_CONFIGURATION: {
     uri: 'sip:f%61keUA@jssip.net',
@@ -53,16 +46,8 @@ TestJsSIP.Helpers = {
     trace_sip: true,
     hack_via_tcp: false,
     hack_ip_in_contact: false
-  },
-
-  createFakeUA: function() {
-    return new JsSIP.UA(this.UA_CONFIGURATION);
   }
 
 };
-
-
-window.TestJsSIP = TestJsSIP;
-}(window));
 
 
