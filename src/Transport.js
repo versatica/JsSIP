@@ -23,16 +23,8 @@ var Parser = require('./Parser');
 var UA = require('./UA');
 var SIPMessage = require('./SIPMessage');
 var sanityCheck = require('./sanityCheck');
-// Conditional module loading.
-var WebSocket;  // jshint ignore:line
-var isNode = false;
-if (global.WebSocket) {
-  WebSocket = global.WebSocket;  // jshint ignore:line
-}
-else {
-  WebSocket = require('ws');  // jshint ignore:line
-  isNode = true;
-}
+// 'ws' module uses the native WebSocket interface when bundled to run in a browser.
+var WebSocket = require('ws');  // jshint ignore:line
 
 
 function Transport(ua, server) {
@@ -46,31 +38,58 @@ function Transport(ua, server) {
   this.reconnectTimer = null;
   this.lastTransportError = {};
 
-  if (isNode) {
-    this.ws_options = this.ua.configuration.node_ws_options;
-    this.ws_options.protocol = 'sip';
-    this.ws_options.headers = {
-      'User-Agent': JsSIP_C.USER_AGENT
-    };
-  }
+  // Options for the Node "ws" WebSocket interface.
+  this.node_ws_options = this.ua.configuration.node_ws_options;
+  this.node_ws_options.headers = {
+    'User-Agent': JsSIP_C.USER_AGENT
+  };
 }
 
 Transport.prototype = {
-  /**
-   * Send a message.
-   */
-  send: function(msg) {
-    var message = msg.toString();
 
-    if(this.ws && this.ws.readyState === WebSocket.OPEN) {
-      if (this.ua.configuration.trace_sip === true) {
-        this.logger.debug('sending WebSocket message:\n\n' + message + '\n');
-      }
-      this.ws.send(message);
-      return true;
-    } else {
-      this.logger.warn('unable to send message, WebSocket is not open');
+  /**
+  * Connect socket.
+  */
+  connect: function() {
+    var transport = this;
+
+    if(this.ws && (this.ws.readyState === this.ws.OPEN || this.ws.readyState === this.ws.CONNECTING)) {
+      this.logger.log('WebSocket ' + this.server.ws_uri + ' is already connected');
       return false;
+    }
+
+    if(this.ws) {
+      this.ws.close();
+    }
+
+    this.logger.log('connecting to WebSocket ' + this.server.ws_uri);
+    this.ua.onTransportConnecting(this,
+      (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
+
+    try {
+      this.ws = new WebSocket(this.server.ws_uri, 'sip', this.node_ws_options);
+      this.ws.binaryType = 'arraybuffer';
+
+      this.ws.onopen = function() {
+        transport.onOpen();
+      };
+
+      this.ws.onclose = function(e) {
+        transport.onClose(e);
+      };
+
+      this.ws.onmessage = function(e) {
+        transport.onMessage(e);
+      };
+
+      this.ws.onerror = function(e) {
+        transport.onError(e);
+      };
+    } catch(e) {
+      this.logger.warn('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
+      this.lastTransportError.code = null;
+      this.lastTransportError.reason = e.message;
+      this.ua.onTransportError(this);
     }
   },
 
@@ -101,53 +120,20 @@ Transport.prototype = {
   },
 
   /**
-  * Connect socket.
-  */
-  connect: function() {
-    var transport = this;
+   * Send a message.
+   */
+  send: function(msg) {
+    var message = msg.toString();
 
-    if(this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      this.logger.log('WebSocket ' + this.server.ws_uri + ' is already connected');
+    if(this.ws && this.ws.readyState === this.ws.OPEN) {
+      if (this.ua.configuration.trace_sip === true) {
+        this.logger.debug('sending WebSocket message:\n\n' + message + '\n');
+      }
+      this.ws.send(message);
+      return true;
+    } else {
+      this.logger.warn('unable to send message, WebSocket is not open');
       return false;
-    }
-
-    if(this.ws) {
-      this.ws.close();
-    }
-
-    this.logger.log('connecting to WebSocket ' + this.server.ws_uri);
-    this.ua.onTransportConnecting(this,
-      (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
-
-    try {
-      if (! isNode) {
-        this.ws = new WebSocket(this.server.ws_uri, 'sip');
-        this.ws.binaryType = 'arraybuffer';
-      }
-      else {
-        this.ws = new WebSocket(this.server.ws_uri, this.ws_options);
-      }
-
-      this.ws.onopen = function() {
-        transport.onOpen();
-      };
-
-      this.ws.onclose = function(e) {
-        transport.onClose(e);
-      };
-
-      this.ws.onmessage = function(e) {
-        transport.onMessage(e);
-      };
-
-      this.ws.onerror = function(e) {
-        transport.onError(e);
-      };
-    } catch(e) {
-      this.logger.warn('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
-      this.lastTransportError.code = null;
-      this.lastTransportError.reason = e.message;
-      this.ua.onTransportError(this);
     }
   },
 
