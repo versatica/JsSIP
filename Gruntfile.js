@@ -85,8 +85,7 @@ module.exports = function(grunt) {
 				},
 				options: {
 					browserifyOptions: {
-						standalone: 'JsSIP',
-						externalRequireName: 'KKKK'
+						standalone: 'JsSIP'
 					}
 				}
 			}
@@ -223,7 +222,7 @@ module.exports = function(grunt) {
 
 	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
 	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
-	grunt.registerTask('min', [ 'uglify:dist']);
+	grunt.registerTask('min', [ 'uglify:dist' ]);
 
 	// Build builds nice documentation using JsDoc3.
 	grunt.registerTask('doc', [ 'jsdoc:docstrap' ]);
