@@ -22,8 +22,8 @@ UA.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:UA');
 var JsSIP_C = require('./Constants');
-var LoggerFactory = require('./LoggerFactory');
 var EventEmitter = require('./EventEmitter');
 var Registrator = require('./Registrator');
 var RTCSession = require('./RTCSession');
@@ -59,9 +59,6 @@ function UA(configuration) {
     'newRTCSession',
     'newMessage'
   ];
-
-  this.log = new LoggerFactory();
-  this.logger = this.getLogger('jssip.ua');
 
   this.cache = {
     credentials: {}
@@ -140,21 +137,6 @@ function UA(configuration) {
     throw new TypeError('Not enough arguments');
   }
 
-  // Apply log configuration if present
-  if (configuration.log) {
-    if (configuration.log.hasOwnProperty('builtinEnabled')) {
-      this.log.builtinEnabled = configuration.log.builtinEnabled;
-    }
-
-    if (configuration.log.hasOwnProperty('level')) {
-      this.log.level = configuration.log.level;
-    }
-
-    if (configuration.log.hasOwnProperty('connector')) {
-      this.log.connector = configuration.log.connector;
-    }
-  }
-
   try {
     this.loadConfig(configuration);
     this.initEvents(events);
@@ -183,20 +165,20 @@ UA.prototype = new EventEmitter();
 UA.prototype.start = function() {
   var server;
 
-  this.logger.debug('user requested startup...');
+  debug('user requested startup');
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     this.transport = new Transport(this, server);
     this.transport.connect();
   } else if(this.status === C.STATUS_USER_CLOSED) {
-    this.logger.log('resuming');
+    debug('restarting UA');
     this.status = C.STATUS_READY;
     this.transport.connect();
   } else if (this.status === C.STATUS_READY) {
-    this.logger.log('UA is in READY status, not resuming');
+    debug('UA is in READY status, not restarted');
   } else {
-    this.logger.error('Connection is down. Auto-Recovery system is trying to connect');
+    debug('ERROR: connection is down, Auto-Recovery system is trying to reconnect');
   }
 
   // Set dynamic configuration.
@@ -292,13 +274,13 @@ UA.prototype.stop = function() {
   var num_sessions;
   var ua = this;
 
-  this.logger.log('user requested closure...');
+  debug('user requested closure');
 
   // Remove dynamic settings.
   this.dynConfiguration = {};
 
   if(this.status === C.STATUS_USER_CLOSED) {
-    this.logger.warn('UA already closed');
+    debug('UA already closed');
     return;
   }
 
@@ -306,7 +288,6 @@ UA.prototype.stop = function() {
   clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
-  this.logger.debug('closing registrator');
   this._registrator.close();
 
   // If there are session wait a bit so CANCEL/BYE can be sent and their responses received.
@@ -314,7 +295,7 @@ UA.prototype.stop = function() {
 
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
-    this.logger.debug('closing session ' + session);
+    debug('closing session ' + session);
     this.sessions[session].terminate();
   }
 
@@ -369,10 +350,6 @@ UA.prototype.getCredentials = function(request) {
   return credentials;
 };
 
-UA.prototype.getLogger = function(category, label) {
-  return this.log.getLogger(category, label);
-};
-
 
 //==========================
 // Event Handlers
@@ -387,7 +364,7 @@ UA.prototype.onTransportClosed = function(transport) {
   client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = Transport.C.STATUS_DISCONNECTED;
-  this.logger.debug('connection state set to '+ Transport.C.STATUS_DISCONNECTED);
+  debug('connection state set to '+ Transport.C.STATUS_DISCONNECTED);
 
   length = client_transactions.length;
   for (type = 0; type < length; type++) {
@@ -409,7 +386,7 @@ UA.prototype.onTransportClosed = function(transport) {
 UA.prototype.onTransportError = function(transport) {
   var server;
 
-  this.logger.log('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ Transport.C.STATUS_ERROR);
+  debug('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ Transport.C.STATUS_ERROR);
 
   // Close sessions.
   // Mark this transport as 'down' and try the next one
@@ -452,7 +429,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = Transport.C.STATUS_READY;
-  this.logger.debug('connection state set to '+ Transport.C.STATUS_READY);
+  debug('connection state set to '+ Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -517,7 +494,7 @@ UA.prototype.receiveRequest = function(request) {
 
   // Check that request URI points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
-    this.logger.warn('Request-URI does not point to us');
+    debug('Request-URI does not point to us');
     if (request.method !== JsSIP_C.ACK) {
       request.reply_sl(404);
     }
@@ -571,7 +548,7 @@ UA.prototype.receiveRequest = function(request) {
           session = new RTCSession(this);
           session.init_incoming(request);
         } else {
-          this.logger.warn('INVITE received but WebRTC is not supported');
+          debug('INVITE received but WebRTC is not supported');
           request.reply(488);
         }
         break;
@@ -584,7 +561,7 @@ UA.prototype.receiveRequest = function(request) {
         if(session) {
           session.receiveRequest(request);
         } else {
-          this.logger.warn('received CANCEL request for a non existent session');
+          debug('received CANCEL request for a non existent session');
         }
         break;
       case JsSIP_C.ACK:
@@ -609,7 +586,7 @@ UA.prototype.receiveRequest = function(request) {
       if(session) {
         session.receiveRequest(request);
       } else {
-        this.logger.warn('received NOTIFY request for a non existent session');
+        debug('received NOTIFY request for a non existent subscription');
         request.reply(481, 'Subscription does not exist');
       }
     }
@@ -728,12 +705,12 @@ UA.prototype.recoverTransport = function(ua) {
   nextRetry = k * ua.configuration.connection_recovery_min_interval;
 
   if (nextRetry > ua.configuration.connection_recovery_max_interval) {
-    this.logger.log('time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
+    debug('time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
     nextRetry = ua.configuration.connection_recovery_min_interval;
     count = 0;
   }
 
-  this.logger.log('next connection attempt in '+ nextRetry +' seconds');
+  debug('next connection attempt in '+ nextRetry +' seconds');
 
   this.transportRecoveryTimer = setTimeout(function() {
     ua.transportRecoverAttempts = count + 1;
@@ -918,18 +895,18 @@ UA.prototype.loadConfig = function(configuration) {
     UA.configuration_skeleton[parameter].value = '';
   }
 
-  this.logger.debug('configuration parameters after validation:');
+  debug('configuration parameters after validation:');
   for(parameter in settings) {
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
-        this.logger.debug('· ' + parameter + ': ' + settings[parameter]);
+        debug('- ' + parameter + ': ' + settings[parameter]);
         break;
       case 'password':
-        this.logger.debug('· ' + parameter + ': ' + 'NOT SHOWN');
+        debug('- ' + parameter + ': ' + 'NOT SHOWN');
         break;
       default:
-        this.logger.debug('· ' + parameter + ': ' + JSON.stringify(settings[parameter]));
+        debug('- ' + parameter + ': ' + JSON.stringify(settings[parameter]));
     }
   }
 
@@ -1047,21 +1024,21 @@ UA.configuration_check = {
       length = ws_servers.length;
       for (idx = 0; idx < length; idx++) {
         if (!ws_servers[idx].ws_uri) {
-          this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
+          debug('ERROR: missing "ws_uri" attribute in ws_servers parameter');
           return;
         }
         if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
-          this.logger.error('"weight" attribute in ws_servers parameter must be a Number');
+          debug('ERROR: "weight" attribute in ws_servers parameter must be a Number');
           return;
         }
 
         url = Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
-          this.logger.error('invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
+          debug('ERROR: invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
           return;
         } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
-          this.logger.error('invalid URI scheme in ws_servers parameter: ' + url.scheme);
+          debug('ERROR: invalid URI scheme in ws_servers parameter: ' + url.scheme);
           return;
         } else {
           ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';

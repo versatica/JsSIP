@@ -4,13 +4,13 @@ module.exports = sanityCheck;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:sanityCheck');
 var JsSIP_C = require('./Constants');
 var SIPMessage = require('./SIPMessage');
 var Utils = require('./Utils');
 
 
-var logger,
-  message, ua, transport,
+var message, ua, transport,
   requests = [],
   responses = [],
   all = [];
@@ -33,8 +33,6 @@ function sanityCheck(m, u, t) {
   message = m;
   ua = u;
   transport = t;
-
-  logger = ua.getLogger('jssip.sanitycheck');
 
   len = all.length;
   while(len--) {
@@ -169,7 +167,7 @@ function rfc3261_8_2_2_2() {
 // Sanity Check functions for responses
 function rfc3261_8_1_3_3() {
   if(message.getHeaders('via').length > 1) {
-    logger.warn('More than one Via header field present in the response. Dropping the response');
+    debug('more than one Via header field present in the response, dropping the response');
     return false;
   }
 }
@@ -180,7 +178,7 @@ function rfc3261_18_3_response() {
     contentLength = message.getHeader('content-length');
 
     if(len < contentLength) {
-      logger.warn('Message body length is lower than the value in Content-Length header field. Dropping the response');
+      debug('message body length is lower than the value in Content-Length header field, dropping the response');
       return false;
     }
 }
@@ -193,7 +191,7 @@ function minimumHeaders() {
 
   while(idx--) {
     if(!message.hasHeader(mandatoryHeaders[idx])) {
-      logger.warn('Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
+      debug('missing mandatory header field : ' + mandatoryHeaders[idx] + ', dropping the response');
       return false;
     }
   }

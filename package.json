@@ -1,48 +1,49 @@
 {
-	"name": "jssip",
-	"title": "JsSIP",
-	"description": "the Javascript SIP library",
-	"version": "0.5.0",
-	"homepage": "http://jssip.net",
-	"author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
-	"contributors": [
-		"Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
-		"Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
-	],
-	"main": "src/JsSIP.js",
-	"keywords": [
-		"sip",
-		"websocket",
-		"webrtc",
-		"node",
-		"browser",
-		"library"
-	],
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/versatica/JsSIP.git"
-	},
-	"bugs": {
-		"url": "https://github.com/versatica/JsSIP/issues"
-	},
-	"dependencies": {
-		"sdp-transform": "~0.6.1",
-		"ws": "~0.4.32"
-	},
-	"devDependencies": {
-		"grunt": "~0.4.5",
-		"grunt-contrib-jshint": "~0.10.0",
-		"grunt-contrib-concat": "~0.5.0",
-		"grunt-contrib-nodeunit": "~0.4.1",
-		"grunt-contrib-uglify": "~0.6.0",
-		"grunt-contrib-watch": "~0.6.1",
-		"grunt-contrib-symlink": "~0.3.0",
-		"grunt-browserify": "~3.0.1",
-		"grunt-jsdoc": "~0.5.7",
-		"pegjs": "0.7.0"
-	},
-	"scripts": {
-		"test": "grunt test"
-	}
+  "name": "jssip",
+  "title": "JsSIP",
+  "description": "the Javascript SIP library",
+  "version": "0.5.0",
+  "homepage": "http://jssip.net",
+  "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
+  "contributors": [
+    "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
+    "Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
+  ],
+  "main": "src/JsSIP.js",
+  "keywords": [
+    "sip",
+    "websocket",
+    "webrtc",
+    "node",
+    "browser",
+    "library"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/versatica/JsSIP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/versatica/JsSIP/issues"
+  },
+  "dependencies": {
+    "debug": "^2.1.0",
+    "sdp-transform": "~0.6.1",
+    "ws": "~0.4.32"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-concat": "~0.5.0",
+    "grunt-contrib-nodeunit": "~0.4.1",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-symlink": "~0.3.0",
+    "grunt-browserify": "~3.0.1",
+    "grunt-jsdoc": "~0.5.7",
+    "pegjs": "0.7.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  }
 }

@@ -10,7 +10,9 @@ var JsSIP = {
   UA: require('./UA'),
   URI: require('./URI'),
   NameAddrHeader: require('./NameAddrHeader'),
-  Grammar: require('./Grammar')
+  Grammar: require('./Grammar'),
+  // Expose the debug module.
+  debug: require('debug')
 };
 
 module.exports = JsSIP;

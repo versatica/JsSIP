@@ -4,6 +4,7 @@ module.exports = RequestSender;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:RequestSender');
 var JsSIP_C = require('./Constants');
 var UA = require('./UA');
 var DigestAuthentication = require('./DigestAuthentication');
@@ -11,7 +12,6 @@ var Transactions = require('./Transactions');
 
 
 function RequestSender(applicant, ua) {
-  this.logger = ua.getLogger('jssip.requestsender');
   this.ua = ua;
   this.applicant = applicant;
   this.method = applicant.request.method;
@@ -86,7 +86,7 @@ RequestSender.prototype = {
 
       // Verify it seems a valid challenge.
       if (! challenge) {
-        this.logger.warn(response.status_code + ' with wrong or missing challenge, cannot authenticate');
+        debug(response.status_code + ' with wrong or missing challenge, cannot authenticate');
         this.applicant.receiveResponse(response);
         return;
       }

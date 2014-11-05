@@ -7,7 +7,7 @@ function EventEmitter() {}
 /**
  * Dependencies.
  */
-var LoggerFactory = require('./LoggerFactory');
+var debug = require('debug')('JsSIP:EventEmitter');
 
 
 function Event(type, sender, data) {
@@ -17,11 +17,9 @@ function Event(type, sender, data) {
 }
 
 
-var
-  logger = new LoggerFactory().getLogger('jssip.eventemitter'),
-  C = {
-    MAX_LISTENERS: 50
-  };
+var C = {
+  MAX_LISTENERS: 50
+};
 
 
 EventEmitter.prototype = {
@@ -31,10 +29,6 @@ EventEmitter.prototype = {
    */
   initEvents: function(events) {
     var idx, length;
-
-    if (!this.logger) {
-      this.logger = logger;
-    }
 
     this.maxListeners = C.MAX_LISTENERS;
 
@@ -62,15 +56,13 @@ EventEmitter.prototype = {
     if (listener === undefined) {
       return;
     } else if (typeof listener !== 'function') {
-      this.logger.error('listener must be a function');
-      return;
+      throw new Error('listener must be a function');
     } else if (!this.checkEvent(event)) {
-      this.logger.error('unable to add a listener to a nonexistent event ' + event);
-      return;
+      throw new Error('unable to add a listener to a nonexistent event ' + event);
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      this.logger.warn('max listeners exceeded for event ' + event);
+      debug('max listeners exceeded for event ' + event);
     }
 
     this.events[event].push(listener);
@@ -100,11 +92,9 @@ EventEmitter.prototype = {
     if (listener === undefined) {
       return;
     } else if (typeof listener !== 'function') {
-      this.logger.error('listener must be a function');
-      return;
+      throw new Error('listener must be a function');
     } else if (!this.checkEvent(event)) {
-      this.logger.error('unable to remove a listener from a nonexistent event'+ event);
-      return;
+      throw new Error('unable to remove a listener from a nonexistent event'+ event);
     }
 
     events = this.events[event];
@@ -124,8 +114,7 @@ EventEmitter.prototype = {
    */
   removeAllListener: function(event) {
     if (!this.checkEvent(event)) {
-      this.logger.error('unable to remove listeners from a nonexistent event'+ event);
-      return;
+      throw new Error('unable to remove listeners from a nonexistent event'+ event);
     }
 
     this.events[event] = [];
@@ -139,8 +128,7 @@ EventEmitter.prototype = {
    */
   setMaxListeners: function(listeners) {
     if (typeof listeners !== 'number' || listeners < 0) {
-      this.logger.error('listeners must be a positive number');
-      return;
+      throw new Error('listeners must be a positive number');
     }
 
     this.maxListeners = listeners;
@@ -151,8 +139,7 @@ EventEmitter.prototype = {
    */
   listeners: function(event) {
     if (!this.checkEvent(event)) {
-      this.logger.error('no event '+ event);
-      return;
+      throw new Error('no event '+ event);
     }
 
     return this.events[event];
@@ -162,15 +149,13 @@ EventEmitter.prototype = {
    * Execute each of the listeners in order with the supplied arguments.
    */
   emit: function(event, sender, data) {
-    var listeners, length, e, idx,
-      self = this;
+    var listeners, length, e, idx;
 
     if (!this.checkEvent(event)) {
-      this.logger.error('unable to emit a nonexistent event'+ event);
-      return;
+      throw new Error('unable to emit a nonexistent event'+ event);
     }
 
-    this.logger.debug('emitting event '+ event);
+    debug('emitting event '+ event);
 
     listeners = this.events[event];
     length = listeners.length;
@@ -185,7 +170,7 @@ EventEmitter.prototype = {
       try {
         callback();
       } catch(err) {
-        self.logger.error(err.stack);
+        debug(err.stack ? err.stack : err);
       }
     });
 

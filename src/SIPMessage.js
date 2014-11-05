@@ -8,6 +8,7 @@ module.exports = {
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:SIPMessage');
 var JsSIP_C = require('./Constants');
 var Utils = require('./Utils');
 var NameAddrHeader = require('./NameAddrHeader');
@@ -38,7 +39,6 @@ function OutgoingRequest(method, ruri, ua, params, extraHeaders, body) {
     return null;
   }
 
-  this.logger = ua.getLogger('jssip.sipmessage');
   this.ua = ua;
   this.headers = {};
   this.method = method;
@@ -321,10 +321,10 @@ IncomingMessage.prototype = {
     idx = idx || 0;
 
     if(!this.headers[name]) {
-      this.logger.log('header "' + name + '" not present');
+      debug('header "' + name + '" not present');
       return;
     } else if(idx >= this.headers[name].length) {
-      this.logger.log('not so many "' + name + '" headers present');
+      debug('not so many "' + name + '" headers present');
       return;
     }
 
@@ -340,7 +340,7 @@ IncomingMessage.prototype = {
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      this.logger.warn('error parsing "' + name + '" header field with value "' + value + '"');
+      debug('error parsing "' + name + '" header field with value "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
@@ -378,7 +378,6 @@ IncomingMessage.prototype = {
 
 
 function IncomingRequest(ua) {
-  this.logger = ua.getLogger('jssip.sipmessage');
   this.ua = ua;
   this.headers = {};
   this.ruri = null;
@@ -533,8 +532,7 @@ IncomingRequest.prototype.reply_sl = function(code, reason) {
 };
 
 
-function IncomingResponse(ua) {
-  this.logger = ua.getLogger('jssip.sipmessage');
+function IncomingResponse() {
   this.headers = {};
   this.status_code = null;
   this.reason_phrase = null;

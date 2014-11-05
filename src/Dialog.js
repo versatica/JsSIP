@@ -16,6 +16,7 @@ Dialog.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:Dialog');
 var SIPMessage = require('./SIPMessage');
 var JsSIP_C = require('./Constants');
 var Transactions = require('./Transactions');
@@ -79,10 +80,9 @@ function Dialog(owner, message, type, state) {
     this.route_set = message.getHeaders('record-route').reverse();
   }
 
-  this.logger = owner.ua.getLogger('jssip.dialog', this.id.toString());
   this.owner = owner;
   owner.ua.dialogs[this.id.toString()] = this;
-  this.logger.debug('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
+  debug('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 }
 
 
@@ -90,7 +90,7 @@ Dialog.prototype = {
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
-    this.logger.debug('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
+    debug('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -99,7 +99,7 @@ Dialog.prototype = {
   },
 
   terminate: function() {
-    this.logger.debug('dialog ' + this.id.toString() + ' deleted');
+    debug('dialog ' + this.id.toString() + ' deleted');
     delete this.owner.ua.dialogs[this.id.toString()];
   },
 

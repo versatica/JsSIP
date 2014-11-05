@@ -19,7 +19,6 @@ function Request(session) {
 
   this.owner = session;
 
-  this.logger = session.ua.getLogger('jssip.rtcsession.request', session.id);
   this.initEvents(events);
 }
 

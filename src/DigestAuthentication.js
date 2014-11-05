@@ -1,8 +1,14 @@
 module.exports = DigestAuthentication;
 
 
+/**
+ * Dependencies.
+ */
+var debug = require('debug')('JsSIP:DigestAuthentication');
+var Utils = require('./Utils');
+
+
 function DigestAuthentication(ua) {
-  this.logger = ua.getLogger('jssip.digestauthentication');
   this.username = ua.configuration.authorization_user;
   this.password = ua.configuration.password;
   this.cnonce = null;
@@ -10,12 +16,6 @@ function DigestAuthentication(ua) {
   this.ncHex = '00000000';
   this.response = null;
 }
-
-
-/**
- * Dependencies.
- */
-var Utils = require('./Utils');
 
 
 /**
@@ -34,7 +34,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
   if (this.algorithm) {
     if (this.algorithm !== 'MD5') {
-      this.logger.warn('challenge with Digest algorithm different than "MD5", authentication aborted');
+      debug('challenge with Digest algorithm different than "MD5", authentication aborted');
       return false;
     }
   } else {
@@ -42,12 +42,12 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
   }
 
   if (! this.realm) {
-    this.logger.warn('challenge without Digest realm, authentication aborted');
+    debug('challenge without Digest realm, authentication aborted');
     return false;
   }
 
   if (! this.nonce) {
-    this.logger.warn('challenge without Digest nonce, authentication aborted');
+    debug('challenge without Digest nonce, authentication aborted');
     return false;
   }
 
@@ -59,7 +59,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
       this.qop = 'auth-int';
     } else {
       // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-      this.logger.warn('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
+      debug('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
       return false;
     }
   } else {

@@ -6,6 +6,467 @@
  */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.JsSIP=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // This hackery is required for IE8,
+  // where the `console.log` function doesn't have 'apply'
+  return 'object' == typeof console
+    && 'function' == typeof console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      localStorage.removeItem('debug');
+    } else {
+      localStorage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = localStorage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+},{"./debug":2}],2:[function(require,module,exports){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+},{"ms":3}],3:[function(require,module,exports){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} options
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options){
+  options = options || {};
+  if ('string' == typeof val) return parse(val);
+  return options.long
+    ? long(val)
+    : short(val);
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  var match = /^((?:\d+)?\.?\d+) *(ms|seconds?|s|minutes?|m|hours?|h|days?|d|years?|y)?$/i.exec(str);
+  if (!match) return;
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 's':
+      return n * s;
+    case 'ms':
+      return n;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function short(ms) {
+  if (ms >= d) return Math.round(ms / d) + 'd';
+  if (ms >= h) return Math.round(ms / h) + 'h';
+  if (ms >= m) return Math.round(ms / m) + 'm';
+  if (ms >= s) return Math.round(ms / s) + 's';
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function long(ms) {
+  return plural(ms, d, 'day')
+    || plural(ms, h, 'hour')
+    || plural(ms, m, 'minute')
+    || plural(ms, s, 'second')
+    || ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) return;
+  if (ms < n * 1.5) return Math.floor(ms / n) + ' ' + name;
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+},{}],4:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
       name: 'version',
@@ -232,7 +693,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 }); 
 
-},{}],2:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 
@@ -242,7 +703,7 @@ exports.parseFmtpConfig = parser.parseFmtpConfig;
 exports.parsePayloads = parser.parsePayloads;
 exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 
-},{"./parser":3,"./writer":4}],3:[function(require,module,exports){
+},{"./parser":6,"./writer":7}],6:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -337,7 +798,7 @@ exports.parseRemoteCandidates = function (str) {
   return candidates;
 };
 
-},{"./grammar":1}],4:[function(require,module,exports){
+},{"./grammar":4}],7:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -453,7 +914,7 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":1}],5:[function(require,module,exports){
+},{"./grammar":4}],8:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -498,57 +959,58 @@ function ws(uri, protocols, opts) {
 
 if (WebSocket) ws.prototype = WebSocket.prototype;
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports={
-	"name": "jssip",
-	"title": "JsSIP",
-	"description": "the Javascript SIP library",
-	"version": "0.5.0",
-	"homepage": "http://jssip.net",
-	"author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
-	"contributors": [
-		"Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
-		"Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
-	],
-	"main": "src/JsSIP.js",
-	"keywords": [
-		"sip",
-		"websocket",
-		"webrtc",
-		"node",
-		"browser",
-		"library"
-	],
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/versatica/JsSIP.git"
-	},
-	"bugs": {
-		"url": "https://github.com/versatica/JsSIP/issues"
-	},
-	"dependencies": {
-		"sdp-transform": "~0.6.1",
-		"ws": "~0.4.32"
-	},
-	"devDependencies": {
-		"grunt": "~0.4.5",
-		"grunt-contrib-jshint": "~0.10.0",
-		"grunt-contrib-concat": "~0.5.0",
-		"grunt-contrib-nodeunit": "~0.4.1",
-		"grunt-contrib-uglify": "~0.6.0",
-		"grunt-contrib-watch": "~0.6.1",
-		"grunt-contrib-symlink": "~0.3.0",
-		"grunt-browserify": "~3.0.1",
-		"grunt-jsdoc": "~0.5.7",
-		"pegjs": "0.7.0"
-	},
-	"scripts": {
-		"test": "grunt test"
-	}
+  "name": "jssip",
+  "title": "JsSIP",
+  "description": "the Javascript SIP library",
+  "version": "0.5.0",
+  "homepage": "http://jssip.net",
+  "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
+  "contributors": [
+    "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
+    "Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
+  ],
+  "main": "src/JsSIP.js",
+  "keywords": [
+    "sip",
+    "websocket",
+    "webrtc",
+    "node",
+    "browser",
+    "library"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/versatica/JsSIP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/versatica/JsSIP/issues"
+  },
+  "dependencies": {
+    "debug": "^2.1.0",
+    "sdp-transform": "~0.6.1",
+    "ws": "~0.4.32"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-concat": "~0.5.0",
+    "grunt-contrib-nodeunit": "~0.4.1",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-symlink": "~0.3.0",
+    "grunt-browserify": "~3.0.1",
+    "grunt-jsdoc": "~0.5.7",
+    "pegjs": "0.7.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  }
 }
 
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var pkg = require('../package.json');
 
 var C = {
@@ -701,7 +1163,7 @@ var C = {
 
 module.exports = C;
 
-},{"../package.json":6}],8:[function(require,module,exports){
+},{"../package.json":9}],11:[function(require,module,exports){
 module.exports = Dialog;
 
 
@@ -720,6 +1182,7 @@ Dialog.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:Dialog');
 var SIPMessage = require('./SIPMessage');
 var JsSIP_C = require('./Constants');
 var Transactions = require('./Transactions');
@@ -783,10 +1246,9 @@ function Dialog(owner, message, type, state) {
     this.route_set = message.getHeaders('record-route').reverse();
   }
 
-  this.logger = owner.ua.getLogger('jssip.dialog', this.id.toString());
   this.owner = owner;
   owner.ua.dialogs[this.id.toString()] = this;
-  this.logger.debug('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
+  debug('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
 }
 
 
@@ -794,7 +1256,7 @@ Dialog.prototype = {
   update: function(message, type) {
     this.state = C.STATUS_CONFIRMED;
 
-    this.logger.debug('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
+    debug('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
 
     if(type === 'UAC') {
       // RFC 3261 13.2.2.4
@@ -803,7 +1265,7 @@ Dialog.prototype = {
   },
 
   terminate: function() {
-    this.logger.debug('dialog ' + this.id.toString() + ' deleted');
+    debug('dialog ' + this.id.toString() + ' deleted');
     delete this.owner.ua.dialogs[this.id.toString()];
   },
 
@@ -920,7 +1382,7 @@ Dialog.prototype = {
   }
 };
 
-},{"./Constants":7,"./Dialog/RequestSender":9,"./SIPMessage":26,"./Transactions":28}],9:[function(require,module,exports){
+},{"./Constants":10,"./Dialog/RequestSender":12,"./SIPMessage":27,"./Transactions":29,"debug":1}],12:[function(require,module,exports){
 module.exports = DialogRequestSender;
 
 /**
@@ -1006,12 +1468,18 @@ DialogRequestSender.prototype = {
   }
 };
 
-},{"../Constants":7,"../RTCSession":20,"../RequestSender":25,"../Transactions":28}],10:[function(require,module,exports){
+},{"../Constants":10,"../RTCSession":21,"../RequestSender":26,"../Transactions":29}],13:[function(require,module,exports){
 module.exports = DigestAuthentication;
 
 
+/**
+ * Dependencies.
+ */
+var debug = require('debug')('JsSIP:DigestAuthentication');
+var Utils = require('./Utils');
+
+
 function DigestAuthentication(ua) {
-  this.logger = ua.getLogger('jssip.digestauthentication');
   this.username = ua.configuration.authorization_user;
   this.password = ua.configuration.password;
   this.cnonce = null;
@@ -1019,12 +1487,6 @@ function DigestAuthentication(ua) {
   this.ncHex = '00000000';
   this.response = null;
 }
-
-
-/**
- * Dependencies.
- */
-var Utils = require('./Utils');
 
 
 /**
@@ -1043,7 +1505,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
   if (this.algorithm) {
     if (this.algorithm !== 'MD5') {
-      this.logger.warn('challenge with Digest algorithm different than "MD5", authentication aborted');
+      debug('challenge with Digest algorithm different than "MD5", authentication aborted');
       return false;
     }
   } else {
@@ -1051,12 +1513,12 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
   }
 
   if (! this.realm) {
-    this.logger.warn('challenge without Digest realm, authentication aborted');
+    debug('challenge without Digest realm, authentication aborted');
     return false;
   }
 
   if (! this.nonce) {
-    this.logger.warn('challenge without Digest nonce, authentication aborted');
+    debug('challenge without Digest nonce, authentication aborted');
     return false;
   }
 
@@ -1068,7 +1530,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
       this.qop = 'auth-int';
     } else {
       // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-      this.logger.warn('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
+      debug('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
       return false;
     }
   } else {
@@ -1163,7 +1625,7 @@ DigestAuthentication.prototype.updateNcHex = function() {
   this.ncHex = '00000000'.substr(0, 8-hex.length) + hex;
 };
 
-},{"./Utils":32}],11:[function(require,module,exports){
+},{"./Utils":33,"debug":1}],14:[function(require,module,exports){
 module.exports = EventEmitter;
 
 
@@ -1173,7 +1635,7 @@ function EventEmitter() {}
 /**
  * Dependencies.
  */
-var LoggerFactory = require('./LoggerFactory');
+var debug = require('debug')('JsSIP:EventEmitter');
 
 
 function Event(type, sender, data) {
@@ -1183,11 +1645,9 @@ function Event(type, sender, data) {
 }
 
 
-var
-  logger = new LoggerFactory().getLogger('jssip.eventemitter'),
-  C = {
-    MAX_LISTENERS: 50
-  };
+var C = {
+  MAX_LISTENERS: 50
+};
 
 
 EventEmitter.prototype = {
@@ -1197,10 +1657,6 @@ EventEmitter.prototype = {
    */
   initEvents: function(events) {
     var idx, length;
-
-    if (!this.logger) {
-      this.logger = logger;
-    }
 
     this.maxListeners = C.MAX_LISTENERS;
 
@@ -1228,15 +1684,13 @@ EventEmitter.prototype = {
     if (listener === undefined) {
       return;
     } else if (typeof listener !== 'function') {
-      this.logger.error('listener must be a function');
-      return;
+      throw new Error('listener must be a function');
     } else if (!this.checkEvent(event)) {
-      this.logger.error('unable to add a listener to a nonexistent event ' + event);
-      return;
+      throw new Error('unable to add a listener to a nonexistent event ' + event);
     }
 
     if (this.events[event].length >= this.maxListeners) {
-      this.logger.warn('max listeners exceeded for event ' + event);
+      debug('max listeners exceeded for event ' + event);
     }
 
     this.events[event].push(listener);
@@ -1266,11 +1720,9 @@ EventEmitter.prototype = {
     if (listener === undefined) {
       return;
     } else if (typeof listener !== 'function') {
-      this.logger.error('listener must be a function');
-      return;
+      throw new Error('listener must be a function');
     } else if (!this.checkEvent(event)) {
-      this.logger.error('unable to remove a listener from a nonexistent event'+ event);
-      return;
+      throw new Error('unable to remove a listener from a nonexistent event'+ event);
     }
 
     events = this.events[event];
@@ -1290,8 +1742,7 @@ EventEmitter.prototype = {
    */
   removeAllListener: function(event) {
     if (!this.checkEvent(event)) {
-      this.logger.error('unable to remove listeners from a nonexistent event'+ event);
-      return;
+      throw new Error('unable to remove listeners from a nonexistent event'+ event);
     }
 
     this.events[event] = [];
@@ -1305,8 +1756,7 @@ EventEmitter.prototype = {
    */
   setMaxListeners: function(listeners) {
     if (typeof listeners !== 'number' || listeners < 0) {
-      this.logger.error('listeners must be a positive number');
-      return;
+      throw new Error('listeners must be a positive number');
     }
 
     this.maxListeners = listeners;
@@ -1317,8 +1767,7 @@ EventEmitter.prototype = {
    */
   listeners: function(event) {
     if (!this.checkEvent(event)) {
-      this.logger.error('no event '+ event);
-      return;
+      throw new Error('no event '+ event);
     }
 
     return this.events[event];
@@ -1328,15 +1777,13 @@ EventEmitter.prototype = {
    * Execute each of the listeners in order with the supplied arguments.
    */
   emit: function(event, sender, data) {
-    var listeners, length, e, idx,
-      self = this;
+    var listeners, length, e, idx;
 
     if (!this.checkEvent(event)) {
-      this.logger.error('unable to emit a nonexistent event'+ event);
-      return;
+      throw new Error('unable to emit a nonexistent event'+ event);
     }
 
-    this.logger.debug('emitting event '+ event);
+    debug('emitting event '+ event);
 
     listeners = this.events[event];
     length = listeners.length;
@@ -1351,7 +1798,7 @@ EventEmitter.prototype = {
       try {
         callback();
       } catch(err) {
-        self.logger.error(err.stack);
+        debug(err.stack ? err.stack : err);
       }
     });
 
@@ -1364,7 +1811,7 @@ EventEmitter.prototype = {
   }
 };
 
-},{"./LoggerFactory":16}],12:[function(require,module,exports){
+},{"debug":1}],15:[function(require,module,exports){
 /**
  * @namespace Exceptions
  * @memberOf JsSIP
@@ -1422,7 +1869,7 @@ var Exceptions = {
 
 module.exports = Exceptions;
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = (function(){
   /*
    * Generated by PEG.js 0.7.0.
@@ -13947,7 +14394,7 @@ module.exports = (function(){
   return result;
 })();
 
-},{"./NameAddrHeader":18,"./URI":31}],14:[function(require,module,exports){
+},{"./NameAddrHeader":19,"./URI":32}],17:[function(require,module,exports){
 /**
  * The main namespace.
  * @namespace JsSIP
@@ -13960,7 +14407,9 @@ var JsSIP = {
   UA: require('./UA'),
   URI: require('./URI'),
   NameAddrHeader: require('./NameAddrHeader'),
-  Grammar: require('./Grammar')
+  Grammar: require('./Grammar'),
+  // Expose the debug module.
+  debug: require('debug')
 };
 
 module.exports = JsSIP;
@@ -13988,191 +14437,8 @@ Object.defineProperties(JsSIP, {
   }
 });
 
-},{"../package.json":6,"./Constants":7,"./Exceptions":12,"./Grammar":13,"./NameAddrHeader":18,"./UA":30,"./URI":31,"./Utils":32}],15:[function(require,module,exports){
-module.exports = Logger;
-
-
-function Logger(logger, category, label) {
-  this.logger = logger;
-  this.category = category;
-  this.label = label;
-}
-
-Logger.prototype.debug = function(content) {
-  this.logger.debug(this.category, this.label, content);
-};
-
-Logger.prototype.log = function(content) {
-  this.logger.log(this.category, this.label, content);
-};
-
-Logger.prototype.warn = function(content) {
-  this.logger.warn(this.category, this.label, content);
-};
-
-Logger.prototype.error = function(content) {
-  this.logger.error(this.category, this.label, content);
-};
-
-
-
-
-},{}],16:[function(require,module,exports){
-module.exports = LoggerFactory;
-
-
-/**
- * Dependencies.
- */
-var Logger = require('./Logger');
-
-
-function LoggerFactory() {
-  var logger,
-    levels = { 'error': 0, 'warn': 1, 'log': 2, 'debug': 3 },
-    level = 2,
-    builtinEnabled = true,
-    connector = null;
-
-    this.loggers = {};
-
-    logger = this.getLogger('jssip.loggerfactory');
-
-
-  Object.defineProperties(this, {
-    builtinEnabled: {
-      get: function(){ return builtinEnabled; },
-      set: function(value){
-        if (typeof value === 'boolean') {
-          builtinEnabled = value;
-        } else {
-          logger.error('invalid "builtinEnabled" parameter value: '+ JSON.stringify(value));
-        }
-      }
-    },
-
-    level: {
-      get: function() {return level; },
-      set: function(value) {
-        if (value >= 0 && value <=3) {
-          level = value;
-        } else if (value > 3) {
-          level = 3;
-        } else if (levels.hasOwnProperty(value)) {
-          level = levels[value];
-        } else {
-          logger.error('invalid "level" parameter value: '+ JSON.stringify(value));
-        }
-      }
-    },
-
-    connector: {
-      get: function() {return connector; },
-      set: function(value){
-        if(value === null || value === "" || value === undefined) {
-          connector = null;
-        } else if (typeof value === 'function') {
-          connector = value;
-        } else {
-          logger.error('invalid "connector" parameter value: '+ JSON.stringify(value));
-        }
-      }
-    }
-  });
-}
-
-
-LoggerFactory.prototype.print = function(target, category, label, content) {
-  var prefix = [];
-
-  prefix.push(new Date());
-
-  prefix.push(category);
-
-  if (label) {
-    prefix.push(label);
-  }
-
-  prefix.push('');
-
-  if (typeof content === 'string') {
-    target.call(console, prefix.join(' | ') + content);
-  } else {
-    target.call(console, content);
-  }
-};
-
-LoggerFactory.prototype.debug = function(category, label, content) {
-  if (this.level === 3) {
-    if (this.builtinEnabled) {
-      this.print(console.debug, category, label, content);
-    }
-
-    if (this.connector) {
-      this.connector('debug', category, label, content);
-    }
-  }
-};
-
-LoggerFactory.prototype.log = function(category, label, content) {
-  if (this.level >= 2) {
-    if (this.builtinEnabled) {
-      this.print(console.log, category, label, content);
-    }
-
-    if (this.connector) {
-      this.connector('log', category, label, content);
-    }
-  }
-};
-
-LoggerFactory.prototype.warn = function(category, label, content) {
-  if (this.level >= 1) {
-    if (this.builtinEnabled) {
-      this.print(console.warn, category, label, content);
-    }
-
-    if (this.connector) {
-      this.connector('warn', category, label, content);
-    }
-  }
-};
-
-LoggerFactory.prototype.error = function(category, label, content) {
-  if (this.builtinEnabled) {
-    this.print(console.error,category, label, content);
-  }
-
-  if (this.connector) {
-    this.connector('error', category, label, content);
-  }
-};
-
-LoggerFactory.prototype.getLogger = function(category, label) {
-  var logger;
-
-  if (label && this.level === 3) {
-    return new Logger(this, category, label);
-  } else if (this.loggers[category]) {
-    return this.loggers[category];
-  } else {
-    logger = new Logger(this, category);
-    this.loggers[category] = logger;
-    return logger;
-  }
-};
-
-},{"./Logger":15}],17:[function(require,module,exports){
+},{"../package.json":9,"./Constants":10,"./Exceptions":15,"./Grammar":16,"./NameAddrHeader":19,"./UA":31,"./URI":32,"./Utils":33,"debug":1}],18:[function(require,module,exports){
 module.exports = Message;
-
-
-function Message(ua) {
-  this.ua = ua;
-  this.logger = ua.getLogger('jssip.message');
-
-  // Custom message empty object for high level use
-  this.data = {};
-}
 
 
 /**
@@ -14185,6 +14451,14 @@ var Utils = require('./Utils');
 var RequestSender = require('./RequestSender');
 var Transactions = require('./Transactions');
 var Exceptions = require('./Exceptions');
+
+
+function Message(ua) {
+  this.ua = ua;
+
+  // Custom message empty object for high level use
+  this.data = {};
+}
 
 
 Message.prototype = new EventEmitter();
@@ -14389,7 +14663,7 @@ Message.prototype.newMessage = function(originator, request) {
   });
 };
 
-},{"./Constants":7,"./EventEmitter":11,"./Exceptions":12,"./RequestSender":25,"./SIPMessage":26,"./Transactions":28,"./Utils":32}],18:[function(require,module,exports){
+},{"./Constants":10,"./EventEmitter":14,"./Exceptions":15,"./RequestSender":26,"./SIPMessage":27,"./Transactions":29,"./Utils":33}],19:[function(require,module,exports){
 module.exports = NameAddrHeader;
 
 
@@ -14499,7 +14773,7 @@ NameAddrHeader.parse = function(name_addr_header) {
   }
 };
 
-},{"./Grammar":13,"./URI":31}],19:[function(require,module,exports){
+},{"./Grammar":16,"./URI":32}],20:[function(require,module,exports){
 var Parser = {};
 
 module.exports = Parser;
@@ -14508,6 +14782,7 @@ module.exports = Parser;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:Parser');
 var sdp_transform = require('sdp-transform');
 var Grammar = require('./Grammar');
 var SIPMessage = require('./SIPMessage');
@@ -14680,11 +14955,10 @@ function parseHeader(message, data, headerStart, headerEnd) {
 Parser.parseMessage = function(data, ua) {
   var message, firstLine, contentLength, bodyStart, parsed,
     headerStart = 0,
-    headerEnd = data.indexOf('\r\n'),
-    logger = ua.getLogger('jssip.parser');
+    headerEnd = data.indexOf('\r\n');
 
   if(headerEnd === -1) {
-    logger.warn('no CRLF found, not a SIP message, discarded');
+    debug('no CRLF found, not a SIP message');
     return;
   }
 
@@ -14693,14 +14967,14 @@ Parser.parseMessage = function(data, ua) {
   parsed = Grammar.parse(firstLine, 'Request_Response');
 
   if(parsed === -1) {
-    logger.warn('error parsing first line of SIP message: "' + firstLine + '"');
+    debug('error parsing first line of SIP message: "' + firstLine + '"');
     return;
   } else if(!parsed.status_code) {
     message = new SIPMessage.IncomingRequest(ua);
     message.method = parsed.method;
     message.ruri = parsed.uri;
   } else {
-    message = new SIPMessage.IncomingResponse(ua);
+    message = new SIPMessage.IncomingResponse();
     message.status_code = parsed.status_code;
     message.reason_phrase = parsed.reason_phrase;
   }
@@ -14728,7 +15002,7 @@ Parser.parseMessage = function(data, ua) {
     parsed = parseHeader(message, data, headerStart, headerEnd);
 
     if(parsed !== true) {
-      logger.error(parsed.error);
+      debug(parsed.error);
       return;
     }
 
@@ -14759,7 +15033,7 @@ Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
 Parser.parsePayloads = sdp_transform.parsePayloads;
 Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
 
-},{"./Grammar":13,"./SIPMessage":26,"sdp-transform":2}],20:[function(require,module,exports){
+},{"./Grammar":16,"./SIPMessage":27,"debug":1,"sdp-transform":5}],21:[function(require,module,exports){
 module.exports = RTCSession;
 
 
@@ -14786,6 +15060,7 @@ RTCSession.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:RTCSession');
 var JsSIP_C = require('./Constants');
 var EventEmitter = require('./EventEmitter');
 var Exceptions = require('./Exceptions');
@@ -14932,7 +15207,7 @@ RTCSession.prototype.terminate = function(options) {
     case C.STATUS_NULL:
     case C.STATUS_INVITE_SENT:
     case C.STATUS_1XX_RECEIVED:
-      this.logger.debug('canceling RTCSession');
+      debug('canceling sesssion');
 
       if (status_code && (status_code < 200 || status_code >= 700)) {
         throw new TypeError('Invalid status_code: '+ status_code);
@@ -14960,7 +15235,7 @@ RTCSession.prototype.terminate = function(options) {
       // - UAS -
     case C.STATUS_WAITING_FOR_ANSWER:
     case C.STATUS_ANSWERED:
-      this.logger.debug('rejecting RTCSession');
+      debug('rejecting session');
 
       status_code = status_code || 480;
 
@@ -14974,7 +15249,7 @@ RTCSession.prototype.terminate = function(options) {
 
     case C.STATUS_WAITING_FOR_ACK:
     case C.STATUS_CONFIRMED:
-      this.logger.debug('terminating RTCSession');
+      debug('terminating session');
 
       reason_phrase = options.reason_phrase || JsSIP_C.REASON_PHRASE[status_code] || '';
 
@@ -15255,10 +15530,10 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   } else if (!duration) {
     duration = RTCSession_DTMF.C.DEFAULT_DURATION;
   } else if (duration < RTCSession_DTMF.C.MIN_DURATION) {
-    this.logger.warn('"duration" value is lower than the minimum allowed, setting it to '+ RTCSession_DTMF.C.MIN_DURATION+ ' milliseconds');
+    debug('"duration" value is lower than the minimum allowed, setting it to '+ RTCSession_DTMF.C.MIN_DURATION+ ' milliseconds');
     duration = RTCSession_DTMF.C.MIN_DURATION;
   } else if (duration > RTCSession_DTMF.C.MAX_DURATION) {
-    this.logger.warn('"duration" value is greater than the maximum allowed, setting it to '+ RTCSession_DTMF.C.MAX_DURATION +' milliseconds');
+    debug('"duration" value is greater than the maximum allowed, setting it to '+ RTCSession_DTMF.C.MAX_DURATION +' milliseconds');
     duration = RTCSession_DTMF.C.MAX_DURATION;
   } else {
     duration = Math.abs(duration);
@@ -15271,7 +15546,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   } else if (!interToneGap) {
     interToneGap = RTCSession_DTMF.C.DEFAULT_INTER_TONE_GAP;
   } else if (interToneGap < RTCSession_DTMF.C.MIN_INTER_TONE_GAP) {
-    this.logger.warn('"interToneGap" value is lower than the minimum allowed, setting it to '+ RTCSession_DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
+    debug('"interToneGap" value is lower than the minimum allowed, setting it to '+ RTCSession_DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
     interToneGap = RTCSession_DTMF.C.MIN_INTER_TONE_GAP;
   } else {
     interToneGap = Math.abs(interToneGap);
@@ -15573,7 +15848,7 @@ RTCSession.prototype.setACKTimer = function() {
 
   this.timers.ackTimer = setTimeout(function() {
     if(self.status === C.STATUS_WAITING_FOR_ACK) {
-      self.logger.debug('no ACK received, terminating the call');
+      debug('no ACK received, terminating the session');
       clearTimeout(self.timers.invite2xxTimer);
       self.sendRequest(JsSIP_C.BYE);
       self.ended('remote', null, JsSIP_C.causes.NO_ACK);
@@ -15656,8 +15931,6 @@ RTCSession.prototype.init_incoming = function(request) {
   this.request = request;
   this.contact = this.ua.contact.toString();
 
-  this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
-
   //Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
@@ -15696,8 +15969,7 @@ RTCSession.prototype.init_incoming = function(request) {
        * Bad media description
        */
       function(e) {
-        self.logger.warn('invalid SDP');
-        self.logger.warn(e);
+        debug('invalid SDP: ' + e);
         request.reply(488);
       }
     );
@@ -15797,8 +16069,6 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.id = this.request.call_id + this.from_tag;
 
-  this.logger = this.ua.getLogger('jssip.rtcsession', this.id);
-
   this.rtcMediaHandler = new RTCSession_RTCMediaHandler(this, {
     constraints: RTCConstraints,
     stun_servers: stun_servers,
@@ -15820,7 +16090,7 @@ RTCSession.prototype.close = function() {
     return;
   }
 
-  this.logger.debug('closing INVITE session ' + this.id);
+  debug('closing INVITE session ' + this.id);
 
   // 1st Step. Terminate media.
   if (this.rtcMediaHandler){
@@ -15873,7 +16143,7 @@ RTCSession.prototype.createDialog = function(message, type, early) {
 
       // Dialog has been successfully created.
       if(early_dialog.error) {
-        this.logger.error(dialog.error);
+        debug(dialog.error);
         this.failed('remote', message, JsSIP_C.causes.INTERNAL_ERROR);
         return false;
       } else {
@@ -15897,7 +16167,7 @@ RTCSession.prototype.createDialog = function(message, type, early) {
     dialog = new Dialog(this, message, type);
 
     if(dialog.error) {
-      this.logger.error(dialog.error);
+      debug(dialog.error);
       this.failed('remote', message, JsSIP_C.causes.INTERNAL_ERROR);
       return false;
     } else {
@@ -15955,7 +16225,7 @@ RTCSession.prototype.receiveReinvite = function(request) {
 
   if (request.body) {
     if (contentType !== 'application/sdp') {
-      this.logger.warn('invalid Content-Type');
+      debug('invalid Content-Type');
       request.reply(415);
       return;
     }
@@ -15983,7 +16253,7 @@ RTCSession.prototype.receiveReinvite = function(request) {
        * Bad media description
        */
       function(e) {
-        self.logger.error(e);
+        debug(e);
         request.reply(488);
       }
     );
@@ -16010,7 +16280,7 @@ RTCSession.prototype.receiveUpdate = function(request) {
   }
 
   if (contentType !== 'application/sdp') {
-    this.logger.warn('invalid Content-Type');
+    debug('invalid Content-Type');
     request.reply(415);
     return;
   }
@@ -16055,7 +16325,7 @@ RTCSession.prototype.receiveUpdate = function(request) {
      * Bad media description
      */
     function(e) {
-      self.logger.error(e);
+      debug(e);
       request.reply(488);
     }
   );
@@ -16115,7 +16385,7 @@ RTCSession.prototype.receiveRequest = function(request) {
                * SDP Answer does not fit the Offer. Accept the call and Terminate.
                */
               function(e) {
-                self.logger.warn(e);
+                debug(e);
                 self.ended('remote', request, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
               }
             );
@@ -16144,7 +16414,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP_C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
-          this.logger.debug('re-INVITE received');
+          debug('re-INVITE received');
           this.receiveReinvite(request);
         }
         else {
@@ -16167,7 +16437,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP_C.UPDATE:
         if(this.status === C.STATUS_CONFIRMED) {
-          this.logger.debug('UPDATE received');
+          debug('UPDATE received');
           this.receiveUpdate(request);
         }
         else {
@@ -16339,7 +16609,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
       dialog = new Dialog(this, response, 'UAC');
 
       if (dialog.error !== undefined) {
-        this.logger.error(dialog.error);
+        debug(dialog.error);
         return;
       }
 
@@ -16390,7 +16660,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
 
       // Do nothing with 1xx responses without To tag.
       if(!response.to_tag) {
-        this.logger.warn('1xx response received without to tag');
+        debug('1xx response received without to tag');
         break;
       }
 
@@ -16422,7 +16692,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         * SDP Answer does not fit with Offer.
         */
         function(e) {
-          session.logger.warn(e);
+          debug(e);
           session.earlyDialogs[response.call_id + response.from_tag + response.to_tag].terminate();
         }
       );
@@ -16458,7 +16728,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
          * SDP Answer does not fit the Offer. Accept the call and Terminate.
          */
         function(e) {
-          session.logger.warn(e);
+          debug(e);
           session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
           session.failed('remote', response, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
         }
@@ -16748,7 +17018,7 @@ RTCSession.prototype.onReadyToReinvite = function() {
   }
 };
 
-},{"./Constants":7,"./Dialog":8,"./EventEmitter":11,"./Exceptions":12,"./Parser":19,"./RTCSession/DTMF":21,"./RTCSession/RTCMediaHandler":22,"./RTCSession/Request":23,"./RequestSender":25,"./SIPMessage":26,"./Timers":27,"./Transactions":28,"./UA":30,"./Utils":32,"./WebRTC":33}],21:[function(require,module,exports){
+},{"./Constants":10,"./Dialog":11,"./EventEmitter":14,"./Exceptions":15,"./Parser":20,"./RTCSession/DTMF":22,"./RTCSession/RTCMediaHandler":23,"./RTCSession/Request":24,"./RequestSender":26,"./SIPMessage":27,"./Timers":28,"./Transactions":29,"./UA":31,"./Utils":33,"./WebRTC":34,"debug":1}],22:[function(require,module,exports){
 module.exports = DTMF;
 
 
@@ -16769,6 +17039,7 @@ DTMF.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:RTCSession:DTMF');
 var JsSIP_C = require('../Constants');
 var EventEmitter = require('../EventEmitter');
 var Exceptions = require('../Exceptions');
@@ -16782,7 +17053,6 @@ function DTMF(session) {
   'failed'
   ];
 
-  this.logger = session.ua.getLogger('jssip.rtcsession.dtmf', session.id);
   this.owner = session;
   this.direction = null;
   this.tone = null;
@@ -16930,7 +17200,7 @@ DTMF.prototype.init_incoming = function(request) {
   }
 
   if (!this.tone || !this.duration) {
-    this.logger.warn('invalid INFO DTMF received, discarded');
+    debug('invalid INFO DTMF received, discarded');
   } else {
     this.owner.emit('newDTMF', this.owner, {
       originator: 'remote',
@@ -16940,12 +17210,13 @@ DTMF.prototype.init_incoming = function(request) {
   }
 };
 
-},{"../Constants":7,"../EventEmitter":11,"../Exceptions":12,"../RTCSession":20,"../Utils":32}],22:[function(require,module,exports){
+},{"../Constants":10,"../EventEmitter":14,"../Exceptions":15,"../RTCSession":21,"../Utils":33,"debug":1}],23:[function(require,module,exports){
 module.exports = RTCMediaHandler;
 
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:RTCSession:RTCMediaHandler');
 var JsSIP_C = require('../Constants');
 var WebRTC = require('../WebRTC');
 
@@ -16958,7 +17229,6 @@ var WebRTC = require('../WebRTC');
 function RTCMediaHandler(session, constraints) {
   constraints = constraints || {};
 
-  this.logger = session.ua.getLogger('jssip.rtcsession.rtcmediahandler', session.id);
   this.session = session;
   this.localMedia = null;
   this.peerConnection = null;
@@ -17004,8 +17274,8 @@ RTCMediaHandler.prototype = {
       },
       function(e) {
         self.ready = true;
-        self.logger.error('unable to create offer');
-        self.logger.error(e);
+        debug('unable to create offer');
+        debug(e);
         onFailure(e);
       },
       constraints
@@ -17043,8 +17313,8 @@ RTCMediaHandler.prototype = {
       },
       function(e) {
         self.ready = true;
-        self.logger.error('unable to create answer');
-        self.logger.error(e);
+        debug('unable to create answer');
+        debug(e);
         onFailure(e);
       },
       constraints
@@ -17052,14 +17322,12 @@ RTCMediaHandler.prototype = {
   },
 
   setLocalDescription: function(sessionDescription, onSuccess, onFailure) {
-    var self = this;
-
     this.peerConnection.setLocalDescription(
       sessionDescription,
       onSuccess,
       function(e) {
-        self.logger.error('unable to set local description');
-        self.logger.error(e);
+        debug('unable to set local description');
+        debug(e);
         onFailure(e);
       }
     );
@@ -17069,8 +17337,8 @@ RTCMediaHandler.prototype = {
     try {
       this.peerConnection.addStream(stream, constraints);
     } catch(e) {
-      this.logger.error('error adding stream');
-      this.logger.error(e);
+      debug('error adding stream');
+      debug(e);
       onFailure();
       return;
     }
@@ -17121,16 +17389,16 @@ RTCMediaHandler.prototype = {
     this.peerConnection = new WebRTC.RTCPeerConnection({'iceServers': servers}, constraints);
 
     this.peerConnection.onaddstream = function(e) {
-      self.logger.debug('stream added: '+ e.stream.id);
+      debug('stream added: '+ e.stream.id);
     };
 
     this.peerConnection.onremovestream = function(e) {
-      self.logger.debug('stream removed: '+ e.stream.id);
+      debug('stream removed: '+ e.stream.id);
     };
 
     this.peerConnection.onicecandidate = function(e) {
       if (e.candidate) {
-        self.logger.debug('ICE candidate received: '+ e.candidate.candidate);
+        debug('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
         setTimeout(function() {
           self.onIceCompleted();
@@ -17139,7 +17407,7 @@ RTCMediaHandler.prototype = {
     };
 
     this.peerConnection.oniceconnectionstatechange = function() {
-      self.logger.debug('ICE connection state changed to "'+ this.iceConnectionState +'"');
+      debug('ICE connection state changed to "'+ this.iceConnectionState +'"');
 
       if (this.iceConnectionState === 'failed') {
         self.session.terminate({
@@ -17152,12 +17420,12 @@ RTCMediaHandler.prototype = {
 
 
     this.peerConnection.onstatechange = function() {
-      self.logger.debug('PeerConnection state changed to "'+ this.readyState +'"');
+      debug('PeerConnection state changed to "'+ this.readyState +'"');
     };
   },
 
   close: function() {
-    this.logger.debug('closing PeerConnection');
+    debug('closing PeerConnection');
     if(this.peerConnection) {
       this.peerConnection.close();
 
@@ -17175,17 +17443,17 @@ RTCMediaHandler.prototype = {
   getUserMedia: function(onSuccess, onFailure, constraints) {
     var self = this;
 
-    this.logger.debug('requesting access to local media');
+    debug('requesting access to local media');
 
     WebRTC.getUserMedia(constraints,
       function(stream) {
-        self.logger.debug('got local media stream');
+        debug('got local media stream');
         self.localMedia = stream;
         onSuccess(stream);
       },
       function(e) {
-        self.logger.error('unable to get user media');
-        self.logger.error(e);
+        debug('unable to get user media');
+        debug(e);
         onFailure();
       }
     );
@@ -17207,7 +17475,7 @@ RTCMediaHandler.prototype = {
   }
 };
 
-},{"../Constants":7,"../WebRTC":33}],23:[function(require,module,exports){
+},{"../Constants":10,"../WebRTC":34,"debug":1}],24:[function(require,module,exports){
 module.exports = Request;
 
 /**
@@ -17229,7 +17497,6 @@ function Request(session) {
 
   this.owner = session;
 
-  this.logger = session.ua.getLogger('jssip.rtcsession.request', session.id);
   this.initEvents(events);
 }
 
@@ -17332,13 +17599,14 @@ Request.prototype.onDialogError = function(response) {
   this.owner.onDialogError(response);
 };
 
-},{"../Constants":7,"../EventEmitter":11,"../Exceptions":12,"../RTCSession":20,"../Utils":32}],24:[function(require,module,exports){
+},{"../Constants":10,"../EventEmitter":14,"../Exceptions":15,"../RTCSession":21,"../Utils":33}],25:[function(require,module,exports){
 module.exports = Registrator;
 
 
 /**
  * Dependecies
  */
+var debug = require('debug')('JsSIP:Registrator');
 var Utils = require('./Utils');
 var JsSIP_C = require('./Constants');
 var SIPMessage = require('./SIPMessage');
@@ -17347,8 +17615,6 @@ var RequestSender = require('./RequestSender');
 
 function Registrator(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
-
-  this.logger = ua.getLogger('jssip.registrator');
 
   this.ua = ua;
   this.transport = transport;
@@ -17455,7 +17721,7 @@ Registrator.prototype = {
 
           // Search the Contact pointing to us and update the expires value accordingly.
           if (!contacts) {
-            this.logger.warn('no Contact header in response to REGISTER, response ignored');
+            debug('no Contact header in response to REGISTER, response ignored');
             break;
           }
 
@@ -17470,7 +17736,7 @@ Registrator.prototype = {
           }
 
           if (!contact) {
-            this.logger.warn('no Contact header pointing to us, response ignored');
+            debug('no Contact header pointing to us, response ignored');
             break;
           }
 
@@ -17508,7 +17774,7 @@ Registrator.prototype = {
             // Attempt the registration again immediately
             this.register();
           } else { //This response MUST contain a Min-Expires header field
-            this.logger.warn('423 response received for REGISTER without Min-Expires');
+            debug('423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
           }
           break;
@@ -17533,7 +17799,7 @@ Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      this.logger.debug('already unregistered');
+      debug('already unregistered');
       return;
     }
 
@@ -17641,13 +17907,14 @@ Registrator.prototype = {
 };
 
 
-},{"./Constants":7,"./RequestSender":25,"./SIPMessage":26,"./Utils":32}],25:[function(require,module,exports){
+},{"./Constants":10,"./RequestSender":26,"./SIPMessage":27,"./Utils":33,"debug":1}],26:[function(require,module,exports){
 module.exports = RequestSender;
 
 
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:RequestSender');
 var JsSIP_C = require('./Constants');
 var UA = require('./UA');
 var DigestAuthentication = require('./DigestAuthentication');
@@ -17655,7 +17922,6 @@ var Transactions = require('./Transactions');
 
 
 function RequestSender(applicant, ua) {
-  this.logger = ua.getLogger('jssip.requestsender');
   this.ua = ua;
   this.applicant = applicant;
   this.method = applicant.request.method;
@@ -17730,7 +17996,7 @@ RequestSender.prototype = {
 
       // Verify it seems a valid challenge.
       if (! challenge) {
-        this.logger.warn(response.status_code + ' with wrong or missing challenge, cannot authenticate');
+        debug(response.status_code + ' with wrong or missing challenge, cannot authenticate');
         this.applicant.receiveResponse(response);
         return;
       }
@@ -17772,7 +18038,7 @@ RequestSender.prototype = {
   }
 };
 
-},{"./Constants":7,"./DigestAuthentication":10,"./Transactions":28,"./UA":30}],26:[function(require,module,exports){
+},{"./Constants":10,"./DigestAuthentication":13,"./Transactions":29,"./UA":31,"debug":1}],27:[function(require,module,exports){
 module.exports = {
   OutgoingRequest: OutgoingRequest,
   IncomingRequest: IncomingRequest,
@@ -17783,6 +18049,7 @@ module.exports = {
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:SIPMessage');
 var JsSIP_C = require('./Constants');
 var Utils = require('./Utils');
 var NameAddrHeader = require('./NameAddrHeader');
@@ -17813,7 +18080,6 @@ function OutgoingRequest(method, ruri, ua, params, extraHeaders, body) {
     return null;
   }
 
-  this.logger = ua.getLogger('jssip.sipmessage');
   this.ua = ua;
   this.headers = {};
   this.method = method;
@@ -18096,10 +18362,10 @@ IncomingMessage.prototype = {
     idx = idx || 0;
 
     if(!this.headers[name]) {
-      this.logger.log('header "' + name + '" not present');
+      debug('header "' + name + '" not present');
       return;
     } else if(idx >= this.headers[name].length) {
-      this.logger.log('not so many "' + name + '" headers present');
+      debug('not so many "' + name + '" headers present');
       return;
     }
 
@@ -18115,7 +18381,7 @@ IncomingMessage.prototype = {
 
     if(parsed === -1) {
       this.headers[name].splice(idx, 1); //delete from headers
-      this.logger.warn('error parsing "' + name + '" header field with value "' + value + '"');
+      debug('error parsing "' + name + '" header field with value "' + value + '"');
       return;
     } else {
       header.parsed = parsed;
@@ -18153,7 +18419,6 @@ IncomingMessage.prototype = {
 
 
 function IncomingRequest(ua) {
-  this.logger = ua.getLogger('jssip.sipmessage');
   this.ua = ua;
   this.headers = {};
   this.ruri = null;
@@ -18308,8 +18573,7 @@ IncomingRequest.prototype.reply_sl = function(code, reason) {
 };
 
 
-function IncomingResponse(ua) {
-  this.logger = ua.getLogger('jssip.sipmessage');
+function IncomingResponse() {
   this.headers = {};
   this.status_code = null;
   this.reason_phrase = null;
@@ -18317,7 +18581,7 @@ function IncomingResponse(ua) {
 
 IncomingResponse.prototype = new IncomingMessage();
 
-},{"./Constants":7,"./Grammar":13,"./NameAddrHeader":18,"./Utils":32}],27:[function(require,module,exports){
+},{"./Constants":10,"./Grammar":16,"./NameAddrHeader":19,"./Utils":33,"debug":1}],28:[function(require,module,exports){
 var T1 = 500,
   T2 = 4000,
   T4 = 5000;
@@ -18342,7 +18606,7 @@ var Timers = {
 
 module.exports = Timers;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = {
   C: null,
   NonInviteClientTransaction: NonInviteClientTransaction,
@@ -18380,6 +18644,11 @@ module.exports.C = C;
 /**
  * Dependencies.
  */
+var debugnict = require('debug')('JsSIP:NonInviteClientTransaction');
+var debugict = require('debug')('JsSIP:InviteClientTransaction');
+var debugact = require('debug')('JsSIP:AckClientTransaction');
+var debugnist = require('debug')('JsSIP:NonInviteServerTransaction');
+var debugist = require('debug')('JsSIP:InviteServerTransaction');
 var JsSIP_C = require('./Constants');
 var EventEmitter = require('./EventEmitter');
 var Timers = require('./Timers');
@@ -18395,8 +18664,6 @@ function NonInviteClientTransaction(request_sender, request, transport) {
   this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
   this.request_sender = request_sender;
   this.request = request;
-
-  this.logger = request_sender.ua.getLogger('jssip.transaction.nict', this.id);
 
   if (request_sender.ua.configuration.hack_via_tcp) {
     via_transport = 'TCP';
@@ -18438,7 +18705,7 @@ NonInviteClientTransaction.prototype.send = function() {
 };
 
 NonInviteClientTransaction.prototype.onTransportError = function() {
-  this.logger.debug('transport error occurred, deleting non-INVITE client transaction ' + this.id);
+  debugnict('transport error occurred, deleting transaction ' + this.id);
   clearTimeout(this.F);
   clearTimeout(this.K);
   this.stateChanged(C.STATUS_TERMINATED);
@@ -18447,7 +18714,7 @@ NonInviteClientTransaction.prototype.onTransportError = function() {
 };
 
 NonInviteClientTransaction.prototype.timer_F = function() {
-  this.logger.debug('Timer F expired for non-INVITE client transaction ' + this.id);
+  debugnict('Timer F expired for transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
   this.request_sender.ua.destroyTransaction(this);
   this.request_sender.onRequestTimeout();
@@ -18505,8 +18772,6 @@ function InviteClientTransaction(request_sender, request, transport) {
   this.request_sender = request_sender;
   this.request = request;
 
-  this.logger = request_sender.ua.getLogger('jssip.transaction.ict', this.id);
-
   if (request_sender.ua.configuration.hack_via_tcp) {
     via_transport = 'TCP';
   }
@@ -18554,7 +18819,7 @@ InviteClientTransaction.prototype.send = function() {
 };
 
 InviteClientTransaction.prototype.onTransportError = function() {
-  this.logger.debug('transport error occurred, deleting INVITE client transaction ' + this.id);
+  debugict('transport error occurred, deleting transaction ' + this.id);
   clearTimeout(this.B);
   clearTimeout(this.D);
   clearTimeout(this.M);
@@ -18568,7 +18833,7 @@ InviteClientTransaction.prototype.onTransportError = function() {
 
 // RFC 6026 7.2
 InviteClientTransaction.prototype.timer_M = function() {
-  this.logger.debug('Timer M expired for INVITE client transaction ' + this.id);
+  debugict('Timer M expired for transaction ' + this.id);
 
   if(this.state === C.STATUS_ACCEPTED) {
     clearTimeout(this.B);
@@ -18579,7 +18844,7 @@ InviteClientTransaction.prototype.timer_M = function() {
 
 // RFC 3261 17.1.1
 InviteClientTransaction.prototype.timer_B = function() {
-  this.logger.debug('Timer B expired for INVITE client transaction ' + this.id);
+  debugict('Timer B expired for transaction ' + this.id);
   if(this.state === C.STATUS_CALLING) {
     this.stateChanged(C.STATUS_TERMINATED);
     this.request_sender.ua.destroyTransaction(this);
@@ -18588,7 +18853,7 @@ InviteClientTransaction.prototype.timer_B = function() {
 };
 
 InviteClientTransaction.prototype.timer_D = function() {
-  this.logger.debug('Timer D expired for INVITE client transaction ' + this.id);
+  debugict('Timer D expired for transaction ' + this.id);
   clearTimeout(this.B);
   this.stateChanged(C.STATUS_TERMINATED);
   this.request_sender.ua.destroyTransaction(this);
@@ -18698,8 +18963,6 @@ function AckClientTransaction(request_sender, request, transport) {
   this.request_sender = request_sender;
   this.request = request;
 
-  this.logger = request_sender.ua.getLogger('jssip.transaction.nict', this.id);
-
   if (request_sender.ua.configuration.hack_via_tcp) {
     via_transport = 'TCP';
   }
@@ -18725,7 +18988,7 @@ AckClientTransaction.prototype.send = function() {
 };
 
 AckClientTransaction.prototype.onTransportError = function() {
-  this.logger.debug('transport error occurred, for an ACK client transaction ' + this.id);
+  debugact('transport error occurred for transaction ' + this.id);
   this.request_sender.onTransportError();
 };
 
@@ -18740,8 +19003,6 @@ function NonInviteServerTransaction(request, ua) {
   this.ua = ua;
   this.last_response = '';
   request.server_transaction = this;
-
-  this.logger = ua.getLogger('jssip.transaction.nist', this.id);
 
   this.state = C.STATUS_TRYING;
 
@@ -18758,7 +19019,7 @@ NonInviteServerTransaction.prototype.stateChanged = function(state) {
 };
 
 NonInviteServerTransaction.prototype.timer_J = function() {
-  this.logger.debug('Timer J expired for non-INVITE server transaction ' + this.id);
+  debugnist('Timer J expired for transaction ' + this.id);
   this.stateChanged(C.STATUS_TERMINATED);
   this.ua.destroyTransaction(this);
 };
@@ -18767,7 +19028,7 @@ NonInviteServerTransaction.prototype.onTransportError = function() {
   if (!this.transportError) {
     this.transportError = true;
 
-    this.logger.debug('transport error occurred, deleting non-INVITE server transaction ' + this.id);
+    debugnist('transport error occurred, deleting transaction ' + this.id);
 
     clearTimeout(this.J);
     this.stateChanged(C.STATUS_TERMINATED);
@@ -18839,8 +19100,6 @@ function InviteServerTransaction(request, ua) {
   this.last_response = '';
   request.server_transaction = this;
 
-  this.logger = ua.getLogger('jssip.transaction.ist', this.id);
-
   this.state = C.STATUS_PROCEEDING;
 
   ua.newTransaction(this);
@@ -18860,10 +19119,10 @@ InviteServerTransaction.prototype.stateChanged = function(state) {
 };
 
 InviteServerTransaction.prototype.timer_H = function() {
-  this.logger.debug('Timer H expired for INVITE server transaction ' + this.id);
+  debugist('Timer H expired for transaction ' + this.id);
 
   if(this.state === C.STATUS_COMPLETED) {
-    this.logger.log('transactions', 'ACK for INVITE server transaction was never received, call will be terminated');
+    debugist('ACK not received, dialog will be terminated');
   }
 
   this.stateChanged(C.STATUS_TERMINATED);
@@ -18877,7 +19136,7 @@ InviteServerTransaction.prototype.timer_I = function() {
 
 // RFC 6026 7.1
 InviteServerTransaction.prototype.timer_L = function() {
-  this.logger.debug('Timer L expired for INVITE server transaction ' + this.id);
+  debugist('Timer L expired for transaction ' + this.id);
 
   if(this.state === C.STATUS_ACCEPTED) {
     this.stateChanged(C.STATUS_TERMINATED);
@@ -18889,7 +19148,7 @@ InviteServerTransaction.prototype.onTransportError = function() {
   if (!this.transportError) {
     this.transportError = true;
 
-    this.logger.debug('transport error occurred, deleting INVITE server transaction ' + this.id);
+    debugist('transport error occurred, deleting transaction ' + this.id);
 
     if (this.resendProvisionalTimer !== null) {
       clearInterval(this.resendProvisionalTimer);
@@ -19074,7 +19333,7 @@ function checkTransaction(ua, request) {
   }
 }
 
-},{"./Constants":7,"./EventEmitter":11,"./Timers":27}],29:[function(require,module,exports){
+},{"./Constants":10,"./EventEmitter":14,"./Timers":28,"debug":1}],30:[function(require,module,exports){
 module.exports = Transport;
 
 
@@ -19095,6 +19354,7 @@ Transport.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:Transport');
 var JsSIP_C = require('./Constants');
 var Parser = require('./Parser');
 var UA = require('./UA');
@@ -19105,7 +19365,6 @@ var WebSocket = require('ws');  // jshint ignore:line
 
 
 function Transport(ua, server) {
-  this.logger = ua.getLogger('jssip.transport');
   this.ua = ua;
   this.ws = null;
   this.server = server;
@@ -19131,7 +19390,7 @@ Transport.prototype = {
     var transport = this;
 
     if(this.ws && (this.ws.readyState === this.ws.OPEN || this.ws.readyState === this.ws.CONNECTING)) {
-      this.logger.log('WebSocket ' + this.server.ws_uri + ' is already connected');
+      debug('WebSocket ' + this.server.ws_uri + ' is already connected');
       return false;
     }
 
@@ -19139,7 +19398,7 @@ Transport.prototype = {
       this.ws.close();
     }
 
-    this.logger.log('connecting to WebSocket ' + this.server.ws_uri);
+    debug('connecting to WebSocket ' + this.server.ws_uri);
     this.ua.onTransportConnecting(this,
       (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
 
@@ -19163,7 +19422,7 @@ Transport.prototype = {
         transport.onError(e);
       };
     } catch(e) {
-      this.logger.warn('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
+      debug('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
       this.lastTransportError.code = null;
       this.lastTransportError.reason = e.message;
       this.ua.onTransportError(this);
@@ -19180,7 +19439,7 @@ Transport.prototype = {
       // TODO: should make this.reconnectTimer = null here?
 
       this.closed = true;
-      this.logger.debug('closing WebSocket ' + this.server.ws_uri);
+      debug('closing WebSocket ' + this.server.ws_uri);
       this.ws.close();
     }
 
@@ -19204,12 +19463,12 @@ Transport.prototype = {
 
     if(this.ws && this.ws.readyState === this.ws.OPEN) {
       if (this.ua.configuration.trace_sip === true) {
-        this.logger.debug('sending WebSocket message:\n\n' + message + '\n');
+        debug('sending WebSocket message:\n\n' + message + '\n');
       }
       this.ws.send(message);
       return true;
     } else {
-      this.logger.warn('unable to send message, WebSocket is not open');
+      debug('unable to send message, WebSocket is not open');
       return false;
     }
   },
@@ -19219,7 +19478,7 @@ Transport.prototype = {
   onOpen: function() {
     this.connected = true;
 
-    this.logger.debug('WebSocket ' + this.server.ws_uri + ' connected');
+    debug('WebSocket ' + this.server.ws_uri + ' connected');
     // Clear reconnectTimer since we are not disconnected
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
@@ -19239,10 +19498,10 @@ Transport.prototype = {
     this.connected = false;
     this.lastTransportError.code = e.code;
     this.lastTransportError.reason = e.reason;
-    this.logger.debug('WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
+    debug('WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
 
     if(e.wasClean === false) {
-      this.logger.warn('WebSocket abrupt disconnection');
+      debug('WebSocket abrupt disconnection');
     }
     // Transport was connected
     if(connected_before === true) {
@@ -19271,7 +19530,7 @@ Transport.prototype = {
     // CRLF Keep Alive response from server. Ignore it.
     if(data === '\r\n') {
       if (this.ua.configuration.trace_sip === true) {
-        this.logger.debug('received WebSocket message with CRLF Keep Alive response');
+        debug('received WebSocket message with CRLF Keep Alive response');
       }
       return;
     }
@@ -19281,19 +19540,19 @@ Transport.prototype = {
       try {
         data = String.fromCharCode.apply(null, new Uint8Array(data));
       } catch(evt) {
-        this.logger.warn('received WebSocket binary message failed to be converted into string, message discarded');
+        debug('received WebSocket binary message failed to be converted into string, message discarded');
         return;
       }
 
       if (this.ua.configuration.trace_sip === true) {
-        this.logger.debug('received WebSocket binary message:\n\n' + data + '\n');
+        debug('received WebSocket binary message:\n\n' + data + '\n');
       }
     }
 
     // WebSocket text message.
     else {
       if (this.ua.configuration.trace_sip === true) {
-        this.logger.debug('received WebSocket text message:\n\n' + data + '\n');
+        debug('received WebSocket text message:\n\n' + data + '\n');
       }
     }
 
@@ -19341,7 +19600,7 @@ Transport.prototype = {
   },
 
   onError: function(e) {
-    this.logger.warn('WebSocket connection error: ' + e);
+    debug('WebSocket connection error: ' + e);
   },
 
   /**
@@ -19353,10 +19612,10 @@ Transport.prototype = {
     this.reconnection_attempts += 1;
 
     if(this.reconnection_attempts > this.ua.configuration.ws_server_max_reconnection) {
-      this.logger.warn('maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
+      debug('maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
       this.ua.onTransportError(this);
     } else {
-      this.logger.log('trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
+      debug('trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
 
       this.reconnectTimer = setTimeout(function() {
         transport.connect();
@@ -19366,7 +19625,7 @@ Transport.prototype = {
   }
 };
 
-},{"./Constants":7,"./Parser":19,"./SIPMessage":26,"./UA":30,"./sanityCheck":34,"ws":5}],30:[function(require,module,exports){
+},{"./Constants":10,"./Parser":20,"./SIPMessage":27,"./UA":31,"./sanityCheck":35,"debug":1,"ws":8}],31:[function(require,module,exports){
 module.exports = UA;
 
 
@@ -19391,8 +19650,8 @@ UA.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:UA');
 var JsSIP_C = require('./Constants');
-var LoggerFactory = require('./LoggerFactory');
 var EventEmitter = require('./EventEmitter');
 var Registrator = require('./Registrator');
 var RTCSession = require('./RTCSession');
@@ -19428,9 +19687,6 @@ function UA(configuration) {
     'newRTCSession',
     'newMessage'
   ];
-
-  this.log = new LoggerFactory();
-  this.logger = this.getLogger('jssip.ua');
 
   this.cache = {
     credentials: {}
@@ -19509,21 +19765,6 @@ function UA(configuration) {
     throw new TypeError('Not enough arguments');
   }
 
-  // Apply log configuration if present
-  if (configuration.log) {
-    if (configuration.log.hasOwnProperty('builtinEnabled')) {
-      this.log.builtinEnabled = configuration.log.builtinEnabled;
-    }
-
-    if (configuration.log.hasOwnProperty('level')) {
-      this.log.level = configuration.log.level;
-    }
-
-    if (configuration.log.hasOwnProperty('connector')) {
-      this.log.connector = configuration.log.connector;
-    }
-  }
-
   try {
     this.loadConfig(configuration);
     this.initEvents(events);
@@ -19552,20 +19793,20 @@ UA.prototype = new EventEmitter();
 UA.prototype.start = function() {
   var server;
 
-  this.logger.debug('user requested startup...');
+  debug('user requested startup');
 
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     this.transport = new Transport(this, server);
     this.transport.connect();
   } else if(this.status === C.STATUS_USER_CLOSED) {
-    this.logger.log('resuming');
+    debug('restarting UA');
     this.status = C.STATUS_READY;
     this.transport.connect();
   } else if (this.status === C.STATUS_READY) {
-    this.logger.log('UA is in READY status, not resuming');
+    debug('UA is in READY status, not restarted');
   } else {
-    this.logger.error('Connection is down. Auto-Recovery system is trying to connect');
+    debug('ERROR: connection is down, Auto-Recovery system is trying to reconnect');
   }
 
   // Set dynamic configuration.
@@ -19661,13 +19902,13 @@ UA.prototype.stop = function() {
   var num_sessions;
   var ua = this;
 
-  this.logger.log('user requested closure...');
+  debug('user requested closure');
 
   // Remove dynamic settings.
   this.dynConfiguration = {};
 
   if(this.status === C.STATUS_USER_CLOSED) {
-    this.logger.warn('UA already closed');
+    debug('UA already closed');
     return;
   }
 
@@ -19675,7 +19916,6 @@ UA.prototype.stop = function() {
   clearTimeout(this.transportRecoveryTimer);
 
   // Close registrator
-  this.logger.debug('closing registrator');
   this._registrator.close();
 
   // If there are session wait a bit so CANCEL/BYE can be sent and their responses received.
@@ -19683,7 +19923,7 @@ UA.prototype.stop = function() {
 
   // Run  _terminate_ on every Session
   for(session in this.sessions) {
-    this.logger.debug('closing session ' + session);
+    debug('closing session ' + session);
     this.sessions[session].terminate();
   }
 
@@ -19738,10 +19978,6 @@ UA.prototype.getCredentials = function(request) {
   return credentials;
 };
 
-UA.prototype.getLogger = function(category, label) {
-  return this.log.getLogger(category, label);
-};
-
 
 //==========================
 // Event Handlers
@@ -19756,7 +19992,7 @@ UA.prototype.onTransportClosed = function(transport) {
   client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = Transport.C.STATUS_DISCONNECTED;
-  this.logger.debug('connection state set to '+ Transport.C.STATUS_DISCONNECTED);
+  debug('connection state set to '+ Transport.C.STATUS_DISCONNECTED);
 
   length = client_transactions.length;
   for (type = 0; type < length; type++) {
@@ -19778,7 +20014,7 @@ UA.prototype.onTransportClosed = function(transport) {
 UA.prototype.onTransportError = function(transport) {
   var server;
 
-  this.logger.log('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ Transport.C.STATUS_ERROR);
+  debug('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ Transport.C.STATUS_ERROR);
 
   // Close sessions.
   // Mark this transport as 'down' and try the next one
@@ -19821,7 +20057,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = Transport.C.STATUS_READY;
-  this.logger.debug('connection state set to '+ Transport.C.STATUS_READY);
+  debug('connection state set to '+ Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -19886,7 +20122,7 @@ UA.prototype.receiveRequest = function(request) {
 
   // Check that request URI points to us
   if(request.ruri.user !== this.configuration.uri.user && request.ruri.user !== this.contact.uri.user) {
-    this.logger.warn('Request-URI does not point to us');
+    debug('Request-URI does not point to us');
     if (request.method !== JsSIP_C.ACK) {
       request.reply_sl(404);
     }
@@ -19940,7 +20176,7 @@ UA.prototype.receiveRequest = function(request) {
           session = new RTCSession(this);
           session.init_incoming(request);
         } else {
-          this.logger.warn('INVITE received but WebRTC is not supported');
+          debug('INVITE received but WebRTC is not supported');
           request.reply(488);
         }
         break;
@@ -19953,7 +20189,7 @@ UA.prototype.receiveRequest = function(request) {
         if(session) {
           session.receiveRequest(request);
         } else {
-          this.logger.warn('received CANCEL request for a non existent session');
+          debug('received CANCEL request for a non existent session');
         }
         break;
       case JsSIP_C.ACK:
@@ -19978,7 +20214,7 @@ UA.prototype.receiveRequest = function(request) {
       if(session) {
         session.receiveRequest(request);
       } else {
-        this.logger.warn('received NOTIFY request for a non existent session');
+        debug('received NOTIFY request for a non existent subscription');
         request.reply(481, 'Subscription does not exist');
       }
     }
@@ -20097,12 +20333,12 @@ UA.prototype.recoverTransport = function(ua) {
   nextRetry = k * ua.configuration.connection_recovery_min_interval;
 
   if (nextRetry > ua.configuration.connection_recovery_max_interval) {
-    this.logger.log('time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
+    debug('time for next connection attempt exceeds connection_recovery_max_interval, resetting counter');
     nextRetry = ua.configuration.connection_recovery_min_interval;
     count = 0;
   }
 
-  this.logger.log('next connection attempt in '+ nextRetry +' seconds');
+  debug('next connection attempt in '+ nextRetry +' seconds');
 
   this.transportRecoveryTimer = setTimeout(function() {
     ua.transportRecoverAttempts = count + 1;
@@ -20287,18 +20523,18 @@ UA.prototype.loadConfig = function(configuration) {
     UA.configuration_skeleton[parameter].value = '';
   }
 
-  this.logger.debug('configuration parameters after validation:');
+  debug('configuration parameters after validation:');
   for(parameter in settings) {
     switch(parameter) {
       case 'uri':
       case 'registrar_server':
-        this.logger.debug('· ' + parameter + ': ' + settings[parameter]);
+        debug('- ' + parameter + ': ' + settings[parameter]);
         break;
       case 'password':
-        this.logger.debug('· ' + parameter + ': ' + 'NOT SHOWN');
+        debug('- ' + parameter + ': ' + 'NOT SHOWN');
         break;
       default:
-        this.logger.debug('· ' + parameter + ': ' + JSON.stringify(settings[parameter]));
+        debug('- ' + parameter + ': ' + JSON.stringify(settings[parameter]));
     }
   }
 
@@ -20416,21 +20652,21 @@ UA.configuration_check = {
       length = ws_servers.length;
       for (idx = 0; idx < length; idx++) {
         if (!ws_servers[idx].ws_uri) {
-          this.logger.error('missing "ws_uri" attribute in ws_servers parameter');
+          debug('ERROR: missing "ws_uri" attribute in ws_servers parameter');
           return;
         }
         if (ws_servers[idx].weight && !Number(ws_servers[idx].weight)) {
-          this.logger.error('"weight" attribute in ws_servers parameter must be a Number');
+          debug('ERROR: "weight" attribute in ws_servers parameter must be a Number');
           return;
         }
 
         url = Grammar.parse(ws_servers[idx].ws_uri, 'absoluteURI');
 
         if(url === -1) {
-          this.logger.error('invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
+          debug('ERROR: invalid "ws_uri" attribute in ws_servers parameter: ' + ws_servers[idx].ws_uri);
           return;
         } else if(url.scheme !== 'wss' && url.scheme !== 'ws') {
-          this.logger.error('invalid URI scheme in ws_servers parameter: ' + url.scheme);
+          debug('ERROR: invalid URI scheme in ws_servers parameter: ' + url.scheme);
           return;
         } else {
           ws_servers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=ws;lr>';
@@ -20652,7 +20888,7 @@ UA.configuration_check = {
   }
 };
 
-},{"./Constants":7,"./EventEmitter":11,"./Exceptions":12,"./Grammar":13,"./LoggerFactory":16,"./Message":17,"./RTCSession":20,"./Registrator":24,"./Transactions":28,"./Transport":29,"./URI":31,"./Utils":32,"./WebRTC":33}],31:[function(require,module,exports){
+},{"./Constants":10,"./EventEmitter":14,"./Exceptions":15,"./Grammar":16,"./Message":18,"./RTCSession":21,"./Registrator":25,"./Transactions":29,"./Transport":30,"./URI":32,"./Utils":33,"./WebRTC":34,"debug":1}],32:[function(require,module,exports){
 module.exports = URI;
 
 
@@ -20864,7 +21100,7 @@ URI.parse = function(uri) {
   }
 };
 
-},{"./Constants":7,"./Grammar":13,"./Utils":32}],32:[function(require,module,exports){
+},{"./Constants":10,"./Grammar":16,"./Utils":33}],33:[function(require,module,exports){
 var Utils = {};
 
 module.exports = Utils;
@@ -21261,7 +21497,7 @@ Utils.calculateMD5 = function(string) {
   return temp.toLowerCase();
 };
 
-},{"./Constants":7,"./Grammar":13,"./URI":31}],33:[function(require,module,exports){
+},{"./Constants":10,"./Grammar":16,"./URI":32}],34:[function(require,module,exports){
 var WebRTC = {};
 
 module.exports = WebRTC;
@@ -21320,20 +21556,20 @@ else {
   WebRTC.isSupported = false;
 }
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = sanityCheck;
 
 
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:sanityCheck');
 var JsSIP_C = require('./Constants');
 var SIPMessage = require('./SIPMessage');
 var Utils = require('./Utils');
 
 
-var logger,
-  message, ua, transport,
+var message, ua, transport,
   requests = [],
   responses = [],
   all = [];
@@ -21356,8 +21592,6 @@ function sanityCheck(m, u, t) {
   message = m;
   ua = u;
   transport = t;
-
-  logger = ua.getLogger('jssip.sanitycheck');
 
   len = all.length;
   while(len--) {
@@ -21492,7 +21726,7 @@ function rfc3261_8_2_2_2() {
 // Sanity Check functions for responses
 function rfc3261_8_1_3_3() {
   if(message.getHeaders('via').length > 1) {
-    logger.warn('More than one Via header field present in the response. Dropping the response');
+    debug('more than one Via header field present in the response, dropping the response');
     return false;
   }
 }
@@ -21503,7 +21737,7 @@ function rfc3261_18_3_response() {
     contentLength = message.getHeader('content-length');
 
     if(len < contentLength) {
-      logger.warn('Message body length is lower than the value in Content-Length header field. Dropping the response');
+      debug('message body length is lower than the value in Content-Length header field, dropping the response');
       return false;
     }
 }
@@ -21516,7 +21750,7 @@ function minimumHeaders() {
 
   while(idx--) {
     if(!message.hasHeader(mandatoryHeaders[idx])) {
-      logger.warn('Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
+      debug('missing mandatory header field : ' + mandatoryHeaders[idx] + ', dropping the response');
       return false;
     }
   }
@@ -21549,5 +21783,5 @@ function reply(status_code) {
   transport.send(response);
 }
 
-},{"./Constants":7,"./SIPMessage":26,"./Utils":32}]},{},[14])(14)
+},{"./Constants":10,"./SIPMessage":27,"./Utils":33,"debug":1}]},{},[17])(17)
 });

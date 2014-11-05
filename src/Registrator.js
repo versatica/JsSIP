@@ -4,6 +4,7 @@ module.exports = Registrator;
 /**
  * Dependecies
  */
+var debug = require('debug')('JsSIP:Registrator');
 var Utils = require('./Utils');
 var JsSIP_C = require('./Constants');
 var SIPMessage = require('./SIPMessage');
@@ -12,8 +13,6 @@ var RequestSender = require('./RequestSender');
 
 function Registrator(ua, transport) {
   var reg_id=1; //Force reg_id to 1.
-
-  this.logger = ua.getLogger('jssip.registrator');
 
   this.ua = ua;
   this.transport = transport;
@@ -120,7 +119,7 @@ Registrator.prototype = {
 
           // Search the Contact pointing to us and update the expires value accordingly.
           if (!contacts) {
-            this.logger.warn('no Contact header in response to REGISTER, response ignored');
+            debug('no Contact header in response to REGISTER, response ignored');
             break;
           }
 
@@ -135,7 +134,7 @@ Registrator.prototype = {
           }
 
           if (!contact) {
-            this.logger.warn('no Contact header pointing to us, response ignored');
+            debug('no Contact header pointing to us, response ignored');
             break;
           }
 
@@ -173,7 +172,7 @@ Registrator.prototype = {
             // Attempt the registration again immediately
             this.register();
           } else { //This response MUST contain a Min-Expires header field
-            this.logger.warn('423 response received for REGISTER without Min-Expires');
+            debug('423 response received for REGISTER without Min-Expires');
             this.registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
           }
           break;
@@ -198,7 +197,7 @@ Registrator.prototype = {
     var extraHeaders;
 
     if(!this.registered) {
-      this.logger.debug('already unregistered');
+      debug('already unregistered');
       return;
     }
 

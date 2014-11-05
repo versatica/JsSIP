@@ -1,15 +1,6 @@
 module.exports = Message;
 
 
-function Message(ua) {
-  this.ua = ua;
-  this.logger = ua.getLogger('jssip.message');
-
-  // Custom message empty object for high level use
-  this.data = {};
-}
-
-
 /**
  * Dependencies.
  */
@@ -20,6 +11,14 @@ var Utils = require('./Utils');
 var RequestSender = require('./RequestSender');
 var Transactions = require('./Transactions');
 var Exceptions = require('./Exceptions');
+
+
+function Message(ua) {
+  this.ua = ua;
+
+  // Custom message empty object for high level use
+  this.data = {};
+}
 
 
 Message.prototype = new EventEmitter();

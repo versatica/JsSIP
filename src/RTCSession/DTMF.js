@@ -18,6 +18,7 @@ DTMF.C = C;
 /**
  * Dependencies.
  */
+var debug = require('debug')('JsSIP:RTCSession:DTMF');
 var JsSIP_C = require('../Constants');
 var EventEmitter = require('../EventEmitter');
 var Exceptions = require('../Exceptions');
@@ -31,7 +32,6 @@ function DTMF(session) {
   'failed'
   ];
 
-  this.logger = session.ua.getLogger('jssip.rtcsession.dtmf', session.id);
   this.owner = session;
   this.direction = null;
   this.tone = null;
@@ -179,7 +179,7 @@ DTMF.prototype.init_incoming = function(request) {
   }
 
   if (!this.tone || !this.duration) {
-    this.logger.warn('invalid INFO DTMF received, discarded');
+    debug('invalid INFO DTMF received, discarded');
   } else {
     this.owner.emit('newDTMF', this.owner, {
       originator: 'remote',
