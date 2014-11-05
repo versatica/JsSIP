@@ -19462,9 +19462,7 @@ Transport.prototype = {
     var message = msg.toString();
 
     if(this.ws && this.ws.readyState === this.ws.OPEN) {
-      if (this.ua.configuration.trace_sip === true) {
-        debug('sending WebSocket message:\n\n' + message + '\n');
-      }
+      debug('sending WebSocket message:\n\n' + message + '\n');
       this.ws.send(message);
       return true;
     } else {
@@ -19529,9 +19527,7 @@ Transport.prototype = {
 
     // CRLF Keep Alive response from server. Ignore it.
     if(data === '\r\n') {
-      if (this.ua.configuration.trace_sip === true) {
-        debug('received WebSocket message with CRLF Keep Alive response');
-      }
+      debug('received WebSocket message with CRLF Keep Alive response');
       return;
     }
 
@@ -19544,16 +19540,12 @@ Transport.prototype = {
         return;
       }
 
-      if (this.ua.configuration.trace_sip === true) {
-        debug('received WebSocket binary message:\n\n' + data + '\n');
-      }
+      debug('received WebSocket binary message:\n\n' + data + '\n');
     }
 
     // WebSocket text message.
     else {
-      if (this.ua.configuration.trace_sip === true) {
-        debug('received WebSocket text message:\n\n' + data + '\n');
-      }
+      debug('received WebSocket text message:\n\n' + data + '\n');
     }
 
     message = Parser.parseMessage(data, this.ua);
@@ -20378,9 +20370,6 @@ UA.prototype.loadConfig = function(configuration) {
     stun_servers: ['stun:stun.l.google.com:19302'],
     turn_servers: [],
 
-    // Logging parameters
-    trace_sip: false,
-
     // Hacks
     hack_via_tcp: false,
     hack_via_ws: false,
@@ -20573,7 +20562,6 @@ UA.configuration_skeleton = (function() {
     "register_expires", // 600 seconds
     "registrar_server",
     "stun_servers",
-    "trace_sip",
     "turn_servers",
     "use_preloaded_route",
 
@@ -20825,12 +20813,6 @@ UA.configuration_check = {
         }
       }
       return stun_servers;
-    },
-
-    trace_sip: function(trace_sip) {
-      if (typeof trace_sip === 'boolean') {
-        return trace_sip;
-      }
     },
 
     turn_servers: function(turn_servers) {

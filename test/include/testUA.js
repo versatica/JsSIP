@@ -19,7 +19,6 @@ module.exports = {
       { urls:'turn:example.org', username:'turnuser', credential:'turnpassword' },
       { urls:'turn:example.org?transport=udp', username:'turnuser2', credential:'turnpassword2'}
     ],
-    trace_sip: true,
     hack_via_tcp: false,
     hack_ip_in_contact: false
   },
@@ -43,7 +42,6 @@ module.exports = {
       { urls:['turn:example.org'], username:'turnuser', credential:'turnpassword' },
       { urls:['turn:example.org?transport=udp'], username:'turnuser2', credential:'turnpassword2'}
     ],
-    trace_sip: true,
     hack_via_tcp: false,
     hack_ip_in_contact: false
   }

@@ -750,9 +750,6 @@ UA.prototype.loadConfig = function(configuration) {
     stun_servers: ['stun:stun.l.google.com:19302'],
     turn_servers: [],
 
-    // Logging parameters
-    trace_sip: false,
-
     // Hacks
     hack_via_tcp: false,
     hack_via_ws: false,
@@ -945,7 +942,6 @@ UA.configuration_skeleton = (function() {
     "register_expires", // 600 seconds
     "registrar_server",
     "stun_servers",
-    "trace_sip",
     "turn_servers",
     "use_preloaded_route",
 
@@ -1197,12 +1193,6 @@ UA.configuration_check = {
         }
       }
       return stun_servers;
-    },
-
-    trace_sip: function(trace_sip) {
-      if (typeof trace_sip === 'boolean') {
-        return trace_sip;
-      }
     },
 
     turn_servers: function(turn_servers) {
