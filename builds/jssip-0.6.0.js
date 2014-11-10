@@ -1,5 +1,5 @@
 /*
- * JsSIP 0.5.0
+ * JsSIP 0.6.0
  * Copyright (c) 2012-2014 José Luis Millán - Versatica <http://www.versatica.com>
  * Homepage: http://jssip.net
  * License: http://jssip.net/license
@@ -964,7 +964,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -17247,7 +17247,7 @@ RTCMediaHandler.prototype = {
     var self = this;
 
     function onSetLocalDescriptionSuccess() {
-      if (self.peerConnection.iceGatheringState === 'complete' && (self.peerConnection.iceConnectionState === 'connected' || self.peerConnection.iceConnectionState === 'completed')) {
+      if (self.peerConnection.iceGatheringState === 'complete') {
         self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
       } else {
@@ -17286,7 +17286,7 @@ RTCMediaHandler.prototype = {
     var self = this;
 
     function onSetLocalDescriptionSuccess() {
-      if (self.peerConnection.iceGatheringState === 'complete' && (self.peerConnection.iceConnectionState === 'connected' || self.peerConnection.iceConnectionState === 'completed')) {
+      if (self.peerConnection.iceGatheringState === 'complete') {
         self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
       } else {
@@ -17400,9 +17400,7 @@ RTCMediaHandler.prototype = {
       if (e.candidate) {
         debug('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
-        setTimeout(function() {
-          self.onIceCompleted();
-        });
+        self.onIceCompleted();
       }
     };
 
