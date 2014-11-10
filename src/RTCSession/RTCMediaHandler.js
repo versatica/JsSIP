@@ -34,7 +34,7 @@ RTCMediaHandler.prototype = {
     var self = this;
 
     function onSetLocalDescriptionSuccess() {
-      if (self.peerConnection.iceGatheringState === 'complete' && (self.peerConnection.iceConnectionState === 'connected' || self.peerConnection.iceConnectionState === 'completed')) {
+      if (self.peerConnection.iceGatheringState === 'complete') {
         self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
       } else {
@@ -73,7 +73,7 @@ RTCMediaHandler.prototype = {
     var self = this;
 
     function onSetLocalDescriptionSuccess() {
-      if (self.peerConnection.iceGatheringState === 'complete' && (self.peerConnection.iceConnectionState === 'connected' || self.peerConnection.iceConnectionState === 'completed')) {
+      if (self.peerConnection.iceGatheringState === 'complete') {
         self.ready = true;
         onSuccess(self.peerConnection.localDescription.sdp);
       } else {
@@ -187,9 +187,7 @@ RTCMediaHandler.prototype = {
       if (e.candidate) {
         debug('ICE candidate received: '+ e.candidate.candidate);
       } else if (self.onIceCompleted !== undefined) {
-        setTimeout(function() {
-          self.onIceCompleted();
-        });
+        self.onIceCompleted();
       }
     };
 
