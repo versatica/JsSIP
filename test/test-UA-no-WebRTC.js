@@ -43,7 +43,7 @@ module.exports = {
     ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
       eventHandlers: {
         failed: function(e) {
-          test.strictEqual(e.data.cause, JsSIP.C.causes.CONNECTION_ERROR);
+          test.strictEqual(e.cause, JsSIP.C.causes.CONNECTION_ERROR);
         }
       }
     });

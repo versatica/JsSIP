@@ -22,9 +22,10 @@ UA.C = C;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var debug = require('debug')('JsSIP:UA');
 var JsSIP_C = require('./Constants');
-var EventEmitter = require('./EventEmitter');
 var Registrator = require('./Registrator');
 var RTCSession = require('./RTCSession');
 var Message = require('./Message');
@@ -47,19 +48,6 @@ var Grammar = require('./Grammar');
  * @throws {TypeError} If no configuration is given.
  */
 function UA(configuration) {
-  var events = [
-    'connecting',
-    'connected',
-    'disconnected',
-    'newTransaction',
-    'transactionDestroyed',
-    'registered',
-    'unregistered',
-    'registrationFailed',
-    'newRTCSession',
-    'newMessage'
-  ];
-
   this.cache = {
     credentials: {}
   };
@@ -139,7 +127,6 @@ function UA(configuration) {
 
   try {
     this.loadConfig(configuration);
-    this.initEvents(events);
   } catch(e) {
     this.status = C.STATUS_NOT_READY;
     this.error = C.CONFIGURATION_ERROR;
@@ -151,7 +138,7 @@ function UA(configuration) {
 }
 
 
-UA.prototype = new EventEmitter();
+util.inherits(UA, events.EventEmitter);
 
 
 //=================
@@ -392,7 +379,7 @@ UA.prototype.onTransportError = function(transport) {
   // Mark this transport as 'down' and try the next one
   transport.server.status = Transport.C.STATUS_ERROR;
 
-  this.emit('disconnected', this, {
+  this.emit('disconnected', {
     transport: transport,
     code: transport.lastTransportError.code,
     reason: transport.lastTransportError.reason
@@ -438,7 +425,7 @@ UA.prototype.onTransportConnected = function(transport) {
   this.status = C.STATUS_READY;
   this.error = null;
 
-  this.emit('connected', this, {
+  this.emit('connected', {
     transport: transport
   });
 
@@ -452,10 +439,17 @@ UA.prototype.onTransportConnected = function(transport) {
  * Transport connecting event
  */
 UA.prototype.onTransportConnecting = function(transport, attempts) {
-  this.emit('connecting', this, {
+  this.emit('connecting', {
     transport: transport,
     attempts: attempts
   });
+};
+
+/**
+ * Transport connected event
+ */
+UA.prototype.onTransportDisconnected = function(data) {
+  this.emit('disconnected', data);
 };
 
 
@@ -464,7 +458,7 @@ UA.prototype.onTransportConnecting = function(transport, attempts) {
  */
 UA.prototype.newTransaction = function(transaction) {
   this.transactions[transaction.type][transaction.id] = transaction;
-    this.emit('newTransaction', this, {
+    this.emit('newTransaction', {
     transaction: transaction
   });
 };
@@ -475,9 +469,47 @@ UA.prototype.newTransaction = function(transaction) {
  */
 UA.prototype.destroyTransaction = function(transaction) {
   delete this.transactions[transaction.type][transaction.id];
-    this.emit('transactionDestroyed', this, {
+    this.emit('transactionDestroyed', {
     transaction: transaction
   });
+};
+
+
+/**
+ *  new Message
+ */
+UA.prototype.newMessage = function(data) {
+  this.emit('newMessage', data);
+};
+
+/**
+ * new RTCSession
+ */
+UA.prototype.newRTCSession = function(data) {
+  this.emit('newRTCSession', data);
+};
+
+/**
+ * Registered
+ */
+UA.prototype.registered = function(data) {
+  this.emit('registered', data);
+};
+
+
+/**
+ * Unregistered
+ */
+UA.prototype.unregistered = function(data) {
+  this.emit('unregistered', data);
+};
+
+
+/**
+ * Registration Failed
+ */
+UA.prototype.registrationFailed = function(data) {
+  this.emit('registrationFailed', data);
 };
 
 
@@ -527,14 +559,14 @@ UA.prototype.receiveRequest = function(request) {
   if(method === JsSIP_C.OPTIONS) {
     request.reply(200);
   } else if (method === JsSIP_C.MESSAGE) {
-    if (!this.checkEvent('newMessage') || this.listeners('newMessage').length === 0) {
+    if (this.listeners('newMessage').length === 0) {
       request.reply(405);
       return;
     }
     message = new Message(this);
     message.init_incoming(request);
   } else if (method === JsSIP_C.INVITE) {
-    if (!this.checkEvent('newRTCSession') || this.listeners('newRTCSession').length === 0) {
+    if (this.listeners('newRTCSession').length === 0) {
       request.reply(405);
       return;
     }

@@ -159,7 +159,7 @@ Registrator.prototype = {
 
           if (! this.registered) {
             this.registered = true;
-            this.ua.emit('registered', this.ua, {
+            this.ua.registered({
               response: response
             });
           }
@@ -263,14 +263,14 @@ Registrator.prototype = {
   },
 
   registrationFailure: function(response, cause) {
-    this.ua.emit('registrationFailed', this.ua, {
+    this.ua.registrationFailed({
       response: response || null,
       cause: cause
     });
 
     if (this.registered) {
       this.registered = false;
-      this.ua.emit('unregistered', this.ua, {
+      this.ua.unregistered({
         response: response || null,
         cause: cause
       });
@@ -279,7 +279,7 @@ Registrator.prototype = {
 
   unregistered: function(response, cause) {
     this.registered = false;
-    this.ua.emit('unregistered', this.ua, {
+    this.ua.unregistered({
       response: response || null,
       cause: cause || null
     });
@@ -293,7 +293,7 @@ Registrator.prototype = {
 
     if(this.registered) {
       this.registered = false;
-      this.ua.emit('unregistered', this.ua);
+      this.ua.unregistered({});
     }
   },
 

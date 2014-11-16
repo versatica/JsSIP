@@ -24,9 +24,10 @@ RTCSession.C = C;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var debug = require('debug')('JsSIP:RTCSession');
 var JsSIP_C = require('./Constants');
-var EventEmitter = require('./EventEmitter');
 var Exceptions = require('./Exceptions');
 var Transactions = require('./Transactions');
 var Parser = require('./Parser');
@@ -43,20 +44,6 @@ var RTCSession_DTMF = require('./RTCSession/DTMF');
 
 
 function RTCSession(ua) {
-  var events = [
-    'connecting',
-    'progress',
-    'failed',
-    'accepted',
-    'confirmed',
-    'ended',
-    'newDTMF',
-    'hold',
-    'unhold',
-    'muted',
-    'unmuted'
-  ];
-
   this.ua = ua;
   this.status = C.STATUS_NULL;
   this.dialog = null;
@@ -136,11 +123,9 @@ function RTCSession(ua) {
 
   // Custom session empty object for high level use
   this.data = {};
-
-  this.initEvents(events);
 }
 
-RTCSession.prototype = new EventEmitter();
+util.inherits(RTCSession, events.EventEmitter);
 
 
 /**
@@ -248,8 +233,8 @@ RTCSession.prototype.terminate = function(options) {
         };
 
         // .., or when the INVITE transaction times out
-        this.request.server_transaction.on('stateChanged', function(e){
-          if (e.sender.state === Transactions.C.STATUS_TERMINATED) {
+        this.request.server_transaction.on('stateChanged', function(){
+          if (this.state === Transactions.C.STATUS_TERMINATED) {
             self.sendRequest(JsSIP_C.BYE, {
               extraHeaders: extraHeaders,
               body: body
@@ -1841,77 +1826,59 @@ RTCSession.prototype.onDialogError = function(response) {
  */
 
 RTCSession.prototype.newRTCSession = function(originator, request) {
-  var session = this,
-    event_name = 'newRTCSession';
-
   if (originator === 'remote') {
-    session.direction = 'incoming';
-    session.local_identity = request.to;
-    session.remote_identity = request.from;
+    this.direction = 'incoming';
+    this.local_identity = request.to;
+    this.remote_identity = request.from;
   } else if (originator === 'local'){
-    session.direction = 'outgoing';
-    session.local_identity = request.from;
-    session.remote_identity = request.to;
+    this.direction = 'outgoing';
+    this.local_identity = request.from;
+    this.remote_identity = request.to;
   }
 
-  session.ua.emit(event_name, session.ua, {
+  this.ua.newRTCSession({
     originator: originator,
-    session: session,
+    session: this,
     request: request
   });
 };
 
 RTCSession.prototype.connecting = function(request) {
-  var session = this,
-  event_name = 'connecting';
-
-  session.emit(event_name, session, {
+  this.emit('connecting', {
     request: request
   });
 };
 
 RTCSession.prototype.progress = function(originator, response) {
-  var session = this,
-    event_name = 'progress';
-
-  session.emit(event_name, session, {
+  this.emit('progress', {
     originator: originator,
     response: response || null
   });
 };
 
 RTCSession.prototype.accepted = function(originator, message) {
-  var session = this,
-    event_name = 'accepted';
+  this.start_time = new Date();
 
-  session.start_time = new Date();
-
-  session.emit(event_name, session, {
+  this.emit('accepted', {
     originator: originator,
     response: message || null
   });
 };
 
 RTCSession.prototype.confirmed = function(originator, ack) {
-  var session = this,
-    event_name = 'confirmed';
-
   this.is_confirmed = true;
 
-  session.emit(event_name, session, {
+  this.emit('confirmed', {
     originator: originator,
     ack: ack || null
   });
 };
 
 RTCSession.prototype.ended = function(originator, message, cause) {
-  var session = this,
-    event_name = 'ended';
+  this.end_time = new Date();
 
-  session.end_time = new Date();
-
-  session.close();
-  session.emit(event_name, session, {
+  this.close();
+  this.emit('ended', {
     originator: originator,
     message: message || null,
     cause: cause
@@ -1919,15 +1886,16 @@ RTCSession.prototype.ended = function(originator, message, cause) {
 };
 
 RTCSession.prototype.failed = function(originator, message, cause) {
-  var session = this,
-    event_name = 'failed';
-
-  session.close();
-  session.emit(event_name, session, {
+  this.close();
+  this.emit('failed', {
     originator: originator,
     message: message || null,
     cause: cause
   });
+};
+
+RTCSession.prototype.newDTMF = function(data) {
+  this.emit('newDTMF', data);
 };
 
 RTCSession.prototype.onhold = function(originator) {
@@ -1937,7 +1905,7 @@ RTCSession.prototype.onhold = function(originator) {
     this.remote_hold = true;
   }
 
-  this.emit('hold', this, {
+  this.emit('hold', {
     originator: originator
   });
 };
@@ -1949,20 +1917,20 @@ RTCSession.prototype.onunhold = function(originator) {
     this.remote_hold = false;
   }
 
-  this.emit('unhold', this, {
+  this.emit('unhold', {
     originator: originator
   });
 };
 
 RTCSession.prototype.onmute = function(options) {
-  this.emit('muted', this, {
+  this.emit('muted', {
     audio: options.audio,
     video: options.video
   });
 };
 
 RTCSession.prototype.onunmute = function(options) {
-  this.emit('unmuted', this, {
+  this.emit('unmuted', {
     audio: options.audio,
     video: options.video
   });

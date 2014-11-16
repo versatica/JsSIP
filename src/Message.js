@@ -4,8 +4,9 @@ module.exports = Message;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var JsSIP_C = require('./Constants');
-var EventEmitter = require('./EventEmitter');
 var SIPMessage = require('./SIPMessage');
 var Utils = require('./Utils');
 var RequestSender = require('./RequestSender');
@@ -20,16 +21,11 @@ function Message(ua) {
   this.data = {};
 }
 
-
-Message.prototype = new EventEmitter();
+util.inherits(Message, events.EventEmitter);
 
 
 Message.prototype.send = function(target, body, options) {
   var request_sender, event, contentType, eventHandlers, extraHeaders,
-    events = [
-      'succeeded',
-      'failed'
-    ],
     originalTarget = target;
 
   if (target === undefined || body === undefined) {
@@ -41,8 +37,6 @@ Message.prototype.send = function(target, body, options) {
   if (!target) {
     throw new TypeError('Invalid target: '+ originalTarget);
   }
-
-  this.initEvents(events);
 
   // Get call options
   options = options || {};
@@ -91,7 +85,7 @@ Message.prototype.receiveResponse = function(response) {
 
     case /^2[0-9]{2}$/.test(response.status_code):
       delete this.ua.applicants[this];
-      this.emit('succeeded', this, {
+      this.emit('succeeded', {
         originator: 'remote',
         response: response
       });
@@ -100,7 +94,7 @@ Message.prototype.receiveResponse = function(response) {
     default:
       delete this.ua.applicants[this];
       cause = Utils.sipErrorCause(response.status_code);
-      this.emit('failed', this, {
+      this.emit('failed', {
         originator: 'remote',
         response: response,
         cause: cause
@@ -114,7 +108,7 @@ Message.prototype.onRequestTimeout = function() {
   if(this.closed) {
     return;
   }
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'system',
     cause: JsSIP_C.causes.REQUEST_TIMEOUT
   });
@@ -124,7 +118,7 @@ Message.prototype.onTransportError = function() {
   if(this.closed) {
     return;
   }
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'system',
     cause: JsSIP_C.causes.CONNECTION_ERROR
   });
@@ -203,22 +197,19 @@ Message.prototype.reject = function(options) {
  */
 
 Message.prototype.newMessage = function(originator, request) {
-  var message = this,
-    event_name = 'newMessage';
-
   if (originator === 'remote') {
-    message.direction = 'incoming';
-    message.local_identity = request.to;
-    message.remote_identity = request.from;
+    this.direction = 'incoming';
+    this.local_identity = request.to;
+    this.remote_identity = request.from;
   } else if (originator === 'local'){
-    message.direction = 'outgoing';
-    message.local_identity = request.from;
-    message.remote_identity = request.to;
+    this.direction = 'outgoing';
+    this.local_identity = request.from;
+    this.remote_identity = request.to;
   }
 
-  message.ua.emit(event_name, message.ua, {
+  this.ua.newMessage({
     originator: originator,
-    message: message,
+    message: this,
     request: request
   });
 };

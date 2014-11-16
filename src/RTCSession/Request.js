@@ -3,27 +3,19 @@ module.exports = Request;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var JsSIP_C = require('../Constants');
-var EventEmitter = require('../EventEmitter');
 var Exceptions = require('../Exceptions');
 var RTCSession = require('../RTCSession');
 var Utils = require('../Utils');
 
 
 function Request(session) {
-  var events = [
-    'progress',
-    'succeeded',
-    'failed'
-  ];
-
   this.owner = session;
-
-  this.initEvents(events);
 }
 
-
-Request.prototype = new EventEmitter();
+util.inherits(Request, events.EventEmitter);
 
 
 Request.prototype.send = function(method, options) {
@@ -72,14 +64,14 @@ Request.prototype.receiveResponse = function(response) {
 
   switch(true) {
     case /^1[0-9]{2}$/.test(response.status_code):
-      this.emit('progress', this, {
+      this.emit('progress', {
         originator: 'remote',
         response: response
       });
       break;
 
     case /^2[0-9]{2}$/.test(response.status_code):
-      this.emit('succeeded', this, {
+      this.emit('succeeded', {
         originator: 'remote',
         response: response
       });
@@ -87,7 +79,7 @@ Request.prototype.receiveResponse = function(response) {
 
     default:
       cause = Utils.sipErrorCause(response.status_code);
-      this.emit('failed', this, {
+      this.emit('failed', {
         originator: 'remote',
         response: response,
         cause: cause
@@ -97,7 +89,7 @@ Request.prototype.receiveResponse = function(response) {
 };
 
 Request.prototype.onRequestTimeout = function() {
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'system',
     cause: JsSIP_C.causes.REQUEST_TIMEOUT
   });
@@ -105,7 +97,7 @@ Request.prototype.onRequestTimeout = function() {
 };
 
 Request.prototype.onTransportError = function() {
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'system',
     cause: JsSIP_C.causes.CONNECTION_ERROR
   });
@@ -113,7 +105,7 @@ Request.prototype.onTransportError = function() {
 };
 
 Request.prototype.onDialogError = function(response) {
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'remote',
     response: response,
     cause: JsSIP_C.causes.DIALOG_ERROR

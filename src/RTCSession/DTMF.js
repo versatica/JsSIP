@@ -18,30 +18,23 @@ DTMF.C = C;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var debug = require('debug')('JsSIP:RTCSession:DTMF');
 var JsSIP_C = require('../Constants');
-var EventEmitter = require('../EventEmitter');
 var Exceptions = require('../Exceptions');
 var RTCSession = require('../RTCSession');
 var Utils = require('../Utils');
 
 
 function DTMF(session) {
-  var events = [
-  'succeeded',
-  'failed'
-  ];
-
   this.owner = session;
   this.direction = null;
   this.tone = null;
   this.duration = null;
-
-  this.initEvents(events);
 }
 
-
-DTMF.prototype = new EventEmitter();
+util.inherits(DTMF, events.EventEmitter);
 
 
 DTMF.prototype.send = function(tone, options) {
@@ -93,7 +86,7 @@ DTMF.prototype.send = function(tone, options) {
   body = "Signal= " + this.tone + "\r\n";
   body += "Duration= " + this.duration;
 
-  this.owner.emit('newDTMF', this.owner, {
+  this.owner.newDTMF({
     originator: 'local',
     dtmf: this,
     request: this.request
@@ -114,7 +107,7 @@ DTMF.prototype.receiveResponse = function(response) {
       break;
 
     case /^2[0-9]{2}$/.test(response.status_code):
-      this.emit('succeeded', this, {
+      this.emit('succeeded', {
         originator: 'remote',
         response: response
       });
@@ -122,7 +115,7 @@ DTMF.prototype.receiveResponse = function(response) {
 
     default:
       cause = Utils.sipErrorCause(response.status_code);
-      this.emit('failed', this, {
+      this.emit('failed', {
         originator: 'remote',
         response: response,
         cause: cause
@@ -132,7 +125,7 @@ DTMF.prototype.receiveResponse = function(response) {
 };
 
 DTMF.prototype.onRequestTimeout = function() {
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'system',
     cause: JsSIP_C.causes.REQUEST_TIMEOUT
   });
@@ -140,7 +133,7 @@ DTMF.prototype.onRequestTimeout = function() {
 };
 
 DTMF.prototype.onTransportError = function() {
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'system',
     cause: JsSIP_C.causes.CONNECTION_ERROR
   });
@@ -148,7 +141,7 @@ DTMF.prototype.onTransportError = function() {
 };
 
 DTMF.prototype.onDialogError = function(response) {
-  this.emit('failed', this, {
+  this.emit('failed', {
     originator: 'remote',
     response: response,
     cause: JsSIP_C.causes.DIALOG_ERROR
@@ -181,7 +174,7 @@ DTMF.prototype.init_incoming = function(request) {
   if (!this.tone || !this.duration) {
     debug('invalid INFO DTMF received, discarded');
   } else {
-    this.owner.emit('newDTMF', this.owner, {
+    this.owner.newDTMF({
       originator: 'remote',
       dtmf: this,
       request: request

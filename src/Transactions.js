@@ -35,20 +35,20 @@ module.exports.C = C;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var debugnict = require('debug')('JsSIP:NonInviteClientTransaction');
 var debugict = require('debug')('JsSIP:InviteClientTransaction');
 var debugact = require('debug')('JsSIP:AckClientTransaction');
 var debugnist = require('debug')('JsSIP:NonInviteServerTransaction');
 var debugist = require('debug')('JsSIP:InviteServerTransaction');
 var JsSIP_C = require('./Constants');
-var EventEmitter = require('./EventEmitter');
 var Timers = require('./Timers');
 
 
 function NonInviteClientTransaction(request_sender, request, transport) {
   var via,
-    via_transport,
-    events = ['stateChanged'];
+    via_transport;
 
   this.type = C.NON_INVITE_CLIENT;
   this.transport = transport;
@@ -72,16 +72,14 @@ function NonInviteClientTransaction(request_sender, request, transport) {
   this.request.setHeader('via', via);
 
   this.request_sender.ua.newTransaction(this);
-
-  this.initEvents(events);
 }
 
 
-NonInviteClientTransaction.prototype = new EventEmitter();
+util.inherits(NonInviteClientTransaction, events.EventEmitter);
 
 NonInviteClientTransaction.prototype.stateChanged = function(state) {
   this.state = state;
-  this.emit('stateChanged', this);
+  this.emit('stateChanged');
 };
 
 NonInviteClientTransaction.prototype.send = function() {
@@ -154,8 +152,7 @@ NonInviteClientTransaction.prototype.receiveResponse = function(response) {
 function InviteClientTransaction(request_sender, request, transport) {
   var via,
     tr = this,
-    via_transport,
-    events = ['stateChanged'];
+    via_transport;
 
   this.type = C.INVITE_CLIENT;
   this.transport = transport;
@@ -186,15 +183,13 @@ function InviteClientTransaction(request_sender, request, transport) {
   this.request.cancel = function(reason) {
     tr.cancel_request(tr, reason);
   };
-
-  this.initEvents(events);
 }
 
-InviteClientTransaction.prototype = new EventEmitter();
+util.inherits(InviteClientTransaction, events.EventEmitter);
 
 InviteClientTransaction.prototype.stateChanged = function(state) {
   this.state = state;
-  this.emit('stateChanged', this);
+  this.emit('stateChanged');
 };
 
 InviteClientTransaction.prototype.send = function() {
@@ -370,7 +365,7 @@ function AckClientTransaction(request_sender, request, transport) {
   this.request.setHeader('via', via);
 }
 
-AckClientTransaction.prototype = new EventEmitter();
+util.inherits(AckClientTransaction, events.EventEmitter);
 
 AckClientTransaction.prototype.send = function() {
   if(!this.transport.send(this.request)) {
@@ -385,8 +380,6 @@ AckClientTransaction.prototype.onTransportError = function() {
 
 
 function NonInviteServerTransaction(request, ua) {
-  var events = ['stateChanged'];
-
   this.type = C.NON_INVITE_SERVER;
   this.id = request.via_branch;
   this.request = request;
@@ -398,15 +391,13 @@ function NonInviteServerTransaction(request, ua) {
   this.state = C.STATUS_TRYING;
 
   ua.newTransaction(this);
-
-  this.initEvents(events);
 }
 
-NonInviteServerTransaction.prototype = new EventEmitter();
+util.inherits(NonInviteServerTransaction, events.EventEmitter);
 
 NonInviteServerTransaction.prototype.stateChanged = function(state) {
   this.state = state;
-  this.emit('stateChanged', this);
+  this.emit('stateChanged');
 };
 
 NonInviteServerTransaction.prototype.timer_J = function() {
@@ -481,8 +472,6 @@ NonInviteServerTransaction.prototype.receiveResponse = function(status_code, res
 
 
 function InviteServerTransaction(request, ua) {
-  var events = ['stateChanged'];
-
   this.type = C.INVITE_SERVER;
   this.id = request.via_branch;
   this.request = request;
@@ -498,15 +487,13 @@ function InviteServerTransaction(request, ua) {
   this.resendProvisionalTimer = null;
 
   request.reply(100);
-
-  this.initEvents(events);
 }
 
-InviteServerTransaction.prototype = new EventEmitter();
+util.inherits(InviteServerTransaction, events.EventEmitter);
 
 InviteServerTransaction.prototype.stateChanged = function(state) {
   this.state = state;
-  this.emit('stateChanged', this);
+  this.emit('stateChanged');
 };
 
 InviteServerTransaction.prototype.timer_H = function() {

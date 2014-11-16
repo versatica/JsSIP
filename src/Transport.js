@@ -111,7 +111,7 @@ Transport.prototype = {
     if (this.reconnectTimer !== null) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
-      this.ua.emit('disconnected', this.ua, {
+      this.ua.onTransportDisconnected({
         transport: this,
         code: this.lastTransportError.code,
         reason: this.lastTransportError.reason

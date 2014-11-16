@@ -156,10 +156,10 @@ Dialog.prototype = {
         return false;
       } else {
         this.uas_pending_reply = true;
-        request.server_transaction.on('stateChanged', function stateChanged(e){
-          if (e.sender.state === Transactions.C.STATUS_ACCEPTED ||
-              e.sender.state === Transactions.C.STATUS_COMPLETED ||
-              e.sender.state === Transactions.C.STATUS_TERMINATED) {
+        request.server_transaction.on('stateChanged', function stateChanged(){
+          if (this.state === Transactions.C.STATUS_ACCEPTED ||
+              this.state === Transactions.C.STATUS_COMPLETED ||
+              this.state === Transactions.C.STATUS_TERMINATED) {
 
             request.server_transaction.removeListener('stateChanged', stateChanged);
             self.uas_pending_reply = false;
@@ -173,8 +173,8 @@ Dialog.prototype = {
 
       // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
       if(request.hasHeader('contact')) {
-        request.server_transaction.on('stateChanged', function(e){
-          if (e.sender.state === Transactions.C.STATUS_ACCEPTED) {
+        request.server_transaction.on('stateChanged', function(){
+          if (this.state === Transactions.C.STATUS_ACCEPTED) {
             self.remote_target = request.parseHeader('contact').uri;
           }
         });
@@ -183,8 +183,8 @@ Dialog.prototype = {
     else if (request.method === JsSIP_C.NOTIFY) {
       // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
       if(request.hasHeader('contact')) {
-        request.server_transaction.on('stateChanged', function(e){
-          if (e.sender.state === Transactions.C.STATUS_COMPLETED) {
+        request.server_transaction.on('stateChanged', function(){
+          if (this.state === Transactions.C.STATUS_COMPLETED) {
             self.remote_target = request.parseHeader('contact').uri;
           }
         });
