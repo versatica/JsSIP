@@ -19,6 +19,8 @@ function Message(ua) {
 
   // Custom message empty object for high level use
   this.data = {};
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(Message, events.EventEmitter);

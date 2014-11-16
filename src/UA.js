@@ -135,8 +135,9 @@ function UA(configuration) {
 
   // Initialize registrator
   this._registrator = new Registrator(this);
-}
 
+  events.EventEmitter.call(this);
+}
 
 util.inherits(UA, events.EventEmitter);
 

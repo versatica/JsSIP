@@ -15263,6 +15263,8 @@ function Message(ua) {
 
   // Custom message empty object for high level use
   this.data = {};
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(Message, events.EventEmitter);
@@ -15954,6 +15956,8 @@ function RTCSession(ua) {
 
   // Custom session empty object for high level use
   this.data = {};
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(RTCSession, events.EventEmitter);
@@ -17816,6 +17820,8 @@ function DTMF(session) {
   this.direction = null;
   this.tone = null;
   this.duration = null;
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(DTMF, events.EventEmitter);
@@ -18245,6 +18251,8 @@ var Utils = require('../Utils');
 
 function Request(session) {
   this.owner = session;
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(Request, events.EventEmitter);
@@ -19427,8 +19435,9 @@ function NonInviteClientTransaction(request_sender, request, transport) {
   this.request.setHeader('via', via);
 
   this.request_sender.ua.newTransaction(this);
-}
 
+  events.EventEmitter.call(this);
+}
 
 util.inherits(NonInviteClientTransaction, events.EventEmitter);
 
@@ -19538,6 +19547,8 @@ function InviteClientTransaction(request_sender, request, transport) {
   this.request.cancel = function(reason) {
     tr.cancel_request(tr, reason);
   };
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(InviteClientTransaction, events.EventEmitter);
@@ -19718,6 +19729,8 @@ function AckClientTransaction(request_sender, request, transport) {
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
   this.request.setHeader('via', via);
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(AckClientTransaction, events.EventEmitter);
@@ -19746,6 +19759,8 @@ function NonInviteServerTransaction(request, ua) {
   this.state = C.STATUS_TRYING;
 
   ua.newTransaction(this);
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(NonInviteServerTransaction, events.EventEmitter);
@@ -19842,6 +19857,8 @@ function InviteServerTransaction(request, ua) {
   this.resendProvisionalTimer = null;
 
   request.reply(100);
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(InviteServerTransaction, events.EventEmitter);
@@ -20488,8 +20505,9 @@ function UA(configuration) {
 
   // Initialize registrator
   this._registrator = new Registrator(this);
-}
 
+  events.EventEmitter.call(this);
+}
 
 util.inherits(UA, events.EventEmitter);
 

@@ -123,6 +123,8 @@ function RTCSession(ua) {
 
   // Custom session empty object for high level use
   this.data = {};
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(RTCSession, events.EventEmitter);

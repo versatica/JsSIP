@@ -32,6 +32,8 @@ function DTMF(session) {
   this.direction = null;
   this.tone = null;
   this.duration = null;
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(DTMF, events.EventEmitter);

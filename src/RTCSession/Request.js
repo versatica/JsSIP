@@ -13,6 +13,8 @@ var Utils = require('../Utils');
 
 function Request(session) {
   this.owner = session;
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(Request, events.EventEmitter);

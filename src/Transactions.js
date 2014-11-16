@@ -72,8 +72,9 @@ function NonInviteClientTransaction(request_sender, request, transport) {
   this.request.setHeader('via', via);
 
   this.request_sender.ua.newTransaction(this);
-}
 
+  events.EventEmitter.call(this);
+}
 
 util.inherits(NonInviteClientTransaction, events.EventEmitter);
 
@@ -183,6 +184,8 @@ function InviteClientTransaction(request_sender, request, transport) {
   this.request.cancel = function(reason) {
     tr.cancel_request(tr, reason);
   };
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(InviteClientTransaction, events.EventEmitter);
@@ -363,6 +366,8 @@ function AckClientTransaction(request_sender, request, transport) {
   via += ' ' + request_sender.ua.configuration.via_host + ';branch=' + this.id;
 
   this.request.setHeader('via', via);
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(AckClientTransaction, events.EventEmitter);
@@ -391,6 +396,8 @@ function NonInviteServerTransaction(request, ua) {
   this.state = C.STATUS_TRYING;
 
   ua.newTransaction(this);
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(NonInviteServerTransaction, events.EventEmitter);
@@ -487,6 +494,8 @@ function InviteServerTransaction(request, ua) {
   this.resendProvisionalTimer = null;
 
   request.reply(100);
+
+  events.EventEmitter.call(this);
 }
 
 util.inherits(InviteServerTransaction, events.EventEmitter);
