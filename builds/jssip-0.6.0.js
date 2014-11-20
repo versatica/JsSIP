@@ -19575,12 +19575,13 @@ InviteClientTransaction.prototype.onTransportError = function() {
   clearTimeout(this.B);
   clearTimeout(this.D);
   clearTimeout(this.M);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
 
   if (this.state !== C.STATUS_ACCEPTED) {
     this.request_sender.onTransportError();
   }
+
+  this.stateChanged(C.STATUS_TERMINATED);
+  this.request_sender.ua.destroyTransaction(this);
 };
 
 // RFC 6026 7.2
@@ -20623,6 +20624,17 @@ UA.prototype.sendMessage = function(target, body, options) {
 };
 
 /**
+ * Terminate ongoing sessions.
+ */
+UA.prototype.terminateSessions = function(options) {
+  for(var idx in this.sessions) {
+    if (this.sessions[idx].state !== RTCSession.C.STATUS_TERMINATED) {
+      this.sessions[idx].terminate(options);
+    }
+  }
+};
+
+/**
  * Gracefully close.
  *
  */
@@ -20731,10 +20743,7 @@ UA.prototype.onTransportClosed = function(transport) {
     }
   }
 
-  // Close sessions if GRUU is not being used
-  if (!this.contact.pub_gruu) {
-    this.closeSessionsOnTransportError();
-  }
+  this.emit('disconnected');
 };
 
 /**
