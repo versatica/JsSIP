@@ -212,12 +212,13 @@ InviteClientTransaction.prototype.onTransportError = function() {
   clearTimeout(this.B);
   clearTimeout(this.D);
   clearTimeout(this.M);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
 
   if (this.state !== C.STATUS_ACCEPTED) {
     this.request_sender.onTransportError();
   }
+
+  this.stateChanged(C.STATUS_TERMINATED);
+  this.request_sender.ua.destroyTransaction(this);
 };
 
 // RFC 6026 7.2
