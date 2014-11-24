@@ -257,7 +257,7 @@ UA.prototype.sendMessage = function(target, body, options) {
  */
 UA.prototype.terminateSessions = function(options) {
   for(var idx in this.sessions) {
-    if (this.sessions[idx].state !== RTCSession.C.STATUS_TERMINATED) {
+    if (!this.sessions[idx].isEnded()) {
       this.sessions[idx].terminate(options);
     }
   }
