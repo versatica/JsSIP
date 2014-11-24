@@ -2444,7 +2444,7 @@ DialogRequestSender.prototype = {
         this.request.cseq.value = this.dialog.local_seqnum += 1;
         this.reattemptTimer = setTimeout(
           function() {
-            if (self.applicant.owner._status !== RTCSession.C.STATUS_TERMINATED) {
+            if (self.applicant.owner.status !== RTCSession.C.STATUS_TERMINATED) {
               self.reattempt = true;
               self.request_sender.send();
             }
@@ -15874,7 +15874,7 @@ var RTCSession_DTMF = require('./RTCSession/DTMF');
 
 function RTCSession(ua) {
   this.ua = ua;
-  this._status = C.STATUS_NULL;
+  this.status = C.STATUS_NULL;
   this.dialog = null;
   this.earlyDialogs = {};
   this.rtcMediaHandler = null;
@@ -15954,8 +15954,6 @@ function RTCSession(ua) {
   this.data = {};
 
   events.EventEmitter.call(this);
-
-  setInstanceProperties.call(this);
 }
 
 util.inherits(RTCSession, events.EventEmitter);
@@ -15973,36 +15971,47 @@ Object.defineProperty(RTCSession, 'RTCEngine', {
 });
 
 
-// Defined instance properties.
-function setInstanceProperties() {
-  // Exposed status property.
-  Object.defineProperty(this, 'status', {
-    get: function() {
-      switch(this._status) {
-        case C.STATUS_NULL:
-        case C.STATUS_INVITE_SENT:
-        case C.STATUS_1XX_RECEIVED:
-        case C.STATUS_INVITE_RECEIVED:
-        case C.STATUS_WAITING_FOR_ANSWER:
-          return 'progress';
-        case C.STATUS_ANSWERED:
-        case C.STATUS_WAITING_FOR_ACK:
-        case C.STATUS_CONFIRMED:
-          return 'confirmed';
-        case C.CANCELED:
-        case C.STATUS_TERMINATED:
-          return 'ended';
-        default:
-          throw new Error('unknown session status:', this._status);
-      }
-    }
-  });
-}
-
-
 /**
  * User API
  */
+
+
+RTCSession.prototype.isInProgress = function() {
+  switch(this.status) {
+    case C.STATUS_NULL:
+    case C.STATUS_INVITE_SENT:
+    case C.STATUS_1XX_RECEIVED:
+    case C.STATUS_INVITE_RECEIVED:
+    case C.STATUS_WAITING_FOR_ANSWER:
+      return true;
+    default:
+      return false;
+  }
+};
+
+
+RTCSession.prototype.isEstablished = function() {
+  switch(this.status) {
+    case C.STATUS_ANSWERED:
+    case C.STATUS_WAITING_FOR_ACK:
+    case C.STATUS_CONFIRMED:
+      return true;
+    default:
+      return false;
+  }
+};
+
+
+RTCSession.prototype.isEnded = function() {
+  switch(this.status) {
+    case C.STATUS_CANCELED:
+    case C.STATUS_TERMINATED:
+      return true;
+    default:
+      return false;
+  }
+};
+
 
 /**
  * Terminate the call.
@@ -16019,11 +16028,11 @@ RTCSession.prototype.terminate = function(options) {
     self = this;
 
   // Check Session Status
-  if (this._status === C.STATUS_TERMINATED) {
-    throw new Exceptions.InvalidStateError(this._status);
+  if (this.status === C.STATUS_TERMINATED) {
+    throw new Exceptions.InvalidStateError(this.status);
   }
 
-  switch(this._status) {
+  switch(this.status) {
     // - UAC -
     case C.STATUS_NULL:
     case C.STATUS_INVITE_SENT:
@@ -16038,17 +16047,17 @@ RTCSession.prototype.terminate = function(options) {
       }
 
       // Check Session Status
-      if (this._status === C.STATUS_NULL) {
+      if (this.status === C.STATUS_NULL) {
         this.isCanceled = true;
         this.cancelReason = cancel_reason;
-      } else if (this._status === C.STATUS_INVITE_SENT) {
+      } else if (this.status === C.STATUS_INVITE_SENT) {
         this.isCanceled = true;
         this.cancelReason = cancel_reason;
-      } else if(this._status === C.STATUS_1XX_RECEIVED) {
+      } else if(this.status === C.STATUS_1XX_RECEIVED) {
         this.request.cancel(cancel_reason);
       }
 
-      this._status = C.STATUS_CANCELED;
+      this.status = C.STATUS_CANCELED;
 
       this.failed('local', null, JsSIP_C.causes.CANCELED);
       break;
@@ -16086,7 +16095,7 @@ RTCSession.prototype.terminate = function(options) {
         * until it has received an ACK for its 2xx response or until the server
         * transaction times out."
         */
-      if (this._status === C.STATUS_WAITING_FOR_ACK &&
+      if (this.status === C.STATUS_WAITING_FOR_ACK &&
           this.direction === 'incoming' &&
           this.request.server_transaction.state !== Transactions.C.STATUS_TERMINATED) {
 
@@ -16171,7 +16180,7 @@ RTCSession.prototype.answer = function(options) {
   streamAdditionSucceeded = function() {
     self.connecting(request);
 
-    if (self._status === C.STATUS_TERMINATED) {
+    if (self.status === C.STATUS_TERMINATED) {
       return;
     }
 
@@ -16192,7 +16201,7 @@ RTCSession.prototype.answer = function(options) {
 
   // rtcMediaHandler.addStream failed
   streamAdditionFailed = function() {
-    if (self._status === C.STATUS_TERMINATED) {
+    if (self.status === C.STATUS_TERMINATED) {
       return;
     }
 
@@ -16204,7 +16213,7 @@ RTCSession.prototype.answer = function(options) {
     var
       // run for reply success callback
       replySucceeded = function() {
-        self._status = C.STATUS_WAITING_FOR_ACK;
+        self.status = C.STATUS_WAITING_FOR_ACK;
 
         self.setInvite2xxTimer(request, body);
         self.setACKTimer();
@@ -16225,7 +16234,7 @@ RTCSession.prototype.answer = function(options) {
 
   // rtcMediaHandler.createAnswer or rtcMediaHandler.createOffer failed
   sdpCreationFailed = function() {
-    if (self._status === C.STATUS_TERMINATED) {
+    if (self.status === C.STATUS_TERMINATED) {
       return;
     }
 
@@ -16237,11 +16246,11 @@ RTCSession.prototype.answer = function(options) {
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
     throw new Exceptions.NotSupportedError('"answer" not supported for outgoing RTCSession');
-  } else if (this._status !== C.STATUS_WAITING_FOR_ANSWER) {
-    throw new Exceptions.InvalidStateError(this._status);
+  } else if (this.status !== C.STATUS_WAITING_FOR_ANSWER) {
+    throw new Exceptions.InvalidStateError(this.status);
   }
 
-  this._status = C.STATUS_ANSWERED;
+  this.status = C.STATUS_ANSWERED;
 
   // An error on dialog creation will fire 'failed' event
   if(!this.createDialog(request, 'UAS')) {
@@ -16331,8 +16340,8 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   }
 
   // Check Session Status
-  if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
-    throw new Exceptions.InvalidStateError(this._status);
+  if (this.status !== C.STATUS_CONFIRMED && this.status !== C.STATUS_WAITING_FOR_ACK) {
+    throw new Exceptions.InvalidStateError(this.status);
   }
 
   // Convert to string
@@ -16386,7 +16395,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
     var tone, timeout,
       tones = self.tones;
 
-    if (self._status === C.STATUS_TERMINATED || !tones || position >= tones.length) {
+    if (self.status === C.STATUS_TERMINATED || !tones || position >= tones.length) {
       // Stop sending DTMF
       self.tones = null;
       return;
@@ -16520,8 +16529,8 @@ RTCSession.prototype.isMuted = function() {
  */
 RTCSession.prototype.hold = function() {
 
-  if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
-    throw new Exceptions.InvalidStateError(this._status);
+  if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
+    throw new Exceptions.InvalidStateError(this.status);
   }
 
   this.toogleMuteAudio(true);
@@ -16576,8 +16585,8 @@ RTCSession.prototype.hold = function() {
  */
 RTCSession.prototype.unhold = function() {
 
-  if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
-    throw new Exceptions.InvalidStateError(this._status);
+  if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
+    throw new Exceptions.InvalidStateError(this.status);
   }
 
   if (!this.audioMuted) {
@@ -16640,7 +16649,7 @@ RTCSession.prototype.setInvite2xxTimer = function(request, body) {
     timeout = Timers.T1;
 
   this.timers.invite2xxTimer = setTimeout(function invite2xxRetransmission() {
-    if (self._status !== C.STATUS_WAITING_FOR_ACK) {
+    if (self.status !== C.STATUS_WAITING_FOR_ACK) {
       return;
     }
 
@@ -16668,7 +16677,7 @@ RTCSession.prototype.setACKTimer = function() {
   var self = this;
 
   this.timers.ackTimer = setTimeout(function() {
-    if(self._status === C.STATUS_WAITING_FOR_ACK) {
+    if(self.status === C.STATUS_WAITING_FOR_ACK) {
       debug('no ACK received, terminating the session');
       clearTimeout(self.timers.invite2xxTimer);
       self.sendRequest(JsSIP_C.BYE);
@@ -16705,7 +16714,7 @@ RTCSession.prototype.init_incoming = function(request) {
     contentType = request.getHeader('Content-Type'),
 
     waitForAnswer =  function() {
-      self._status = C.STATUS_WAITING_FOR_ANSWER;
+      self.status = C.STATUS_WAITING_FOR_ANSWER;
 
       // Set userNoAnswerTimer
       self.timers.userNoAnswerTimer = setTimeout(function() {
@@ -16719,7 +16728,7 @@ RTCSession.prototype.init_incoming = function(request) {
        */
       if (expires) {
         self.timers.expiresTimer = setTimeout(function() {
-            if(self._status === C.STATUS_WAITING_FOR_ANSWER) {
+            if(self.status === C.STATUS_WAITING_FOR_ANSWER) {
               request.reply(487);
               self.failed('system', null, JsSIP_C.causes.EXPIRES);
             }
@@ -16746,7 +16755,7 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   // Session parameter initialization
-  this._status = C.STATUS_INVITE_RECEIVED;
+  this.status = C.STATUS_INVITE_RECEIVED;
   this.from_tag = request.from_tag;
   this.id = request.call_id + this.from_tag;
   this.request = request;
@@ -16850,8 +16859,8 @@ RTCSession.prototype.connect = function(target, options) {
   }
 
   // Check Session Status
-  if (this._status !== C.STATUS_NULL) {
-    throw new Exceptions.InvalidStateError(this._status);
+  if (this.status !== C.STATUS_NULL) {
+    throw new Exceptions.InvalidStateError(this.status);
   }
 
   // Set event handlers
@@ -16907,7 +16916,7 @@ RTCSession.prototype.connect = function(target, options) {
 RTCSession.prototype.close = function() {
   var idx;
 
-  if(this._status === C.STATUS_TERMINATED) {
+  if(this.status === C.STATUS_TERMINATED) {
     return;
   }
 
@@ -16939,7 +16948,7 @@ RTCSession.prototype.close = function() {
     delete this.earlyDialogs[idx];
   }
 
-  this._status = C.STATUS_TERMINATED;
+  this.status = C.STATUS_TERMINATED;
 
   delete this.ua.sessions[this.id];
 };
@@ -17024,7 +17033,7 @@ RTCSession.prototype.receiveReinvite = function(request) {
         function(body) {
           request.reply(200, null, ['Contact: ' + self.contact], body,
             function() {
-              self._status = C.STATUS_WAITING_FOR_ACK;
+              self.status = C.STATUS_WAITING_FOR_ACK;
               self.setInvite2xxTimer(request, body);
               self.setACKTimer();
 
@@ -17171,8 +17180,8 @@ RTCSession.prototype.receiveRequest = function(request) {
     * Terminate the whole session in case the user didn't accept (or yet send the answer)
     * nor reject the request opening the session.
     */
-    if(this._status === C.STATUS_WAITING_FOR_ANSWER  || this._status === C.STATUS_ANSWERED) {
-      this._status = C.STATUS_CANCELED;
+    if(this.status === C.STATUS_WAITING_FOR_ANSWER  || this.status === C.STATUS_ANSWERED) {
+      this.status = C.STATUS_CANCELED;
       this.request.reply(487);
       this.failed('remote', request, JsSIP_C.causes.CANCELED);
     }
@@ -17180,7 +17189,7 @@ RTCSession.prototype.receiveRequest = function(request) {
     // Requests arriving here are in-dialog requests.
     switch(request.method) {
       case JsSIP_C.ACK:
-        if(this._status === C.STATUS_WAITING_FOR_ACK) {
+        if(this.status === C.STATUS_WAITING_FOR_ACK) {
           clearTimeout(this.timers.ackTimer);
           clearTimeout(this.timers.invite2xxTimer);
 
@@ -17199,7 +17208,7 @@ RTCSession.prototype.receiveRequest = function(request) {
                */
               function() {
                 self.late_sdp = false;
-                self._status = C.STATUS_CONFIRMED;
+                self.status = C.STATUS_CONFIRMED;
               },
               /*
                * onFailure
@@ -17211,20 +17220,20 @@ RTCSession.prototype.receiveRequest = function(request) {
               }
             );
           } else {
-            this._status = C.STATUS_CONFIRMED;
+            this.status = C.STATUS_CONFIRMED;
           }
 
-          if (this._status === C.STATUS_CONFIRMED && !this.is_confirmed) {
+          if (this.status === C.STATUS_CONFIRMED && !this.is_confirmed) {
             this.confirmed('remote', request);
           }
         }
         break;
       case JsSIP_C.BYE:
-        if(this._status === C.STATUS_CONFIRMED) {
+        if(this.status === C.STATUS_CONFIRMED) {
           request.reply(200);
           this.ended('remote', request, JsSIP_C.causes.BYE);
         }
-        else if (this._status === C.STATUS_INVITE_RECEIVED) {
+        else if (this.status === C.STATUS_INVITE_RECEIVED) {
           request.reply(200);
           this.request.reply(487, 'BYE Received');
           this.ended('remote', request, JsSIP_C.causes.BYE);
@@ -17234,7 +17243,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         }
         break;
       case JsSIP_C.INVITE:
-        if(this._status === C.STATUS_CONFIRMED) {
+        if(this.status === C.STATUS_CONFIRMED) {
           debug('re-INVITE received');
           this.receiveReinvite(request);
         }
@@ -17243,7 +17252,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         }
         break;
       case JsSIP_C.INFO:
-        if(this._status === C.STATUS_CONFIRMED || this._status === C.STATUS_WAITING_FOR_ACK || this._status === C.STATUS_INVITE_RECEIVED) {
+        if(this.status === C.STATUS_CONFIRMED || this.status === C.STATUS_WAITING_FOR_ACK || this.status === C.STATUS_INVITE_RECEIVED) {
           contentType = request.getHeader('content-type');
           if (contentType && (contentType.match(/^application\/dtmf-relay/i))) {
             new RTCSession_DTMF(this).init_incoming(request);
@@ -17257,7 +17266,7 @@ RTCSession.prototype.receiveRequest = function(request) {
         }
         break;
       case JsSIP_C.UPDATE:
-        if(this._status === C.STATUS_CONFIRMED) {
+        if(this.status === C.STATUS_CONFIRMED) {
           debug('UPDATE received');
           this.receiveUpdate(request);
         }
@@ -17291,7 +17300,7 @@ RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferCon
 
  // User media failed
  userMediaFailed = function() {
-   if (self._status === C.STATUS_TERMINATED) {
+   if (self.status === C.STATUS_TERMINATED) {
      return;
    }
 
@@ -17302,7 +17311,7 @@ RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferCon
  streamAdditionSucceeded = function() {
    self.connecting(self.request);
 
-   if (self._status === C.STATUS_TERMINATED) {
+   if (self.status === C.STATUS_TERMINATED) {
      return;
    }
 
@@ -17315,7 +17324,7 @@ RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferCon
 
  // rtcMediaHandler.addStream failed
  streamAdditionFailed = function() {
-   if (self._status === C.STATUS_TERMINATED) {
+   if (self.status === C.STATUS_TERMINATED) {
      return;
    }
 
@@ -17324,18 +17333,18 @@ RTCSession.prototype.sendInitialRequest = function(mediaConstraints, RTCOfferCon
 
  // rtcMediaHandler.createOffer succeeded
  offerCreationSucceeded = function(offer) {
-   if (self.isCanceled || self._status === C.STATUS_TERMINATED) {
+   if (self.isCanceled || self.status === C.STATUS_TERMINATED) {
      return;
    }
 
    self.request.body = offer;
-   self._status = C.STATUS_INVITE_SENT;
+   self.status = C.STATUS_INVITE_SENT;
    request_sender.send();
  },
 
  // rtcMediaHandler.createOffer failed
  offerCreationFailed = function() {
-   if (self._status === C.STATUS_TERMINATED) {
+   if (self.status === C.STATUS_TERMINATED) {
      return;
    }
 
@@ -17467,7 +17476,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
     return;
   }
 
-  if(this._status !== C.STATUS_INVITE_SENT && this._status !== C.STATUS_1XX_RECEIVED) {
+  if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
     return;
   }
 
@@ -17475,7 +17484,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
     case /^100$/.test(response.status_code):
       break;
     case /^1[0-9]{2}$/.test(response.status_code):
-      if(this._status !== C.STATUS_INVITE_SENT && this._status !== C.STATUS_1XX_RECEIVED) {
+      if(this.status !== C.STATUS_INVITE_SENT && this.status !== C.STATUS_1XX_RECEIVED) {
         break;
       }
 
@@ -17493,7 +17502,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
         }
       }
 
-      this._status = C.STATUS_1XX_RECEIVED;
+      this.status = C.STATUS_1XX_RECEIVED;
       this.progress('remote', response);
 
       if (!response.body) {
@@ -17519,7 +17528,7 @@ RTCSession.prototype.receiveInviteResponse = function(response) {
       );
       break;
     case /^2[0-9]{2}$/.test(response.status_code):
-      this._status = C.STATUS_CONFIRMED;
+      this.status = C.STATUS_CONFIRMED;
 
       if(!response.body) {
         this.acceptAndTerminate(response, 400, JsSIP_C.causes.MISSING_SDP);
@@ -17569,7 +17578,7 @@ RTCSession.prototype.receiveReinviteResponse = function(response) {
     self = this,
     contentType = response.getHeader('Content-Type');
 
-  if (this._status === C.STATUS_TERMINATED) {
+  if (this.status === C.STATUS_TERMINATED) {
     return;
   }
 
@@ -17577,7 +17586,7 @@ RTCSession.prototype.receiveReinviteResponse = function(response) {
     case /^1[0-9]{2}$/.test(response.status_code):
       break;
     case /^2[0-9]{2}$/.test(response.status_code):
-      this._status = C.STATUS_CONFIRMED;
+      this.status = C.STATUS_CONFIRMED;
       this.sendRequest(JsSIP_C.ACK);
 
       if(!response.body) {
@@ -17631,7 +17640,7 @@ RTCSession.prototype.acceptAndTerminate = function(response, status_code, reason
   }
 
   // Update session status.
-  this._status = C.STATUS_TERMINATED;
+  this.status = C.STATUS_TERMINATED;
 };
 
 
@@ -17664,8 +17673,8 @@ RTCSession.prototype.toogleMuteVideo = function(mute) {
  */
 
 RTCSession.prototype.onTransportError = function() {
-  if(this._status !== C.STATUS_TERMINATED) {
-    if (this._status === C.STATUS_CONFIRMED) {
+  if(this.status !== C.STATUS_TERMINATED) {
+    if (this.status === C.STATUS_CONFIRMED) {
       this.ended('system', null, JsSIP_C.causes.CONNECTION_ERROR);
     } else {
       this.failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
@@ -17674,8 +17683,8 @@ RTCSession.prototype.onTransportError = function() {
 };
 
 RTCSession.prototype.onRequestTimeout = function() {
-  if(this._status !== C.STATUS_TERMINATED) {
-    if (this._status === C.STATUS_CONFIRMED) {
+  if(this.status !== C.STATUS_TERMINATED) {
+    if (this.status === C.STATUS_CONFIRMED) {
       this.ended('system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
     } else {
       this.failed('system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
@@ -17684,8 +17693,8 @@ RTCSession.prototype.onRequestTimeout = function() {
 };
 
 RTCSession.prototype.onDialogError = function(response) {
-  if(this._status !== C.STATUS_TERMINATED) {
-    if (this._status === C.STATUS_CONFIRMED) {
+  if(this.status !== C.STATUS_TERMINATED) {
+    if (this.status === C.STATUS_CONFIRMED) {
       this.ended('remote', response, JsSIP_C.causes.DIALOG_ERROR);
     } else {
       this.failed('remote', response, JsSIP_C.causes.DIALOG_ERROR);
@@ -17874,9 +17883,9 @@ DTMF.prototype.send = function(tone, options) {
   this.direction = 'outgoing';
 
   // Check RTCSession Status
-  if (this.owner._status !== RTCSession.C.STATUS_CONFIRMED &&
-    this.owner._status !== RTCSession.C.STATUS_WAITING_FOR_ACK) {
-    throw new Exceptions.InvalidStateError(this.owner._status);
+  if (this.owner.status !== RTCSession.C.STATUS_CONFIRMED &&
+    this.owner.status !== RTCSession.C.STATUS_WAITING_FOR_ACK) {
+    throw new Exceptions.InvalidStateError(this.owner.status);
   }
 
   // Get DTMF options
@@ -18291,12 +18300,12 @@ Request.prototype.send = function(method, options) {
   }
 
   // Check RTCSession Status
-  if (this.owner._status !== RTCSession.C.STATUS_1XX_RECEIVED &&
-    this.owner._status !== RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
-    this.owner._status !== RTCSession.C.STATUS_WAITING_FOR_ACK &&
-    this.owner._status !== RTCSession.C.STATUS_CONFIRMED &&
-    this.owner._status !== RTCSession.C.STATUS_TERMINATED) {
-    throw new Exceptions.InvalidStateError(this.owner._status);
+  if (this.owner.status !== RTCSession.C.STATUS_1XX_RECEIVED &&
+    this.owner.status !== RTCSession.C.STATUS_WAITING_FOR_ANSWER &&
+    this.owner.status !== RTCSession.C.STATUS_WAITING_FOR_ACK &&
+    this.owner.status !== RTCSession.C.STATUS_CONFIRMED &&
+    this.owner.status !== RTCSession.C.STATUS_TERMINATED) {
+    throw new Exceptions.InvalidStateError(this.owner.status);
   }
 
   /*
@@ -18304,8 +18313,8 @@ Request.prototype.send = function(method, options) {
    * could had been terminated before the ACK had arrived.
    * RFC3261 Section 15, Paragraph 2
    */
-  else if (this.owner._status === RTCSession.C.STATUS_TERMINATED && method !== JsSIP_C.BYE) {
-    throw new Exceptions.InvalidStateError(this.owner._status);
+  else if (this.owner.status === RTCSession.C.STATUS_TERMINATED && method !== JsSIP_C.BYE) {
+    throw new Exceptions.InvalidStateError(this.owner.status);
   }
 
   // Set event handlers
@@ -20648,7 +20657,7 @@ UA.prototype.sendMessage = function(target, body, options) {
  */
 UA.prototype.terminateSessions = function(options) {
   for(var idx in this.sessions) {
-    if (this.sessions[idx].status !== 'ended') {
+    if (!this.sessions[idx].isEnded()) {
       this.sessions[idx].terminate(options);
     }
   }

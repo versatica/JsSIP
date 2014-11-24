@@ -88,7 +88,7 @@ function RTCMediaHandler(session, options) {
   this.peerConnection.onstatechange = function() {
     debug('PeerConnection state changed to "'+ this.readyState +'"');
   };
-};
+}
 
 
 RTCMediaHandler.prototype.isReady = function() {
