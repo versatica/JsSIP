@@ -2,7 +2,6 @@
  * The main namespace.
  * @namespace JsSIP
  */
-
 var JsSIP = {
   C: require('./Constants'),
   Exceptions: require('./Exceptions'),
@@ -19,23 +18,21 @@ module.exports = JsSIP;
 
 
 var pkg = require('../package.json');
+var RTCSession = require('./RTCSession');
 
 
 Object.defineProperties(JsSIP, {
   name: {
-    get: function(){ return pkg.title; }
+    get: function() { return pkg.title; }
   },
 
-  /**
-   * Retrieve the version of JsSIP.
-   * @memberof JsSIP
-   * @method
-   * @returns {String} Version in the form "X.Y.Z"
-   * @example
-   * // prints "1.0.0"
-   * console.log(JsSIP.version)
-   */
   version: {
-    get: function(){ return pkg.version; }
+    get: function() { return pkg.version; }
+  },
+
+  rtcEngine: {
+    set: function(engine) {
+      RTCSession.RTCEngine = engine;
+    }
   }
 });

@@ -15203,7 +15203,6 @@ module.exports = (function(){
  * The main namespace.
  * @namespace JsSIP
  */
-
 var JsSIP = {
   C: require('./Constants'),
   Exceptions: require('./Exceptions'),
@@ -15220,28 +15219,26 @@ module.exports = JsSIP;
 
 
 var pkg = require('../package.json');
+var RTCSession = require('./RTCSession');
 
 
 Object.defineProperties(JsSIP, {
   name: {
-    get: function(){ return pkg.title; }
+    get: function() { return pkg.title; }
   },
 
-  /**
-   * Retrieve the version of JsSIP.
-   * @memberof JsSIP
-   * @method
-   * @returns {String} Version in the form "X.Y.Z"
-   * @example
-   * // prints "1.0.0"
-   * console.log(JsSIP.version)
-   */
   version: {
-    get: function(){ return pkg.version; }
+    get: function() { return pkg.version; }
+  },
+
+  rtcEngine: {
+    set: function(engine) {
+      RTCSession.RTCEngine = engine;
+    }
   }
 });
 
-},{"../package.json":14,"./Constants":15,"./Exceptions":19,"./Grammar":20,"./NameAddrHeader":23,"./UA":35,"./URI":36,"./Utils":37,"debug":1}],22:[function(require,module,exports){
+},{"../package.json":14,"./Constants":15,"./Exceptions":19,"./Grammar":20,"./NameAddrHeader":23,"./RTCSession":25,"./UA":35,"./URI":36,"./Utils":37,"debug":1}],22:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -15871,7 +15868,6 @@ var WebRTC = require('./WebRTC');
 var SIPMessage = require('./SIPMessage');
 var Dialog = require('./Dialog');
 var RequestSender = require('./RequestSender');
-var RTCSession_RTCMediaHandler = require('./RTCSession/RTCMediaHandler');
 var RTCSession_Request = require('./RTCSession/Request');
 var RTCSession_DTMF = require('./RTCSession/DTMF');
 
@@ -15961,6 +15957,17 @@ function RTCSession(ua) {
 }
 
 util.inherits(RTCSession, events.EventEmitter);
+
+
+Object.defineProperty(RTCSession, 'RTCEngine', {
+  get: function() {
+    return RTCSession._RTCEngine || require('./RTCSession/RTCMediaHandler');
+  },
+
+  set: function(engine) {
+    RTCSession._RTCEngine = engine;
+  }
+});
 
 
 /**
@@ -16735,9 +16742,9 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   //Initialize Media Session
-  this.rtcMediaHandler = new RTCSession_RTCMediaHandler(this, {
+  this.rtcMediaHandler = new RTCSession.RTCEngine(this, {
     constraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
-    });
+  });
 
   if (request.body) {
     this.rtcMediaHandler.onMessage(
@@ -16853,7 +16860,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.id = this.request.call_id + this.from_tag;
 
-  this.rtcMediaHandler = new RTCSession_RTCMediaHandler(this, {
+  this.rtcMediaHandler = new RTCSession.RTCEngine(this, {
     constraints: RTCConstraints,
     stun_servers: stun_servers,
     turn_servers: turn_servers

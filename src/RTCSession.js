@@ -38,7 +38,6 @@ var WebRTC = require('./WebRTC');
 var SIPMessage = require('./SIPMessage');
 var Dialog = require('./Dialog');
 var RequestSender = require('./RequestSender');
-var RTCSession_RTCMediaHandler = require('./RTCSession/RTCMediaHandler');
 var RTCSession_Request = require('./RTCSession/Request');
 var RTCSession_DTMF = require('./RTCSession/DTMF');
 
@@ -128,6 +127,17 @@ function RTCSession(ua) {
 }
 
 util.inherits(RTCSession, events.EventEmitter);
+
+
+Object.defineProperty(RTCSession, 'RTCEngine', {
+  get: function() {
+    return RTCSession._RTCEngine || require('./RTCSession/RTCMediaHandler');
+  },
+
+  set: function(engine) {
+    RTCSession._RTCEngine = engine;
+  }
+});
 
 
 /**
@@ -902,9 +912,9 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   //Initialize Media Session
-  this.rtcMediaHandler = new RTCSession_RTCMediaHandler(this, {
+  this.rtcMediaHandler = new RTCSession.RTCEngine(this, {
     constraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
-    });
+  });
 
   if (request.body) {
     this.rtcMediaHandler.onMessage(
@@ -1020,7 +1030,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.id = this.request.call_id + this.from_tag;
 
-  this.rtcMediaHandler = new RTCSession_RTCMediaHandler(this, {
+  this.rtcMediaHandler = new RTCSession.RTCEngine(this, {
     constraints: RTCConstraints,
     stun_servers: stun_servers,
     turn_servers: turn_servers
