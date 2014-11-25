@@ -136,7 +136,7 @@ RTCMediaHandler.prototype.createOffer = function(onSuccess, onFailure, constrain
 
   this.peerConnection.createOffer(
     function(sessionDescription){
-      self.setLocalDescription(
+      setLocalDescription.call(self,
         sessionDescription,
         onSetLocalDescriptionSuccess,
         function(e) {
@@ -176,7 +176,7 @@ RTCMediaHandler.prototype.createAnswer = function(onSuccess, onFailure, constrai
 
   this.peerConnection.createAnswer(
     function(sessionDescription){
-      self.setLocalDescription(
+      setLocalDescription.call(self,
         sessionDescription,
         onSetLocalDescriptionSuccess,
         function(e) {
@@ -196,25 +196,17 @@ RTCMediaHandler.prototype.createAnswer = function(onSuccess, onFailure, constrai
 };
 
 
-RTCMediaHandler.prototype.setLocalDescription = function(sessionDescription, onSuccess, onFailure) {
-  this.peerConnection.setLocalDescription(
-    sessionDescription,
-    onSuccess,
-    function(e) {
-      debug('unable to set local description');
-      debug(e);
-      onFailure(e);
-    }
-  );
-};
-
-
 RTCMediaHandler.prototype.setRemoteDescription = function(type, body, onSuccess, onFailure) {
   this.peerConnection.setRemoteDescription(
     new WebRTC.RTCSessionDescription({type: type, sdp:body}),
     onSuccess,
     onFailure
   );
+};
+
+
+RTCMediaHandler.prototype.getRemoteDescription = function() {
+  return this.peerConnection.remoteDescription || {};
 };
 
 
@@ -232,6 +224,16 @@ RTCMediaHandler.prototype.addStream = function(stream, onSuccess, onFailure, con
 };
 
 
+RTCMediaHandler.prototype.getLocalStreams = function() {
+  return this.peerConnection.getLocalStreams() || [];
+};
+
+
+RTCMediaHandler.prototype.getRemoteStreams = function() {
+  return this.peerConnection.getRemoteStreams() || [];
+};
+
+
 RTCMediaHandler.prototype.close = function() {
   debug('closing PeerConnection');
   if(this.peerConnection) {
@@ -242,3 +244,20 @@ RTCMediaHandler.prototype.close = function() {
     }
   }
 };
+
+
+/**
+ * Private API.
+ */
+
+function setLocalDescription(sessionDescription, onSuccess, onFailure) {
+  this.peerConnection.setLocalDescription(
+    sessionDescription,
+    onSuccess,
+    function(e) {
+      debug('unable to set local description');
+      debug(e);
+      onFailure(e);
+    }
+  );
+}
