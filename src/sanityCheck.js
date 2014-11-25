@@ -200,13 +200,13 @@ function minimumHeaders() {
 // Reply
 function reply(status_code) {
   var to,
-    response = "SIP/2.0 " + status_code + " " + JsSIP_C.REASON_PHRASE[status_code] + "\r\n",
+    response = 'SIP/2.0 ' + status_code + ' ' + JsSIP_C.REASON_PHRASE[status_code] + '\r\n',
     vias = message.getHeaders('via'),
     length = vias.length,
     idx = 0;
 
   for(idx; idx < length; idx++) {
-    response += "Via: " + vias[idx] + "\r\n";
+    response += 'Via: ' + vias[idx] + '\r\n';
   }
 
   to = message.getHeader('To');
@@ -215,11 +215,11 @@ function reply(status_code) {
     to += ';tag=' + Utils.newTag();
   }
 
-  response += "To: " + to + "\r\n";
-  response += "From: " + message.getHeader('From') + "\r\n";
-  response += "Call-ID: " + message.call_id + "\r\n";
-  response += "CSeq: " + message.cseq + " " + message.method + "\r\n";
-  response += "\r\n";
+  response += 'To: ' + to + '\r\n';
+  response += 'From: ' + message.getHeader('From') + '\r\n';
+  response += 'Call-ID: ' + message.call_id + '\r\n';
+  response += 'CSeq: ' + message.cseq + ' ' + message.method + '\r\n';
+  response += '\r\n';
 
   transport.send(response);
 }

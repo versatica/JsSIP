@@ -33,10 +33,10 @@ function RequestSender(applicant, ua) {
 RequestSender.prototype = {
   send: function() {
     switch(this.method) {
-      case "INVITE":
+      case 'INVITE':
         this.clientTransaction = new Transactions.InviteClientTransaction(this, this.request, this.ua.transport);
         break;
-      case "ACK":
+      case 'ACK':
         this.clientTransaction = new Transactions.AckClientTransaction(this, this.request, this.ua.transport);
         break;
       default:

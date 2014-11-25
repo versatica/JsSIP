@@ -959,36 +959,36 @@ UA.configuration_skeleton = (function() {
   skeleton = {},
   parameters = [
     // Internal parameters
-    "jssip_id",
-    "ws_server_max_reconnection",
-    "ws_server_reconnection_timeout",
-    "hostport_params",
+    'jssip_id',
+    'ws_server_max_reconnection',
+    'ws_server_reconnection_timeout',
+    'hostport_params',
 
     // Mandatory user configurable parameters
-    "uri",
-    "ws_servers",
+    'uri',
+    'ws_servers',
 
     // Optional user configurable parameters
-    "authorization_user",
-    "connection_recovery_max_interval",
-    "connection_recovery_min_interval",
-    "display_name",
-    "hack_via_tcp", // false
-    "hack_via_ws", // false
-    "hack_ip_in_contact", //false
-    "instance_id",
-    "no_answer_timeout", // 30 seconds
-    "node_ws_options",
-    "password",
-    "register_expires", // 600 seconds
-    "registrar_server",
-    "stun_servers",
-    "turn_servers",
-    "use_preloaded_route",
+    'authorization_user',
+    'connection_recovery_max_interval',
+    'connection_recovery_min_interval',
+    'display_name',
+    'hack_via_tcp', // false
+    'hack_via_ws', // false
+    'hack_ip_in_contact', //false
+    'instance_id',
+    'no_answer_timeout', // 30 seconds
+    'node_ws_options',
+    'password',
+    'register_expires', // 600 seconds
+    'registrar_server',
+    'stun_servers',
+    'turn_servers',
+    'use_preloaded_route',
 
     // Post-configuration generated parameters
-    "via_core_value",
-    "via_host"
+    'via_core_value',
+    'via_host'
   ];
 
   for(idx in parameters) {

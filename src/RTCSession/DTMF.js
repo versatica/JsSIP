@@ -85,8 +85,8 @@ DTMF.prototype.send = function(tone, options) {
 
   extraHeaders.push('Content-Type: application/dtmf-relay');
 
-  body = "Signal= " + this.tone + "\r\n";
-  body += "Duration= " + this.duration;
+  body = 'Signal=' + this.tone + '\r\n';
+  body += 'Duration=' + this.duration;
 
   this.owner.newDTMF({
     originator: 'local',
@@ -165,10 +165,10 @@ DTMF.prototype.init_incoming = function(request) {
     body = request.body.split('\r\n');
     if (body.length === 2) {
       if (reg_tone.test(body[0])) {
-        this.tone = body[0].replace(reg_tone,"$2");
+        this.tone = body[0].replace(reg_tone,'$2');
       }
       if (reg_duration.test(body[1])) {
-        this.duration = parseInt(body[1].replace(reg_duration,"$2"), 10);
+        this.duration = parseInt(body[1].replace(reg_duration,'$2'), 10);
       }
     }
   }

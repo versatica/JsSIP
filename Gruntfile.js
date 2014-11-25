@@ -49,6 +49,7 @@ module.exports = function(grunt) {
 				nonbsp:  true,
 				// nonew: true,  // TODO: Enable when fixed.
 				plusplus: false,
+				quotmark: 'single',
 				undef: true,
 				unused: true,
 				boss: false,

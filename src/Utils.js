@@ -28,7 +28,7 @@ Utils.isDecimal = function(num) {
 };
 
 Utils.isEmpty = function(value) {
-  if (value === null || value === "" || value === undefined || (value instanceof Array && value.length === 0) || (typeof(value) === 'number' && isNaN(value))) {
+  if (value === null || value === '' || value === undefined || (value instanceof Array && value.length === 0) || (typeof(value) === 'number' && isNaN(value))) {
     return true;
   }
 };
@@ -272,18 +272,18 @@ Utils.calculateMD5 = function(string) {
   }
 
   function wordToHex(lValue) {
-    var wordToHexValue="",wordToHexValue_temp="",lByte,lCount;
+    var wordToHexValue='',wordToHexValue_temp='',lByte,lCount;
     for (lCount = 0;lCount<=3;lCount++) {
       lByte = (lValue>>>(lCount*8)) & 255;
-      wordToHexValue_temp = "0" + lByte.toString(16);
+      wordToHexValue_temp = '0' + lByte.toString(16);
       wordToHexValue = wordToHexValue + wordToHexValue_temp.substr(wordToHexValue_temp.length-2,2);
     }
     return wordToHexValue;
   }
 
   function utf8Encode(string) {
-    string = string.replace(/\r\n/g,"\n");
-    var utftext = "";
+    string = string.replace(/\r\n/g, '\n');
+    var utftext = '';
 
     for (var n = 0; n < string.length; n++) {
       var c = string.charCodeAt(n);

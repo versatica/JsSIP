@@ -42,7 +42,7 @@ function Registrator(ua, transport) {
   this.extraHeaders = [];
 
   // Custom Contact header params for REGISTER and un-REGISTER.
-  this.extraContactParams = "";
+  this.extraContactParams = '';
 
   if(reg_id) {
     this.contact += ';reg-id='+ reg_id;
@@ -66,13 +66,13 @@ Registrator.prototype = {
     }
 
     // Reset it.
-    this.extraContactParams = "";
+    this.extraContactParams = '';
 
     for(var param_key in extraContactParams) {
       var param_value = extraContactParams[param_key];
-      this.extraContactParams += (";" + param_key);
+      this.extraContactParams += (';' + param_key);
       if (param_value) {
-        this.extraContactParams += ("=" + param_value);
+        this.extraContactParams += ('=' + param_value);
       }
     }
   },

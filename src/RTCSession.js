@@ -945,7 +945,7 @@ RTCSession.prototype.init_incoming = function(request) {
 
   //Initialize Media Session
   this.rtcMediaHandler = new RTCSession.RTCEngine(this, {
-    constraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
+    constraints: {optional: [{DtlsSrtpKeyAgreement: 'true'}]}
   });
 
   if (request.body) {
