@@ -6,14 +6,11 @@
  *
  * grunt devel:   Build the JsSIP Grammar.
  *
- * grunt dist:    Generate builds/jssip-X.Y.Z.js and a builds/jssip-last.js
- *                symlink pointing to it.
+ * grunt dist:    Generate builds/jssip-X.Y.Z.js, builds/jssip-last.js
+ *                symlink pointing to it, builds/jssip-X.Y.Z.min.js and
+ *                builds/jssip.js which is a copy of the minified file.
  *
- * grunt min:     Generate builds/jssip-X.Y.Z.min.js.
- *
- * grunt watch:   Watch for changes in the src/ directory and run 'grunt dist'.
- *
- * grunt test:    Grunt Node test units.
+ * grunt test:    Run test units.
  *
  * grunt:         Alias for 'grunt dist'.
  */
@@ -28,6 +25,7 @@ module.exports = function(grunt) {
 	// Generated builds.
 	var builds = {
 		dist: 'builds/<%= pkg.name %>-<%= pkg.version %>.js',
+		copy: 'builds/<%= pkg.name %>.js',
 		last: 'builds/<%= pkg.name %>-last.js',
 	};
 
@@ -79,6 +77,13 @@ module.exports = function(grunt) {
 			}
 		},
 
+		nodeunit: {
+			all: [ 'test/*.js' ],
+			options: {
+				reporter: 'default'
+			}
+		},
+
 		browserify: {
 			dist: {
 				files: {
@@ -104,10 +109,13 @@ module.exports = function(grunt) {
 			}
 		},
 
-		nodeunit: {
-			all: [ 'test/*.js' ],
+		symlink: {
 			options: {
-				reporter: 'default'
+				overwrite: true
+			},
+			last: {
+				src: builds.dist,
+				dest: builds.last
 			}
 		},
 
@@ -122,41 +130,19 @@ module.exports = function(grunt) {
 			}
 		},
 
+		copy: {
+			minified: {
+				src: 'builds/<%= pkg.name %>-<%= pkg.version %>.min.js',
+				dest: builds.copy
+			}
+		},
+
 		watch: {
 			dist: {
 				files: [ 'src/**/*.js' ],
-				tasks: [ 'dist' ],
+				tasks: [ 'jshint:each_file', 'test' ],
 				options: {
 					nospawn: true
-				}
-			}
-		},
-
-		symlink: {
-			options: {
-				overwrite: true
-			},
-			last: {
-				src: builds.dist,
-				dest: builds.last
-			}
-		},
-
-		jsdoc: {
-			basic: {
-				src: [ 'README.md', 'src/**/*.js' ],
-				options: {
-					destination: 'doc/basic/',
-					private: false
-				}
-			},
-			docstrap: {
-				src: [ 'README.md', 'src/**/*.js' ],
-				options: {
-					destination: 'doc/docstrap/',
-					private: false,
-					template: 'node_modules/grunt-jsdoc/node_modules/ink-docstrap/template',
-					configure: 'jsdoc.conf.json'
 				}
 			}
 		}
@@ -165,13 +151,13 @@ module.exports = function(grunt) {
 
 	// Load Grunt plugins.
 	grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-nodeunit');
-	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.loadNpmTasks('grunt-contrib-symlink');
 	grunt.loadNpmTasks('grunt-browserify');
-	grunt.loadNpmTasks('grunt-jsdoc');
+	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-contrib-symlink');
+	grunt.loadNpmTasks('grunt-contrib-uglify');
+	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 
 
 	// Task for building src/Grammar.js.
@@ -219,14 +205,7 @@ module.exports = function(grunt) {
 
 	// Taks for building builds/jssip-X.Y.Z.js and builds/jssip-last.js symlink.
 	// NOTE: This task assumes that 'grunt devel' has been already executed.
-	grunt.registerTask('dist', [ 'jshint:each_file', 'browserify:dist', 'concat:dist', 'symlink:last', 'test' ]);
-
-	// Taks for building builds/jssip-X.Y.Z.min.js (minified).
-	// NOTE: This task assumes that 'devel' and 'dist' tasks have been already executed.
-	grunt.registerTask('min', [ 'uglify:dist' ]);
-
-	// Build builds nice documentation using JsDoc3.
-	grunt.registerTask('doc', [ 'jsdoc:docstrap' ]);
+	grunt.registerTask('dist', [ 'jshint:each_file', 'test', 'browserify:dist', 'concat:dist', 'symlink:last', 'uglify:dist', 'copy:minified' ]);
 
 	// Task for Travis CI.
 	grunt.registerTask('travis', [ 'test' ]);

@@ -1985,14 +1985,14 @@ module.exports={
   },
   "devDependencies": {
     "grunt": "~0.4.5",
-    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-browserify": "~3.0.1",
     "grunt-contrib-concat": "~0.5.0",
+    "grunt-contrib-copy": "^0.7.0",
+    "grunt-contrib-jshint": "~0.10.0",
     "grunt-contrib-nodeunit": "~0.4.1",
+    "grunt-contrib-symlink": "~0.3.0",
     "grunt-contrib-uglify": "~0.6.0",
     "grunt-contrib-watch": "~0.6.1",
-    "grunt-contrib-symlink": "~0.3.0",
-    "grunt-browserify": "~3.0.1",
-    "grunt-jsdoc": "~0.5.7",
     "pegjs": "0.7.0"
   },
   "scripts": {

@@ -2,4 +2,5 @@ node_modules/
 npm-debug.log
 .npmignore
 builds/jssip-last.js
+builds/jssip.js
 doc/
