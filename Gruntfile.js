@@ -208,7 +208,7 @@ module.exports = function(grunt) {
 	grunt.registerTask('dist', [ 'jshint:each_file', 'test', 'browserify:dist', 'concat:dist', 'symlink:last', 'uglify:dist', 'copy:minified' ]);
 
 	// Task for Travis CI.
-	grunt.registerTask('travis', [ 'test' ]);
+	grunt.registerTask('travis', [ 'dist' ]);
 
 	// Default task points to 'dist' task.
 	grunt.registerTask('default', [ 'dist' ]);
