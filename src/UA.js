@@ -797,7 +797,7 @@ UA.prototype.loadConfig = function(configuration) {
     hack_ip_in_contact: false,
 
     // Options for Node.
-    node_ws_options: {}
+    node_websocket_options: {}
   };
 
   // Pre-Configuration
@@ -978,7 +978,7 @@ UA.configuration_skeleton = (function() {
     'hack_ip_in_contact', //false
     'instance_id',
     'no_answer_timeout', // 30 seconds
-    'node_ws_options',
+    'node_websocket_options',
     'password',
     'register_expires', // 600 seconds
     'registrar_server',
@@ -1170,8 +1170,8 @@ UA.configuration_check = {
       }
     },
 
-    node_ws_options: function(node_ws_options) {
-      return (typeof node_ws_options === 'object') ? node_ws_options : {};
+    node_websocket_options: function(node_websocket_options) {
+      return (typeof node_websocket_options === 'object') ? node_websocket_options : {};
     },
 
     password: function(password) {

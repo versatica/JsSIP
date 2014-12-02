@@ -29,7 +29,7 @@
   "dependencies": {
     "debug": "^2.1.0",
     "sdp-transform": "~0.6.1",
-    "ws": "~0.4.32"
+    "websocket": "^1.0.13"
   },
   "devDependencies": {
     "grunt": "~0.4.5",

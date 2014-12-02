@@ -24,8 +24,8 @@ var Parser = require('./Parser');
 var UA = require('./UA');
 var SIPMessage = require('./SIPMessage');
 var sanityCheck = require('./sanityCheck');
-// 'ws' module uses the native WebSocket interface when bundled to run in a browser.
-var WebSocket = require('ws');  // jshint ignore:line
+// 'websocket' module uses the native WebSocket interface when bundled to run in a browser.
+var W3CWebSocket = require('websocket').w3cwebsocket;
 
 
 function Transport(ua, server) {
@@ -38,11 +38,15 @@ function Transport(ua, server) {
   this.reconnectTimer = null;
   this.lastTransportError = {};
 
-  // Options for the Node "ws" WebSocket interface.
-  this.node_ws_options = this.ua.configuration.node_ws_options;
-  this.node_ws_options.headers = {
-    'User-Agent': JsSIP_C.USER_AGENT
-  };
+  /**
+   * Options for the Node "websocket" library.
+   */
+
+  this.node_websocket_options = this.ua.configuration.node_websocket_options || {};
+
+  // Add our User-Agent header.
+  this.node_websocket_options.headers = this.node_websocket_options.headers || {};
+  this.node_websocket_options.headers['User-Agent'] = JsSIP_C.USER_AGENT;
 }
 
 Transport.prototype = {
@@ -67,7 +71,7 @@ Transport.prototype = {
       (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
 
     try {
-      this.ws = new WebSocket(this.server.ws_uri, 'sip', this.node_ws_options);
+      this.ws = new W3CWebSocket(this.server.ws_uri, 'sip', this.node_websocket_options.origin, this.node_websocket_options.headers, this.node_websocket_options.requestOptions, this.node_websocket_options.clientConfig);
       this.ws.binaryType = 'arraybuffer';
 
       this.ws.onopen = function() {
