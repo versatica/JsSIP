@@ -12,7 +12,7 @@ before_install:
 install: npm install
 
 # We want that Travis also checks the "devel" task.
-before_script: grunt devel dist min
+before_script: grunt devel dist
 
 notifications:
   email:
