@@ -28,12 +28,12 @@
   },
   "dependencies": {
     "debug": "^2.1.0",
-    "sdp-transform": "~0.6.1",
-    "websocket": "^1.0.13"
+    "sdp-transform": "~1.1.0",
+    "websocket": "^1.0.14"
   },
   "devDependencies": {
     "grunt": "~0.4.5",
-    "grunt-browserify": "~3.0.1",
+    "grunt-browserify": "~3.2.1",
     "grunt-contrib-concat": "~0.5.0",
     "grunt-contrib-copy": "^0.7.0",
     "grunt-contrib-jshint": "~0.10.0",

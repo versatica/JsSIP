@@ -802,6 +802,8 @@ var process = module.exports = {};
 process.nextTick = (function () {
     var canSetImmediate = typeof window !== 'undefined'
     && window.setImmediate;
+    var canMutationObserver = typeof window !== 'undefined'
+    && window.MutationObserver;
     var canPost = typeof window !== 'undefined'
     && window.postMessage && window.addEventListener
     ;
@@ -810,8 +812,29 @@ process.nextTick = (function () {
         return function (f) { return window.setImmediate(f) };
     }
 
+    var queue = [];
+
+    if (canMutationObserver) {
+        var hiddenDiv = document.createElement("div");
+        var observer = new MutationObserver(function () {
+            var queueList = queue.slice();
+            queue.length = 0;
+            queueList.forEach(function (fn) {
+                fn();
+            });
+        });
+
+        observer.observe(hiddenDiv, { attributes: true });
+
+        return function nextTick(fn) {
+            if (!queue.length) {
+                hiddenDiv.setAttribute('yes', 'no');
+            }
+            queue.push(fn);
+        };
+    }
+
     if (canPost) {
-        var queue = [];
         window.addEventListener('message', function (ev) {
             var source = ev.source;
             if ((source === window || source === null) && ev.data === 'process-tick') {
@@ -851,7 +874,7 @@ process.emit = noop;
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
-}
+};
 
 // TODO(shtylman)
 process.cwd = function () { return '/' };
@@ -1559,7 +1582,7 @@ var grammar = module.exports = {
       format: function (o) {
         return (o.config != null) ?
           "extmap:%s %s %s":
-          "extmap:%s %s"
+          "extmap:%s %s";
       }
     },
     {
@@ -1595,8 +1618,11 @@ var grammar = module.exports = {
     },
     { //a=sendrecv
       name: 'direction',
-      reg: /^(sendrecv|recvonly|sendonly|inactive)/,
-      format: "%s"
+      reg: /^(sendrecv|recvonly|sendonly|inactive)/
+    },
+    { //a=ice-lite
+      name: 'icelite',
+      reg: /^(ice-lite)/
     },
     { //a=ice-ufrag:F7gI
       name: 'iceUfrag',
@@ -1739,7 +1765,7 @@ exports.parse = function (sdp) {
     , location = session; // points at where properties go under (one of the above)
 
   // parse lines we understand
-  sdp.split('\r\n').filter(validLine).forEach(function (l) {
+  sdp.split(/(\r\n|\r|\n)/).filter(validLine).forEach(function (l) {
     var type = l[0];
     var content = l.slice(2);
     if (type === 'm') {
@@ -1905,51 +1931,123 @@ module.exports = function (session, opts) {
 };
 
 },{"./grammar":9}],13:[function(require,module,exports){
+var _global = (function() { return this; })();
+var nativeWebSocket = _global.WebSocket || _global.MozWebSocket;
+
 
 /**
- * Module dependencies.
+ * Expose a W3C WebSocket class with just one or two arguments.
  */
+function W3CWebSocket(uri, protocols) {
+	var instance;
 
-var global = (function() { return this; })();
+	if (protocols) {
+		instance = new nativeWebSocket(uri, protocols);
+	}
+	else {
+		instance = new nativeWebSocket(uri);
+	}
 
-/**
- * WebSocket constructor.
- */
+	return instance;
+}
 
-var WebSocket = global.WebSocket || global.MozWebSocket;
+if (nativeWebSocket) {
+	W3CWebSocket.prototype = nativeWebSocket.prototype;
+}
+
 
 /**
  * Module exports.
  */
+module.exports = {
+    'w3cwebsocket' : nativeWebSocket ? W3CWebSocket : null,
+    'version'      : require('./version')
+};
 
-module.exports = WebSocket ? ws : null;
+},{"./version":14}],14:[function(require,module,exports){
+module.exports = require('../package.json').version;
 
-/**
- * WebSocket constructor.
- *
- * The third `opts` options object gets ignored in web browsers, since it's
- * non-standard, and throws a TypeError if passed to the constructor.
- * See: https://github.com/einaros/ws/issues/227
- *
- * @param {String} uri
- * @param {Array} protocols (optional)
- * @param {Object) opts (optional)
- * @api public
- */
-
-function ws(uri, protocols, opts) {
-  var instance;
-  if (protocols) {
-    instance = new WebSocket(uri, protocols);
-  } else {
-    instance = new WebSocket(uri);
-  }
-  return instance;
+},{"../package.json":15}],15:[function(require,module,exports){
+module.exports={
+  "name": "websocket",
+  "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
+  "keywords": [
+    "websocket",
+    "websockets",
+    "socket",
+    "networking",
+    "comet",
+    "push",
+    "RFC-6455",
+    "realtime",
+    "server",
+    "client"
+  ],
+  "author": {
+    "name": "Brian McKelvey",
+    "email": "brian@worlize.com",
+    "url": "https://www.worlize.com/"
+  },
+  "version": "1.0.14",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theturtle32/WebSocket-Node.git"
+  },
+  "homepage": "https://github.com/theturtle32/WebSocket-Node",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "dependencies": {
+    "debug": "~2.1.0",
+    "nan": "~1.0.0",
+    "typedarray-to-buffer": "~3.0.0"
+  },
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
+    "gulp-jshint": "^1.9.0",
+    "jshint-stylish": "^1.0.0",
+    "tape": "^3.0.0"
+  },
+  "config": {
+    "verbose": false
+  },
+  "scripts": {
+    "install": "(node-gyp rebuild 2> builderror.log) || (exit 0)",
+    "test": "faucet test/unit",
+    "gulp": "gulp"
+  },
+  "main": "index",
+  "directories": {
+    "lib": "./lib"
+  },
+  "browser": "lib/browser.js",
+  "gitHead": "ee1c2ee1c333a1cbb122e3e385b60f051ea69706",
+  "bugs": {
+    "url": "https://github.com/theturtle32/WebSocket-Node/issues"
+  },
+  "_id": "websocket@1.0.14",
+  "_shasum": "1ef1ab300d7ccc619557367ce172e9cb83bdad49",
+  "_from": "websocket@>=1.0.14 <2.0.0",
+  "_npmVersion": "1.4.28",
+  "_npmUser": {
+    "name": "theturtle32",
+    "email": "brian@worlize.com"
+  },
+  "maintainers": [
+    {
+      "name": "theturtle32",
+      "email": "brian@worlize.com"
+    }
+  ],
+  "dist": {
+    "shasum": "1ef1ab300d7ccc619557367ce172e9cb83bdad49",
+    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.14.tgz"
+  },
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.14.tgz"
 }
 
-if (WebSocket) ws.prototype = WebSocket.prototype;
-
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
@@ -1980,12 +2078,12 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.0",
-    "sdp-transform": "~0.6.1",
-    "ws": "~0.4.32"
+    "sdp-transform": "~1.1.0",
+    "websocket": "^1.0.14"
   },
   "devDependencies": {
     "grunt": "~0.4.5",
-    "grunt-browserify": "~3.0.1",
+    "grunt-browserify": "~3.2.1",
     "grunt-contrib-concat": "~0.5.0",
     "grunt-contrib-copy": "^0.7.0",
     "grunt-contrib-jshint": "~0.10.0",
@@ -2000,7 +2098,7 @@ module.exports={
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var pkg = require('../package.json');
 
 var C = {
@@ -2153,7 +2251,7 @@ var C = {
 
 module.exports = C;
 
-},{"../package.json":14}],16:[function(require,module,exports){
+},{"../package.json":16}],18:[function(require,module,exports){
 module.exports = Dialog;
 
 
@@ -2372,7 +2470,7 @@ Dialog.prototype = {
   }
 };
 
-},{"./Constants":15,"./Dialog/RequestSender":17,"./SIPMessage":31,"./Transactions":33,"debug":1}],17:[function(require,module,exports){
+},{"./Constants":17,"./Dialog/RequestSender":19,"./SIPMessage":33,"./Transactions":35,"debug":1}],19:[function(require,module,exports){
 module.exports = DialogRequestSender;
 
 /**
@@ -2458,7 +2556,7 @@ DialogRequestSender.prototype = {
   }
 };
 
-},{"../Constants":15,"../RTCSession":25,"../RequestSender":30,"../Transactions":33}],18:[function(require,module,exports){
+},{"../Constants":17,"../RTCSession":27,"../RequestSender":32,"../Transactions":35}],20:[function(require,module,exports){
 module.exports = DigestAuthentication;
 
 
@@ -2615,7 +2713,7 @@ DigestAuthentication.prototype.updateNcHex = function() {
   this.ncHex = '00000000'.substr(0, 8-hex.length) + hex;
 };
 
-},{"./Utils":37,"debug":1}],19:[function(require,module,exports){
+},{"./Utils":39,"debug":1}],21:[function(require,module,exports){
 /**
  * @namespace Exceptions
  * @memberOf JsSIP
@@ -2673,7 +2771,7 @@ var Exceptions = {
 
 module.exports = Exceptions;
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = (function(){
   /*
    * Generated by PEG.js 0.7.0.
@@ -15198,7 +15296,7 @@ module.exports = (function(){
   return result;
 })();
 
-},{"./NameAddrHeader":23,"./URI":36}],21:[function(require,module,exports){
+},{"./NameAddrHeader":25,"./URI":38}],23:[function(require,module,exports){
 /**
  * The main namespace.
  * @namespace JsSIP
@@ -15238,7 +15336,7 @@ Object.defineProperties(JsSIP, {
   }
 });
 
-},{"../package.json":14,"./Constants":15,"./Exceptions":19,"./Grammar":20,"./NameAddrHeader":23,"./RTCSession":25,"./UA":35,"./URI":36,"./Utils":37,"debug":1}],22:[function(require,module,exports){
+},{"../package.json":16,"./Constants":17,"./Exceptions":21,"./Grammar":22,"./NameAddrHeader":25,"./RTCSession":27,"./UA":37,"./URI":38,"./Utils":39,"debug":1}],24:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -15457,7 +15555,7 @@ Message.prototype.newMessage = function(originator, request) {
   });
 };
 
-},{"./Constants":15,"./Exceptions":19,"./RequestSender":30,"./SIPMessage":31,"./Transactions":33,"./Utils":37,"events":4,"util":8}],23:[function(require,module,exports){
+},{"./Constants":17,"./Exceptions":21,"./RequestSender":32,"./SIPMessage":33,"./Transactions":35,"./Utils":39,"events":4,"util":8}],25:[function(require,module,exports){
 module.exports = NameAddrHeader;
 
 
@@ -15567,7 +15665,7 @@ NameAddrHeader.parse = function(name_addr_header) {
   }
 };
 
-},{"./Grammar":20,"./URI":36}],24:[function(require,module,exports){
+},{"./Grammar":22,"./URI":38}],26:[function(require,module,exports){
 var Parser = {};
 
 module.exports = Parser;
@@ -15827,7 +15925,7 @@ Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
 Parser.parsePayloads = sdp_transform.parsePayloads;
 Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
 
-},{"./Grammar":20,"./SIPMessage":31,"debug":1,"sdp-transform":10}],25:[function(require,module,exports){
+},{"./Grammar":22,"./SIPMessage":33,"debug":1,"sdp-transform":10}],27:[function(require,module,exports){
 module.exports = RTCSession;
 
 
@@ -17823,7 +17921,7 @@ RTCSession.prototype.onReadyToReinvite = function() {
   }
 };
 
-},{"./Constants":15,"./Dialog":16,"./Exceptions":19,"./Parser":24,"./RTCSession/DTMF":26,"./RTCSession/RTCMediaHandler":27,"./RTCSession/Request":28,"./RequestSender":30,"./SIPMessage":31,"./Timers":32,"./Transactions":33,"./UA":35,"./Utils":37,"./WebRTC":38,"debug":1,"events":4,"util":8}],26:[function(require,module,exports){
+},{"./Constants":17,"./Dialog":18,"./Exceptions":21,"./Parser":26,"./RTCSession/DTMF":28,"./RTCSession/RTCMediaHandler":29,"./RTCSession/Request":30,"./RequestSender":32,"./SIPMessage":33,"./Timers":34,"./Transactions":35,"./UA":37,"./Utils":39,"./WebRTC":40,"debug":1,"events":4,"util":8}],28:[function(require,module,exports){
 module.exports = DTMF;
 
 
@@ -18010,7 +18108,7 @@ DTMF.prototype.init_incoming = function(request) {
   }
 };
 
-},{"../Constants":15,"../Exceptions":19,"../RTCSession":25,"../Utils":37,"debug":1,"events":4,"util":8}],27:[function(require,module,exports){
+},{"../Constants":17,"../Exceptions":21,"../RTCSession":27,"../Utils":39,"debug":1,"events":4,"util":8}],29:[function(require,module,exports){
 module.exports = RTCMediaHandler;
 
 /**
@@ -18275,7 +18373,7 @@ function setLocalDescription(sessionDescription, onSuccess, onFailure) {
   );
 }
 
-},{"../Constants":15,"../WebRTC":38,"debug":1}],28:[function(require,module,exports){
+},{"../Constants":17,"../WebRTC":40,"debug":1}],30:[function(require,module,exports){
 module.exports = Request;
 
 /**
@@ -18393,7 +18491,7 @@ Request.prototype.onDialogError = function(response) {
   this.owner.onDialogError(response);
 };
 
-},{"../Constants":15,"../Exceptions":19,"../RTCSession":25,"../Utils":37,"events":4,"util":8}],29:[function(require,module,exports){
+},{"../Constants":17,"../Exceptions":21,"../RTCSession":27,"../Utils":39,"events":4,"util":8}],31:[function(require,module,exports){
 module.exports = Registrator;
 
 
@@ -18701,7 +18799,7 @@ Registrator.prototype = {
 };
 
 
-},{"./Constants":15,"./RequestSender":30,"./SIPMessage":31,"./Utils":37,"debug":1}],30:[function(require,module,exports){
+},{"./Constants":17,"./RequestSender":32,"./SIPMessage":33,"./Utils":39,"debug":1}],32:[function(require,module,exports){
 module.exports = RequestSender;
 
 
@@ -18832,7 +18930,7 @@ RequestSender.prototype = {
   }
 };
 
-},{"./Constants":15,"./DigestAuthentication":18,"./Transactions":33,"./UA":35,"debug":1}],31:[function(require,module,exports){
+},{"./Constants":17,"./DigestAuthentication":20,"./Transactions":35,"./UA":37,"debug":1}],33:[function(require,module,exports){
 module.exports = {
   OutgoingRequest: OutgoingRequest,
   IncomingRequest: IncomingRequest,
@@ -19375,7 +19473,7 @@ function IncomingResponse() {
 
 IncomingResponse.prototype = new IncomingMessage();
 
-},{"./Constants":15,"./Grammar":20,"./NameAddrHeader":23,"./Utils":37,"debug":1}],32:[function(require,module,exports){
+},{"./Constants":17,"./Grammar":22,"./NameAddrHeader":25,"./Utils":39,"debug":1}],34:[function(require,module,exports){
 var T1 = 500,
   T2 = 4000,
   T4 = 5000;
@@ -19400,7 +19498,7 @@ var Timers = {
 
 module.exports = Timers;
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = {
   C: null,
   NonInviteClientTransaction: NonInviteClientTransaction,
@@ -20124,7 +20222,7 @@ function checkTransaction(ua, request) {
   }
 }
 
-},{"./Constants":15,"./Timers":32,"debug":1,"events":4,"util":8}],34:[function(require,module,exports){
+},{"./Constants":17,"./Timers":34,"debug":1,"events":4,"util":8}],36:[function(require,module,exports){
 module.exports = Transport;
 
 
@@ -20151,8 +20249,8 @@ var Parser = require('./Parser');
 var UA = require('./UA');
 var SIPMessage = require('./SIPMessage');
 var sanityCheck = require('./sanityCheck');
-// 'ws' module uses the native WebSocket interface when bundled to run in a browser.
-var WebSocket = require('ws');  // jshint ignore:line
+// 'websocket' module uses the native WebSocket interface when bundled to run in a browser.
+var W3CWebSocket = require('websocket').w3cwebsocket;
 
 
 function Transport(ua, server) {
@@ -20165,11 +20263,15 @@ function Transport(ua, server) {
   this.reconnectTimer = null;
   this.lastTransportError = {};
 
-  // Options for the Node "ws" WebSocket interface.
-  this.node_ws_options = this.ua.configuration.node_ws_options;
-  this.node_ws_options.headers = {
-    'User-Agent': JsSIP_C.USER_AGENT
-  };
+  /**
+   * Options for the Node "websocket" library.
+   */
+
+  this.node_websocket_options = this.ua.configuration.node_websocket_options || {};
+
+  // Add our User-Agent header.
+  this.node_websocket_options.headers = this.node_websocket_options.headers || {};
+  this.node_websocket_options.headers['User-Agent'] = JsSIP_C.USER_AGENT;
 }
 
 Transport.prototype = {
@@ -20194,7 +20296,7 @@ Transport.prototype = {
       (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
 
     try {
-      this.ws = new WebSocket(this.server.ws_uri, 'sip', this.node_ws_options);
+      this.ws = new W3CWebSocket(this.server.ws_uri, 'sip', this.node_websocket_options.origin, this.node_websocket_options.headers, this.node_websocket_options.requestOptions, this.node_websocket_options.clientConfig);
       this.ws.binaryType = 'arraybuffer';
 
       this.ws.onopen = function() {
@@ -20408,7 +20510,7 @@ Transport.prototype = {
   }
 };
 
-},{"./Constants":15,"./Parser":24,"./SIPMessage":31,"./UA":35,"./sanityCheck":39,"debug":1,"ws":13}],35:[function(require,module,exports){
+},{"./Constants":17,"./Parser":26,"./SIPMessage":33,"./UA":37,"./sanityCheck":41,"debug":1,"websocket":13}],37:[function(require,module,exports){
 module.exports = UA;
 
 
@@ -21208,7 +21310,7 @@ UA.prototype.loadConfig = function(configuration) {
     hack_ip_in_contact: false,
 
     // Options for Node.
-    node_ws_options: {}
+    node_websocket_options: {}
   };
 
   // Pre-Configuration
@@ -21389,7 +21491,7 @@ UA.configuration_skeleton = (function() {
     'hack_ip_in_contact', //false
     'instance_id',
     'no_answer_timeout', // 30 seconds
-    'node_ws_options',
+    'node_websocket_options',
     'password',
     'register_expires', // 600 seconds
     'registrar_server',
@@ -21581,8 +21683,8 @@ UA.configuration_check = {
       }
     },
 
-    node_ws_options: function(node_ws_options) {
-      return (typeof node_ws_options === 'object') ? node_ws_options : {};
+    node_websocket_options: function(node_websocket_options) {
+      return (typeof node_websocket_options === 'object') ? node_websocket_options : {};
     },
 
     password: function(password) {
@@ -21702,7 +21804,7 @@ UA.configuration_check = {
   }
 };
 
-},{"./Constants":15,"./Exceptions":19,"./Grammar":20,"./Message":22,"./RTCSession":25,"./Registrator":29,"./Transactions":33,"./Transport":34,"./URI":36,"./Utils":37,"./WebRTC":38,"debug":1,"events":4,"util":8}],36:[function(require,module,exports){
+},{"./Constants":17,"./Exceptions":21,"./Grammar":22,"./Message":24,"./RTCSession":27,"./Registrator":31,"./Transactions":35,"./Transport":36,"./URI":38,"./Utils":39,"./WebRTC":40,"debug":1,"events":4,"util":8}],38:[function(require,module,exports){
 module.exports = URI;
 
 
@@ -21914,7 +22016,7 @@ URI.parse = function(uri) {
   }
 };
 
-},{"./Constants":15,"./Grammar":20,"./Utils":37}],37:[function(require,module,exports){
+},{"./Constants":17,"./Grammar":22,"./Utils":39}],39:[function(require,module,exports){
 var Utils = {};
 
 module.exports = Utils;
@@ -22311,7 +22413,7 @@ Utils.calculateMD5 = function(string) {
   return temp.toLowerCase();
 };
 
-},{"./Constants":15,"./Grammar":20,"./URI":36}],38:[function(require,module,exports){
+},{"./Constants":17,"./Grammar":22,"./URI":38}],40:[function(require,module,exports){
 var WebRTC = {};
 
 module.exports = WebRTC;
@@ -22370,7 +22472,7 @@ else {
   WebRTC.isSupported = false;
 }
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = sanityCheck;
 
 
@@ -22597,5 +22699,5 @@ function reply(status_code) {
   transport.send(response);
 }
 
-},{"./Constants":15,"./SIPMessage":31,"./Utils":37,"debug":1}]},{},[21])(21)
+},{"./Constants":17,"./SIPMessage":33,"./Utils":39,"debug":1}]},{},[23])(23)
 });
