@@ -19,6 +19,7 @@ module.exports = JsSIP;
 
 var pkg = require('../package.json');
 var RTCSession = require('./RTCSession');
+var WebRTC = require('./WebRTC');
 
 
 Object.defineProperties(JsSIP, {
@@ -33,6 +34,7 @@ Object.defineProperties(JsSIP, {
   rtcEngine: {
     set: function(engine) {
       RTCSession.RTCEngine = engine;
+      WebRTC.setSupported();
     }
   }
 });

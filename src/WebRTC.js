@@ -48,10 +48,17 @@ if (WebRTC.RTCPeerConnection && WebRTC.RTCPeerConnection.prototype) {
   }
 }
 
-// isSupported attribute.
-if (WebRTC.getUserMedia && WebRTC.RTCPeerConnection && WebRTC.RTCSessionDescription) {
-  WebRTC.isSupported = true;
-}
-else {
-  WebRTC.isSupported = false;
-}
+
+WebRTC.setSupported = function() {
+  WebRTC._isSupported = true;
+};
+
+
+WebRTC.isSupported = function() {
+  if (WebRTC._isSupported) {
+    return true;
+  }
+  else {
+    return (WebRTC.getUserMedia && WebRTC.RTCPeerConnection && WebRTC.RTCSessionDescription);
+  }
+};

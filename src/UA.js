@@ -585,7 +585,7 @@ UA.prototype.receiveRequest = function(request) {
   if(!request.to_tag) {
     switch(method) {
       case JsSIP_C.INVITE:
-        if(WebRTC.isSupported) {
+        if(WebRTC.isSupported()) {
           session = new RTCSession(this);
           session.init_incoming(request);
         } else {

@@ -15318,6 +15318,7 @@ module.exports = JsSIP;
 
 var pkg = require('../package.json');
 var RTCSession = require('./RTCSession');
+var WebRTC = require('./WebRTC');
 
 
 Object.defineProperties(JsSIP, {
@@ -15332,11 +15333,12 @@ Object.defineProperties(JsSIP, {
   rtcEngine: {
     set: function(engine) {
       RTCSession.RTCEngine = engine;
+      WebRTC.setSupported();
     }
   }
 });
 
-},{"../package.json":16,"./Constants":17,"./Exceptions":21,"./Grammar":22,"./NameAddrHeader":25,"./RTCSession":27,"./UA":37,"./URI":38,"./Utils":39,"debug":1}],24:[function(require,module,exports){
+},{"../package.json":16,"./Constants":17,"./Exceptions":21,"./Grammar":22,"./NameAddrHeader":25,"./RTCSession":27,"./UA":37,"./URI":38,"./Utils":39,"./WebRTC":40,"debug":1}],24:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -16939,7 +16941,7 @@ RTCSession.prototype.connect = function(target, options) {
   }
 
   // Check WebRTC support
-  if (!WebRTC.isSupported) {
+  if (!WebRTC.isSupported()) {
     throw new Exceptions.NotSupportedError('WebRTC not supported');
   }
 
@@ -21098,7 +21100,7 @@ UA.prototype.receiveRequest = function(request) {
   if(!request.to_tag) {
     switch(method) {
       case JsSIP_C.INVITE:
-        if(WebRTC.isSupported) {
+        if(WebRTC.isSupported()) {
           session = new RTCSession(this);
           session.init_incoming(request);
         } else {
@@ -22464,13 +22466,20 @@ if (WebRTC.RTCPeerConnection && WebRTC.RTCPeerConnection.prototype) {
   }
 }
 
-// isSupported attribute.
-if (WebRTC.getUserMedia && WebRTC.RTCPeerConnection && WebRTC.RTCSessionDescription) {
-  WebRTC.isSupported = true;
-}
-else {
-  WebRTC.isSupported = false;
-}
+
+WebRTC.setSupported = function() {
+  WebRTC._isSupported = true;
+};
+
+
+WebRTC.isSupported = function() {
+  if (WebRTC._isSupported) {
+    return true;
+  }
+  else {
+    return (WebRTC.getUserMedia && WebRTC.RTCPeerConnection && WebRTC.RTCSessionDescription);
+  }
+};
 
 },{}],41:[function(require,module,exports){
 module.exports = sanityCheck;

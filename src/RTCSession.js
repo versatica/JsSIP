@@ -1011,7 +1011,7 @@ RTCSession.prototype.connect = function(target, options) {
   }
 
   // Check WebRTC support
-  if (!WebRTC.isSupported) {
+  if (!WebRTC.isSupported()) {
     throw new Exceptions.NotSupportedError('WebRTC not supported');
   }
 
