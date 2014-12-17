@@ -53,7 +53,7 @@ function Registrator(ua, transport) {
 
 Registrator.prototype = {
   setExtraHeaders: function(extraHeaders) {
-    if (! extraHeaders instanceof Array) {
+    if (! Array.isArray(extraHeaders)) {
       extraHeaders = [];
     }
 
@@ -61,7 +61,7 @@ Registrator.prototype = {
   },
 
   setExtraContactParams: function(extraContactParams) {
-    if (! extraContactParams instanceof Object) {
+    if (! (extraContactParams instanceof Object)) {
       extraContactParams = {};
     }
 

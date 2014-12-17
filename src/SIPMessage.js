@@ -100,7 +100,7 @@ OutgoingRequest.prototype = {
    * -param {String | Array} value header value
    */
   setHeader: function(name, value) {
-    this.headers[Utils.headerize(name)] = (value instanceof Array) ? value : [value];
+    this.headers[Utils.headerize(name)] = (Array.isArray(value)) ? value : [value];
   },
 
   /**

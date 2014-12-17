@@ -28,7 +28,7 @@ Utils.isDecimal = function(num) {
 };
 
 Utils.isEmpty = function(value) {
-  if (value === null || value === '' || value === undefined || (value instanceof Array && value.length === 0) || (typeof(value) === 'number' && isNaN(value))) {
+  if (value === null || value === '' || value === undefined || (Array.isArray(value) && value.length === 0) || (typeof(value) === 'number' && isNaN(value))) {
     return true;
   }
 };

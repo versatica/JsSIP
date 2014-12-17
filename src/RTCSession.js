@@ -445,7 +445,7 @@ RTCSession.prototype.answer = function(options) {
   sdp = Parser.parseSDP(remoteDescription.sdp || '');
 
   // Make sure sdp is an array, not the case if there is only one media
-  if(!(sdp.media instanceof Array)) {
+  if (! Array.isArray(sdp.media)) {
     sdp.media = [sdp.media || []];
   }
 

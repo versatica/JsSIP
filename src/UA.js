@@ -889,7 +889,7 @@ UA.prototype.loadConfig = function(configuration) {
 
   // Set empty Stun Server Set if explicitly passed an empty Array
   value = configuration.stun_servers;
-  if (value instanceof Array && value.length === 0) {
+  if (Array.isArray(value) && value.length === 0) {
     settings.stun_servers = [];
   }
 
@@ -1043,7 +1043,7 @@ UA.configuration_check = {
        */
       if (typeof ws_servers === 'string') {
         ws_servers = [{ws_uri: ws_servers}];
-      } else if (ws_servers instanceof Array) {
+      } else if (Array.isArray(ws_servers)) {
         length = ws_servers.length;
         for (idx = 0; idx < length; idx++) {
           if (typeof ws_servers[idx] === 'string') {
@@ -1216,7 +1216,7 @@ UA.configuration_check = {
 
       if (typeof stun_servers === 'string') {
         stun_servers = [stun_servers];
-      } else if (!(stun_servers instanceof Array)) {
+      } else if (! Array.isArray(stun_servers)) {
         return;
       }
 
@@ -1239,7 +1239,7 @@ UA.configuration_check = {
     turn_servers: function(turn_servers) {
       var idx, idx2, length, length2, turn_server, url;
 
-      if (! turn_servers instanceof Array) {
+      if (! Array.isArray(turn_servers)) {
         turn_servers = [turn_servers];
       }
 
@@ -1256,14 +1256,14 @@ UA.configuration_check = {
         // Backward compatibility:
         //Allow defining the turn_server 'credential' with the 'password' property.
         if (turn_server.password) {
-          turn_server.credential = [turn_server.password];
+          turn_server.credential = turn_server.password;
         }
 
         if (!turn_server.urls || !turn_server.username || !turn_server.credential) {
           return;
         }
 
-        if (!(turn_server.urls instanceof Array)) {
+        if (! Array.isArray(turn_server.urls)) {
           turn_server.urls = [turn_server.urls];
         }
 
