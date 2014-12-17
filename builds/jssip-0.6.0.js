@@ -16114,6 +16114,14 @@ RTCSession.prototype.isEnded = function() {
 
 
 /**
+ * Returns the internal RTC media engine instance.
+ */
+RTCSession.prototype.getRtcHandler = function() {
+  return this.rtcMediaHandler;
+};
+
+
+/**
  * Terminate the call.
  */
 RTCSession.prototype.terminate = function(options) {
