@@ -39,6 +39,7 @@ module.exports = function(grunt) {
 				// DOC: http://www.jshint.com/docs/options/
 				curly: true,
 				eqeqeq: true,
+				forin: true,
 				immed: true,
 				latedef: 'nofunc',  // Allow functions to be used before defined (it is valid).
 				newcap: true,
