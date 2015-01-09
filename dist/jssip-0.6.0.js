@@ -14607,11 +14607,11 @@ function createRTCConnection(pcConfig, rtcConstraints) {
   this.connection = new rtcninja.Connection(pcConfig, rtcConstraints);
 
   this.connection.onaddstream = function(event, stream) {
-    self.emit('addstream', stream);
+    self.emit('addstream', {stream: stream});
   };
 
   this.connection.onremovestream = function(event, stream) {
-    self.emit('removestream', stream);
+    self.emit('removestream', {stream: stream});
   };
 
   this.connection.oniceconnectionstatechange = function(event, state) {
@@ -14790,7 +14790,7 @@ function receiveReinvite(request) {
     sdp = Parser.parseSDP(request.body);
 
     for (idx=0; idx < sdp.media.length; idx++) {
-      direction = sdp.direction || sdp.media[idx].direction || 'sendrecv';
+      direction = sdp.media[idx].direction || 'sendrecv' || sdp.direction;
 
       if (direction === 'sendonly' || direction === 'inactive') {
         hold = true;
@@ -14872,7 +14872,7 @@ function receiveUpdate(request) {
   sdp = Parser.parseSDP(request.body);
 
   for (idx=0; idx < sdp.media.length; idx++) {
-    direction = sdp.direction || sdp.media[idx].direction || 'sendrecv';
+    direction = sdp.media[idx].direction || 'sendrecv' || sdp.direction;
 
     if (direction !== 'sendonly' && direction !== 'inactive') {
       hold = false;
