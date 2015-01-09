@@ -159,7 +159,7 @@ var C = {
 
 module.exports = C;
 
-},{"../package.json":46}],2:[function(require,module,exports){
+},{"../package.json":49}],2:[function(require,module,exports){
 module.exports = Dialog;
 
 
@@ -12746,7 +12746,7 @@ if (! JsSIP.rtcninja.called) {
   JsSIP.rtcninja();
 }
 
-},{"../package.json":46,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":20,"./URI":21,"./Utils":22,"debug":29,"rtcninja":34}],8:[function(require,module,exports){
+},{"../package.json":49,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":20,"./URI":21,"./Utils":22,"debug":29,"rtcninja":34}],8:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -13335,7 +13335,7 @@ Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
 Parser.parsePayloads = sdp_transform.parsePayloads;
 Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
 
-},{"./Grammar":6,"./SIPMessage":16,"debug":29,"sdp-transform":40}],11:[function(require,module,exports){
+},{"./Grammar":6,"./SIPMessage":16,"debug":29,"sdp-transform":43}],11:[function(require,module,exports){
 module.exports = RTCSession;
 
 
@@ -17710,7 +17710,7 @@ Transport.prototype = {
   }
 };
 
-},{"./Constants":1,"./Parser":10,"./SIPMessage":16,"./UA":20,"./sanityCheck":23,"debug":29,"websocket":43}],20:[function(require,module,exports){
+},{"./Constants":1,"./Parser":10,"./SIPMessage":16,"./UA":20,"./sanityCheck":23,"debug":29,"websocket":46}],20:[function(require,module,exports){
 module.exports = UA;
 
 
@@ -21452,7 +21452,7 @@ function Adapter(options) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bowser":36,"debug":29}],33:[function(require,module,exports){
+},{"bowser":36,"debug":37}],33:[function(require,module,exports){
 /**
  * Expose the Connection class.
  */
@@ -21508,6 +21508,9 @@ function Connection(pcConfig, constraints) {
 	this._iceConnectionState = null;
 	this._iceGatheringState = null;
 
+	// Timer for options.gatheringTimeout.
+	this.timerGatheringTimeout = null;
+
 	// Timer for options.gatheringTimeoutAfterRelay.
 	this.timerGatheringTimeoutAfterRelay = null;
 
@@ -21537,12 +21540,12 @@ Connection.prototype.createOffer = function(successCallback, failureCallback, op
 
 	this.pc.createOffer(
 		function(offer) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debug('createOffer() | success');
 			if (successCallback) { successCallback(offer); }
 		},
 		function(error) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debugerror('createOffer() | error:', error);
 			if (failureCallback) { failureCallback(error); }
 		},
@@ -21558,12 +21561,12 @@ Connection.prototype.createAnswer = function(successCallback, failureCallback, o
 
 	this.pc.createAnswer(
 		function(answer) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debug('createAnswer() | success');
 			if (successCallback) { successCallback(answer); }
 		},
 		function(error) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debugerror('createAnswer() | error:', error);
 			if (failureCallback) { failureCallback(error); }
 		},
@@ -21579,13 +21582,23 @@ Connection.prototype.setLocalDescription = function(description, successCallback
 
 	this.pc.setLocalDescription(
 		description,
+		// success.
 		function() {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debug('setLocalDescription() | success');
+
+			// Clear gathering timers.
+			clearTimeout(self.timerGatheringTimeout);
+			delete self.timerGatheringTimeout;
+			clearTimeout(self.timerGatheringTimeoutAfterRelay);
+			delete self.timerGatheringTimeoutAfterRelay;
+
+			runTimerGatheringTimeout();
 			if (successCallback) { successCallback(); }
 		},
+		// failure
 		function(error) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debugerror('setLocalDescription() | error:', error);
 			if (failureCallback) { failureCallback(error); }
 		}
@@ -21593,6 +21606,32 @@ Connection.prototype.setLocalDescription = function(description, successCallback
 
 	// Enable (again) ICE gathering.
 	this.ignoreIceGathering = false;
+
+	// Handle gatheringTimeout.
+	function runTimerGatheringTimeout() {
+		if (typeof self.options.gatheringTimeout !== 'number') { return; }
+		// If setLocalDescription was already called, it may happen that
+		// ICE gathering is not needed, so don't run this timer.
+		if (self.pc.iceGatheringState === 'complete') { return; }
+
+		debug('setLocalDescription() | ending gathering in %d ms (gatheringTimeout option)', self.options.gatheringTimeout);
+
+		self.timerGatheringTimeout = setTimeout(function() {
+			if (isClosed.call(self)) { return; }
+
+			debug('forced end of candidates after gatheringTimeout timeout');
+
+			// Clear gathering timers.
+			delete self.timerGatheringTimeout;
+			clearTimeout(self.timerGatheringTimeoutAfterRelay);
+			delete self.timerGatheringTimeoutAfterRelay;
+
+			// Ignore new candidates.
+			self.ignoreIceGathering = true;
+			if (self.onicecandidate) { self.onicecandidate(event, null); }
+
+		}, self.options.gatheringTimeout);
+	}
 };
 
 
@@ -21604,12 +21643,12 @@ Connection.prototype.setRemoteDescription = function(description, successCallbac
 	this.pc.setRemoteDescription(
 		description,
 		function() {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debug('setRemoteDescription() | success');
 			if (successCallback) { successCallback(); }
 		},
 		function(error) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debugerror('setRemoteDescription() | error:', error);
 			if (failureCallback) { failureCallback(error); }
 		}
@@ -21638,12 +21677,12 @@ Connection.prototype.addIceCandidate = function(candidate, successCallback, fail
 	this.pc.addIceCandidate(
 		candidate,
 		function() {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debug('addIceCandidate() | success');
 			if (successCallback) { successCallback(); }
 		},
 		function(error) {
-			if (self.closed) { return; }
+			if (isClosed.call(self)) { return; }
 			debugerror('addIceCandidate() | error:', error);
 			if (failureCallback) { failureCallback(error); }
 		}
@@ -21698,6 +21737,9 @@ Connection.prototype.close = function() {
 
 	this.closed = true;
 
+	// Clear gathering timers.
+	clearTimeout(this.timerGatheringTimeout);
+	delete this.timerGatheringTimeout;
 	clearTimeout(this.timerGatheringTimeoutAfterRelay);
 	delete this.timerGatheringTimeoutAfterRelay;
 
@@ -21745,6 +21787,14 @@ Connection.prototype.getIdentityAssertion = function() {
  */
 
 
+function isClosed() {
+	return (
+		(this.closed) ||
+		(this.pc && this.pc.iceConnectionState === 'closed')
+	);
+}
+
+
 function setConfigurationAndOptions(pcConfig) {
 	// Clone pcConfig.
 	this.pcConfig = merge(true, pcConfig);
@@ -21755,10 +21805,12 @@ function setConfigurationAndOptions(pcConfig) {
 	this.options = {
 		iceTransportsRelay: (this.pcConfig.iceTransports === 'relay'),
 		iceTransportsNone: (this.pcConfig.iceTransports === 'none'),
+		gatheringTimeout: this.pcConfig.gatheringTimeout,
 		gatheringTimeoutAfterRelay: this.pcConfig.gatheringTimeoutAfterRelay
 	};
 
 	// Remove custom rtcninja.Connection options from pcConfig.
+	delete this.pcConfig.gatheringTimeout;
 	delete this.pcConfig.gatheringTimeoutAfterRelay;
 }
 
@@ -21808,14 +21860,14 @@ function setEvents() {
 	var pc = this.pc;
 
 	pc.onnegotiationneeded = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onnegotiationneeded()');
 		if (self.onnegotiationneeded) { self.onnegotiationneeded(event); }
 	};
 
 	pc.onicecandidate = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 		if (self.ignoreIceGathering) { return; }
 
 		// Ignore any candidate (event the null one) if iceTransports:'none' is set.
@@ -21836,11 +21888,15 @@ function setEvents() {
 				debug('onicecandidate() | first relay candidate found, ending gathering in %d ms', self.options.gatheringTimeoutAfterRelay);
 
 				self.timerGatheringTimeoutAfterRelay = setTimeout(function() {
-					if (self.closed) { return; }
+					if (isClosed.call(self)) { return; }
 
 					debug('forced end of candidates after timeout');
 
+					// Clear gathering timers.
 					delete self.timerGatheringTimeoutAfterRelay;
+					clearTimeout(self.timerGatheringTimeout);
+					delete self.timerGatheringTimeout;
+
 					// Ignore new candidates.
 					self.ignoreIceGathering = true;
 					if (self.onicecandidate) { self.onicecandidate(event, null); }
@@ -21874,6 +21930,10 @@ function setEvents() {
 		// Null candidate (end of candidates).
 		else {
 			debug('onicecandidate() | end of candidates');
+
+			// Clear gathering timers.
+			clearTimeout(self.timerGatheringTimeout);
+			delete self.timerGatheringTimeout;
 			clearTimeout(self.timerGatheringTimeoutAfterRelay);
 			delete self.timerGatheringTimeoutAfterRelay;
 			if (self.onicecandidate) { self.onicecandidate(event, null); }
@@ -21881,21 +21941,21 @@ function setEvents() {
 	};
 
 	pc.onaddstream = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onaddstream() | stream:', event.stream);
 		if (self.onaddstream) { self.onaddstream(event, event.stream); }
 	};
 
 	pc.onremovestream = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onremovestream() | stream:', event.stream);
 		if (self.onremovestream) { self.onremovestream(event, event.stream); }
 	};
 
 	pc.ondatachannel = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('ondatachannel()');
 		if (self.ondatachannel) { self.ondatachannel(event, event.channel); }
@@ -21918,7 +21978,7 @@ function setEvents() {
 	};
 
 	pc.onicegatheringstatechange = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		if (pc.iceGatheringState === self._iceGatheringState) { return; }
 
@@ -21928,28 +21988,28 @@ function setEvents() {
 	};
 
 	pc.onidentityresult = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onidentityresult()');
 		if (self.onidentityresult) { self.onidentityresult(event); }
 	};
 
 	pc.onpeeridentity = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onpeeridentity()');
 		if (self.onpeeridentity) { self.onpeeridentity(event); }
 	};
 
 	pc.onidpassertionerror = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onidpassertionerror()');
 		if (self.onidpassertionerror) { self.onidpassertionerror(event); }
 	};
 
 	pc.onidpvalidationerror = function(event) {
-		if (self.closed) { return; }
+		if (isClosed.call(self)) { return; }
 
 		debug('onidpvalidationerror()');
 		if (self.onidpvalidationerror) { self.onidpvalidationerror(event); }
@@ -21983,7 +22043,7 @@ function getLocalDescription() {
 	return this._localDescription;
 }
 
-},{"./Adapter":32,"debug":29,"merge":37}],34:[function(require,module,exports){
+},{"./Adapter":32,"debug":37,"merge":40}],34:[function(require,module,exports){
 /**
  * Expose the rtcninja function/object.
  */
@@ -22067,14 +22127,14 @@ Object.defineProperty(rtcninja, 'called', {
 // Expose debug module.
 rtcninja.debug = require('debug');
 
-},{"./Adapter":32,"./Connection":33,"./version":35,"bowser":36,"debug":29}],35:[function(require,module,exports){
+},{"./Adapter":32,"./Connection":33,"./version":35,"bowser":36,"debug":37}],35:[function(require,module,exports){
 /**
  * Expose the 'version' field of package.json.
  */
 module.exports = require('../package.json').version;
 
 
-},{"../package.json":38}],36:[function(require,module,exports){
+},{"../package.json":41}],36:[function(require,module,exports){
 /*!
   * Bowser - a browser detector
   * https://github.com/ded/bowser
@@ -22317,6 +22377,12 @@ module.exports = require('../package.json').version;
 });
 
 },{}],37:[function(require,module,exports){
+arguments[4][29][0].apply(exports,arguments)
+},{"./debug":38,"dup":29}],38:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30,"ms":39}],39:[function(require,module,exports){
+arguments[4][31][0].apply(exports,arguments)
+},{"dup":31}],40:[function(require,module,exports){
 /*!
  * @name JavaScript/NodeJS Merge v1.2.0
  * @author yeikos
@@ -22492,15 +22558,12 @@ module.exports = require('../package.json').version;
 	}
 
 })(typeof module === 'object' && module && typeof module.exports === 'object' && module.exports);
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
   "version": "0.2.4",
   "description": "WebRTC API wrapper to deal with different browsers",
-  "author": {
-    "name": "Iñaki Baz Castillo",
-    "email": "ibc@aliax.net"
-  },
+  "author": "Iñaki Baz Castillo <ibc@aliax.net>",
   "license": "ISC",
   "main": "lib/rtcninja.js",
   "homepage": "https://github.com/ibc/rtcninja.js",
@@ -22533,20 +22596,10 @@ module.exports={
     "gulp-uglify": "^1.0.2",
     "jshint-stylish": "^1.0.0",
     "vinyl-transform": "^1.0.0"
-  },
-  "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n    // Must first call it.\n    rtcninja();\n    \n    // Then check.\n    if (rtcninja.hasWebRTC()) {\n        // Do something.\n    }\n    else {\n        // Do something.\n    }\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\n    process.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Documentation\n\n*TODO*\n\n\n## Author\n\nIñaki Baz Castillo.\n\n\n## License\n\nISC.\n",
-  "readmeFilename": "README.md",
-  "gitHead": "ca72852ceed31aa69ed2d64ba6d4233f6067e52e",
-  "bugs": {
-    "url": "https://github.com/ibc/rtcninja.js/issues"
-  },
-  "_id": "rtcninja@0.2.4",
-  "scripts": {},
-  "_shasum": "ace514bccdf1517fe215539e95f8ff37ae5385d1",
-  "_from": "rtcninja@>=0.2.3 <0.3.0"
+  }
 }
 
-},{}],39:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
       name: 'version',
@@ -22776,7 +22829,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 }); 
 
-},{}],40:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 
@@ -22786,7 +22839,7 @@ exports.parseFmtpConfig = parser.parseFmtpConfig;
 exports.parsePayloads = parser.parsePayloads;
 exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 
-},{"./parser":41,"./writer":42}],41:[function(require,module,exports){
+},{"./parser":44,"./writer":45}],44:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -22881,7 +22934,7 @@ exports.parseRemoteCandidates = function (str) {
   return candidates;
 };
 
-},{"./grammar":39}],42:[function(require,module,exports){
+},{"./grammar":42}],45:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -22997,7 +23050,7 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":39}],43:[function(require,module,exports){
+},{"./grammar":42}],46:[function(require,module,exports){
 var _global = (function() { return this; })();
 var nativeWebSocket = _global.WebSocket || _global.MozWebSocket;
 
@@ -23031,10 +23084,10 @@ module.exports = {
     'version'      : require('./version')
 };
 
-},{"./version":44}],44:[function(require,module,exports){
+},{"./version":47}],47:[function(require,module,exports){
 module.exports = require('../package.json').version;
 
-},{"../package.json":45}],45:[function(require,module,exports){
+},{"../package.json":48}],48:[function(require,module,exports){
 module.exports={
   "name": "websocket",
   "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
@@ -23115,7 +23168,7 @@ module.exports={
   "readme": "ERROR: No README data found!"
 }
 
-},{}],46:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
