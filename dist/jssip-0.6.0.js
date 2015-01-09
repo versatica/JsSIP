@@ -13752,33 +13752,15 @@ RTCSession.prototype.answer = function(options) {
   // TODO: This may throw an error, should react.
   createRTCConnection.call(this, pcConfig, rtcConstraints);
 
-  if (! this.late_sdp) {
-    this.connection.setRemoteDescription(
-      new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
-      // success
-      getMediaStream,
-      // failure
-      function() {
-        request.reply(488);
-        failed.call(self, 'system', null, JsSIP_C.causes.WEBRTC_ERROR);
-      }
+  if (mediaStream) {
+    userMediaSucceeded(mediaStream);
+  } else {
+    self.localMediaStreamLocallyGenerated = true;
+    rtcninja.getUserMedia(
+      mediaConstraints,
+      userMediaSucceeded,
+      userMediaFailed
     );
-  }
-  else {
-    getMediaStream();
-  }
-
-  function getMediaStream() {
-    if (mediaStream) {
-      userMediaSucceeded(mediaStream);
-    } else {
-      self.localMediaStreamLocallyGenerated = true;
-      rtcninja.getUserMedia(
-        mediaConstraints,
-        userMediaSucceeded,
-        userMediaFailed
-      );
-    }
   }
 
   // User media succeeded
@@ -13787,11 +13769,21 @@ RTCSession.prototype.answer = function(options) {
 
     self.localMediaStream = stream;
     self.connection.addStream(stream);
-    connecting.call(self, request);
+
     if (! self.late_sdp) {
-      createLocalDescription.call(self, 'answer', rtcSucceeded, rtcFailed, rtcAnswerConstraints);
-    } else {
-      createLocalDescription.call(self, 'offer', rtcSucceeded, rtcFailed, rtcAnswerConstraints);
+      self.connection.setRemoteDescription(
+        new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
+        // success
+        remoteDescriptionSucceededOrNotNeeded,
+        // failure
+        function() {
+          request.reply(488);
+          failed.call(self, 'system', null, JsSIP_C.causes.WEBRTC_ERROR);
+        }
+      );
+    }
+    else {
+      remoteDescriptionSucceededOrNotNeeded();
     }
   }
 
@@ -13801,6 +13793,15 @@ RTCSession.prototype.answer = function(options) {
 
     request.reply(480);
     failed.call(self, 'local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
+  }
+
+  function remoteDescriptionSucceededOrNotNeeded() {
+    connecting.call(self, request);
+    if (! self.late_sdp) {
+      createLocalDescription.call(self, 'answer', rtcSucceeded, rtcFailed, rtcAnswerConstraints);
+    } else {
+      createLocalDescription.call(self, 'offer', rtcSucceeded, rtcFailed, rtcAnswerConstraints);
+    }
   }
 
   function rtcSucceeded(sdp) {
@@ -14449,7 +14450,6 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP_C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
-          debug('re-INVITE received');
           receiveReinvite.call(this, request);
         }
         else {
@@ -14472,7 +14472,6 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP_C.UPDATE:
         if(this.status === C.STATUS_CONFIRMED) {
-          debug('UPDATE received');
           receiveUpdate.call(this, request);
         }
         else {
