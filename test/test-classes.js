@@ -132,7 +132,7 @@ module.exports = {
     name.display_name = 0;
     test.strictEqual(name.toString(), '"0" <sip:alice@jssip.net>');
 
-    name.display_name = "";
+    name.display_name = '';
     test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
 
     test.deepEqual(name.parameters, {});

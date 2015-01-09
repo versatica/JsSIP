@@ -9,7 +9,7 @@
     "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
     "Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
   ],
-  "main": "src/JsSIP.js",
+  "main": "lib/JsSIP.js",
   "keywords": [
     "sip",
     "websocket",
@@ -27,23 +27,28 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.1.0",
+    "debug": "^2.1.1",
+    "rtcninja": "^0.2.4",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.14"
   },
   "devDependencies": {
-    "grunt": "~0.4.5",
-    "grunt-browserify": "~3.2.1",
-    "grunt-contrib-concat": "~0.5.0",
-    "grunt-contrib-copy": "^0.7.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-nodeunit": "~0.4.1",
-    "grunt-contrib-symlink": "~0.3.0",
-    "grunt-contrib-uglify": "~0.6.0",
-    "grunt-contrib-watch": "~0.6.1",
-    "pegjs": "0.7.0"
+    "browserify": "^8.1.0",
+    "fs-extra": "^0.14.0",
+    "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
+    "gulp-expect-file": "0.0.7",
+    "gulp-filelog": "^0.4.1",
+    "gulp-header": "^1.2.2",
+    "gulp-jshint": "^1.9.0",
+    "gulp-nodeunit-runner": "^0.2.2",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.0.2",
+    "gulp-util": "^3.0.2",
+    "jshint-stylish": "^1.0.0",
+    "pegjs": "0.7.0",
+    "vinyl-transform": "^1.0.0"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "gulp test"
   }
 }

@@ -4,3 +4,8 @@ process.on('uncaughtException', function(error) {
   console.error(error.stack);
   process.exit(1);
 });
+
+// Define global.navigator for borwser module.
+global.navigator = {
+	userAgent: ''
+};

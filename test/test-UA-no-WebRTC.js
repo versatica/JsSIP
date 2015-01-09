@@ -1,5 +1,5 @@
 require('./include/common');
-var testUA = require('./include/testUA')
+var testUA = require('./include/testUA');
 var JsSIP = require('../');
 
 
@@ -55,6 +55,7 @@ module.exports = {
       JsSIP.Exceptions.TypeError
     );
 
+    ua.stop();
     test.done();
   }
 

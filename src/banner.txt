@@ -1,7 +1,0 @@
-/*
- * JsSIP <%= pkg.version %>
- * Copyright (c) 2012-<%= grunt.template.today("yyyy") %> José Luis Millán - Versatica <http://www.versatica.com>
- * Homepage: http://jssip.net
- * License: http://jssip.net/license
- */
-

@@ -2,7 +2,7 @@
   "name": "jssip",
   "version": "0.6.0",
   "description": "the Javascript SIP library",
-  "main": "builds/jssip-0.6.0.min.js",
+  "main": "dist/jssip.js",
   "homepage": "http://jssip.net",
   "authors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -25,9 +25,9 @@
   "ignore": [
     "node_modules",
     "test",
-    "test_web",
-    "src",
-    "Gruntfile.js",
-    "package.json"
+    "lib",
+    "gulpfile.js",
+    "package.json",
+    "banner.txt"
   ]
 }

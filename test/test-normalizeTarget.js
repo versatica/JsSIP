@@ -8,7 +8,7 @@ module.exports = {
     var domain = 'jssip.net';
 
     function test_ok(given_data, expected) {
-      uri = JsSIP.Utils.normalizeTarget(given_data, domain);
+      var uri = JsSIP.Utils.normalizeTarget(given_data, domain);
       test.ok(uri instanceof(JsSIP.URI));
       test.strictEqual(uri.toString(), expected);
     }

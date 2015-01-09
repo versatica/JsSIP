@@ -14,11 +14,6 @@ module.exports = {
     connection_recovery_max_interval: 30,
     use_preloaded_route: true,
     no_answer_timeout: 60000,
-    stun_servers: ['stun:stun.l.google.com:19302'],
-    turn_servers: [
-      { urls:'turn:example.org', username:'turnuser', credential:'turnpassword' },
-      { urls:'turn:example.org?transport=udp', username:'turnuser2', credential:'turnpassword2'}
-    ],
     hack_via_tcp: false,
     hack_ip_in_contact: false
   },
@@ -37,11 +32,6 @@ module.exports = {
     connection_recovery_max_interval: 30,
     use_preloaded_route: true,
     no_answer_timeout: 60000 * 1000,  // Internally converted to miliseconds.
-    stun_servers: ['stun:stun.l.google.com:19302'],
-    turn_servers: [
-      { urls:['turn:example.org'], username:'turnuser', credential:'turnpassword' },
-      { urls:['turn:example.org?transport=udp'], username:'turnuser2', credential:'turnpassword2'}
-    ],
     hack_via_tcp: false,
     hack_ip_in_contact: false
   }
