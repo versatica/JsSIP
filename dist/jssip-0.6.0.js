@@ -159,7 +159,7 @@ var C = {
 
 module.exports = C;
 
-},{"../package.json":49}],2:[function(require,module,exports){
+},{"../package.json":46}],2:[function(require,module,exports){
 module.exports = Dialog;
 
 
@@ -12746,7 +12746,7 @@ if (! JsSIP.rtcninja.called) {
   JsSIP.rtcninja();
 }
 
-},{"../package.json":49,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":20,"./URI":21,"./Utils":22,"debug":29,"rtcninja":34}],8:[function(require,module,exports){
+},{"../package.json":46,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":20,"./URI":21,"./Utils":22,"debug":29,"rtcninja":34}],8:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -13335,7 +13335,7 @@ Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
 Parser.parsePayloads = sdp_transform.parsePayloads;
 Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
 
-},{"./Grammar":6,"./SIPMessage":16,"debug":29,"sdp-transform":43}],11:[function(require,module,exports){
+},{"./Grammar":6,"./SIPMessage":16,"debug":29,"sdp-transform":40}],11:[function(require,module,exports){
 module.exports = RTCSession;
 
 
@@ -13671,7 +13671,7 @@ RTCSession.prototype.answer = function(options) {
     mediaStream = options.mediaStream || null,
     pcConfig = options.pcConfig || {iceServers:[]},
     rtcConstraints = options.rtcConstraints || null,
-    rtcAnswerConstraints = options.rtcOfferConstraints || null;
+    rtcAnswerConstraints = options.rtcAnswerConstraints || null;
 
   this.data = options.data || {};
 
@@ -17710,7 +17710,7 @@ Transport.prototype = {
   }
 };
 
-},{"./Constants":1,"./Parser":10,"./SIPMessage":16,"./UA":20,"./sanityCheck":23,"debug":29,"websocket":46}],20:[function(require,module,exports){
+},{"./Constants":1,"./Parser":10,"./SIPMessage":16,"./UA":20,"./sanityCheck":23,"debug":29,"websocket":43}],20:[function(require,module,exports){
 module.exports = UA;
 
 
@@ -21452,7 +21452,7 @@ function Adapter(options) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bowser":36,"debug":37}],33:[function(require,module,exports){
+},{"bowser":36,"debug":29}],33:[function(require,module,exports){
 /**
  * Expose the Connection class.
  */
@@ -22043,7 +22043,7 @@ function getLocalDescription() {
 	return this._localDescription;
 }
 
-},{"./Adapter":32,"debug":37,"merge":40}],34:[function(require,module,exports){
+},{"./Adapter":32,"debug":29,"merge":37}],34:[function(require,module,exports){
 /**
  * Expose the rtcninja function/object.
  */
@@ -22127,14 +22127,14 @@ Object.defineProperty(rtcninja, 'called', {
 // Expose debug module.
 rtcninja.debug = require('debug');
 
-},{"./Adapter":32,"./Connection":33,"./version":35,"bowser":36,"debug":37}],35:[function(require,module,exports){
+},{"./Adapter":32,"./Connection":33,"./version":35,"bowser":36,"debug":29}],35:[function(require,module,exports){
 /**
  * Expose the 'version' field of package.json.
  */
 module.exports = require('../package.json').version;
 
 
-},{"../package.json":41}],36:[function(require,module,exports){
+},{"../package.json":38}],36:[function(require,module,exports){
 /*!
   * Bowser - a browser detector
   * https://github.com/ded/bowser
@@ -22377,12 +22377,6 @@ module.exports = require('../package.json').version;
 });
 
 },{}],37:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"./debug":38,"dup":29}],38:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"dup":30,"ms":39}],39:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"dup":31}],40:[function(require,module,exports){
 /*!
  * @name JavaScript/NodeJS Merge v1.2.0
  * @author yeikos
@@ -22558,12 +22552,15 @@ arguments[4][31][0].apply(exports,arguments)
 	}
 
 })(typeof module === 'object' && module && typeof module.exports === 'object' && module.exports);
-},{}],41:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "WebRTC API wrapper to deal with different browsers",
-  "author": "Iñaki Baz Castillo <ibc@aliax.net>",
+  "author": {
+    "name": "Iñaki Baz Castillo",
+    "email": "ibc@aliax.net"
+  },
   "license": "ISC",
   "main": "lib/rtcninja.js",
   "homepage": "https://github.com/ibc/rtcninja.js",
@@ -22596,10 +22593,20 @@ module.exports={
     "gulp-uglify": "^1.0.2",
     "jshint-stylish": "^1.0.0",
     "vinyl-transform": "^1.0.0"
-  }
+  },
+  "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n    // Must first call it.\n    rtcninja();\n    \n    // Then check.\n    if (rtcninja.hasWebRTC()) {\n        // Do something.\n    }\n    else {\n        // Do something.\n    }\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\n    process.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Documentation\n\n*TODO*\n\n\n## Author\n\nIñaki Baz Castillo.\n\n\n## License\n\nISC.\n",
+  "readmeFilename": "README.md",
+  "gitHead": "dbd71c8ceae2764b09ea4dd984dc02d574488ea2",
+  "bugs": {
+    "url": "https://github.com/ibc/rtcninja.js/issues"
+  },
+  "_id": "rtcninja@0.2.5",
+  "scripts": {},
+  "_shasum": "02f6e3f01e3f2069a02d5ec4c45c8642b4ed64ee",
+  "_from": "rtcninja@>=0.2.4 <0.3.0"
 }
 
-},{}],42:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
       name: 'version',
@@ -22829,7 +22836,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 }); 
 
-},{}],43:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 
@@ -22839,7 +22846,7 @@ exports.parseFmtpConfig = parser.parseFmtpConfig;
 exports.parsePayloads = parser.parsePayloads;
 exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 
-},{"./parser":44,"./writer":45}],44:[function(require,module,exports){
+},{"./parser":41,"./writer":42}],41:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -22934,7 +22941,7 @@ exports.parseRemoteCandidates = function (str) {
   return candidates;
 };
 
-},{"./grammar":42}],45:[function(require,module,exports){
+},{"./grammar":39}],42:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -23050,7 +23057,7 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":42}],46:[function(require,module,exports){
+},{"./grammar":39}],43:[function(require,module,exports){
 var _global = (function() { return this; })();
 var nativeWebSocket = _global.WebSocket || _global.MozWebSocket;
 
@@ -23084,10 +23091,10 @@ module.exports = {
     'version'      : require('./version')
 };
 
-},{"./version":47}],47:[function(require,module,exports){
+},{"./version":44}],44:[function(require,module,exports){
 module.exports = require('../package.json').version;
 
-},{"../package.json":48}],48:[function(require,module,exports){
+},{"../package.json":45}],45:[function(require,module,exports){
 module.exports={
   "name": "websocket",
   "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
@@ -23168,7 +23175,7 @@ module.exports={
   "readme": "ERROR: No README data found!"
 }
 
-},{}],49:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
@@ -23199,7 +23206,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.2.4",
+    "rtcninja": "^0.2.5",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.14"
   },
