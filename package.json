@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.2.5",
+    "rtcninja": "^0.2.6",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.14"
   },
