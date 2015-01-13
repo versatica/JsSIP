@@ -6,8 +6,8 @@
 
 * Runs in the browser and Node.js.
 * SIP over [WebSocket](http://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
-* Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)), instant messaging and presence
-* Lightweight! (~140KB)
+* Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)) and instant messaging
+* Lightweight!
 * Easy to use and powerful user API
 * Works with OverSIP, Kamailio, Asterisk. Mobicents and repro (reSIProcate) servers ([more info](http://jssip.net/documentation/misc/interoperability))
 * Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](http://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
@@ -49,19 +49,21 @@ var eventHandlers = {
     console.log('call ended with cause: '+ e.data.cause);
   },
   'confirmed': function(e){
-    var rtcSession = e.sender;
+    var session = e.sender;
+    var local_stream = session.getLocalStreams()[0];
 
     console.log('call confirmed');
 
     // Attach local stream to selfView
-    if (rtcSession.getLocalStreams().length > 0) {
-      selfView.src = window.URL.createObjectURL(rtcSession.getLocalStreams()[0]);
-    }
+    selfView = JsSIP.rtcninja.attachMediaStream(selfView, local_stream);
+  },
+  'addstream': function(e){
+    var stream = e.stream;
+
+    console.log('remote stream added');
 
     // Attach remote stream to remoteView
-    if (rtcSession.getRemoteStreams().length > 0) {
-      remoteView.src = window.URL.createObjectURL(rtcSession.getRemoteStreams()[0]);
-    }
+    remoteView = JsSIP.rtcninja.attachMediaStream(remoteView, stream);
   }
 };
 

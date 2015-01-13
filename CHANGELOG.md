@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Version 0.6.0 (released in 2015-01-13)
+
+* [debug](https://github.com/visionmedia/debug) module.
+* [rtcninja](https://github.com/ibc/rtcninja.js) module.
+* Can renegotiate an ongoing session by means of a re-INVITE or UPDATE method (useful if the local stream attached to the `RTCPeerConnection` has been modified).
+* Improved hold/unhold detection.
+* New API options for `UA#call()` and `RTCSession#answer()`.
+
+
 Version 0.5.0 (released in 2014-11-03)
 --------------------------------------
 

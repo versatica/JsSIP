@@ -16,42 +16,38 @@ You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com
 ## How to build JsSIP
 
 Clone a copy of the main JsSIP git repository by running:
-```
+```bash
 $ git clone https://github.com/versatica/JsSIP.git JsSIP
 $ cd JsSIP
 ```
 
-Install grunt-cli globally:
-```
-$ npm install -g grunt-cli
+Install `gulp-cli` 4.0 globally (which provides the `gulp` command):
+```bash
+$ npm install -g gulpjs/gulp-cli#4.0
 ```
 
+(you can also use the local `gulp` executable located in `node_modules/.bin/gulp`).
+
 Install the Node.js dependencies:
-```
+```bash
 $ npm install
 ```
 
-Make sure you have `grunt` installed by testing:
-```
-$ grunt -version
-```
+Finally, run `gulp dist` (or just `gulp`) to get:
 
-Finally, run `grunt dist` (or just `grunt`) to get:
+* `dist/jssip-X.Y.Z.js`: uncompressed version of JsSIP.
+* `dist/jssip-X.Y.Z.min.js`: compressed version of JsSIP.
+* `dist/jssip.js`: copy of the compressed file.
 
-* `builds/jssip-X.Y.Z.js`: uncompressed version of JsSIP.
-* `builds/jssip-last.js`: symlink to the uncompressed file.
-* `builds/jssip-X.Y.Z.min.js`: compressed version of JsSIP.
-* `builds/jssip.js`: copy of the compressed file.
-
-```
-$ grunt dist
+```bash
+$ gulp dist
 ```
 
 
 ## Test units
 
-```
-$ grunt test
+```bash
+$ gulp test
 ```
 
 
@@ -59,8 +55,9 @@ $ grunt test
 
 ### Changes in JsSIP Grammar
 
-If you modify `src/Grammar.pegjs` then you need to recompile it:
+If you modify `lib/Grammar.pegjs` then you need to recompile it:
+```bash
+$ gulp devel
+$ gulp dist
 ```
-$ grunt devel
-```
-And then build JsSIP again as explained above.
+
