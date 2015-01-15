@@ -207,6 +207,24 @@ module.exports = {
     test.done();
   },
 
+  'parse Session-Expires': function(test) {
+    var data, session_expires;
+
+    data = '180;refresher=uac';
+    session_expires = JsSIP.Grammar.parse(data, 'Session_Expires');
+
+    test.strictEqual(session_expires.expires, 180);
+    test.strictEqual(session_expires.refresher, 'uac');
+
+    data = '210  ;   refresher  =  UAS ; foo  =  bar';
+    session_expires = JsSIP.Grammar.parse(data, 'Session_Expires');
+
+    test.strictEqual(session_expires.expires, 210);
+    test.strictEqual(session_expires.refresher, 'uas');
+
+    test.done();
+  },
+
   'parse host': function(test) {
     var data, parsed;
 
