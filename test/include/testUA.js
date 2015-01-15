@@ -14,7 +14,9 @@ module.exports = {
     connection_recovery_max_interval: 30,
     use_preloaded_route: true,
     no_answer_timeout: 60000,
+    session_timers: true,
     hack_via_tcp: false,
+    hack_via_ws: true,
     hack_ip_in_contact: false
   },
 
@@ -32,7 +34,9 @@ module.exports = {
     connection_recovery_max_interval: 30,
     use_preloaded_route: true,
     no_answer_timeout: 60000 * 1000,  // Internally converted to miliseconds.
+    session_timers: true,
     hack_via_tcp: false,
+    hack_via_ws: true,
     hack_ip_in_contact: false
   }
 
