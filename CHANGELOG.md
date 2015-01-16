@@ -1,7 +1,14 @@
 CHANGELOG
 =========
 
+Version 0.6.1 (released in 2015-01-16)
+--------------------------------------
+
+* Support for [Session Timers](https://tools.ietf.org/html/rfc4028).
+
+
 Version 0.6.0 (released in 2015-01-13)
+--------------------------------------
 
 * [debug](https://github.com/visionmedia/debug) module.
 * [rtcninja](https://github.com/ibc/rtcninja.js) module.
