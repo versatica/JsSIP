@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.1
+ * JsSIP.js 0.6.2
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15487,7 +15487,6 @@ function sendUpdate(options) {
     mangle = options.mangle || null;
 
   extraHeaders.push('Contact: ' + this.contact);
-  extraHeaders.push('Content-Type: application/sdp');
 
   // Session Timers.
   if (this.sessionTimers.running) {
@@ -15495,6 +15494,8 @@ function sendUpdate(options) {
   }
 
   if (sdpOffer) {
+    extraHeaders.push('Content-Type: application/sdp');
+
     createLocalDescription.call(this, 'offer',
       // success
       function(sdp) {
@@ -23642,7 +23643,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

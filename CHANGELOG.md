@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.2 (released in 2015-01-16)
+--------------------------------------
+
+* Bug fix: Do not set "Content-Type: application/sdp" in body-less UPDATE requests.
+
+
 Version 0.6.1 (released in 2015-01-16)
 --------------------------------------
 
