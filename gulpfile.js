@@ -13,7 +13,6 @@ var header = require('gulp-header');
 var expect = require('gulp-expect-file');
 var nodeunit = require('gulp-nodeunit-runner');
 var fs = require('fs');
-var fs_extra = require('fs-extra');
 var path = require('path');
 var exec = require('child_process').exec;
 var pkg = require('./package.json');
@@ -82,9 +81,13 @@ gulp.task('uglify', function() {
 });
 
 
-gulp.task('copy', function(cb) {
-	fs_extra.copySync('dist/' + builds.uncompressed, 'dist/' + pkg.name + '.js');
-	cb();
+gulp.task('copy', function() {
+	var src = 'dist/' + builds.uncompressed;
+	return gulp.src(src)
+		.pipe(filelog('copy'))
+		.pipe(expect(expect_options, src))
+		.pipe(rename(pkg.name + '.js'))
+		.pipe(gulp.dest('dist/'));
 });
 
 
