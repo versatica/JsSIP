@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.3 (released in 2015-01-17)
+--------------------------------------
+
+* Bug fix. Properly cancel when only '100 trying' has been received.
+
+
 Version 0.6.2 (released in 2015-01-16)
 --------------------------------------
 
