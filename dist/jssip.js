@@ -23050,6 +23050,8 @@ module.exports={
     "jshint-stylish": "^1.0.0",
     "vinyl-transform": "^1.0.0"
   },
+  "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
+  "readmeFilename": "README.md",
   "gitHead": "1ffa5f09184e3575ad5313784fe615c8f293da3b",
   "bugs": {
     "url": "https://github.com/ibc/rtcninja.js/issues"
@@ -23057,26 +23059,7 @@ module.exports={
   "_id": "rtcninja@0.2.9",
   "scripts": {},
   "_shasum": "9c71e12e12c9ac8f5ba87a6f23d5688b1ac2f328",
-  "_from": "rtcninja@>=0.2.9 <0.3.0",
-  "_npmVersion": "2.1.6",
-  "_nodeVersion": "0.10.33",
-  "_npmUser": {
-    "name": "ibc",
-    "email": "ibc@aliax.net"
-  },
-  "maintainers": [
-    {
-      "name": "ibc",
-      "email": "ibc@aliax.net"
-    }
-  ],
-  "dist": {
-    "shasum": "9c71e12e12c9ac8f5ba87a6f23d5688b1ac2f328",
-    "tarball": "http://registry.npmjs.org/rtcninja/-/rtcninja-0.2.9.tgz"
-  },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/rtcninja/-/rtcninja-0.2.9.tgz",
-  "readme": "ERROR: No README data found!"
+  "_from": "rtcninja@>=0.2.9 <0.3.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23591,7 +23574,7 @@ module.exports={
     "email": "brian@worlize.com",
     "url": "https://www.worlize.com/"
   },
-  "version": "1.0.16",
+  "version": "1.0.17",
   "repository": {
     "type": "git",
     "url": "https://github.com/theturtle32/WebSocket-Node.git"
@@ -23606,6 +23589,7 @@ module.exports={
     "typedarray-to-buffer": "~3.0.0"
   },
   "devDependencies": {
+    "buffer-equal": "0.0.1",
     "faucet": "0.0.1",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-jshint": "^1.9.0",
@@ -23625,13 +23609,13 @@ module.exports={
     "lib": "./lib"
   },
   "browser": "lib/browser.js",
-  "gitHead": "191ef055705fcc65c4bf56a83010ff9bf1faf398",
+  "gitHead": "cda940b883aa884906ac13158fe514229a67f426",
   "bugs": {
     "url": "https://github.com/theturtle32/WebSocket-Node/issues"
   },
-  "_id": "websocket@1.0.16",
-  "_shasum": "6c96a1d68dcfdc445688d50c676b7fa493ef5b2a",
-  "_from": "websocket@>=1.0.16 <2.0.0",
+  "_id": "websocket@1.0.17",
+  "_shasum": "8a572afc6ec120eb41473ca517d07d932f7b6a1c",
+  "_from": "websocket@>=1.0.17 <2.0.0",
   "_npmVersion": "1.4.28",
   "_npmUser": {
     "name": "theturtle32",
@@ -23644,11 +23628,10 @@ module.exports={
     }
   ],
   "dist": {
-    "shasum": "6c96a1d68dcfdc445688d50c676b7fa493ef5b2a",
-    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.16.tgz"
+    "shasum": "8a572afc6ec120eb41473ca517d07d932f7b6a1c",
+    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz"
   },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.16.tgz",
-  "readme": "ERROR: No README data found!"
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz"
 }
 
 },{}],46:[function(require,module,exports){
@@ -23684,7 +23667,7 @@ module.exports={
     "debug": "^2.1.1",
     "rtcninja": "^0.2.9",
     "sdp-transform": "~1.1.0",
-    "websocket": "^1.0.16"
+    "websocket": "^1.0.17"
   },
   "devDependencies": {
     "browserify": "^8.1.1",

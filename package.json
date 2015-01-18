@@ -30,7 +30,7 @@
     "debug": "^2.1.1",
     "rtcninja": "^0.2.9",
     "sdp-transform": "~1.1.0",
-    "websocket": "^1.0.16"
+    "websocket": "^1.0.17"
   },
   "devDependencies": {
     "browserify": "^8.1.1",
