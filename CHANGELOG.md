@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Version 0.6.4 (released in 2015-01-19)
+--------------------------------------
+
+* `RTCSession#connect()`: Add `rtcAnswerContraints` options for later incoming reINVITE or UPDATE with SDP offer.
+* `RTCSession#answer()`: Add `rtcOfferConstraints` options for later incoming reINVITE without SDP offer.
+* `RTCSession#renegotiate()`: Add `rtcOfferConstraints` options for the UPDATE or reINVITE.
+* `RTCSession#answer()`: Remove audio or video from the given `getUserMedia` mediaConstraints if the incoming SDP has no audio/video sections.
+
+
 Version 0.6.3 (released in 2015-01-17)
 --------------------------------------
 
