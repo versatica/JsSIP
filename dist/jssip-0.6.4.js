@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.3
+ * JsSIP.js 0.6.4
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -23671,7 +23671,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23710,7 +23710,7 @@ module.exports={
     "gulp-jshint": "^1.9.0",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.0",
-    "gulp-uglify": "^1.0.2",
+    "gulp-uglify": "^1.1.0",
     "gulp-util": "^3.0.2",
     "jshint-stylish": "^1.0.0",
     "pegjs": "0.7.0",
