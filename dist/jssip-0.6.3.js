@@ -13547,8 +13547,9 @@ function RTCSession(ua) {
   // is late SDP being negotiated
   this.late_sdp = false;
 
-  // rtcOfferConstraints (passed in connect()) for renegotiations.
+  // Default rtcOfferConstraints and rtcAnswerConstrainsts (passed in connect() or answer()).
   this.rtcOfferConstraints = null;
+  this.rtcAnswerConstraints = null;
 
   // renegotiate() options.
   this.renegotiateOptions = {};
@@ -13716,6 +13717,9 @@ RTCSession.prototype.connect = function(target, options) {
     pcConfig = options.pcConfig || {iceServers:[]},
     rtcConstraints = options.rtcConstraints || null,
     rtcOfferConstraints = options.rtcOfferConstraints || null;
+
+  this.rtcOfferConstraints = rtcOfferConstraints;
+  this.rtcAnswerConstraints = options.rtcAnswerConstraints || null;
 
   // Session Timers.
   if (this.sessionTimers.enabled) {
@@ -13895,8 +13899,10 @@ RTCSession.prototype.answer = function(options) {
   options = options || {};
 
   var idx, length, sdp, tracks,
-    hasAudio = false,
-    hasVideo = false,
+    peerHasAudioLine = false,
+    peerHasVideoLine = false,
+    peerOffersFullAudio = false,
+    peerOffersFullVideo = false,
     self = this,
     request = this.request,
     extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
@@ -13905,6 +13911,9 @@ RTCSession.prototype.answer = function(options) {
     pcConfig = options.pcConfig || {iceServers:[]},
     rtcConstraints = options.rtcConstraints || null,
     rtcAnswerConstraints = options.rtcAnswerConstraints || null;
+
+  this.rtcAnswerConstraints = rtcAnswerConstraints;
+  this.rtcOfferConstraints = options.rtcOfferConstraints || null;
 
   // Session Timers.
   if (this.sessionTimers.enabled) {
@@ -13951,11 +13960,17 @@ RTCSession.prototype.answer = function(options) {
   idx = sdp.media.length;
   while(idx--) {
     var m = sdp.media[idx];
-    if (m.type === 'audio' && (!m.direction || m.direction === 'sendrecv')) {
-      hasAudio = true;
+    if (m.type === 'audio') {
+      peerHasAudioLine = true;
+      if (!m.direction || m.direction === 'sendrecv') {
+        peerOffersFullAudio = true;
+      }
     }
-    if (m.type === 'video' && (!m.direction || m.direction === 'sendrecv')) {
-      hasVideo = true;
+    if (m.type === 'video') {
+      peerHasVideoLine = true;
+      if (!m.direction || m.direction === 'sendrecv') {
+        peerOffersFullVideo = true;
+      }
     }
   }
 
@@ -13978,13 +13993,23 @@ RTCSession.prototype.answer = function(options) {
   }
 
   // Set audio constraints based on incoming stream if not supplied
-  if (mediaConstraints.audio === undefined) {
-      mediaConstraints.audio = hasAudio;
+  if (!mediaStream && mediaConstraints.audio === undefined) {
+    mediaConstraints.audio = peerOffersFullAudio;
   }
 
   // Set video constraints based on incoming stream if not supplied
-  if (mediaConstraints.video === undefined) {
-      mediaConstraints.video = hasVideo;
+  if (!mediaStream && mediaConstraints.video === undefined) {
+    mediaConstraints.video = peerOffersFullVideo;
+  }
+
+  // Don't ask for audio if the incoming offer has no audio section
+  if (!mediaStream && !peerHasAudioLine) {
+    mediaConstraints.audio = false;
+  }
+
+  // Don't ask for video if the incoming offer has no video section
+  if (!mediaStream && !peerHasVideoLine) {
+    mediaConstraints.video = false;
   }
 
   // Create a new rtcninja.Connection instance.
@@ -14039,7 +14064,7 @@ RTCSession.prototype.answer = function(options) {
     if (! self.late_sdp) {
       createLocalDescription.call(self, 'answer', rtcSucceeded, rtcFailed, rtcAnswerConstraints);
     } else {
-      createLocalDescription.call(self, 'offer', rtcSucceeded, rtcFailed, rtcAnswerConstraints);
+      createLocalDescription.call(self, 'offer', rtcSucceeded, rtcFailed, self.rtcOfferConstraints);
     }
   }
 
@@ -14557,14 +14582,17 @@ RTCSession.prototype.unhold = function() {
 RTCSession.prototype.renegotiate = function(options) {
   debug('renegotiate()');
 
+  options = options || {};
+
   var self = this,
-    eventHandlers;
+    eventHandlers,
+    rtcOfferConstraints = options.rtcOfferConstraints || null;
 
   if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
     throw new Exceptions.InvalidStateError(this.status);
   }
 
-  this.renegotiateOptions = options || {};
+  this.renegotiateOptions = options;
 
   if (! isReadyToReinvite.call(this)) {
     /* If there is a pending 'hold' or 'unhold' action, abort
@@ -14599,9 +14627,9 @@ RTCSession.prototype.renegotiate = function(options) {
   };
 
   if (this.renegotiateOptions.useUpdate) {
-    sendUpdate.call(this, {sdpOffer: true, eventHandlers: eventHandlers});
+    sendUpdate.call(this, {sdpOffer: true, eventHandlers: eventHandlers, rtcOfferConstraints: rtcOfferConstraints});
   } else {
-    sendReinvite.call(this, {eventHandlers: eventHandlers});
+    sendReinvite.call(this, {eventHandlers: eventHandlers, rtcOfferConstraints: rtcOfferConstraints});
   }
 };
 
@@ -15086,7 +15114,7 @@ function receiveReinvite(request) {
 
   function createSdp(onSuccess, onFailure) {
     if (! self.late_sdp) {
-      createLocalDescription.call(self, 'answer', onSuccess, onFailure);
+      createLocalDescription.call(self, 'answer', onSuccess, onFailure, self.rtcAnswerConstraints);
     } else {
       createLocalDescription.call(self, 'offer', onSuccess, onFailure, self.rtcOfferConstraints);
     }
@@ -15161,7 +15189,9 @@ function receiveUpdate(request) {
     // failure
     function() {
       request.reply(488);
-    }
+    },
+    // Constraints.
+    this.rtcAnswerConstraints
   );
 }
 
@@ -15377,6 +15407,7 @@ function sendReinvite(options) {
     self = this,
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
+    rtcOfferConstraints = options.rtcOfferConstraints || null,
     mangle = options.mangle || null;
 
   extraHeaders.push('Contact: ' + this.contact);
@@ -15426,7 +15457,7 @@ function sendReinvite(options) {
       onFailed();
     },
     // RTC constraints.
-    this.rtcOfferConstraints
+    rtcOfferConstraints
   );
 
   function onSucceeded(response) {
@@ -15478,6 +15509,7 @@ function sendUpdate(options) {
     self = this,
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
+    rtcOfferConstraints = options.rtcOfferConstraints || null,
     sdpOffer = options.sdpOffer || false,
     mangle = options.mangle || null;
 
@@ -15530,7 +15562,7 @@ function sendUpdate(options) {
         onFailed();
       },
       // RTC constraints.
-      this.rtcOfferConstraints
+      rtcOfferConstraints
     );
   }
 
