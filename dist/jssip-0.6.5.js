@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.4
+ * JsSIP.js 0.6.5
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13736,7 +13736,7 @@ RTCSession.prototype.connect = function(target, options) {
   // Set this.rtcOfferConstraints if given.
   this.rtcOfferConstraints = rtcOfferConstraints;
 
-  this.data = options.data || {};
+  this.data = options.data || this.data;
 
   if (target === undefined) {
     throw new TypeError('Not enough arguments');
@@ -13927,7 +13927,7 @@ RTCSession.prototype.answer = function(options) {
     }
   }
 
-  this.data = options.data || {};
+  this.data = options.data || this.data;
 
   // Check Session Direction and Status
   if (this.direction !== 'incoming') {
@@ -18166,7 +18166,7 @@ Transport.prototype = {
   },
 
   onError: function(e) {
-    debug('WebSocket connection error: ' + e);
+    debug('WebSocket connection error: %o', e);
   },
 
   /**
@@ -23671,7 +23671,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

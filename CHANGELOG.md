@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.5 (released in 2015-01-20)
+--------------------------------------
+
+* `RTCSession`: Don't override `this.data` on `answer()` (unless `options.data` is given).
+
+
 Version 0.6.4 (released in 2015-01-19)
 --------------------------------------
 
