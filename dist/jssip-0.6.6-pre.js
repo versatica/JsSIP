@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.5
+ * JsSIP.js 0.6.6-pre
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -23046,18 +23046,19 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
-    "email": "ibc@aliax.net"
+    "email": "inaki.baz@eface2face.com",
+    "url": "http://eface2face.com"
   },
   "license": "ISC",
   "main": "lib/rtcninja.js",
-  "homepage": "https://github.com/ibc/rtcninja.js",
+  "homepage": "https://github.com/eface2face/rtcninja.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ibc/rtcninja.js.git"
+    "url": "https://github.com/eface2face/rtcninja.js.git"
   },
   "keywords": [
     "webrtc"
@@ -23078,20 +23079,20 @@ module.exports={
     "gulp-header": "^1.2.2",
     "gulp-jshint": "^1.9.0",
     "gulp-rename": "^1.2.0",
-    "gulp-uglify": "^1.0.2",
+    "gulp-uglify": "^1.1.0",
     "jshint-stylish": "^1.0.0",
     "vinyl-transform": "^1.0.0"
   },
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
-  "gitHead": "1ffa5f09184e3575ad5313784fe615c8f293da3b",
+  "gitHead": "6834f18b4dc79f8599da8b1790abd71379966812",
   "bugs": {
-    "url": "https://github.com/ibc/rtcninja.js/issues"
+    "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.2.9",
+  "_id": "rtcninja@0.3.0",
   "scripts": {},
-  "_shasum": "9c71e12e12c9ac8f5ba87a6f23d5688b1ac2f328",
-  "_from": "rtcninja@>=0.2.9 <0.3.0"
+  "_shasum": "f6c46154676988f2b08648bf962ecf80a52581a1",
+  "_from": "rtcninja@>=0.3.0 <0.4.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23671,7 +23672,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.5",
+  "version": "0.6.6-pre",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23697,7 +23698,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.2.9",
+    "rtcninja": "^0.3.0",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.17"
   },
