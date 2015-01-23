@@ -14908,7 +14908,7 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       // failure
       function(error) {
         self.rtcReady = true;
-        onFailure(error);
+        if (onFailure) { onFailure(error); }
       },
       // constraints
       constraints
@@ -14921,7 +14921,7 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       // failure
       function(error) {
         self.rtcReady = true;
-        onFailure(error);
+        if (onFailure) { onFailure(error); }
       },
       // constraints
       constraints
@@ -14937,7 +14937,7 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       if (! candidate) {
         connection.onicecandidate = null;
         self.rtcReady = true;
-        onSuccess(connection.localDescription.sdp);
+        if (onSuccess) { onSuccess(connection.localDescription.sdp); }
         onSuccess = null;
       }
     };
@@ -14948,7 +14948,7 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
         if (connection.iceGatheringState === 'complete') {
           self.rtcReady = true;
           if (onSuccess) {
-            onSuccess(connection.localDescription.sdp);
+            if (onSuccess) { onSuccess(connection.localDescription.sdp); }
             onSuccess = null;
           }
         }
@@ -15047,6 +15047,9 @@ function receiveReinvite(request) {
     contentType = request.getHeader('Content-Type'),
     hold = false;
 
+  // Emit 'reinvite'.
+  this.emit('reinvite', {request: request});
+
   if (request.body) {
     this.late_sdp = false;
     if (contentType !== 'application/sdp') {
@@ -15132,6 +15135,9 @@ function receiveUpdate(request) {
     self = this,
     contentType = request.getHeader('Content-Type'),
     hold = false;
+
+  // Emit 'update'.
+  this.emit('update', {request: request});
 
   if (! request.body) {
     var extraHeaders = [];
@@ -15408,7 +15414,8 @@ function sendReinvite(options) {
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
     rtcOfferConstraints = options.rtcOfferConstraints || null,
-    mangle = options.mangle || null;
+    mangle = options.mangle || null,
+    succeeded = false;
 
   extraHeaders.push('Contact: ' + this.contact);
   extraHeaders.push('Content-Type: application/sdp');
@@ -15433,6 +15440,7 @@ function sendReinvite(options) {
         eventHandlers: {
           onSuccessResponse: function(response) {
             onSucceeded(response);
+            succeeded = true;
           },
           onErrorResponse: function(response) {
             onFailed(response);
@@ -15466,6 +15474,9 @@ function sendReinvite(options) {
     }
 
     sendRequest.call(self, JsSIP_C.ACK);
+
+    // If it is a 2XX retransmission exit now.
+    if (succeeded) { return; }
 
     // Handle Session Timers.
     handleSessionTimersInIncomingResponse.call(self, response);
@@ -15511,7 +15522,8 @@ function sendUpdate(options) {
     eventHandlers = options.eventHandlers || {},
     rtcOfferConstraints = options.rtcOfferConstraints || null,
     sdpOffer = options.sdpOffer || false,
-    mangle = options.mangle || null;
+    mangle = options.mangle || null,
+    succeeded = false;
 
   extraHeaders.push('Contact: ' + this.contact);
 
@@ -15538,6 +15550,7 @@ function sendUpdate(options) {
           eventHandlers: {
             onSuccessResponse: function(response) {
               onSucceeded(response);
+              succeeded = true;
             },
             onErrorResponse: function(response) {
               onFailed(response);
@@ -15596,6 +15609,9 @@ function sendUpdate(options) {
     if (self.status === C.STATUS_TERMINATED) {
       return;
     }
+
+    // If it is a 2XX retransmission exit now.
+    if (succeeded) { return; }
 
     // Handle Session Timers.
     handleSessionTimersInIncomingResponse.call(self, response);
@@ -21980,7 +21996,7 @@ var VAR = {
 };
 
 
-function Connection(pcConfig, constraints) {
+function Connection(pcConfig, pcConstraints) {
 	debug('new | original pcConfig:', pcConfig);
 
 	// Set this.pcConfig and this.options.
@@ -21988,8 +22004,8 @@ function Connection(pcConfig, constraints) {
 
 	debug('new | processed pcConfig:', this.pcConfig);
 
-	// Create a RTCPeerConnection.
-	this.pc = new Adapter.RTCPeerConnection(this.pcConfig, constraints);
+	// Store given pcConstraints.
+	this.pcConstraints = pcConstraints;
 
 	// Own version of the localDescription.
 	this._localDescription = null;
@@ -22011,11 +22027,11 @@ function Connection(pcConfig, constraints) {
 	// Flag set when closed.
 	this.closed = false;
 
-	// Set attributes.
-	setAttributes.call(this);
+	// Set RTCPeerConnection.
+	setPeerConnection.call(this);
 
-	// Set RTC events.
-	setEvents.call(this);
+	// Set properties.
+	setProperties.call(this);
 }
 
 
@@ -22274,6 +22290,44 @@ Connection.prototype.getIdentityAssertion = function() {
 
 
 /**
+ * Custom public API.
+ */
+
+
+Connection.prototype.reset = function() {
+	debug('reset()');
+
+	var pc = this.pc;
+
+	// Remove events in the old PC.
+	pc.onnegotiationneeded = null;
+	pc.onicecandidate = null;
+	pc.onaddstream = null;
+	pc.onremovestream = null;
+	pc.ondatachannel = null;
+	pc.onsignalingstatechange = null;
+	pc.oniceconnectionstatechange = null;
+	pc.onicegatheringstatechange = null;
+	pc.onidentityresult = null;
+	pc.onpeeridentity = null;
+	pc.onidpassertionerror = null;
+	pc.onidpvalidationerror = null;
+
+	// Clear gathering timers.
+	clearTimeout(this.timerGatheringTimeout);
+	delete this.timerGatheringTimeout;
+	clearTimeout(this.timerGatheringTimeoutAfterRelay);
+	delete this.timerGatheringTimeoutAfterRelay;
+
+	// Silently close the old PC.
+	pc.close();
+
+	// Create a new PC.
+	setPeerConnection.call(this);
+};
+
+
+/**
  * Private API.
  */
 
@@ -22306,43 +22360,12 @@ function setConfigurationAndOptions(pcConfig) {
 }
 
 
-function setAttributes() {
-	var self = this;
-	var pc = this.pc;
+function setPeerConnection() {
+	// Create a RTCPeerConnection.
+	this.pc = new Adapter.RTCPeerConnection(this.pcConfig, this.pcConstraints);
 
-	Object.defineProperties(this, {
-		peerConnection: {
-			get: function() { return pc; }
-		},
-
-		signalingState: {
-			get: function() { return pc.signalingState; }
-		},
-
-		iceConnectionState: {
-			get: function() { return pc.iceConnectionState; }
-		},
-
-		iceGatheringState: {
-			get: function() { return pc.iceGatheringState; }
-		},
-
-		localDescription: {
-			get: function() {
-				return getLocalDescription.call(self);
-			}
-		},
-
-		remoteDescription: {
-			get: function() {
-				return pc.remoteDescription;
-			}
-		},
-
-		peerIdentity: {
-			get: function() { return pc.peerIdentity; }
-		},
-	});
+	// Set RTC events.
+	setEvents.call(this);
 }
 
 
@@ -22508,6 +22531,45 @@ function setEvents() {
 }
 
 
+function setProperties() {
+	var self = this;
+
+	Object.defineProperties(this, {
+		peerConnection: {
+			get: function() { return self.pc; }
+		},
+
+		signalingState: {
+			get: function() { return self.pc.signalingState; }
+		},
+
+		iceConnectionState: {
+			get: function() { return self.pc.iceConnectionState; }
+		},
+
+		iceGatheringState: {
+			get: function() { return self.pc.iceGatheringState; }
+		},
+
+		localDescription: {
+			get: function() {
+				return getLocalDescription.call(self);
+			}
+		},
+
+		remoteDescription: {
+			get: function() {
+				return self.pc.remoteDescription;
+			}
+		},
+
+		peerIdentity: {
+			get: function() { return self.pc.peerIdentity; }
+		},
+	});
+}
+
+
 function getLocalDescription() {
 	var pc = this.pc;
 	var options = this.options;
@@ -22617,6 +22679,9 @@ Object.defineProperty(rtcninja, 'called', {
 
 // Expose debug module.
 rtcninja.debug = require('debug');
+
+// Expose browser.
+rtcninja.browser = browser;
 
 },{"./Adapter":32,"./Connection":33,"./version":35,"bowser":36,"debug":29}],35:[function(require,module,exports){
 /**
@@ -23046,7 +23111,7 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -23085,14 +23150,14 @@ module.exports={
   },
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
-  "gitHead": "6834f18b4dc79f8599da8b1790abd71379966812",
+  "gitHead": "aa6a691825d87da67beb38f2c0825cc26d2ec8d3",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.3.0",
+  "_id": "rtcninja@0.3.1",
   "scripts": {},
-  "_shasum": "f6c46154676988f2b08648bf962ecf80a52581a1",
-  "_from": "rtcninja@>=0.3.0 <0.4.0"
+  "_shasum": "cc1a6d79bee2987e72795264ee59889fe8415d48",
+  "_from": "rtcninja@>=0.3.1 <0.4.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23664,7 +23729,8 @@ module.exports={
     "shasum": "8a572afc6ec120eb41473ca517d07d932f7b6a1c",
     "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz"
   },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz"
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz",
+  "readme": "ERROR: No README data found!"
 }
 
 },{}],46:[function(require,module,exports){
@@ -23698,7 +23764,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.3.0",
+    "rtcninja": "^0.3.1",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.17"
   },
