@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.6-pre
+ * JsSIP.js 0.6.6
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14947,10 +14947,8 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       function() {
         if (connection.iceGatheringState === 'complete') {
           self.rtcReady = true;
-          if (onSuccess) {
-            if (onSuccess) { onSuccess(connection.localDescription.sdp); }
-            onSuccess = null;
-          }
+          if (onSuccess) { onSuccess(connection.localDescription.sdp); }
+          onSuccess = null;
         }
       },
       // failure
@@ -23738,7 +23736,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.6-pre",
+  "version": "0.6.6",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

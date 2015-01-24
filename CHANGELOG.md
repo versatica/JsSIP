@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+Version 0.6.6 (released in 2015-01-24)
+--------------------------------------
+
+* `RTCSession`: Don't process SDPs in retranmissions of 200 OK during reINVITE/UDATE.
+* `RTCSession`: Emit 'reinvite' when a reINVITE is received.
+* `RTCSession`: Emit 'update' when an UPDATE is received.
+
+
 Version 0.6.5 (released in 2015-01-20)
 --------------------------------------
 
