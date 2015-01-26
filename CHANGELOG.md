@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.8 (released in 2015-01-26)
+--------------------------------------
+
+* `RTCSession`: Don't ask for `getUserMedia()` in outgoing calls if `mediaConstraints` is `{audio:false, video:false}`. It is user's responsability to, in that case, provide `offerToReceiveAudio/Video` in `rtcOfferConstraints`.
+
+
 Version 0.6.7 (released in 2015-01-26)
 --------------------------------------
 

@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.8-pre
+ * JsSIP.js 0.6.8
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15209,9 +15209,11 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
     receiveInviteResponse.call(self, response);
   };
 
+  // If a local MediaStream is given use it.
   if (mediaStream) {
     userMediaSucceeded(mediaStream);
-  } else {
+  // If at least audio or video is requested prompt getUserMedia.
+  } else if (mediaConstraints.audio || mediaConstraints.video) {
     this.localMediaStreamLocallyGenerated = true;
     rtcninja.getUserMedia(
       mediaConstraints,
@@ -15219,13 +15221,19 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
       userMediaFailed
     );
   }
+  // Otherwise don't prompt getUserMedia.
+  else {
+    userMediaSucceeded(null);
+  }
 
   // User media succeeded
   function userMediaSucceeded(stream) {
     if (self.status === C.STATUS_TERMINATED) { return; }
 
     self.localMediaStream = stream;
-    self.connection.addStream(stream);
+    if (stream) {
+      self.connection.addStream(stream);
+    }
     connecting.call(self, self.request);
     createLocalDescription.call(self, 'offer', rtcSucceeded, rtcFailed, rtcOfferConstraints);
   }
@@ -23733,7 +23741,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.8-pre",
+  "version": "0.6.8",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
