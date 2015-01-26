@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.6
+ * JsSIP.js 0.6.7-pre
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -34,16 +34,15 @@ var C = {
     INCOMPATIBLE_SDP:         'Incompatible SDP',
     MISSING_SDP:              'Missing SDP',
     AUTHENTICATION_ERROR:     'Authentication Error',
-    DIALOG_ERROR:             'Dialog Error',
 
     // Session error causes
     BYE:                      'Terminated',
-    WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
     WEBRTC_ERROR:             'WebRTC Error',
     CANCELED:                 'Canceled',
     NO_ANSWER:                'No Answer',
     EXPIRES:                  'Expires',
     NO_ACK:                   'No ACK',
+    DIALOG_ERROR:             'Dialog Error',
     USER_DENIED_MEDIA_ACCESS: 'User Denied Media Access',
     BAD_MEDIA_DESCRIPTION:    'Bad Media Description',
     RTP_TIMEOUT:              'RTP Timeout'
@@ -18361,8 +18360,6 @@ util.inherits(UA, events.EventEmitter);
 UA.prototype.start = function() {
   var server;
 
-  debug('user requested startup');
-
   if (this.status === C.STATUS_INIT) {
     server = this.getNextWsServer();
     this.transport = new Transport(this, server);
@@ -18480,8 +18477,6 @@ UA.prototype.stop = function() {
   var applicant;
   var num_sessions;
   var ua = this;
-
-  debug('user requested closure');
 
   // Remove dynamic settings.
   this.dynConfiguration = {};
@@ -23736,7 +23731,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.6",
+  "version": "0.6.7-pre",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
