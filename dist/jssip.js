@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.8
+ * JsSIP.js 0.6.9-pre
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -18788,7 +18788,8 @@ UA.prototype.receiveRequest = function(request) {
     message = new Message(this);
     message.init_incoming(request);
   } else if (method === JsSIP_C.INVITE) {
-    if (this.listeners('newRTCSession').length === 0) {
+    // Initial INVITE
+    if(!request.to_tag && this.listeners('newRTCSession').length === 0) {
       request.reply(405);
       return;
     }
@@ -23741,7 +23742,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.8",
+  "version": "0.6.9-pre",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
