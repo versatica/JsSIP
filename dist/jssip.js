@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.7-pre
+ * JsSIP.js 0.6.7
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -18438,6 +18438,7 @@ UA.prototype.call = function(target, options) {
 
   session = new RTCSession(this);
   session.connect(target, options);
+  return session;
 };
 
 /**
@@ -18455,6 +18456,7 @@ UA.prototype.sendMessage = function(target, body, options) {
 
   message = new Message(this);
   message.send(target, body, options);
+  return message;
 };
 
 /**
@@ -23731,7 +23733,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.7-pre",
+  "version": "0.6.7",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

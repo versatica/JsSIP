@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 0.6.7 (released in 2015-01-26)
+--------------------------------------
+
+* ' UA.call()': Return the `RTCSession` instance.
+* ' UA.sendMessage()': Return the `Message` instance.
+
+
 Version 0.6.6 (released in 2015-01-24)
 --------------------------------------
 
