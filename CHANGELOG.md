@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-Version 0.6.9 (released in 2015-XX-XX)
+Version 0.6.9 (released in 2015-01-27)
 --------------------------------------
 
 * Don't reply 405 "Method Not Supported" to re-INVITE even if the UA's "newRTCSession" event is not set.
