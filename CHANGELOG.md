@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.10 (released in 2015-01-27)
+--------------------------------------
+
+* Update "rtcninja" dependency to 0.3.2 (get the `rtcninja.canRenegotiate` attribute).
+
+
 Version 0.6.9 (released in 2015-01-27)
 --------------------------------------
 

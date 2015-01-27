@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.9
+ * JsSIP.js 0.6.10
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -21757,6 +21757,7 @@ var RTCSessionDescription = null;
 var RTCIceCandidate = null;
 var MediaStreamTrack = null;
 var attachMediaStream = null;
+var canRenegotiate = false;
 var browserVersion = Number(browser.version) || 0;
 var isDesktop = !!(! browser.mobile || ! browser.tablet);
 var hasWebRTC = false;
@@ -21784,6 +21785,7 @@ function Adapter(options) {
 			element.src = URL.createObjectURL(stream);
 			return element;
 		};
+		canRenegotiate = true;
 	}
 
 	// Firefox desktop, Firefox Android.
@@ -21802,6 +21804,7 @@ function Adapter(options) {
 			element.src = URL.createObjectURL(stream);
 			return element;
 		};
+		canRenegotiate = false;
 	}
 
 	// WebRTC plugin required. For example IE or Safari with the Temasys plugin.
@@ -21821,6 +21824,7 @@ function Adapter(options) {
 		RTCIceCandidate = pluginInterface.RTCIceCandidate;
 		MediaStreamTrack = pluginInterface.MediaStreamTrack;
 		attachMediaStream = pluginInterface.attachMediaStream;
+		canRenegotiate = pluginInterface.canRenegotiate;
 	}
 
 	// Best effort (may be adater.js is loaded).
@@ -21835,6 +21839,7 @@ function Adapter(options) {
 			element.src = URL.createObjectURL(stream);
 			return element;
 		};
+		canRenegotiate = false;
 	}
 
 
@@ -21899,20 +21904,21 @@ function Adapter(options) {
 	// Expose MediaStreamTrack.
 	Adapter.attachMediaStream = attachMediaStream || throwNonSupported('attachMediaStream');
 
+	// Expose canRenegotiate attribute.
+	Adapter.canRenegotiate = canRenegotiate;
+
 	// Expose closeMediaStream.
 	Adapter.closeMediaStream = function(stream) {
 		if (! stream) { return; }
 
-		var _MediaStreamTrack = global.MediaStreamTrack;
-
 		// Latest spec states that MediaStream has no stop() method and instead must
 		// call stop() on every MediaStreamTrack.
-		if (_MediaStreamTrack && _MediaStreamTrack.prototype && _MediaStreamTrack.prototype.stop) {
+		if (MediaStreamTrack && MediaStreamTrack.prototype && MediaStreamTrack.prototype.stop) {
 			debug('closeMediaStream() | calling stop() on all the MediaStreamTrack');
 
 			var tracks, i, len;
 
-			if (_MediaStreamTrack.prototype.getTracks) {
+			if (stream.getTracks) {
 				tracks = stream.getTracks();
 				for (i=0, len=tracks.length; i<len; i++) {
 					tracks[i].stop();
@@ -22654,6 +22660,7 @@ function rtcninja(options) {
 	rtcninja.MediaStreamTrack = interface.MediaStreamTrack;
 	rtcninja.attachMediaStream = interface.attachMediaStream;
 	rtcninja.closeMediaStream = interface.closeMediaStream;
+	rtcninja.canRenegotiate = interface.canRenegotiate;
 
 	// Log WebRTC support.
 	if (interface.hasWebRTC()) {
@@ -23124,7 +23131,7 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -23163,14 +23170,14 @@ module.exports={
   },
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
-  "gitHead": "aa6a691825d87da67beb38f2c0825cc26d2ec8d3",
+  "gitHead": "acf533df2c59f49ff28bc71b2a878ab4fca7bc56",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.3.1",
+  "_id": "rtcninja@0.3.2",
   "scripts": {},
-  "_shasum": "cc1a6d79bee2987e72795264ee59889fe8415d48",
-  "_from": "rtcninja@>=0.3.1 <0.4.0"
+  "_shasum": "c4fbfc67e508b108dc7a8c6962923f30387d26b0",
+  "_from": "rtcninja@>=0.3.2 <0.4.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23751,7 +23758,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23777,7 +23784,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.3.1",
+    "rtcninja": "^0.3.2",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.17"
   },
