@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.11 (released in 2015-01-27)
+--------------------------------------
+
+* Fix "Session-Expires" default value to 90 seconds.
+
+
 Version 0.6.10 (released in 2015-01-27)
 --------------------------------------
 
