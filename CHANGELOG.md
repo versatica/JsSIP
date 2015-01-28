@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.12 (released in 2015-01-28)
+--------------------------------------
+
+* Update "rtcninja" dependency to 0.3.3 (fix "RTCOfferOptions").
+
+
 Version 0.6.11 (released in 2015-01-27)
 --------------------------------------
 
