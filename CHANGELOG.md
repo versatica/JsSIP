@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.13 (released in 2015-XX-XX)
+--------------------------------------
+
+* Properly keep mute local audio/video if remote is on hold, and keep it even if we reoffer. Also fix SDP direction attributes in reoffers according to current local and remote "hold" status.
+
+
 Version 0.6.12 (released in 2015-01-28)
 --------------------------------------
 

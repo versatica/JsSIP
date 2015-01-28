@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.12
+ * JsSIP.js 0.6.13-pre
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13579,8 +13579,8 @@ function RTCSession(ua) {
   // Mute/Hold state
   this.audioMuted = false;
   this.videoMuted = false;
-  this.local_hold = false;
-  this.remote_hold = false;
+  this.localHold = false;
+  this.remoteHold = false;
 
   // Session Timers (RFC 4028)
   this.sessionTimers = {
@@ -13696,8 +13696,8 @@ RTCSession.prototype.isMuted = function() {
 
 RTCSession.prototype.isOnHold = function() {
   return {
-    local: this.local_hold,
-    remote: this.remote_hold
+    local: this.localHold,
+    remote: this.remoteHold
   };
 };
 
@@ -14430,7 +14430,7 @@ RTCSession.prototype.unmute = function(options) {
     audioUnMuted = true;
     this.audioMuted = false;
 
-    if (this.local_hold === false) {
+    if (this.localHold === false) {
       toogleMuteAudio.call(this, false);
     }
   }
@@ -14439,7 +14439,7 @@ RTCSession.prototype.unmute = function(options) {
     videoUnMuted = true;
     this.videoMuted = false;
 
-    if (this.local_hold === false) {
+    if (this.localHold === false) {
       toogleMuteVideo.call(this, false);
     }
   }
@@ -14484,33 +14484,15 @@ RTCSession.prototype.hold = function() {
       return;
     }
   } else {
-    if (this.local_hold === true) {
+    if (this.localHold === true) {
       return;
     }
   }
 
+  this.localHold = true;
   onhold.call(this, 'local');
 
   sendReinvite.call(this, {
-    mangle: function(sdp) {
-      var idx, length;
-
-      sdp = Parser.parseSDP(sdp);
-
-      length = sdp.media.length;
-      for (idx=0; idx<length; idx++) {
-        var m = sdp.media[idx];
-        if (!m.direction) {
-          m.direction = 'sendonly';
-        } else if (m.direction === 'sendrecv') {
-          m.direction = 'sendonly';
-        } else if (m.direction === 'recvonly') {
-          m.direction = 'inactive';
-        }
-      }
-
-      return Parser.writeSDP(sdp);
-    },
     eventHandlers: {
       failed: function() {
         self.terminate({
@@ -14536,7 +14518,6 @@ RTCSession.prototype.unhold = function() {
   if (!this.audioMuted) {
     toogleMuteAudio.call(this, false);
   }
-
   if (!this.videoMuted) {
     toogleMuteVideo.call(this, false);
   }
@@ -14557,11 +14538,12 @@ RTCSession.prototype.unhold = function() {
       return;
     }
   } else {
-    if (this.local_hold === false) {
+    if (this.localHold === false) {
       return;
     }
   }
 
+  this.localHold = false;
   onunhold.call(this, 'local');
 
   sendReinvite.call(this, {
@@ -14610,11 +14592,6 @@ RTCSession.prototype.renegotiate = function(options) {
     }
   }
 
-  // Force unhold.
-  if (this.local_hold === true) {
-    onunhold.call(this, 'local');
-  }
-
   eventHandlers = {
     failed: function() {
       self.terminate({
@@ -14624,6 +14601,8 @@ RTCSession.prototype.renegotiate = function(options) {
       });
     }
   };
+
+  setLocalMediaStatus.call(this);
 
   if (this.renegotiateOptions.useUpdate) {
     sendUpdate.call(this, {
@@ -15098,6 +15077,14 @@ function receiveReinvite(request) {
     createSdp(
       // onSuccess
       function(sdp) {
+        if (self.remoteHold === true && hold === false) {
+          self.remoteHold = false;
+          onunhold.call(self, 'remote');
+        } else if (self.remoteHold === false && hold === true) {
+          self.remoteHold = true;
+          onhold.call(self, 'remote');
+        }
+
         var extraHeaders = ['Contact: ' + self.contact];
         handleSessionTimersInIncomingRequest.call(self, request, extraHeaders);
         request.reply(200, null, extraHeaders, sdp,
@@ -15105,12 +15092,6 @@ function receiveReinvite(request) {
             self.status = C.STATUS_WAITING_FOR_ACK;
             setInvite2xxTimer.call(self, request, sdp);
             setACKTimer.call(self);
-
-            if (self.remote_hold === true && hold === false) {
-              onunhold.call(self, 'remote');
-            } else if (self.remote_hold === false && hold === true) {
-              onhold.call(self, 'remote');
-            }
           }
         );
       },
@@ -15177,20 +15158,18 @@ function receiveUpdate(request) {
     new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
     // success
     function() {
+      if (self.remoteHold === true && hold === false) {
+        onunhold.call(self, 'remote');
+      } else if (self.remoteHold === false && hold === true) {
+        onhold.call(self, 'remote');
+      }
+
       createLocalDescription.call(self, 'answer',
         // success
         function(sdp) {
           var extraHeaders = ['Contact: ' + self.contact];
           handleSessionTimersInIncomingRequest.call(self, request, extraHeaders);
-          request.reply(200, null, extraHeaders, sdp,
-            function() {
-              if (self.remote_hold === true && hold === false) {
-                onunhold.call(self, 'remote');
-              } else if (self.remote_hold === false && hold === true) {
-                onhold.call(self, 'remote');
-              }
-            }
-          );
+          request.reply(200, null, extraHeaders, sdp);
         },
         // failure
         function() {
@@ -15428,7 +15407,6 @@ function sendReinvite(options) {
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
     rtcOfferConstraints = options.rtcOfferConstraints || null,
-    mangle = options.mangle || null,
     succeeded = false;
 
   extraHeaders.push('Contact: ' + this.contact);
@@ -15442,9 +15420,7 @@ function sendReinvite(options) {
   createLocalDescription.call(this, 'offer',
     // success
     function(sdp) {
-      if (mangle) {
-        sdp = mangle(sdp);
-      }
+      sdp = mangleOffer.call(self, sdp);
 
       var request = new RTCSession_Request(self, JsSIP_C.INVITE);
 
@@ -15536,7 +15512,6 @@ function sendUpdate(options) {
     eventHandlers = options.eventHandlers || {},
     rtcOfferConstraints = options.rtcOfferConstraints || null,
     sdpOffer = options.sdpOffer || false,
-    mangle = options.mangle || null,
     succeeded = false;
 
   extraHeaders.push('Contact: ' + this.contact);
@@ -15552,9 +15527,7 @@ function sendUpdate(options) {
     createLocalDescription.call(this, 'offer',
       // success
       function(sdp) {
-        if (mangle) {
-          sdp = mangle(sdp);
-        }
+        sdp = mangleOffer.call(self, sdp);
 
         var request = new RTCSession_Request(self, JsSIP_C.UPDATE);
 
@@ -15693,6 +15666,88 @@ function sendRequest(method, options) {
 
   var request = new RTCSession_Request(this, method);
   request.send(options);
+}
+
+/**
+ * Correctly set the SDP direction attributes if the call is on local hold
+ */
+function mangleOffer(sdp) {
+  var idx, length, m;
+
+  if (! this.localHold && ! this.remoteHold) {
+    return sdp;
+  }
+
+  sdp = Parser.parseSDP(sdp);
+
+  // Local hold.
+  if (this.localHold && ! this.remoteHold) {
+    debug('mangleOffer() | me on hold, mangling offer');
+    length = sdp.media.length;
+    for (idx=0; idx<length; idx++) {
+      m = sdp.media[idx];
+      if (!m.direction) {
+        m.direction = 'sendonly';
+      } else if (m.direction === 'sendrecv') {
+        m.direction = 'sendonly';
+      } else if (m.direction === 'recvonly') {
+        m.direction = 'inactive';
+      }
+    }
+  }
+  // Local and remote hold.
+  else if (this.localHold && this.remoteHold) {
+    debug('mangleOffer() | both on hold, mangling offer');
+    length = sdp.media.length;
+    for (idx=0; idx<length; idx++) {
+      m = sdp.media[idx];
+      m.direction = 'inactive';
+    }
+  }
+  // Remote hold.
+  else if (this.remoteHold) {
+    debug('mangleOffer() | remote on hold, mangling offer');
+    length = sdp.media.length;
+    for (idx=0; idx<length; idx++) {
+      m = sdp.media[idx];
+      if (!m.direction) {
+        m.direction = 'recvonly';
+      } else if (m.direction === 'sendrecv') {
+        m.direction = 'recvonly';
+      } else if (m.direction === 'recvonly') {
+        m.direction = 'inactive';
+      }
+    }
+  }
+
+  return Parser.writeSDP(sdp);
+}
+
+function setLocalMediaStatus() {
+  if (this.localHold) {
+    debug('setLocalMediaStatus() | me on hold, mutting my media');
+    toogleMuteAudio.call(this, true);
+    toogleMuteVideo.call(this, true);
+    return;
+  }
+  else if (this.remoteHold) {
+    debug('setLocalMediaStatus() | remote on hold, mutting my media');
+    toogleMuteAudio.call(this, true);
+    toogleMuteVideo.call(this, true);
+    return;
+  }
+
+  if (this.audioMuted) {
+    toogleMuteAudio.call(this, true);
+  } else {
+    toogleMuteAudio.call(this, false);
+  }
+
+  if (this.videoMuted) {
+    toogleMuteVideo.call(this, true);
+  } else {
+    toogleMuteVideo.call(this, false);
+  }
 }
 
 /**
@@ -15893,11 +15948,7 @@ function failed(originator, message, cause) {
 function onhold(originator) {
   debug('session onhold');
 
-  if (originator === 'local') {
-    this.local_hold = true;
-  } else {
-    this.remote_hold = true;
-  }
+  setLocalMediaStatus.call(this);
 
   this.emit('hold', {
     originator: originator
@@ -15907,11 +15958,7 @@ function onhold(originator) {
 function onunhold(originator) {
   debug('session onunhold');
 
-  if (originator === 'local') {
-    this.local_hold = false;
-  } else {
-    this.remote_hold = false;
-  }
+  setLocalMediaStatus.call(this);
 
   this.emit('unhold', {
     originator: originator
@@ -15921,6 +15968,8 @@ function onunhold(originator) {
 function onmute(options) {
   debug('session onmute');
 
+  setLocalMediaStatus.call(this);
+
   this.emit('muted', {
     audio: options.audio,
     video: options.video
@@ -15929,6 +15978,8 @@ function onmute(options) {
 
 function onunmute(options) {
   debug('session onunmute');
+
+  setLocalMediaStatus.call(this);
 
   this.emit('unmuted', {
     audio: options.audio,
@@ -23792,7 +23843,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.12",
+  "version": "0.6.13-pre",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
