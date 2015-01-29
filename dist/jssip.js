@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.13
+ * JsSIP.js 0.6.14
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13732,9 +13732,6 @@ RTCSession.prototype.connect = function(target, options) {
     }
   }
 
-  // Set this.rtcOfferConstraints if given.
-  this.rtcOfferConstraints = rtcOfferConstraints;
-
   this.data = options.data || this.data;
 
   if (target === undefined) {
@@ -15411,7 +15408,7 @@ function sendReinvite(options) {
     self = this,
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
-    rtcOfferConstraints = options.rtcOfferConstraints || null,
+    rtcOfferConstraints = options.rtcOfferConstraints || this.rtcOfferConstraints || null,
     succeeded = false;
 
   extraHeaders.push('Contact: ' + this.contact);
@@ -15515,7 +15512,7 @@ function sendUpdate(options) {
     self = this,
     extraHeaders = options.extraHeaders || [],
     eventHandlers = options.eventHandlers || {},
-    rtcOfferConstraints = options.rtcOfferConstraints || null,
+    rtcOfferConstraints = options.rtcOfferConstraints || this.rtcOfferConstraints || null,
     sdpOffer = options.sdpOffer || false,
     succeeded = false;
 
@@ -23850,7 +23847,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.13",
+  "version": "0.6.14",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

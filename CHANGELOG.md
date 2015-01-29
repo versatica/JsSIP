@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.14 (released in 2015-01-29)
+--------------------------------------
+
+* `RTCSession:` Include initially given `rtcOfferConstraints` in `sendReinvite()` and `sendUpdate()`.
+
+
 Version 0.6.13 (released in 2015-01-29)
 --------------------------------------
 
