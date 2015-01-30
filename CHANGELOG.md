@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.15 (released in 2015-XX-XX)
+--------------------------------------
+
+* `RTCSession:` Emit `iceconnetionstatechange` event.
+
+
 Version 0.6.14 (released in 2015-01-29)
 --------------------------------------
 
