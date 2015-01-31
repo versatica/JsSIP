@@ -1,10 +1,11 @@
 CHANGELOG
 =========
 
-Version 0.6.15 (released in 2015-XX-XX)
+Version 0.6.15 (released in 2015-01-31)
 --------------------------------------
 
 * `RTCSession:` Emit `iceconnetionstatechange` event.
+* Update "rtcninja" dependency to 0.4.0.
 
 
 Version 0.6.14 (released in 2015-01-29)

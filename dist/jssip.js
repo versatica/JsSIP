@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.15-pre
+ * JsSIP.js 0.6.15
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -22104,16 +22104,11 @@ var VAR = {
 };
 
 
-function Connection(pcConfig, pcConstraints) {
-	debug('new | original pcConfig:', pcConfig);
+function Connection(pcConfig) {
+	debug('new | pcConfig:', pcConfig);
 
 	// Set this.pcConfig and this.options.
 	setConfigurationAndOptions.call(this, pcConfig);
-
-	debug('new | processed pcConfig:', this.pcConfig);
-
-	// Store given pcConstraints.
-	this.pcConstraints = pcConstraints;
 
 	// Own version of the localDescription.
 	this._localDescription = null;
@@ -22404,8 +22399,8 @@ Connection.prototype.getIdentityAssertion = function() {
  */
 
 
-Connection.prototype.reset = function() {
-	debug('reset()');
+Connection.prototype.reset = function(pcConfig) {
+	debug('reset() | pcConfig:', pcConfig);
 
 	var pc = this.pc;
 
@@ -22430,7 +22425,11 @@ Connection.prototype.reset = function() {
 	delete this.timerGatheringTimeoutAfterRelay;
 
 	// Silently close the old PC.
+	debug('reset() | closing current peerConnection');
 	pc.close();
+
+	// Set this.pcConfig and this.options.
+	setConfigurationAndOptions.call(this, pcConfig);
 
 	// Create a new PC.
 	setPeerConnection.call(this);
@@ -22467,12 +22466,14 @@ function setConfigurationAndOptions(pcConfig) {
 	// Remove custom rtcninja.Connection options from pcConfig.
 	delete this.pcConfig.gatheringTimeout;
 	delete this.pcConfig.gatheringTimeoutAfterRelay;
+
+	debug('setConfigurationAndOptions | processed pcConfig:', this.pcConfig);
 }
 
 
 function setPeerConnection() {
 	// Create a RTCPeerConnection.
-	this.pc = new Adapter.RTCPeerConnection(this.pcConfig, this.pcConstraints);
+	this.pc = new Adapter.RTCPeerConnection(this.pcConfig);
 
 	// Set RTC events.
 	setEvents.call(this);
@@ -23222,7 +23223,7 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -23259,16 +23260,16 @@ module.exports={
     "jshint-stylish": "^1.0.0",
     "vinyl-transform": "^1.0.0"
   },
+  "gitHead": "a3326f19898e01c94777b319d020262de339a495",
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
-  "gitHead": "a3a0605db6881265d4a8cd85498fd85a8fd5e35c",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.3.3",
+  "_id": "rtcninja@0.4.0",
   "scripts": {},
-  "_shasum": "12fa526217ddbbbf49a1365c84c3ab544d398156",
-  "_from": "rtcninja@>=0.3.3 <0.4.0"
+  "_shasum": "b177e7498ae147f5b334e4dbe9c6846d3efc1e60",
+  "_from": "rtcninja@>=0.4.0 <0.5.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23849,7 +23850,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.15-pre",
+  "version": "0.6.15",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23875,7 +23876,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.3.3",
+    "rtcninja": "^0.4.0",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.17"
   },
