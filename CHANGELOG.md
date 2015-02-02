@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.17 (released in 2015-02-02)
+--------------------------------------
+
+* `RTCSession`: Improve `isReadyToReOffer()`.
+
+
 Version 0.6.16 (released in 2015-02-02)
 --------------------------------------
 

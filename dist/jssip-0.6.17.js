@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.16
+ * JsSIP.js 0.6.17
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13654,13 +13654,19 @@ RTCSession.prototype.isOnHold = function() {
  */
  RTCSession.prototype.isReadyToReOffer = function() {
   if (! this.rtcReady) {
-    debug('isReadyToReOffer() | not, rtcReady is false');
+    debug('isReadyToReOffer() | internal WebRTC status not ready');
+    return false;
+  }
+
+  // No established yet.
+  if (! this.dialog) {
+    debug('isReadyToReOffer() | session not established yet');
     return false;
   }
 
   // Another INVITE transaction is in progress
   if (this.dialog.uac_pending_reply === true || this.dialog.uas_pending_reply === true) {
-    debug('isReadyToReOffer() | not, there is another INVITE/UPDATE transaction in progress');
+    debug('isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
     return false;
   }
 
@@ -23771,7 +23777,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.16",
+  "version": "0.6.17",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
