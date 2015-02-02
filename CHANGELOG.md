@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+Version 0.6.16 (released in 2015-02-02)
+--------------------------------------
+
+* `RTCSession`: Avoid calling hold()/unhold/renegotiate() if an outgoing renegotiation is not yet finished (return false).
+* `RTCSession`: Add `options` and `done` arguments to hold()/unhold/renegotiate().
+* `RTCSession`: New public method `isReadyToReOffer()`.
+
+
 Version 0.6.15 (released in 2015-01-31)
 --------------------------------------
 

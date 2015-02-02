@@ -1,5 +1,5 @@
 /*
- * JsSIP.js 0.6.15
+ * JsSIP.js 0.6.16
  * the Javascript SIP library
  * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -326,10 +326,6 @@ Dialog.prototype = {
 
             request.server_transaction.removeListener('stateChanged', stateChanged);
             self.uas_pending_reply = false;
-
-            if (self.uac_pending_reply === false) {
-              self.owner.onReadyToReinvite();
-            }
           }
         });
       }
@@ -412,7 +408,8 @@ DialogRequestSender.prototype = {
     request_sender.send();
 
     // RFC3261 14.2 Modifying an Existing Session -UAC BEHAVIOR-
-    if (this.request.method === JsSIP_C.INVITE && request_sender.clientTransaction.state !== Transactions.C.STATUS_TERMINATED) {
+    if ((this.request.method === JsSIP_C.INVITE || (this.request.method === JsSIP_C.UPDATE && this.request.body)) &&
+        request_sender.clientTransaction.state !== Transactions.C.STATUS_TERMINATED) {
       this.dialog.uac_pending_reply = true;
       request_sender.clientTransaction.on('stateChanged', function stateChanged(){
         if (this.state === Transactions.C.STATUS_ACCEPTED ||
@@ -421,10 +418,6 @@ DialogRequestSender.prototype = {
 
           request_sender.clientTransaction.removeListener('stateChanged', stateChanged);
           self.dialog.uac_pending_reply = false;
-
-          if (self.dialog.uas_pending_reply === false) {
-            self.dialog.owner.onReadyToReinvite();
-          }
         }
       });
     }
@@ -13538,7 +13531,7 @@ function RTCSession(ua) {
   this.status = C.STATUS_NULL;
   this.dialog = null;
   this.earlyDialogs = {};
-  this.connection = null;  // The rtcninja.Connection instance (public attribute).
+  this.connection = null;  // The rtcninja.RTCPeerConnection instance (public attribute).
 
   // RTCSession confirmation flag
   this.is_confirmed = false;
@@ -13549,9 +13542,6 @@ function RTCSession(ua) {
   // Default rtcOfferConstraints and rtcAnswerConstrainsts (passed in connect() or answer()).
   this.rtcOfferConstraints = null;
   this.rtcAnswerConstraints = null;
-
-  // renegotiate() options.
-  this.renegotiateOptions = {};
 
   // Local MediaStream.
   this.localMediaStream = null;
@@ -13590,49 +13580,6 @@ function RTCSession(ua) {
     running: false,
     refresher: false,
     timer: null  // A setTimeout.
-  };
-
-  this.pending_actions = {
-    actions: [],
-
-    length: function() {
-      return this.actions.length;
-    },
-
-    isPending: function(name){
-      var
-        idx = 0,
-        length = this.actions.length;
-
-      for (idx; idx<length; idx++) {
-        if (this.actions[idx].name === name) {
-          return true;
-        }
-      }
-      return false;
-    },
-
-    shift: function() {
-      return this.actions.shift();
-    },
-
-    push: function(name) {
-      this.actions.push({
-        name: name
-      });
-    },
-
-    pop: function(name) {
-      var
-        idx = 0,
-        length = this.actions.length;
-
-      for (idx; idx<length; idx++) {
-        if (this.actions[idx].name === name) {
-          this.actions.splice(idx,1);
-        }
-      }
-    }
   };
 
   // Custom session empty object for high level use
@@ -13700,6 +13647,26 @@ RTCSession.prototype.isOnHold = function() {
     remote: this.remoteHold
   };
 };
+
+
+/**
+ * Check if RTCSession is ready for an outgoing re-INVITE or UPDATE with SDP.
+ */
+ RTCSession.prototype.isReadyToReOffer = function() {
+  if (! this.rtcReady) {
+    debug('isReadyToReOffer() | not, rtcReady is false');
+    return false;
+  }
+
+  // Another INVITE transaction is in progress
+  if (this.dialog.uac_pending_reply === true || this.dialog.uas_pending_reply === true) {
+    debug('isReadyToReOffer() | not, there is another INVITE/UPDATE transaction in progress');
+    return false;
+  }
+
+  return true;
+};
+
 
 
 RTCSession.prototype.connect = function(target, options) {
@@ -13793,7 +13760,7 @@ RTCSession.prototype.connect = function(target, options) {
 
   this.id = this.request.call_id + this.from_tag;
 
-  // Create a new rtcninja.Connection instance.
+  // Create a new rtcninja.RTCPeerConnection instance.
   createRTCConnection.call(this, pcConfig, rtcConstraints);
 
   // Save the session into the ua sessions collection.
@@ -14008,7 +13975,7 @@ RTCSession.prototype.answer = function(options) {
     mediaConstraints.video = false;
   }
 
-  // Create a new rtcninja.Connection instance.
+  // Create a new rtcninja.RTCPeerConnection instance.
   // TODO: This may throw an error, should react.
   createRTCConnection.call(this, pcConfig, rtcConstraints);
 
@@ -14453,111 +14420,113 @@ RTCSession.prototype.unmute = function(options) {
 /**
  * Hold
  */
-RTCSession.prototype.hold = function() {
+RTCSession.prototype.hold = function(options, done) {
   debug('hold()');
 
-  var self = this;
+  options = options || {};
+
+  var self = this,
+    eventHandlers;
 
   if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-    throw new Exceptions.InvalidStateError(this.status);
+    return false;
   }
 
-  toogleMuteAudio.call(this, true);
-  toogleMuteVideo.call(this, true);
+  if (this.localHold === true) {
+    return false;
+  }
 
-  if (! isReadyToReinvite.call(this)) {
-    /* If there is a pending 'unhold' or 'renegotiate' action, abort
-     * Else, if there isn't any 'hold' action, add this one to the queue
-     * Else, if there is already a 'hold' action, skip
-     */
-    if (this.pending_actions.isPending('unhold')) {
-      return;
-    } else if (this.pending_actions.isPending('renegotiate')) {
-      return;
-    } else if (!this.pending_actions.isPending('hold')) {
-      this.pending_actions.push('hold');
-      return;
-    } else {
-      return;
-    }
-  } else {
-    if (this.localHold === true) {
-      return;
-    }
+  if (! this.isReadyToReOffer()) {
+    return false;
   }
 
   this.localHold = true;
   onhold.call(this, 'local');
 
-  sendReinvite.call(this, {
-    eventHandlers: {
-      failed: function() {
-        self.terminate({
-          cause: JsSIP_C.causes.WEBRTC_ERROR,
-          status_code: 500,
-          reason_phrase: 'Hold Failed'
-        });
-      }
+  eventHandlers = {
+    succeeded: function() {
+      if (done) { done(); }
+    },
+    failed: function() {
+      self.terminate({
+        cause: JsSIP_C.causes.WEBRTC_ERROR,
+        status_code: 500,
+        reason_phrase: 'Hold Failed'
+      });
     }
-  });
+  };
+
+  if (options.useUpdate) {
+    sendUpdate.call(this, {
+      sdpOffer: true,
+      eventHandlers: eventHandlers,
+      extraHeaders: options.extraHeaders
+    });
+  } else {
+    sendReinvite.call(this, {
+      eventHandlers: eventHandlers,
+      extraHeaders: options.extraHeaders
+    });
+  }
+
+  return true;
 };
 
 
-RTCSession.prototype.unhold = function() {
+RTCSession.prototype.unhold = function(options, done) {
   debug('unhold()');
 
-  var self = this;
+  options = options || {};
+
+  var self = this,
+    eventHandlers;
 
   if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-    throw new Exceptions.InvalidStateError(this.status);
+    return false;
   }
 
-  if (!this.audioMuted) {
-    toogleMuteAudio.call(this, false);
-  }
-  if (!this.videoMuted) {
-    toogleMuteVideo.call(this, false);
+  if (this.localHold === false) {
+    return false;
   }
 
-  if (! isReadyToReinvite.call(this)) {
-    /* If there is a pending 'hold' or 'renegotiate' action, abort
-     * Else, if there isn't any 'unhold' action, add this one to the queue
-     * Else, if there is already an 'unhold' action, skip
-     */
-    if (this.pending_actions.isPending('hold')) {
-      return;
-    } else if (this.pending_actions.isPending('renegotiate')) {
-      return;
-    } else if (!this.pending_actions.isPending('unhold')) {
-      this.pending_actions.push('unhold');
-      return;
-    } else {
-      return;
-    }
-  } else {
-    if (this.localHold === false) {
-      return;
-    }
+  if (! this.isReadyToReOffer()) {
+    return false;
   }
 
   this.localHold = false;
   onunhold.call(this, 'local');
 
-  sendReinvite.call(this, {
-    eventHandlers: {
-      failed: function() {
-        self.terminate({
-          cause: JsSIP_C.causes.WEBRTC_ERROR,
-          status_code: 500,
-          reason_phrase: 'Unhold Failed'
-        });
-      }
+  eventHandlers = {
+    succeeded: function() {
+      if (done) { done(); }
+    },
+    failed: function() {
+      self.terminate({
+        cause: JsSIP_C.causes.WEBRTC_ERROR,
+        status_code: 500,
+        reason_phrase: 'Unhold Failed'
+      });
     }
-  });
+  };
+
+  if (options.useUpdate) {
+    sendUpdate.call(this, {
+      sdpOffer: true,
+      eventHandlers: eventHandlers,
+      extraHeaders: options.extraHeaders
+    });
+  } else {
+    sendReinvite.call(this, {
+      eventHandlers: eventHandlers,
+      extraHeaders: options.extraHeaders
+    });
+  }
+
+  return true;
 };
 
 
-RTCSession.prototype.renegotiate = function(options) {
+RTCSession.prototype.renegotiate = function(options, done) {
   debug('renegotiate()');
 
   options = options || {};
@@ -14567,29 +14536,17 @@ RTCSession.prototype.renegotiate = function(options) {
     rtcOfferConstraints = options.rtcOfferConstraints || null;
 
   if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-    throw new Exceptions.InvalidStateError(this.status);
+    return false;
   }
 
-  this.renegotiateOptions = options;
-
-  if (! isReadyToReinvite.call(this)) {
-    /* If there is a pending 'hold' or 'unhold' action, abort
-     * Else, if there isn't any 'renegotiate' action, add this one to the queue
-     * Else, if there is already a 'renegotiate' action, skip
-     */
-    if (this.pending_actions.isPending('hold')) {
-      return;
-    } else if (this.pending_actions.isPending('unhold')) {
-      return;
-    } else if (!this.pending_actions.isPending('renegotiate')) {
-      this.pending_actions.push('renegotiate');
-      return;
-    } else {
-      return;
-    }
+  if (! this.isReadyToReOffer()) {
+    return false;
   }
 
   eventHandlers = {
+    succeeded: function() {
+      if (done) { done(); }
+    },
     failed: function() {
       self.terminate({
         cause: JsSIP_C.causes.WEBRTC_ERROR,
@@ -14601,7 +14558,7 @@ RTCSession.prototype.renegotiate = function(options) {
 
   setLocalMediaStatus.call(this);
 
-  if (this.renegotiateOptions.useUpdate) {
+  if (options.useUpdate) {
     sendUpdate.call(this, {
       sdpOffer: true,
       eventHandlers: eventHandlers,
@@ -14615,6 +14572,8 @@ RTCSession.prototype.renegotiate = function(options) {
       extraHeaders: options.extraHeaders
     });
   }
+
+  return true;
 };
 
 
@@ -14781,23 +14740,6 @@ RTCSession.prototype.newDTMF = function(data) {
 };
 
 
-RTCSession.prototype.onReadyToReinvite = function() {
-  var action = (this.pending_actions.length() > 0) ? this.pending_actions.shift() : null;
-
-  if (!action) {
-    return;
-  }
-
-  if (action.name === 'hold') {
-    this.hold();
-  } else if (action.name === 'unhold') {
-    this.unhold();
-  } else if (action.name === 'renegotiate') {
-    this.renegotiate(this.renegotiateOptions);
-  }
-};
-
-
 /**
  * Private API.
  */
@@ -14855,7 +14797,7 @@ function setACKTimer() {
 function createRTCConnection(pcConfig, rtcConstraints) {
   var self = this;
 
-  this.connection = new rtcninja.Connection(pcConfig, rtcConstraints);
+  this.connection = new rtcninja.RTCPeerConnection(pcConfig, rtcConstraints);
 
   this.connection.onaddstream = function(event, stream) {
     self.emit('addstream', {stream: stream});
@@ -14946,23 +14888,6 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
   }
 }
 
-/**
- * Check if RTCSession is ready for a re-INVITE
- */
-function isReadyToReinvite() {
-  if (! this.rtcReady) {
-    debug('isReadyToReinvite() | no, rtcReady is false');
-    return false;
-  }
-
-  // Another INVITE transaction is in progress
-  if (this.dialog.uac_pending_reply === true || this.dialog.uas_pending_reply === true) {
-    debug('isReadyToReinvite() | no, there is another INVITE transaction in progress');
-    return false;
-  }
-
-  return true;
-}
 
 /**
  * Dialog Management
@@ -15163,8 +15088,10 @@ function receiveUpdate(request) {
     // success
     function() {
       if (self.remoteHold === true && hold === false) {
+        self.remoteHold = false;
         onunhold.call(self, 'remote');
       } else if (self.remoteHold === false && hold === true) {
+        self.remoteHold = true;
         onhold.call(self, 'remote');
       }
 
@@ -15453,9 +15380,6 @@ function sendReinvite(options) {
     },
     // failure
     function() {
-      if (isReadyToReinvite.call(self)) {
-        self.onReadyToReinvite();
-      }
       onFailed();
     },
     // RTC constraints.
@@ -15560,9 +15484,6 @@ function sendUpdate(options) {
       },
       // failure
       function() {
-        if (isReadyToReinvite.call(self)) {
-          self.onReadyToReinvite();
-        }
         onFailed();
       },
       // RTC constraints.
@@ -22069,17 +21990,17 @@ function Adapter(options) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"bowser":36,"debug":29}],33:[function(require,module,exports){
 /**
- * Expose the Connection class.
+ * Expose the RTCPeerConnection class.
  */
-module.exports = Connection;
+module.exports = RTCPeerConnection;
 
 
 /**
  * Dependencies.
  */
 var merge = require('merge');
-var debug = require('debug')('rtcninja:Connection');
-var debugerror = require('debug')('rtcninja:ERROR:Connection');
+var debug = require('debug')('rtcninja:RTCPeerConnection');
+var debugerror = require('debug')('rtcninja:ERROR:RTCPeerConnection');
 debugerror.log = console.warn.bind(console);
 var Adapter = require('./Adapter');
 
@@ -22104,7 +22025,7 @@ var VAR = {
 };
 
 
-function Connection(pcConfig) {
+function RTCPeerConnection(pcConfig) {
 	debug('new | pcConfig:', pcConfig);
 
 	// Set this.pcConfig and this.options.
@@ -22143,7 +22064,7 @@ function Connection(pcConfig) {
  */
 
 
-Connection.prototype.createOffer = function(successCallback, failureCallback, options) {
+RTCPeerConnection.prototype.createOffer = function(successCallback, failureCallback, options) {
 	debug('createOffer()');
 
 	var self = this;
@@ -22166,7 +22087,7 @@ Connection.prototype.createOffer = function(successCallback, failureCallback, op
 };
 
 
-Connection.prototype.createAnswer = function(successCallback, failureCallback, options) {
+RTCPeerConnection.prototype.createAnswer = function(successCallback, failureCallback, options) {
 	debug('createAnswer()');
 
 	var self = this;
@@ -22187,7 +22108,7 @@ Connection.prototype.createAnswer = function(successCallback, failureCallback, o
 };
 
 
-Connection.prototype.setLocalDescription = function(description, successCallback, failureCallback) {
+RTCPeerConnection.prototype.setLocalDescription = function(description, successCallback, failureCallback) {
 	debug('setLocalDescription()');
 
 	var self = this;
@@ -22247,7 +22168,7 @@ Connection.prototype.setLocalDescription = function(description, successCallback
 };
 
 
-Connection.prototype.setRemoteDescription = function(description, successCallback, failureCallback) {
+RTCPeerConnection.prototype.setRemoteDescription = function(description, successCallback, failureCallback) {
 	debug('setRemoteDescription()');
 
 	var self = this;
@@ -22268,7 +22189,7 @@ Connection.prototype.setRemoteDescription = function(description, successCallbac
 };
 
 
-Connection.prototype.updateIce = function(pcConfig) {
+RTCPeerConnection.prototype.updateIce = function(pcConfig) {
 	debug('updateIce() | pcConfig:', pcConfig);
 
 	// Update this.pcConfig and this.options.
@@ -22281,7 +22202,7 @@ Connection.prototype.updateIce = function(pcConfig) {
 };
 
 
-Connection.prototype.addIceCandidate = function(candidate, successCallback, failureCallback) {
+RTCPeerConnection.prototype.addIceCandidate = function(candidate, successCallback, failureCallback) {
 	debug('addIceCandidate() | candidate:', candidate);
 
 	var self = this;
@@ -22302,49 +22223,49 @@ Connection.prototype.addIceCandidate = function(candidate, successCallback, fail
 };
 
 
-Connection.prototype.getConfiguration = function() {
+RTCPeerConnection.prototype.getConfiguration = function() {
 	debug('getConfiguration()');
 
 	return this.pc.getConfiguration();
 };
 
 
-Connection.prototype.getLocalStreams = function() {
+RTCPeerConnection.prototype.getLocalStreams = function() {
 	debug('getLocalStreams()');
 
 	return this.pc.getLocalStreams();
 };
 
 
-Connection.prototype.getRemoteStreams = function() {
+RTCPeerConnection.prototype.getRemoteStreams = function() {
 	debug('getRemoteStreams()');
 
 	return this.pc.getRemoteStreams();
 };
 
 
-Connection.getStreamById = function(streamId) {
+RTCPeerConnection.getStreamById = function(streamId) {
 	debug('getStreamById() | streamId:', streamId);
 
 	this.pc.getStreamById(streamId);
 };
 
 
-Connection.prototype.addStream = function(stream) {
+RTCPeerConnection.prototype.addStream = function(stream) {
 	debug('addStream() | stream:', stream);
 
 	this.pc.addStream(stream);
 };
 
 
-Connection.prototype.removeStream = function(stream) {
+RTCPeerConnection.prototype.removeStream = function(stream) {
 	debug('removeStream() | stream:', stream);
 
 	this.pc.removeStream(stream);
 };
 
 
-Connection.prototype.close = function() {
+RTCPeerConnection.prototype.close = function() {
 	debug('close()');
 
 	this.closed = true;
@@ -22359,35 +22280,35 @@ Connection.prototype.close = function() {
 };
 
 
-Connection.prototype.createDataChannel = function() {
+RTCPeerConnection.prototype.createDataChannel = function() {
 	debug('createDataChannel()');
 
 	return this.pc.createDataChannel.apply(this.pc, arguments);
 };
 
 
-Connection.prototype.createDTMFSender = function(track) {
+RTCPeerConnection.prototype.createDTMFSender = function(track) {
 	debug('createDTMFSender()');
 
 	return this.pc.createDTMFSender(track);
 };
 
 
-Connection.prototype.getStats = function() {
+RTCPeerConnection.prototype.getStats = function() {
 	debug('getStats()');
 
 	return this.pc.getStats.apply(this.pc, arguments);
 };
 
 
-Connection.prototype.setIdentityProvider = function() {
+RTCPeerConnection.prototype.setIdentityProvider = function() {
 	debug('setIdentityProvider()');
 
 	return this.pc.setIdentityProvider.apply(this.pc, arguments);
 };
 
 
-Connection.prototype.getIdentityAssertion = function() {
+RTCPeerConnection.prototype.getIdentityAssertion = function() {
 	debug('getIdentityAssertion()');
 
 	return this.pc.getIdentityAssertion();
@@ -22399,7 +22320,7 @@ Connection.prototype.getIdentityAssertion = function() {
  */
 
 
-Connection.prototype.reset = function(pcConfig) {
+RTCPeerConnection.prototype.reset = function(pcConfig) {
 	debug('reset() | pcConfig:', pcConfig);
 
 	var pc = this.pc;
@@ -22463,7 +22384,7 @@ function setConfigurationAndOptions(pcConfig) {
 		gatheringTimeoutAfterRelay: this.pcConfig.gatheringTimeoutAfterRelay
 	};
 
-	// Remove custom rtcninja.Connection options from pcConfig.
+	// Remove custom rtcninja.RTCPeerConnection options from pcConfig.
 	delete this.pcConfig.gatheringTimeout;
 	delete this.pcConfig.gatheringTimeoutAfterRelay;
 
@@ -22723,7 +22644,7 @@ var debugerror = require('debug')('rtcninja:ERROR');
 debugerror.log = console.warn.bind(console);
 var version = require('./version');
 var Adapter = require('./Adapter');
-var Connection = require('./Connection');
+var RTCPeerConnection = require('./RTCPeerConnection');
 
 
 /**
@@ -22742,8 +22663,8 @@ function rtcninja(options) {
 
 	called = true;
 
-	// Expose Connection class.
-	rtcninja.Connection = Connection;
+	// Expose RTCPeerConnection class.
+	rtcninja.RTCPeerConnection = RTCPeerConnection;
 
 	// Expose WebRTC API and utils.
 	rtcninja.getUserMedia = interface.getUserMedia;
@@ -22795,7 +22716,7 @@ rtcninja.debug = require('debug');
 // Expose browser.
 rtcninja.browser = browser;
 
-},{"./Adapter":32,"./Connection":33,"./version":35,"bowser":36,"debug":29}],35:[function(require,module,exports){
+},{"./Adapter":32,"./RTCPeerConnection":33,"./version":35,"bowser":36,"debug":29}],35:[function(require,module,exports){
 /**
  * Expose the 'version' field of package.json.
  */
@@ -23223,7 +23144,7 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -23260,16 +23181,16 @@ module.exports={
     "jshint-stylish": "^1.0.0",
     "vinyl-transform": "^1.0.0"
   },
-  "gitHead": "a3326f19898e01c94777b319d020262de339a495",
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
+  "gitHead": "13e80a6f878edd817545c7128e4b8a6db00c2af6",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.4.0",
+  "_id": "rtcninja@0.5.0",
   "scripts": {},
-  "_shasum": "b177e7498ae147f5b334e4dbe9c6846d3efc1e60",
-  "_from": "rtcninja@>=0.4.0 <0.5.0"
+  "_shasum": "0e395ce4414c610caef3d4948ebd4d7b5bf52bd4",
+  "_from": "rtcninja@>=0.5.0 <0.6.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23850,7 +23771,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
