@@ -1,8 +1,8 @@
 /*
- * <%= pkg.title %>.js <%= pkg.version %>
+ * <%= pkg.title %> v<%= pkg.version %>
  * <%= pkg.description %>
- * Copyright 2012-<%= currentYear %> <%= pkg.author %>
+ * Copyright: 2012-<%= currentYear %> <%= pkg.author %>
  * Homepage: <%= pkg.homepage %>
- * License <%= pkg.license %>
+ * License: <%= pkg.license %>
  */
 
