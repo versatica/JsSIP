@@ -13880,6 +13880,7 @@ RTCSession.prototype.answer = function(options) {
     pcConfig = options.pcConfig || {iceServers:[]},
     rtcConstraints = options.rtcConstraints || null,
     rtcAnswerConstraints = options.rtcAnswerConstraints || null;
+    eventHandlers = options.eventHandlers || {};
 
   this.rtcAnswerConstraints = rtcAnswerConstraints;
   this.rtcOfferConstraints = options.rtcOfferConstraints || null;
@@ -13906,6 +13907,11 @@ RTCSession.prototype.answer = function(options) {
   }
 
   this.status = C.STATUS_ANSWERED;
+
+  // Set event handlers
+  for (event in eventHandlers) {
+    this.on(event, eventHandlers[event]);
+  }
 
   // An error on dialog creation will fire 'failed' event
   if (! createDialog.call(this, request, 'UAS')) {
