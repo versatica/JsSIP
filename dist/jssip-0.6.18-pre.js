@@ -1,9 +1,9 @@
 /*
- * JsSIP.js 0.6.17
+ * JsSIP v0.6.18-pre
  * the Javascript SIP library
- * Copyright 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
- * License MIT
+ * License: MIT
  */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.JsSIP=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -14703,11 +14703,10 @@ RTCSession.prototype.onTransportError = function() {
   debugerror('onTransportError()');
 
   if(this.status !== C.STATUS_TERMINATED) {
-    if (this.status === C.STATUS_CONFIRMED) {
-      ended.call(this, 'system', null, JsSIP_C.causes.CONNECTION_ERROR);
-    } else {
-      failed.call(this, 'system', null, JsSIP_C.causes.CONNECTION_ERROR);
-    }
+    this.terminate({
+      status_code: 500,
+      reason_phrase: JsSIP_C.causes.CONNECTION_ERROR
+    });
   }
 };
 
@@ -14716,24 +14715,22 @@ RTCSession.prototype.onRequestTimeout = function() {
   debug('onRequestTimeout');
 
   if(this.status !== C.STATUS_TERMINATED) {
-    if (this.status === C.STATUS_CONFIRMED) {
-      ended.call(this, 'system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
-    } else {
-      failed.call(this, 'system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
-    }
+    this.terminate({
+      status_code: 408,
+      reason_phrase: JsSIP_C.causes.REQUEST_TIMEOUT
+    });
   }
 };
 
 
-RTCSession.prototype.onDialogError = function(response) {
+RTCSession.prototype.onDialogError = function() {
   debugerror('onDialogError()');
 
   if(this.status !== C.STATUS_TERMINATED) {
-    if (this.status === C.STATUS_CONFIRMED) {
-      ended.call(this, 'remote', response, JsSIP_C.causes.DIALOG_ERROR);
-    } else {
-      failed.call(this, 'remote', response, JsSIP_C.causes.DIALOG_ERROR);
-    }
+    this.terminate({
+      status_code: 500,
+      reason_phrase: JsSIP_C.causes.DIALOG_ERROR
+    });
   }
 };
 
@@ -18357,6 +18354,8 @@ util.inherits(UA, events.EventEmitter);
  * Resume UA after being closed.
  */
 UA.prototype.start = function() {
+  debug('start()');
+
   var server;
 
   if (this.status === C.STATUS_INIT) {
@@ -18381,6 +18380,8 @@ UA.prototype.start = function() {
  * Register.
  */
 UA.prototype.register = function() {
+  debug('register()');
+
   this.dynConfiguration.register = true;
   this._registrator.register();
 };
@@ -18389,6 +18390,8 @@ UA.prototype.register = function() {
  * Unregister.
  */
 UA.prototype.unregister = function(options) {
+  debug('unregister()');
+
   this.dynConfiguration.register = false;
   this._registrator.unregister(options);
 };
@@ -18433,6 +18436,8 @@ UA.prototype.isConnected = function() {
  *
  */
 UA.prototype.call = function(target, options) {
+  debug('call()');
+
   var session;
 
   session = new RTCSession(this);
@@ -18451,6 +18456,8 @@ UA.prototype.call = function(target, options) {
  *
  */
 UA.prototype.sendMessage = function(target, body, options) {
+  debug('sendMessage()');
+
   var message;
 
   message = new Message(this);
@@ -18462,6 +18469,8 @@ UA.prototype.sendMessage = function(target, body, options) {
  * Terminate ongoing sessions.
  */
 UA.prototype.terminateSessions = function(options) {
+  debug('terminateSessions()');
+
   for(var idx in this.sessions) {
     if (!this.sessions[idx].isEnded()) {
       this.sessions[idx].terminate(options);
@@ -18474,6 +18483,8 @@ UA.prototype.terminateSessions = function(options) {
  *
  */
 UA.prototype.stop = function() {
+  debug('stop()');
+
   var session;
   var applicant;
   var num_sessions;
@@ -18569,7 +18580,6 @@ UA.prototype.onTransportClosed = function(transport) {
   client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
   transport.server.status = Transport.C.STATUS_DISCONNECTED;
-  debug('connection state set to '+ Transport.C.STATUS_DISCONNECTED);
 
   length = client_transactions.length;
   for (type = 0; type < length; type++) {
@@ -18631,7 +18641,6 @@ UA.prototype.onTransportConnected = function(transport) {
   this.transportRecoverAttempts = 0;
 
   transport.server.status = Transport.C.STATUS_READY;
-  debug('connection state set to '+ Transport.C.STATUS_READY);
 
   if(this.status === C.STATUS_USER_CLOSED) {
     return;
@@ -23777,7 +23786,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.17",
+  "version": "0.6.18-pre",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
