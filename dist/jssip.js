@@ -13879,7 +13879,7 @@ RTCSession.prototype.answer = function(options) {
     mediaStream = options.mediaStream || null,
     pcConfig = options.pcConfig || {iceServers:[]},
     rtcConstraints = options.rtcConstraints || null,
-    rtcAnswerConstraints = options.rtcAnswerConstraints || null;
+    rtcAnswerConstraints = options.rtcAnswerConstraints || null,
     eventHandlers = options.eventHandlers || {};
 
   this.rtcAnswerConstraints = rtcAnswerConstraints;
