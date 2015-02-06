@@ -13673,7 +13673,16 @@ RTCSession.prototype.isOnHold = function() {
   return true;
 };
 
+RTCSession.prototype.setEventHandlers = function(handlers) {
+  debug('setEventHandlers()');
 
+  var eventHandlers = handlers || {};
+
+  // Set event handlers
+  for (event in eventHandlers) {
+    this.on(event, eventHandlers[event]);
+  }
+}
 
 RTCSession.prototype.connect = function(target, options) {
   debug('connect()');
@@ -13682,7 +13691,6 @@ RTCSession.prototype.connect = function(target, options) {
 
   var event, requestParams,
     originalTarget = target,
-    eventHandlers = options.eventHandlers || {},
     extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [],
     mediaConstraints = options.mediaConstraints || {audio: true, video: true},
     mediaStream = options.mediaStream || null,
@@ -13725,11 +13733,6 @@ RTCSession.prototype.connect = function(target, options) {
   // Check Session Status
   if (this.status !== C.STATUS_NULL) {
     throw new Exceptions.InvalidStateError(this.status);
-  }
-
-  // Set event handlers
-  for (event in eventHandlers) {
-    this.on(event, eventHandlers[event]);
   }
 
   // Session parameter initialization
@@ -15303,14 +15306,14 @@ function receiveInviteResponse(response) {
         break;
       }
 
+      sendRequest.call(self, JsSIP_C.ACK);
+      confirmed.call(self, 'local', null);
+
       this.connection.setRemoteDescription(
         new rtcninja.RTCSessionDescription({type:'answer', sdp:response.body}),
         // success
         function() {
           accepted.call(self, 'remote', response);
-          sendRequest.call(self, JsSIP_C.ACK);
-          confirmed.call(self, 'local', null);
-
           // Handle Session Timers.
           handleSessionTimersInIncomingResponse.call(self, response);
         },
