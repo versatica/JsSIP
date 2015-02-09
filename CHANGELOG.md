@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 0.6.18 (released in 2015-02-09)
+--------------------------------------
+
+* Terminate the call with a proper BYE/CANCEL/408/500 if request timeout, transport error or dialog error happens.
+* Fix "rtcninja" dependency problem.
+
+
 Version 0.6.17 (released in 2015-02-02)
 --------------------------------------
 

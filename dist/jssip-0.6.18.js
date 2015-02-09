@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.18-pre
+ * JsSIP v0.6.18
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -12873,12 +12873,6 @@ Object.defineProperties(JsSIP, {
   }
 });
 
-
-// Initialize rtcninja if not yet done.
-if (! JsSIP.rtcninja.called) {
-  JsSIP.rtcninja();
-}
-
 },{"../package.json":46,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":20,"./URI":21,"./Utils":22,"debug":29,"rtcninja":34}],8:[function(require,module,exports){
 module.exports = Message;
 
@@ -14705,7 +14699,8 @@ RTCSession.prototype.onTransportError = function() {
   if(this.status !== C.STATUS_TERMINATED) {
     this.terminate({
       status_code: 500,
-      reason_phrase: JsSIP_C.causes.CONNECTION_ERROR
+      reason_phrase: JsSIP_C.causes.CONNECTION_ERROR,
+      cause: JsSIP_C.causes.CONNECTION_ERROR
     });
   }
 };
@@ -14717,7 +14712,8 @@ RTCSession.prototype.onRequestTimeout = function() {
   if(this.status !== C.STATUS_TERMINATED) {
     this.terminate({
       status_code: 408,
-      reason_phrase: JsSIP_C.causes.REQUEST_TIMEOUT
+      reason_phrase: JsSIP_C.causes.REQUEST_TIMEOUT,
+      cause: JsSIP_C.causes.REQUEST_TIMEOUT
     });
   }
 };
@@ -14729,7 +14725,8 @@ RTCSession.prototype.onDialogError = function() {
   if(this.status !== C.STATUS_TERMINATED) {
     this.terminate({
       status_code: 500,
-      reason_phrase: JsSIP_C.causes.DIALOG_ERROR
+      reason_phrase: JsSIP_C.causes.DIALOG_ERROR,
+      cause: JsSIP_C.causes.DIALOG_ERROR
     });
   }
 };
@@ -14912,7 +14909,7 @@ function createDialog(message, type, early) {
 
       // Dialog has been successfully created.
       if(early_dialog.error) {
-        debug(dialog.error);
+        debug(early_dialog.error);
         failed.call(this, 'remote', message, JsSIP_C.causes.INTERNAL_ERROR);
         return false;
       } else {
@@ -18340,6 +18337,11 @@ function UA(configuration) {
   this._registrator = new Registrator(this);
 
   events.EventEmitter.call(this);
+
+  // Initialize rtcninja if not yet done.
+  if (! rtcninja.called) {
+    rtcninja();
+  }
 }
 
 util.inherits(UA, events.EventEmitter);
@@ -23786,7 +23788,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.18-pre",
+  "version": "0.6.18",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23812,7 +23814,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.1",
-    "rtcninja": "^0.4.0",
+    "rtcninja": "^0.5.0",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.17"
   },
