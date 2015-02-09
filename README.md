@@ -32,6 +32,7 @@ ua.start();
 
 
 // Make an audio/video call:
+var session = null;
 
 // HTML5 <video> elements in which local and remote video will be shown
 var selfView =   document.getElementById('my-video');
@@ -49,8 +50,7 @@ var eventHandlers = {
     console.log('call ended with cause: '+ e.data.cause);
   },
   'confirmed': function(e){
-    var session = e.sender;
-    var local_stream = session.getLocalStreams()[0];
+    var local_stream = session.connection.getLocalStreams()[0];
 
     console.log('call confirmed');
 
@@ -73,7 +73,7 @@ var options = {
 };
 
 
-ua.call('sip:bob@example.com', options);
+session = ua.call('sip:bob@example.com', options);
 ```
 
 Want to see more? Check the full documentation at http://jssip.net/documentation/.
