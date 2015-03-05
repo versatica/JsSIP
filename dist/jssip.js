@@ -1,12 +1,12 @@
 /*
- * JsSIP v0.6.18
+ * JsSIP v0.6.19
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
  * License: MIT
  */
 
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.JsSIP=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.JsSIP = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var pkg = require('../package.json');
 
 var C = {
@@ -14210,7 +14210,12 @@ RTCSession.prototype.close = function() {
 
   // Terminate RTC.
   if (this.connection) {
-    this.connection.close();
+    try {
+      this.connection.close();
+    }
+    catch(error) {
+      debugerror('close() | error closing the RTCPeerConnection: %o', error);
+    }
   }
 
   // Close local MediaStream if it was not given by the user.
@@ -21278,7 +21283,7 @@ var storage;
 if (typeof chrome !== 'undefined' && typeof chrome.storage !== 'undefined')
   storage = chrome.storage.local;
 else
-  storage = window.localStorage;
+  storage = localstorage();
 
 /**
  * Colors.
@@ -21413,6 +21418,23 @@ function load() {
  */
 
 exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage(){
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
 
 },{"./debug":30}],30:[function(require,module,exports){
 
@@ -21654,13 +21676,15 @@ module.exports = function(val, options){
  */
 
 function parse(str) {
-  var match = /^((?:\d+)?\.?\d+) *(ms|seconds?|s|minutes?|m|hours?|h|days?|d|years?|y)?$/i.exec(str);
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(str);
   if (!match) return;
   var n = parseFloat(match[1]);
   var type = (match[2] || 'ms').toLowerCase();
   switch (type) {
     case 'years':
     case 'year':
+    case 'yrs':
+    case 'yr':
     case 'y':
       return n * y;
     case 'days':
@@ -21669,16 +21693,26 @@ function parse(str) {
       return n * d;
     case 'hours':
     case 'hour':
+    case 'hrs':
+    case 'hr':
     case 'h':
       return n * h;
     case 'minutes':
     case 'minute':
+    case 'mins':
+    case 'min':
     case 'm':
       return n * m;
     case 'seconds':
     case 'second':
+    case 'secs':
+    case 'sec':
     case 's':
       return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
     case 'ms':
       return n;
   }
@@ -21823,7 +21857,7 @@ function Adapter(options) {
 		MediaStreamTrack = pluginInterface.MediaStreamTrack;
 		attachMediaStream = pluginInterface.attachMediaStream;
 		canRenegotiate = pluginInterface.canRenegotiate;
-		oldSpecRTCOfferOptions = true;  // TODO: UPdate when fixed in the plugin.
+		oldSpecRTCOfferOptions = true;  // TODO: Update when fixed in the plugin.
 	}
 
 	// Best effort (may be adater.js is loaded).
@@ -22042,11 +22076,14 @@ var VAR = {
 };
 
 
-function RTCPeerConnection(pcConfig) {
+function RTCPeerConnection(pcConfig, pcConstraints) {
 	debug('new | pcConfig:', pcConfig);
 
 	// Set this.pcConfig and this.options.
 	setConfigurationAndOptions.call(this, pcConfig);
+
+	// NOTE: Deprecated pcConstraints argument.
+	this.pcConstraints = pcConstraints;
 
 	// Own version of the localDescription.
 	this._localDescription = null;
@@ -22411,7 +22448,13 @@ function setConfigurationAndOptions(pcConfig) {
 
 function setPeerConnection() {
 	// Create a RTCPeerConnection.
-	this.pc = new Adapter.RTCPeerConnection(this.pcConfig);
+	if (! this.pcConstraints) {
+		this.pc = new Adapter.RTCPeerConnection(this.pcConfig);
+	}
+	else {
+		// NOTE: Deprecated.
+		this.pc = new Adapter.RTCPeerConnection(this.pcConfig, this.pcConstraints);
+	}
 
 	// Set RTC events.
 	setEvents.call(this);
@@ -23161,7 +23204,7 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.5.0",
+  "version": "0.5.3",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -23183,31 +23226,31 @@ module.exports={
   },
   "dependencies": {
     "bowser": "^0.7.2",
-    "debug": "^2.1.1",
+    "debug": "^2.1.2",
     "merge": "^1.2.0"
   },
   "devDependencies": {
-    "browserify": "^8.1.1",
+    "browserify": "^9.0.3",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
     "gulp-header": "^1.2.2",
-    "gulp-jshint": "^1.9.0",
+    "gulp-jshint": "^1.9.2",
     "gulp-rename": "^1.2.0",
     "gulp-uglify": "^1.1.0",
-    "jshint-stylish": "^1.0.0",
+    "jshint-stylish": "^1.0.1",
     "vinyl-transform": "^1.0.0"
   },
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
-  "gitHead": "13e80a6f878edd817545c7128e4b8a6db00c2af6",
+  "gitHead": "cc8a7e5bd3629120c3328b9c79b21f68aec520dd",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.5.0",
+  "_id": "rtcninja@0.5.3",
   "scripts": {},
-  "_shasum": "0e395ce4414c610caef3d4948ebd4d7b5bf52bd4",
-  "_from": "rtcninja@>=0.5.0 <0.6.0"
+  "_shasum": "5916b1270993d936b979d8bd049523f79fa3f914",
+  "_from": "rtcninja@>=0.5.3 <0.6.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23788,7 +23831,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.18",
+  "version": "0.6.19",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23813,23 +23856,23 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.1.1",
-    "rtcninja": "^0.5.0",
+    "debug": "^2.1.2",
+    "rtcninja": "^0.5.3",
     "sdp-transform": "~1.1.0",
     "websocket": "^1.0.17"
   },
   "devDependencies": {
-    "browserify": "^8.1.1",
+    "browserify": "^9.0.3",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
     "gulp-header": "^1.2.2",
-    "gulp-jshint": "^1.9.0",
+    "gulp-jshint": "^1.9.2",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.0",
     "gulp-uglify": "^1.1.0",
-    "gulp-util": "^3.0.2",
-    "jshint-stylish": "^1.0.0",
+    "gulp-util": "^3.0.4",
+    "jshint-stylish": "^1.0.1",
     "pegjs": "0.7.0",
     "vinyl-transform": "^1.0.0"
   },
