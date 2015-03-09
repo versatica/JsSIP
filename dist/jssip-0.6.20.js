@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.19
+ * JsSIP v0.6.20
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -16053,18 +16053,24 @@ DTMF.prototype.init_incoming = function(request) {
   request.reply(200);
 
   if (request.body) {
-    body = request.body.split('\r\n');
-    if (body.length === 2) {
+    body = request.body.split('\n');
+    if (body.length >= 1) {
       if (reg_tone.test(body[0])) {
         this.tone = body[0].replace(reg_tone,'$2');
       }
+    }
+    if (body.length >=2) {
       if (reg_duration.test(body[1])) {
         this.duration = parseInt(body[1].replace(reg_duration,'$2'), 10);
       }
     }
   }
 
-  if (!this.tone || !this.duration) {
+  if (!this.duration) {
+    this.duration = C.DEFAULT_DURATION;
+  }
+
+  if (!this.tone) {
     debug('invalid INFO DTMF received, discarded');
   } else {
     this.owner.newDTMF({
@@ -23377,8 +23383,13 @@ var grammar = module.exports = {
     },
     { //a=mid:1
       name: 'mid',
-      reg: /^mid:(\w*)/,
+      reg: /^mid:([^\s]*)/,
       format: "mid:%s"
+    },
+    { //a=msid:0c8b064d-d807-43b4-b434-f92a889d8587 98178685-d409-46e0-8e16-7ef0db0db64a
+      name: 'msid',
+      reg: /^msid:(.*)/,
+      format: "msid:%s"
     },
     { //a=ptime:20
       name: 'ptime',
@@ -23449,7 +23460,7 @@ var grammar = module.exports = {
     },
     { //a=msid-semantic: WMS Jvlam5X3SX1OP6pn20zWogvaKJz5Hjf9OnlV
       name: "msidSemantic",
-      reg: /^msid-semantic: (\w*) (\S*)/,
+      reg: /^msid-semantic:\s?(\w*) (\S*)/,
       names: ['semantic', 'token'],
       format: "msid-semantic: %s %s" // space after ":" is not accidental
     },
@@ -23672,10 +23683,10 @@ module.exports = function (session, opts) {
   // loop through outerOrder for matching properties on session
   outerOrder.forEach(function (type) {
     grammar[type].forEach(function (obj) {
-      if (obj.name in session) {
+      if (obj.name in session && session[obj.name] != null) {
         sdp.push(makeLine(type, obj, session));
       }
-      else if (obj.push in session) {
+      else if (obj.push in session && session[obj.push] != null) {
         session[obj.push].forEach(function (el) {
           sdp.push(makeLine(type, obj, el));
         });
@@ -23689,10 +23700,10 @@ module.exports = function (session, opts) {
 
     innerOrder.forEach(function (type) {
       grammar[type].forEach(function (obj) {
-        if (obj.name in mLine) {
+        if (obj.name in mLine && mLine[obj.name] != null) {
           sdp.push(makeLine(type, obj, mLine));
         }
-        else if (obj.push in mLine) {
+        else if (obj.push in mLine && mLine[obj.push] != null) {
           mLine[obj.push].forEach(function (el) {
             sdp.push(makeLine(type, obj, el));
           });
@@ -23831,7 +23842,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.19",
+  "version": "0.6.20",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23858,7 +23869,7 @@ module.exports={
   "dependencies": {
     "debug": "^2.1.2",
     "rtcninja": "^0.5.3",
-    "sdp-transform": "~1.1.0",
+    "sdp-transform": "~1.2.0",
     "websocket": "^1.0.17"
   },
   "devDependencies": {
