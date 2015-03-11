@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.20
+ * JsSIP v0.6.21
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15769,24 +15769,28 @@ function runSessionTimer() {
 }
 
 function toogleMuteAudio(mute) {
-  var streamIdx, trackIdx, tracks,
+  var streamIdx, trackIdx, streamsLength, tracksLength, tracks,
     localStreams = this.connection.getLocalStreams();
 
-  for (streamIdx in localStreams) {
+  streamsLength = localStreams.length;
+  for (streamIdx = 0; streamIdx < streamsLength; streamIdx++) {
     tracks = localStreams[streamIdx].getAudioTracks();
-    for (trackIdx in tracks) {
+    tracksLength = tracks.length;
+    for (trackIdx = 0; trackIdx < tracksLength; trackIdx++) {
       tracks[trackIdx].enabled = !mute;
     }
   }
 }
 
 function toogleMuteVideo(mute) {
-  var streamIdx, trackIdx, tracks,
+  var streamIdx, trackIdx, streamsLength, tracksLength, tracks,
     localStreams = this.connection.getLocalStreams();
 
-  for (streamIdx in localStreams) {
+  streamsLength = localStreams.length;
+  for (streamIdx = 0; streamIdx < streamsLength; streamIdx++) {
     tracks = localStreams[streamIdx].getVideoTracks();
-    for (trackIdx in tracks) {
+    tracksLength = tracks.length;
+    for (trackIdx = 0; trackIdx < tracksLength; trackIdx++) {
       tracks[trackIdx].enabled = !mute;
     }
   }
@@ -23842,7 +23846,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.20",
+  "version": "0.6.21",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

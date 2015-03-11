@@ -1,6 +1,24 @@
 CHANGELOG
 =========
 
+Version 0.6.21 (released in 2015-03-11)
+---------------------------------------
+
+* Don't iterate arrays with (for...in) to avoid problems with evil JS libraries that add stuff into the Array prototype.
+
+
+Version 0.6.20 (released in 2015-03-09)
+---------------------------------------
+
+* Be more flexible receiving DTMF INFO bodies.
+
+
+Version 0.6.19 (released in 2015-03-05)
+---------------------------------------
+
+* Update dependencies.
+* 
+
 Version 0.6.18 (released in 2015-02-09)
 --------------------------------------
 
