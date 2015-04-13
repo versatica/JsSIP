@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.21
+ * JsSIP v0.6.22
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -18097,17 +18097,12 @@ Transport.prototype = {
       debug('WebSocket abrupt disconnection');
     }
     // Transport was connected
-    if(connected_before === true) {
+    if (connected_before === true) {
       this.ua.onTransportClosed(this);
+
       // Check whether the user requested to close.
       if(!this.closed) {
         this.reConnect();
-      } else {
-        this.ua.emit('disconnected', this.ua, {
-          transport: this,
-          code: this.lastTransportError.code,
-          reason: this.lastTransportError.reason
-        });
       }
     } else {
       // This is the first connection attempt
@@ -18605,7 +18600,11 @@ UA.prototype.onTransportClosed = function(transport) {
     }
   }
 
-  this.emit('disconnected');
+  this.emit('disconnected', {
+    transport: transport,
+    code: transport.lastTransportError.code,
+    reason: transport.lastTransportError.reason
+  });
 };
 
 /**
@@ -23846,7 +23845,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.21",
+  "version": "0.6.22",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
