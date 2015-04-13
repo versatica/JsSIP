@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.22 (released in 2015-04-13)
+---------------------------------------
+
+* Fix double "disconnected" event in some cases.
+
+
 Version 0.6.21 (released in 2015-03-11)
 ---------------------------------------
 
