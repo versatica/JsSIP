@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.24 (released in 2015-04-14)
+---------------------------------------
+
+* RTCSession: Fix Invite Server transaction destruction.
+
+
 Version 0.6.23 (released in 2015-04-14)
 ---------------------------------------
 

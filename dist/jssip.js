@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.23
+ * JsSIP v0.6.24
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13818,20 +13818,20 @@ RTCSession.prototype.init_incoming = function(request) {
     this.late_sdp = true;
   }
 
-  self.status = C.STATUS_WAITING_FOR_ANSWER;
+  this.status = C.STATUS_WAITING_FOR_ANSWER;
 
   // Set userNoAnswerTimer
-  self.timers.userNoAnswerTimer = setTimeout(function() {
+  this.timers.userNoAnswerTimer = setTimeout(function() {
       request.reply(408);
       failed.call(self, 'local',null, JsSIP_C.causes.NO_ANSWER);
-    }, self.ua.configuration.no_answer_timeout
+    }, this.ua.configuration.no_answer_timeout
   );
 
   /* Set expiresTimer
    * RFC3261 13.3.1
    */
   if (expires) {
-    self.timers.expiresTimer = setTimeout(function() {
+    this.timers.expiresTimer = setTimeout(function() {
         if(self.status === C.STATUS_WAITING_FOR_ANSWER) {
           request.reply(487);
           failed.call(self, 'system', null, JsSIP_C.causes.EXPIRES);
@@ -13841,7 +13841,12 @@ RTCSession.prototype.init_incoming = function(request) {
   }
 
   // Fire 'newRTCSession' event.
-  newRTCSession.call(self, 'remote', request);
+  newRTCSession.call(this, 'remote', request);
+
+  // The user may have rejected the call in the 'newRTCSession' event.
+  if (this.status === C.STATUS_TERMINATED) {
+    return;
+  }
 
   // Reply 180.
   request.reply(180, null, ['Contact: ' + self.contact]);
@@ -17722,7 +17727,6 @@ InviteServerTransaction.prototype.timer_H = function() {
 
 InviteServerTransaction.prototype.timer_I = function() {
   this.stateChanged(C.STATUS_TERMINATED);
-  this.ua.destroyTransaction(this);
 };
 
 // RFC 6026 7.1
@@ -23861,7 +23865,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.23",
+  "version": "0.6.24",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
