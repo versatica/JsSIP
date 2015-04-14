@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.22
+ * JsSIP v0.6.23
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15309,12 +15309,12 @@ function receiveInviteResponse(response) {
         new rtcninja.RTCSessionDescription({type:'answer', sdp:response.body}),
         // success
         function() {
+          // Handle Session Timers.
+          handleSessionTimersInIncomingResponse.call(self, response);
+
           accepted.call(self, 'remote', response);
           sendRequest.call(self, JsSIP_C.ACK);
           confirmed.call(self, 'local', null);
-
-          // Handle Session Timers.
-          handleSessionTimersInIncomingResponse.call(self, response);
         },
         // failure
         function() {
@@ -17411,12 +17411,12 @@ InviteClientTransaction.prototype.send = function() {
 };
 
 InviteClientTransaction.prototype.onTransportError = function() {
-  debugict('transport error occurred, deleting transaction ' + this.id);
   clearTimeout(this.B);
   clearTimeout(this.D);
   clearTimeout(this.M);
 
   if (this.state !== C.STATUS_ACCEPTED) {
+    debugict('transport error occurred, deleting transaction ' + this.id);
     this.request_sender.onTransportError();
   }
 
@@ -20649,6 +20649,7 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
 
 function noop() {}
 
@@ -23445,6 +23446,10 @@ var grammar = module.exports = {
         return str;
       }
     },
+    { //a=end-of-candidates (keep after the candidates line for readability)
+      name: 'endOfCandidates',
+      reg: /^(end-of-candidates)/
+    },
     { //a=remote-candidates:1 203.0.113.1 54400 2 203.0.113.1 54401 ...
       name: 'remoteCandidates',
       reg: /^remote-candidates:(.*)/,
@@ -23461,6 +23466,12 @@ var grammar = module.exports = {
       names: ['id', 'attribute', 'value'],
       format: "ssrc:%d %s:%s"
     },
+    { //a=ssrc-group:FEC 1 2
+      push: "ssrcGroups",
+      reg: /^ssrc-group:(\w*) (.*)/,
+      names: ['semantics', 'ssrcs'],
+      format: "ssrc-group:%s %s"
+    },
     { //a=msid-semantic: WMS Jvlam5X3SX1OP6pn20zWogvaKJz5Hjf9OnlV
       name: "msidSemantic",
       reg: /^msid-semantic:\s?(\w*) (\S*)/,
@@ -23476,6 +23487,10 @@ var grammar = module.exports = {
     { //a=rtcp-mux
       name: 'rtcpMux',
       reg: /^(rtcp-mux)/
+    },
+    { //a=rtcp-rsize
+      name: 'rtcpRsize',
+      reg: /^(rtcp-rsize)/
     },
     { // any a= that we don't understand is kepts verbatim on media.invalid
       push: 'invalid',
@@ -23495,7 +23510,7 @@ Object.keys(grammar).forEach(function (key) {
       obj.format = "%s";
     }
   });
-}); 
+});
 
 },{}],40:[function(require,module,exports){
 var parser = require('./parser');
@@ -23779,7 +23794,7 @@ module.exports={
     "email": "brian@worlize.com",
     "url": "https://www.worlize.com/"
   },
-  "version": "1.0.17",
+  "version": "1.0.18",
   "repository": {
     "type": "git",
     "url": "https://github.com/theturtle32/WebSocket-Node.git"
@@ -23814,14 +23829,15 @@ module.exports={
     "lib": "./lib"
   },
   "browser": "lib/browser.js",
-  "gitHead": "cda940b883aa884906ac13158fe514229a67f426",
+  "gitHead": "2888a6d8c6ea0211b429000d43ed5da76124733f",
   "bugs": {
     "url": "https://github.com/theturtle32/WebSocket-Node/issues"
   },
-  "_id": "websocket@1.0.17",
-  "_shasum": "8a572afc6ec120eb41473ca517d07d932f7b6a1c",
-  "_from": "websocket@>=1.0.17 <2.0.0",
-  "_npmVersion": "1.4.28",
+  "_id": "websocket@1.0.18",
+  "_shasum": "140280dcc90ed42caa7a701e182a8c9e2dec75ef",
+  "_from": "websocket@>=1.0.18 <2.0.0",
+  "_npmVersion": "2.6.1",
+  "_nodeVersion": "1.4.3",
   "_npmUser": {
     "name": "theturtle32",
     "email": "brian@worlize.com"
@@ -23833,10 +23849,10 @@ module.exports={
     }
   ],
   "dist": {
-    "shasum": "8a572afc6ec120eb41473ca517d07d932f7b6a1c",
-    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz"
+    "shasum": "140280dcc90ed42caa7a701e182a8c9e2dec75ef",
+    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.18.tgz"
   },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.17.tgz",
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.18.tgz",
   "readme": "ERROR: No README data found!"
 }
 
@@ -23845,7 +23861,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.22",
+  "version": "0.6.23",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23870,25 +23886,25 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.1.2",
+    "debug": "^2.1.3",
     "rtcninja": "^0.5.3",
-    "sdp-transform": "~1.2.0",
-    "websocket": "^1.0.17"
+    "sdp-transform": "~1.4.0",
+    "websocket": "^1.0.18"
   },
   "devDependencies": {
-    "browserify": "^9.0.3",
+    "browserify": "^9.0.8",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
     "gulp-header": "^1.2.2",
-    "gulp-jshint": "^1.9.2",
+    "gulp-jshint": "^1.10.0",
     "gulp-nodeunit-runner": "^0.2.2",
-    "gulp-rename": "^1.2.0",
-    "gulp-uglify": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.4",
     "jshint-stylish": "^1.0.1",
     "pegjs": "0.7.0",
-    "vinyl-transform": "^1.0.0"
+    "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {
     "test": "gulp test"

@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 0.6.23 (released in 2015-04-14)
+---------------------------------------
+
+* RTCSession: Handle session timers before emitting "accepted".
+* Fix issue with latest version of browserify.
+
+
 Version 0.6.22 (released in 2015-04-13)
 ---------------------------------------
 
