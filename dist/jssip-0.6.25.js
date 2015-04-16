@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.24
+ * JsSIP v0.6.25
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -21799,6 +21799,7 @@ var RTCPeerConnection = null;
 var RTCSessionDescription = null;
 var RTCIceCandidate = null;
 var MediaStreamTrack = null;
+var getMediaDevices = null;
 var attachMediaStream = null;
 var canRenegotiate = false;
 var oldSpecRTCOfferOptions = false;
@@ -21825,6 +21826,11 @@ function Adapter(options) {
 		RTCSessionDescription = global.RTCSessionDescription;
 		RTCIceCandidate = global.RTCIceCandidate;
 		MediaStreamTrack = global.MediaStreamTrack;
+		if (MediaStreamTrack && MediaStreamTrack.getSources) {
+			getMediaDevices = MediaStreamTrack.getSources.bind(MediaStreamTrack);
+		} else if (_navigator.getMediaDevices) {
+			getMediaDevices = _navigator.getMediaDevices.bind(_navigator);
+		}
 		attachMediaStream = function(element, stream) {
 			element.src = URL.createObjectURL(stream);
 			return element;
@@ -21869,6 +21875,11 @@ function Adapter(options) {
 		RTCSessionDescription = pluginInterface.RTCSessionDescription;
 		RTCIceCandidate = pluginInterface.RTCIceCandidate;
 		MediaStreamTrack = pluginInterface.MediaStreamTrack;
+		if (MediaStreamTrack && MediaStreamTrack.getSources) {
+			getMediaDevices = MediaStreamTrack.getSources.bind(MediaStreamTrack);
+		} else if (_navigator.getMediaDevices) {
+			getMediaDevices = _navigator.getMediaDevices.bind(_navigator);
+		}
 		attachMediaStream = pluginInterface.attachMediaStream;
 		canRenegotiate = pluginInterface.canRenegotiate;
 		oldSpecRTCOfferOptions = true;  // TODO: Update when fixed in the plugin.
@@ -21882,6 +21893,11 @@ function Adapter(options) {
 		RTCSessionDescription = global.RTCSessionDescription;
 		RTCIceCandidate = global.RTCIceCandidate;
 		MediaStreamTrack = global.MediaStreamTrack;
+		if (MediaStreamTrack && MediaStreamTrack.getSources) {
+			getMediaDevices = MediaStreamTrack.getSources.bind(MediaStreamTrack);
+		} else if (_navigator.getMediaDevices) {
+			getMediaDevices = _navigator.getMediaDevices.bind(_navigator);
+		}
 		attachMediaStream = global.attachMediaStream || function(element, stream) {
 			element.src = URL.createObjectURL(stream);
 			return element;
@@ -21948,6 +21964,9 @@ function Adapter(options) {
 
 	// Expose MediaStreamTrack.
 	Adapter.MediaStreamTrack = MediaStreamTrack || throwNonSupported('MediaStreamTrack');
+
+	// Expose getMediaDevices.
+	Adapter.getMediaDevices = getMediaDevices;
 
 	// Expose MediaStreamTrack.
 	Adapter.attachMediaStream = attachMediaStream || throwNonSupported('attachMediaStream');
@@ -22745,6 +22764,7 @@ function rtcninja(options) {
 	rtcninja.RTCSessionDescription = interface.RTCSessionDescription;
 	rtcninja.RTCIceCandidate = interface.RTCIceCandidate;
 	rtcninja.MediaStreamTrack = interface.MediaStreamTrack;
+	rtcninja.getMediaDevices = interface.getMediaDevices;
 	rtcninja.attachMediaStream = interface.attachMediaStream;
 	rtcninja.closeMediaStream = interface.closeMediaStream;
 	rtcninja.canRenegotiate = interface.canRenegotiate;
@@ -23218,7 +23238,7 @@ module.exports = require('../package.json').version;
 },{}],38:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -23240,31 +23260,31 @@ module.exports={
   },
   "dependencies": {
     "bowser": "^0.7.2",
-    "debug": "^2.1.2",
+    "debug": "^2.1.3",
     "merge": "^1.2.0"
   },
   "devDependencies": {
-    "browserify": "^9.0.3",
+    "browserify": "^9.0.8",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
     "gulp-header": "^1.2.2",
-    "gulp-jshint": "^1.9.2",
-    "gulp-rename": "^1.2.0",
-    "gulp-uglify": "^1.1.0",
+    "gulp-jshint": "^1.10.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.2.0",
     "jshint-stylish": "^1.0.1",
-    "vinyl-transform": "^1.0.0"
+    "vinyl-source-stream": "^1.1.0"
   },
   "readme": "# rtcninja.js\n\nWebRTC API wrapper to deal with different browsers.\n\n\n## Installation\n\n* With **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\n* With **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n## Usage in Node\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja-X.Y.Z.js`: The uncompressed version.\n* `dist/rtcninja-X.Y.Z.min.js`: The compressed production-ready version.\n* `dist/rtcninja.js`: A copy of the uncompressed version.\n* `dist/rtcninja.min.js`: A copy of the compressed version.\n\nThey expose the global `window.rtcninja` module.\n\n```html\n<script src='rtcninja-X.Y.Z.js'></script>\n```\n\n\n## Usage Example\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Author\n\nIñaki Baz Castillo at [eFace2Face](http://eface2face.com).\n\n\n## License\n\nISC.\n",
   "readmeFilename": "README.md",
-  "gitHead": "cc8a7e5bd3629120c3328b9c79b21f68aec520dd",
+  "gitHead": "e55c21bf513343a2b188e6dab988ca83a297f15e",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.5.3",
+  "_id": "rtcninja@0.5.4",
   "scripts": {},
-  "_shasum": "5916b1270993d936b979d8bd049523f79fa3f914",
-  "_from": "rtcninja@>=0.5.3 <0.6.0"
+  "_shasum": "4255720bbc9dc4e7760da7b4c03ed28526228db7",
+  "_from": "rtcninja@>=0.5.4 <0.6.0"
 }
 
 },{}],39:[function(require,module,exports){
@@ -23865,7 +23885,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.24",
+  "version": "0.6.25",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23891,7 +23911,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.3",
-    "rtcninja": "^0.5.3",
+    "rtcninja": "^0.5.4",
     "sdp-transform": "~1.4.0",
     "websocket": "^1.0.18"
   },
