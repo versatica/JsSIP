@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.26 (released in 2015-04-17)
+---------------------------------------
+
+* Update "rtcninja" dependency.
+
+
 Version 0.6.25 (released in 2015-04-16)
 ---------------------------------------
 

@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.25
+ * JsSIP v0.6.26
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -23885,7 +23885,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.25",
+  "version": "0.6.26",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23911,7 +23911,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.1.3",
-    "rtcninja": "^0.5.4",
+    "rtcninja": "^0.5.5",
     "sdp-transform": "~1.4.0",
     "websocket": "^1.0.18"
   },
