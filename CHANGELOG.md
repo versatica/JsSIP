@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 0.6.27 (released in 2015-05-02)
+---------------------------------------
+
+* Don't terminate SIP dialog if processing of 183 with SDP fails.
+* Update dependencies.
+
+
 Version 0.6.26 (released in 2015-04-17)
 ---------------------------------------
 
