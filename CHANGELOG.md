@@ -1,7 +1,19 @@
 CHANGELOG
 =========
 
-Version 0.6.27 (released in 2015-05-02)
+Version 0.6.29(released in 2015-06-06)
+---------------------------------------
+
+* Auto-register on transport connection before emitting the event.
+
+
+Version 0.6.28(released in 2015-06-02)
+---------------------------------------
+
+* Update "rtcninja" dependencie.
+
+
+Version 0.6.27 (released in 2015-06-02)
 ---------------------------------------
 
 * Don't terminate SIP dialog if processing of 183 with SDP fails.
