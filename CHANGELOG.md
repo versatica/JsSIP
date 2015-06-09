@@ -1,13 +1,19 @@
 CHANGELOG
 =========
 
-Version 0.6.29(released in 2015-06-06)
+Version 0.6.30 (released in 2015-06-09)
+---------------------------------------
+
+* Fix array iteration in `URI#toString()` to avoid Array prototype mangling by devil libraries such as Ember.
+
+
+Version 0.6.29 (released in 2015-06-06)
 ---------------------------------------
 
 * Auto-register on transport connection before emitting the event.
 
 
-Version 0.6.28(released in 2015-06-02)
+Version 0.6.28 (released in 2015-06-02)
 ---------------------------------------
 
 * Update "rtcninja" dependencie.
