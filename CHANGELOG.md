@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.32 (released in 2015-06-16)
+---------------------------------------
+
+* Add callback to `update` and `reinvite` events.
+
+
 Version 0.6.31 (released in 2015-06-16)
 ---------------------------------------
 

@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.31
+ * JsSIP v0.6.32
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15110,10 +15110,14 @@ function receiveReinvite(request) {
     sdp, idx, direction,
     self = this,
     contentType = request.getHeader('Content-Type'),
-    hold = false;
+    hold = false,
+    data = {
+      request: request,
+      callback: undefined
+    };
 
   // Emit 'reinvite'.
-  this.emit('reinvite', {request: request});
+  this.emit('reinvite', data);
 
   if (request.body) {
     this.late_sdp = false;
@@ -15171,6 +15175,11 @@ function receiveReinvite(request) {
             setACKTimer.call(self);
           }
         );
+
+        // If callback is given execute it.
+        if (typeof data.callback === 'function') {
+          data.callback();
+        }
       },
       // onFailure
       function() {
@@ -15206,10 +15215,14 @@ function receiveUpdate(request) {
     sdp, idx, direction,
     self = this,
     contentType = request.getHeader('Content-Type'),
-    hold = false;
+    hold = false,
+    data = {
+      request: request,
+      callback: undefined
+    };
 
   // Emit 'update'.
-  this.emit('update', {request: request});
+  this.emit('update', data);
 
   if (! request.body) {
     var extraHeaders = [];
@@ -15257,6 +15270,11 @@ function receiveUpdate(request) {
           var extraHeaders = ['Contact: ' + self.contact];
           handleSessionTimersInIncomingRequest.call(self, request, extraHeaders);
           request.reply(200, null, extraHeaders, sdp);
+
+          // If callback is given execute it.
+          if (typeof data.callback === 'function') {
+            data.callback();
+          }
         },
         // failure
         function() {
@@ -24214,7 +24232,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.31",
+  "version": "0.6.32",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
