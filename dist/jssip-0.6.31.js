@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.30
+ * JsSIP v0.6.31
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -883,6 +883,9 @@ module.exports = (function(){
         "Proxy_Require": parse_Proxy_Require,
         "Record_Route": parse_Record_Route,
         "rec_route": parse_rec_route,
+        "Reason": parse_Reason,
+        "reason_param": parse_reason_param,
+        "reason_cause": parse_reason_cause,
         "Require": parse_Require,
         "Route": parse_Route,
         "route_param": parse_route_param,
@@ -11014,6 +11017,149 @@ module.exports = (function(){
                                                     'offset': offset,
                                                     'parsed': header
                                                   });})(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_Reason() {
+        var result0, result1, result2, result3;
+        var pos0, pos1, pos2;
+        
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 3).toLowerCase() === "sip") {
+          result0 = input.substr(pos, 3);
+          pos += 3;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"SIP\"");
+          }
+        }
+        if (result0 === null) {
+          result0 = parse_token();
+        }
+        if (result0 !== null) {
+          result1 = [];
+          pos2 = pos;
+          result2 = parse_SEMI();
+          if (result2 !== null) {
+            result3 = parse_reason_param();
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          } else {
+            result2 = null;
+            pos = pos2;
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            pos2 = pos;
+            result2 = parse_SEMI();
+            if (result2 !== null) {
+              result3 = parse_reason_param();
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, protocol) {
+                          data.protocol = protocol.toLowerCase();
+        
+                          if (!data.params) data.params = {};
+        
+                          if (data.params.text && data.params.text[0] === '"') {
+                            var text = data.params.text;
+                            data.text = text.substring(1, text.length-1);
+                            delete data.params.text;
+                          }
+                        })(pos0, result0[0]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_reason_param() {
+        var result0;
+        
+        result0 = parse_reason_cause();
+        if (result0 === null) {
+          result0 = parse_generic_param();
+        }
+        return result0;
+      }
+      
+      function parse_reason_cause() {
+        var result0, result1, result2, result3;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 5).toLowerCase() === "cause") {
+          result0 = input.substr(pos, 5);
+          pos += 5;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"cause\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse_EQUAL();
+          if (result1 !== null) {
+            result3 = parse_DIGIT();
+            if (result3 !== null) {
+              result2 = [];
+              while (result3 !== null) {
+                result2.push(result3);
+                result3 = parse_DIGIT();
+              }
+            } else {
+              result2 = null;
+            }
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, cause) {
+                          data.cause = parseInt(cause.join(''));
+                        })(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -24068,7 +24214,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.30",
+  "version": "0.6.31",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

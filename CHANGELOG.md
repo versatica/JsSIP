@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.31 (released in 2015-06-16)
+---------------------------------------
+
+* Added a parser for Reason header.
+
+
 Version 0.6.30 (released in 2015-06-09)
 ---------------------------------------
 

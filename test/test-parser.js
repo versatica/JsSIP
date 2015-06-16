@@ -225,6 +225,27 @@ module.exports = {
     test.done();
   },
 
+  'parse Reason': function(test) {
+    var data, reason;
+
+    data = 'SIP  ; cause = 488 ; text = "Wrong SDP"';
+    reason = JsSIP.Grammar.parse(data, 'Reason');
+
+    test.strictEqual(reason.protocol, 'sip');
+    test.strictEqual(reason.cause, 488);
+    test.strictEqual(reason.text, 'Wrong SDP');
+
+    data = 'ISUP; cause=500 ; LALA = foo';
+    reason = JsSIP.Grammar.parse(data, 'Reason');
+
+    test.strictEqual(reason.protocol, 'isup');
+    test.strictEqual(reason.cause, 500);
+    test.strictEqual(reason.text, undefined);
+    test.strictEqual(reason.params.lala, 'foo');
+
+    test.done();
+  },
+
   'parse host': function(test) {
     var data, parsed;
 
