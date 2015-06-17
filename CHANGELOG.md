@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.6.33 (released in 2015-06-??)
+---------------------------------------
+
+* Don't keep URI params&headers in the registrar server URI.
+
+
 Version 0.6.32 (released in 2015-06-16)
 ---------------------------------------
 
