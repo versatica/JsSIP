@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.32
+ * JsSIP v0.6.33
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13664,6 +13664,12 @@ var RTCSession_Request = require('./RTCSession/Request');
 var RTCSession_DTMF = require('./RTCSession/DTMF');
 
 
+/**
+ * Local variables.
+ */
+var holdMediaTypes = ['audio', 'video'];
+
+
 function RTCSession(ua) {
   debug('new');
 
@@ -15110,6 +15116,7 @@ function receiveReinvite(request) {
     sdp, idx, direction,
     self = this,
     contentType = request.getHeader('Content-Type'),
+    m,
     hold = false,
     data = {
       request: request,
@@ -15130,7 +15137,13 @@ function receiveReinvite(request) {
     sdp = Parser.parseSDP(request.body);
 
     for (idx=0; idx < sdp.media.length; idx++) {
-      direction = sdp.media[idx].direction || sdp.direction || 'sendrecv';
+      m = sdp.media[idx];
+
+      if (holdMediaTypes.indexOf(m.type) === -1) {
+        continue;
+      }
+
+      direction = m.direction || sdp.direction || 'sendrecv';
 
       if (direction === 'sendonly' || direction === 'inactive') {
         hold = true;
@@ -15215,6 +15228,7 @@ function receiveUpdate(request) {
     sdp, idx, direction,
     self = this,
     contentType = request.getHeader('Content-Type'),
+    m,
     hold = false,
     data = {
       request: request,
@@ -15240,7 +15254,13 @@ function receiveUpdate(request) {
   sdp = Parser.parseSDP(request.body);
 
   for (idx=0; idx < sdp.media.length; idx++) {
-    direction = sdp.media[idx].direction || sdp.direction || 'sendrecv';
+    m = sdp.media[idx];
+
+    if (holdMediaTypes.indexOf(m.type) === -1) {
+      continue;
+    }
+
+    direction = m.direction || sdp.direction || 'sendrecv';
 
     if (direction === 'sendonly' || direction === 'inactive') {
       hold = true;
@@ -15327,6 +15347,13 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
     if (stream) {
       self.connection.addStream(stream);
     }
+
+    // Notify the app with the RTCPeerConnection so it can do stuff on it
+    // before generating the offer.
+    self.emit('peerconnection', {
+      peerconnection: self.connection
+    });
+
     connecting.call(self, self.request);
     createLocalDescription.call(self, 'offer', rtcSucceeded, rtcFailed, rtcOfferConstraints);
   }
@@ -15783,6 +15810,9 @@ function mangleOffer(sdp) {
     length = sdp.media.length;
     for (idx=0; idx<length; idx++) {
       m = sdp.media[idx];
+      if (holdMediaTypes.indexOf(m.type) === -1) {
+        continue;
+      }
       if (!m.direction) {
         m.direction = 'sendonly';
       } else if (m.direction === 'sendrecv') {
@@ -15798,6 +15828,9 @@ function mangleOffer(sdp) {
     length = sdp.media.length;
     for (idx=0; idx<length; idx++) {
       m = sdp.media[idx];
+      if (holdMediaTypes.indexOf(m.type) === -1) {
+        continue;
+      }
       m.direction = 'inactive';
     }
   }
@@ -15807,6 +15840,9 @@ function mangleOffer(sdp) {
     length = sdp.media.length;
     for (idx=0; idx<length; idx++) {
       m = sdp.media[idx];
+      if (holdMediaTypes.indexOf(m.type) === -1) {
+        continue;
+      }
       if (!m.direction) {
         m.direction = 'recvonly';
       } else if (m.direction === 'sendrecv') {
@@ -19268,10 +19304,13 @@ UA.prototype.loadConfig = function(configuration) {
     settings.authorization_user = settings.uri.user;
   }
 
-  // If no 'registrar_server' is set use the 'uri' value without user portion.
+  // If no 'registrar_server' is set use the 'uri' value without user portion and
+  // without URI params/headers.
   if (!settings.registrar_server) {
     registrar_server = settings.uri.clone();
     registrar_server.user = null;
+    registrar_server.clearParams();
+    registrar_server.clearHeaders();
     settings.registrar_server = registrar_server;
   }
 
@@ -24232,7 +24271,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.32",
+  "version": "0.6.33",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
