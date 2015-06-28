@@ -283,5 +283,36 @@ module.exports = {
     //test.strictEqual(parsed.host_type, 'domain');
 
     test.done();
-  }
+  },
+
+  'parse Refer-To': function(test) {
+    var data, parsed;
+
+    data = 'sip:alice@versatica.com';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'Refer_To')) !== -1);
+    test.strictEqual(parsed.uri.scheme, 'sip');
+    test.strictEqual(parsed.uri.user, 'alice');
+    test.strictEqual(parsed.uri.host, 'versatica.com');
+
+    data = '<sip:bob@versatica.com?Accept-Contact=sip:bobsdesk.versatica.com>';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'Refer_To')) !== -1);
+    test.strictEqual(parsed.uri.scheme, 'sip');
+    test.strictEqual(parsed.uri.user, 'bob');
+    test.strictEqual(parsed.uri.host, 'versatica.com');
+    test.ok(parsed.uri.hasHeader('Accept-Contact') === true);
+
+    test.done();
+  },
+
+  'parse Replaces': function(test) {
+    var data, parsed;
+
+    data = '5t2gpbrbi72v79p1i8mr;to-tag=03aq91cl9n;from-tag=kun98clbf7';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'Replaces')) !== -1);
+    test.strictEqual(parsed.call_id, '5t2gpbrbi72v79p1i8mr');
+    test.strictEqual(parsed.to_tag, '03aq91cl9n');
+    test.strictEqual(parsed.from_tag, 'kun98clbf7');
+
+    test.done();
+  },
 };
