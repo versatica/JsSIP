@@ -4,7 +4,7 @@ CHANGELOG
 Version 0.7.0 (released in 2015-07-23)
 ---------------------------------------
 
-* Add REFER support
+* Add REFER support.
 
 
 Version 0.6.33 (released in 2015-06-17)

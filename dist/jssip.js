@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.6.34
+ * JsSIP v0.7.0
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -69,6 +69,7 @@ var C = {
   NOTIFY:     'NOTIFY',
   OPTIONS:    'OPTIONS',
   REGISTER:   'REGISTER',
+  REFER:      'REFER',
   UPDATE:     'UPDATE',
   SUBSCRIBE:  'SUBSCRIBE',
 
@@ -150,7 +151,7 @@ var C = {
     606: 'Not Acceptable'
   },
 
-  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS',
+  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER',
   ACCEPTED_BODY_TYPES: 'application/sdp, application/dtmf-relay',
   MAX_FORWARDS: 69,
   SESSION_EXPIRES: 90,
@@ -160,7 +161,7 @@ var C = {
 
 module.exports = C;
 
-},{"../package.json":46}],2:[function(require,module,exports){
+},{"../package.json":48}],2:[function(require,module,exports){
 module.exports = Dialog;
 
 
@@ -375,7 +376,7 @@ Dialog.prototype = {
   }
 };
 
-},{"./Constants":1,"./Dialog/RequestSender":3,"./SIPMessage":16,"./Transactions":18,"debug":29}],3:[function(require,module,exports){
+},{"./Constants":1,"./Dialog/RequestSender":3,"./SIPMessage":18,"./Transactions":20,"debug":31}],3:[function(require,module,exports){
 module.exports = DialogRequestSender;
 
 /**
@@ -455,7 +456,7 @@ DialogRequestSender.prototype = {
   }
 };
 
-},{"../Constants":1,"../RTCSession":11,"../RequestSender":15,"../Transactions":18}],4:[function(require,module,exports){
+},{"../Constants":1,"../RTCSession":11,"../RequestSender":17,"../Transactions":20}],4:[function(require,module,exports){
 module.exports = DigestAuthentication;
 
 
@@ -612,7 +613,7 @@ DigestAuthentication.prototype.updateNcHex = function() {
   this.ncHex = '00000000'.substr(0, 8-hex.length) + hex;
 };
 
-},{"./Utils":22,"debug":29}],5:[function(require,module,exports){
+},{"./Utils":24,"debug":31}],5:[function(require,module,exports){
 /**
  * @namespace Exceptions
  * @memberOf JsSIP
@@ -819,6 +820,7 @@ module.exports = (function(){
         "REGISTERm": parse_REGISTERm,
         "SUBSCRIBEm": parse_SUBSCRIBEm,
         "NOTIFYm": parse_NOTIFYm,
+        "REFERm": parse_REFERm,
         "Method": parse_Method,
         "Status_Line": parse_Status_Line,
         "Status_Code": parse_Status_Code,
@@ -924,7 +926,14 @@ module.exports = (function(){
         "uuid": parse_uuid,
         "hex4": parse_hex4,
         "hex8": parse_hex8,
-        "hex12": parse_hex12
+        "hex12": parse_hex12,
+        "Refer_To": parse_Refer_To,
+        "Replaces": parse_Replaces,
+        "call_id": parse_call_id,
+        "replaces_param": parse_replaces_param,
+        "to_tag": parse_to_tag,
+        "from_tag": parse_from_tag,
+        "early_flag": parse_early_flag
       };
       
       if (startRule !== undefined) {
@@ -8335,6 +8344,21 @@ module.exports = (function(){
         return result0;
       }
       
+      function parse_REFERm() {
+        var result0;
+        
+        if (input.substr(pos, 5) === "REFER") {
+          result0 = "REFER";
+          pos += 5;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"REFER\"");
+          }
+        }
+        return result0;
+      }
+      
       function parse_Method() {
         var result0;
         var pos0;
@@ -8356,7 +8380,10 @@ module.exports = (function(){
                     if (result0 === null) {
                       result0 = parse_NOTIFYm();
                       if (result0 === null) {
-                        result0 = parse_token();
+                        result0 = parse_REFERm();
+                        if (result0 === null) {
+                          result0 = parse_token();
+                        }
                       }
                     }
                   }
@@ -12833,6 +12860,302 @@ module.exports = (function(){
         return result0;
       }
       
+      function parse_Refer_To() {
+        var result0, result1, result2, result3;
+        var pos0, pos1, pos2;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_SIP_URI_noparams();
+        if (result0 === null) {
+          result0 = parse_name_addr();
+        }
+        if (result0 !== null) {
+          result1 = [];
+          pos2 = pos;
+          result2 = parse_SEMI();
+          if (result2 !== null) {
+            result3 = parse_generic_param();
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          } else {
+            result2 = null;
+            pos = pos2;
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            pos2 = pos;
+            result2 = parse_SEMI();
+            if (result2 !== null) {
+              result3 = parse_generic_param();
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                        try {
+                          data = new NameAddrHeader(data.uri, data.display_name, data.params);
+                        } catch(e) {
+                          data = -1;
+                        }})(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_Replaces() {
+        var result0, result1, result2, result3;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        result0 = parse_call_id();
+        if (result0 !== null) {
+          result1 = [];
+          pos1 = pos;
+          result2 = parse_SEMI();
+          if (result2 !== null) {
+            result3 = parse_replaces_param();
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = pos1;
+            }
+          } else {
+            result2 = null;
+            pos = pos1;
+          }
+          while (result2 !== null) {
+            result1.push(result2);
+            pos1 = pos;
+            result2 = parse_SEMI();
+            if (result2 !== null) {
+              result3 = parse_replaces_param();
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos1;
+              }
+            } else {
+              result2 = null;
+              pos = pos1;
+            }
+          }
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_call_id() {
+        var result0, result1, result2;
+        var pos0, pos1, pos2;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_word();
+        if (result0 !== null) {
+          pos2 = pos;
+          if (input.charCodeAt(pos) === 64) {
+            result1 = "@";
+            pos++;
+          } else {
+            result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"@\"");
+            }
+          }
+          if (result1 !== null) {
+            result2 = parse_word();
+            if (result2 !== null) {
+              result1 = [result1, result2];
+            } else {
+              result1 = null;
+              pos = pos2;
+            }
+          } else {
+            result1 = null;
+            pos = pos2;
+          }
+          result1 = result1 !== null ? result1 : "";
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                          data.call_id = input.substring(pos, offset); })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_replaces_param() {
+        var result0;
+        
+        result0 = parse_to_tag();
+        if (result0 === null) {
+          result0 = parse_from_tag();
+          if (result0 === null) {
+            result0 = parse_early_flag();
+            if (result0 === null) {
+              result0 = parse_generic_param();
+            }
+          }
+        }
+        return result0;
+      }
+      
+      function parse_to_tag() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 6) === "to-tag") {
+          result0 = "to-tag";
+          pos += 6;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"to-tag\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse_EQUAL();
+          if (result1 !== null) {
+            result2 = parse_token();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, to_tag) {
+                            data.to_tag = to_tag; })(pos0, result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_from_tag() {
+        var result0, result1, result2;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 8) === "from-tag") {
+          result0 = "from-tag";
+          pos += 8;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"from-tag\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse_EQUAL();
+          if (result1 !== null) {
+            result2 = parse_token();
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, from_tag) {
+                            data.from_tag = from_tag; })(pos0, result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_early_flag() {
+        var result0;
+        var pos0;
+        
+        pos0 = pos;
+        if (input.substr(pos, 10) === "early-only") {
+          result0 = "early-only";
+          pos += 10;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"early-only\"");
+          }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) {
+                            data.early_only = true; })(pos0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
       
       function cleanupExpected(expected) {
         expected.sort();
@@ -12972,7 +13295,7 @@ module.exports = (function(){
   return result;
 })();
 
-},{"./NameAddrHeader":9,"./URI":21}],7:[function(require,module,exports){
+},{"./NameAddrHeader":9,"./URI":23}],7:[function(require,module,exports){
 /**
  * Dependencies.
  */
@@ -13019,7 +13342,7 @@ Object.defineProperties(JsSIP, {
   }
 });
 
-},{"../package.json":46,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":20,"./URI":21,"./Utils":22,"debug":29,"rtcninja":34}],8:[function(require,module,exports){
+},{"../package.json":48,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":22,"./URI":23,"./Utils":24,"debug":31,"rtcninja":36}],8:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -13238,7 +13561,7 @@ Message.prototype.newMessage = function(originator, request) {
   });
 };
 
-},{"./Constants":1,"./Exceptions":5,"./RequestSender":15,"./SIPMessage":16,"./Transactions":18,"./Utils":22,"events":24,"util":28}],9:[function(require,module,exports){
+},{"./Constants":1,"./Exceptions":5,"./RequestSender":17,"./SIPMessage":18,"./Transactions":20,"./Utils":24,"events":26,"util":30}],9:[function(require,module,exports){
 module.exports = NameAddrHeader;
 
 
@@ -13348,7 +13671,7 @@ NameAddrHeader.parse = function(name_addr_header) {
   }
 };
 
-},{"./Grammar":6,"./URI":21}],10:[function(require,module,exports){
+},{"./Grammar":6,"./URI":23}],10:[function(require,module,exports){
 var Parser = {};
 
 module.exports = Parser;
@@ -13518,6 +13841,29 @@ function parseHeader(message, data, headerStart, headerEnd) {
         message.session_expires_refresher = parsed.refresher;
       }
       break;
+    case 'refer-to':
+    case 'r':
+      message.setHeader('refer-to', headerValue);
+      parsed = message.parseHeader('refer-to');
+      if(parsed) {
+        message.refer_to = parsed;
+      }
+      break;
+    case 'replaces':
+      message.setHeader('replaces', headerValue);
+      parsed = message.parseHeader('replaces');
+      if(parsed) {
+        message.replaces = parsed;
+      }
+      break;
+    case 'event':
+    case 'o':
+      message.setHeader('event', headerValue);
+      parsed = message.parseHeader('event');
+      if(parsed) {
+        message.event = parsed;
+      }
+      break;
     default:
       // Do not parse this header.
       message.setHeader(headerName, headerValue);
@@ -13618,7 +13964,7 @@ Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
 Parser.parsePayloads = sdp_transform.parsePayloads;
 Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
 
-},{"./Grammar":6,"./SIPMessage":16,"debug":29,"sdp-transform":40}],11:[function(require,module,exports){
+},{"./Grammar":6,"./SIPMessage":18,"debug":31,"sdp-transform":42}],11:[function(require,module,exports){
 module.exports = RTCSession;
 
 
@@ -13662,6 +14008,8 @@ var Dialog = require('./Dialog');
 var RequestSender = require('./RequestSender');
 var RTCSession_Request = require('./RTCSession/Request');
 var RTCSession_DTMF = require('./RTCSession/DTMF');
+var RTCSession_ReferNotifier = require('./RTCSession/ReferNotifier');
+var RTCSession_ReferSubscriber = require('./RTCSession/ReferSubscriber');
 
 
 /**
@@ -13821,7 +14169,7 @@ RTCSession.prototype.isOnHold = function() {
 
 
 
-RTCSession.prototype.connect = function(target, options) {
+RTCSession.prototype.connect = function(target, options, initCallback) {
   debug('connect()');
 
   options = options || {};
@@ -13918,13 +14266,23 @@ RTCSession.prototype.connect = function(target, options) {
   // Save the session into the ua sessions collection.
   this.ua.sessions[this.id] = this;
 
-  newRTCSession.call(this, 'local', this.request);
+  // Set internal properties
+  this.direction = 'outgoing';
+  this.local_identity = this.request.from;
+  this.remote_identity = this.request.to;
+
+  // User explicitly provided a newRTCSession callback for this session
+  if (initCallback) {
+    initCallback(this);
+  } else {
+    newRTCSession.call(this, 'local', this.request);
+  }
 
   sendInitialRequest.call(this, mediaConstraints, rtcOfferConstraints, mediaStream);
 };
 
 
-RTCSession.prototype.init_incoming = function(request) {
+RTCSession.prototype.init_incoming = function(request, initCallback) {
   debug('init_incoming()');
 
   var expires,
@@ -13992,8 +14350,19 @@ RTCSession.prototype.init_incoming = function(request) {
     );
   }
 
+  // Set internal properties
+  this.direction = 'incoming';
+  this.local_identity = request.to;
+  this.remote_identity = request.from;
+
+  // A init callback was specifically defined
+  if (initCallback) {
+    initCallback(this);
+
   // Fire 'newRTCSession' event.
-  newRTCSession.call(this, 'remote', request);
+  } else {
+    newRTCSession.call(this, 'remote', request);
+  }
 
   // The user may have rejected the call in the 'newRTCSession' event.
   if (this.status === C.STATUS_TERMINATED) {
@@ -14738,6 +15107,31 @@ RTCSession.prototype.renegotiate = function(options, done) {
   return true;
 };
 
+/**
+ * Refer
+ */
+RTCSession.prototype.refer = function(target, options) {
+  debug('refer()');
+
+  var originalTarget = target;
+
+  if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
+    return false;
+  }
+
+  if (this.referSubscriber) {
+    return false;
+  }
+
+  // Check target validity
+  target = this.ua.normalizeTarget(target);
+  if (!target) {
+    throw new TypeError('Invalid target: '+ originalTarget);
+  }
+
+  this.referSubscriber = new RTCSession_ReferSubscriber(this);
+  this.referSubscriber.sendRefer(target, options);
+};
 
 /**
  * In dialog Request Reception
@@ -14816,7 +15210,11 @@ RTCSession.prototype.receiveRequest = function(request) {
         break;
       case JsSIP_C.INVITE:
         if(this.status === C.STATUS_CONFIRMED) {
-          receiveReinvite.call(this, request);
+          if (request.hasHeader('replaces')) {
+            receiveReplaces.call(this, request);
+          } else {
+            receiveReinvite.call(this, request);
+          }
         }
         else {
           request.reply(403, 'Wrong Status');
@@ -14839,6 +15237,22 @@ RTCSession.prototype.receiveRequest = function(request) {
       case JsSIP_C.UPDATE:
         if(this.status === C.STATUS_CONFIRMED) {
           receiveUpdate.call(this, request);
+        }
+        else {
+          request.reply(403, 'Wrong Status');
+        }
+        break;
+      case JsSIP_C.REFER:
+        if(this.status === C.STATUS_CONFIRMED) {
+          receiveRefer.call(this, request);
+        }
+        else {
+          request.reply(403, 'Wrong Status');
+        }
+        break;
+      case JsSIP_C.NOTIFY:
+        if(this.status === C.STATUS_CONFIRMED) {
+          receiveNotify.call(this, request);
         }
         else {
           request.reply(403, 'Wrong Status');
@@ -15083,6 +15497,9 @@ function createDialog(message, type, early) {
 
   // Confirmed Dialog
   else {
+    this.from_tag = message.from_tag;
+    this.to_tag = message.to_tag;
+
     // In case the dialog is in _early_ state, update it
     if (early_dialog) {
       early_dialog.update(message, type);
@@ -15309,6 +15726,138 @@ function receiveUpdate(request) {
     // Constraints.
     this.rtcAnswerConstraints
   );
+}
+
+/**
+ * In dialog Refer Reception
+ */
+function receiveRefer(request) {
+  debug('receiveRefer()');
+
+  var notifier,
+      self = this;
+
+  function accept(initCallback, options) {
+    var session, replaces;
+
+    options = options || {};
+    initCallback = (typeof initCallback === 'function')? initCallback : null;
+
+    if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
+      return false;
+    }
+
+    session = new RTCSession(this.ua);
+
+    session.on('progress', function(e) {
+      notifier.notify(e.response.status_code, e.response.reason_phrase);
+    });
+
+    session.on('accepted', function(e) {
+      notifier.notify(e.response.status_code, e.response.reason_phrase);
+    });
+
+    session.on('failed', function(e) {
+      if (e.message) {
+        notifier.notify(e.message.status_code, e.message.reason_phrase);
+      } else {
+        notifier.notify(487, e.cause);
+      }
+    });
+
+    // Consider the Replaces header present in the Refer-To URI
+    if (request.refer_to.uri.hasHeader('replaces')) {
+      replaces = decodeURIComponent(request.refer_to.uri.getHeader('replaces'));
+      options.extraHeaders = options.extraHeaders || [];
+      options.extraHeaders.push('Replaces: '+ replaces);
+    }
+
+    session.connect(request.refer_to.uri.toAor(), options, initCallback);
+  }
+
+  function reject() {
+    notifier.notify(603);
+  }
+
+  if (typeof request.refer_to === undefined) {
+    debug('no Refer-To header field present in REFER');
+    request.reply(400);
+    return;
+  }
+
+  if (request.refer_to.uri.scheme !== JsSIP_C.SIP) {
+    debug('Refer-To header field points to a non-SIP URI scheme');
+    request.reply(416);
+    return;
+  }
+
+  // reply before the transaction timer expires
+  request.reply(202);
+
+  notifier = new RTCSession_ReferNotifier(this, request.cseq);
+
+  // Emit 'refer'.
+  this.emit('refer', {
+    request: request,
+    accept: function(initCallback, options) { accept.call(self, initCallback, options); },
+    reject: function() { reject.call(self); }
+  });
+}
+
+/**
+ * In dialog Notify Reception
+ */
+function receiveNotify(request) {
+  debug('receiveNotify()');
+
+  if (typeof request.event === undefined) {
+    request.reply(400);
+  } else if (request.event.event !== 'refer') {
+    request.reply(489);
+  } else if (!this.referSubscriber) {
+    request.reply(481, 'Subscription does not exist');
+  } else {
+    this.referSubscriber.receiveNotify(request);
+    request.reply(200);
+  }
+}
+
+/**
+ * INVITE with Replaces Reception
+ */
+function receiveReplaces(request) {
+  debug('receiveReplaces()');
+
+  var self = this;
+
+  function accept(initCallback) {
+    var session;
+
+    if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
+      return false;
+    }
+
+    session = new RTCSession(this.ua);
+
+    // terminate the current session when the new one is confirmed
+    session.on('confirmed', function() {
+      self.terminate();
+    });
+
+    session.init_incoming(request, initCallback);
+  }
+
+  function reject() {
+    debug('Replaced INVITE rejected by the user');
+    request.reply(486);
+  }
+
+  // Emit 'replace'.
+  this.emit('replaces', {
+    request: request,
+    accept: function(initCallback) { accept.call(self, initCallback); },
+    reject: function() { reject.call(self); }
+  });
 }
 
 /**
@@ -16002,16 +16551,6 @@ function toogleMuteVideo(mute) {
 function newRTCSession(originator, request) {
   debug('newRTCSession');
 
-  if (originator === 'remote') {
-    this.direction = 'incoming';
-    this.local_identity = request.to;
-    this.remote_identity = request.from;
-  } else if (originator === 'local'){
-    this.direction = 'outgoing';
-    this.local_identity = request.from;
-    this.remote_identity = request.to;
-  }
-
   this.ua.newRTCSession({
     originator: originator,
     session: this,
@@ -16124,7 +16663,7 @@ function onunmute(options) {
   });
 }
 
-},{"./Constants":1,"./Dialog":2,"./Exceptions":5,"./Parser":10,"./RTCSession/DTMF":12,"./RTCSession/Request":13,"./RequestSender":15,"./SIPMessage":16,"./Timers":17,"./Transactions":18,"./Utils":22,"debug":29,"events":24,"rtcninja":34,"util":28}],12:[function(require,module,exports){
+},{"./Constants":1,"./Dialog":2,"./Exceptions":5,"./Parser":10,"./RTCSession/DTMF":12,"./RTCSession/ReferNotifier":13,"./RTCSession/ReferSubscriber":14,"./RTCSession/Request":15,"./RequestSender":17,"./SIPMessage":18,"./Timers":19,"./Transactions":20,"./Utils":24,"debug":31,"events":26,"rtcninja":36,"util":30}],12:[function(require,module,exports){
 module.exports = DTMF;
 
 
@@ -16288,7 +16827,231 @@ DTMF.prototype.init_incoming = function(request) {
   }
 };
 
-},{"../Constants":1,"../Exceptions":5,"../RTCSession":11,"debug":29}],13:[function(require,module,exports){
+},{"../Constants":1,"../Exceptions":5,"../RTCSession":11,"debug":31}],13:[function(require,module,exports){
+module.exports = ReferNotifier;
+
+
+var C = {
+  event_type: 'refer',
+  body_type: 'message/sipfrag;version=2.0',
+  expires: 300
+};
+
+/**
+ * Dependencies.
+ */
+var debug = require('debug')('JsSIP:RTCSession:ReferNotifier');
+var JsSIP_C = require('../Constants');
+var RTCSession_Request = require('./Request');
+
+
+function ReferNotifier(session, id, expires) {
+  this.session = session;
+  this.id = id;
+  this.expires = expires || C.expires;
+  this.active = true;
+
+  // The creation of a Notifier results in an immediate NOTIFY
+  this.notify(100);
+}
+
+ReferNotifier.prototype.notify = function(code, reason) {
+  debug('notify()');
+
+  var state,
+      self = this;
+
+  if (this.active === false) {
+    return;
+  }
+
+  reason = reason || JsSIP_C.REASON_PHRASE[code] || '';
+
+  if (code >= 200) {
+    state = 'terminated;reason=noresource';
+  } else {
+    state = 'active;expires='+ this.expires;
+  }
+
+  // put this in a try/catch block
+  var request = new RTCSession_Request(this.session, JsSIP_C.NOTIFY);
+  request.send({
+    extraHeaders: [
+      'Event: '+ C.event_type +';id='+ self.id,
+      'Subscription-State: '+ state,
+      'Content-Type: '+ C.body_type
+    ],
+    body: 'SIP/2.0 ' + code + ' ' + reason,
+    eventHandlers: {
+      // if a negative response is received, subscription is canceled
+      onErrorResponse: function() { self.active = false; }
+    }
+  });
+};
+
+},{"../Constants":1,"./Request":15,"debug":31}],14:[function(require,module,exports){
+module.exports = ReferSubscriber;
+
+
+var C = {
+  expires: 120
+};
+
+/**
+ * Dependencies.
+ */
+var util = require('util');
+var events = require('events');
+var debug = require('debug')('JsSIP:RTCSession:ReferSubscriber');
+var JsSIP_C = require('../Constants');
+var Grammar = require('../Grammar');
+var RTCSession_Request = require('./Request');
+
+
+function ReferSubscriber(session) {
+  this.session = session;
+
+  this.timer = null;
+
+  events.EventEmitter.call(this);
+}
+
+util.inherits(ReferSubscriber, events.EventEmitter);
+
+ReferSubscriber.prototype.sendRefer = function(target, options) {
+  debug('sendRefer()');
+
+  var extraHeaders, eventHandlers, referTo,
+      replaces = null,
+      self = this;
+
+  // Get REFER options
+  options = options || {};
+  extraHeaders = options.extraHeaders ? options.extraHeaders.slice() : [];
+  eventHandlers = options.eventHandlers || {};
+
+  // Set event handlers
+  for (var event in eventHandlers) {
+    this.on(event, eventHandlers[event]);
+  }
+
+  // Replaces URI header field
+  if (options.replaces) {
+    replaces = options.replaces.request.call_id;
+    replaces += ';to-tag='+ options.replaces.to_tag;
+    replaces += ';from-tag='+ options.replaces.from_tag;
+
+    replaces = encodeURIComponent(replaces);
+  }
+
+  // Refer-To header field
+  referTo = 'Refer-To: <'+ target + (replaces?'?Replaces='+ replaces:'') +'>';
+
+  extraHeaders.push(referTo);
+
+  var request = new RTCSession_Request(this.session, JsSIP_C.REFER);
+
+  this.timer = setTimeout(function() {
+      removeSubscriber.call(self);
+    }, C.expires * 1000
+  );
+
+  request.send({
+    extraHeaders: extraHeaders,
+    eventHandlers: {
+      onSuccessResponse: function(response) {
+        self.emit('requestSucceeded', {
+          response: response
+        });
+      },
+      onErrorResponse: function(response) {
+        self.emit('requestFailed', {
+          response: response,
+          cause: JsSIP_C.causes.REJECTED
+        });
+      },
+      onTransportError: function() {
+        removeSubscriber.call(self);
+        self.emit('requestFailed', {
+          response: null,
+          cause: JsSIP_C.causes.CONNECTION_ERROR
+        });
+      },
+      onRequestTimeout: function() {
+        removeSubscriber.call(self);
+        self.emit('requestFailed', {
+          response: null,
+          cause: JsSIP_C.causes.REQUEST_TIMEOUT
+        });
+      },
+      onDialogError: function() {
+        removeSubscriber.call(self);
+        self.emit('requestFailed', {
+          response: null,
+          cause: JsSIP_C.causes.DIALOG_ERROR
+        });
+      }
+    }
+  });
+};
+
+ReferSubscriber.prototype.receiveNotify = function(request) {
+  debug('receiveNotify()');
+
+  var status_line;
+
+  if (!request.body) {
+    return;
+  }
+
+  status_line = Grammar.parse(request.body, 'Status_Line');
+
+  if(status_line === -1) {
+    debug('receiveNotify() | error parsing NOTIFY body: "' + request.body + '"');
+    return;
+  }
+
+  switch(true) {
+    case /^100$/.test(status_line.status_code):
+      this.emit('trying', {
+        request: request,
+        satus_line: status_line
+      });
+      break;
+
+    case /^1[0-9]{2}$/.test(status_line.status_code):
+      this.emit('progress', {
+        request: request,
+        satus_line: status_line
+      });
+      break;
+
+    case /^2[0-9]{2}$/.test(status_line.status_code):
+      removeSubscriber.call(this);
+      this.emit('accepted', {
+        request: request,
+        satus_line: status_line
+      });
+      break;
+
+    default:
+      removeSubscriber.call(this);
+      this.emit('failed', {
+        request: request,
+        satus_line: status_line
+      });
+      break;
+  }
+};
+
+// remove refer subscriber from the session
+function removeSubscriber() {
+  console.log('removeSubscriber()');
+  clearTimeout(this.timer);
+  this.session.referSubscriber = null;
+}
+
+},{"../Constants":1,"../Grammar":6,"./Request":15,"debug":31,"events":26,"util":30}],15:[function(require,module,exports){
 module.exports = Request;
 
 /**
@@ -16376,7 +17139,7 @@ Request.prototype.onDialogError = function() {
   if (this.eventHandlers.onDialogError) { this.eventHandlers.onDialogError(); }
 };
 
-},{"../Constants":1,"../Exceptions":5,"../RTCSession":11,"debug":29}],14:[function(require,module,exports){
+},{"../Constants":1,"../Exceptions":5,"../RTCSession":11,"debug":31}],16:[function(require,module,exports){
 module.exports = Registrator;
 
 
@@ -16684,7 +17447,7 @@ Registrator.prototype = {
 };
 
 
-},{"./Constants":1,"./RequestSender":15,"./SIPMessage":16,"./Utils":22,"debug":29}],15:[function(require,module,exports){
+},{"./Constants":1,"./RequestSender":17,"./SIPMessage":18,"./Utils":24,"debug":31}],17:[function(require,module,exports){
 module.exports = RequestSender;
 
 
@@ -16815,7 +17578,7 @@ RequestSender.prototype = {
   }
 };
 
-},{"./Constants":1,"./DigestAuthentication":4,"./Transactions":18,"./UA":20,"debug":29}],16:[function(require,module,exports){
+},{"./Constants":1,"./DigestAuthentication":4,"./Transactions":20,"./UA":22,"debug":31}],18:[function(require,module,exports){
 module.exports = {
   OutgoingRequest: OutgoingRequest,
   IncomingRequest: IncomingRequest,
@@ -17030,7 +17793,7 @@ OutgoingRequest.prototype = {
         if (this.ua.contact.pub_gruu || this.ua.contact.temp_gruu) {
           supported.push('gruu');
         }
-        supported.push('ice');
+        supported.push('ice','replaces');
         break;
       case JsSIP_C.UPDATE:
         if (this.ua.configuration.session_timers) {
@@ -17286,7 +18049,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
       if (this.ua.contact.pub_gruu || this.ua.contact.temp_gruu) {
         supported.push('gruu');
       }
-      supported.push('ice');
+      supported.push('ice','replaces');
       break;
     case JsSIP_C.UPDATE:
       if (this.ua.configuration.session_timers) {
@@ -17295,6 +18058,7 @@ IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onS
       if (body) {
         supported.push('ice');
       }
+      supported.push('replaces');
   }
 
   supported.push('outbound');
@@ -17378,7 +18142,7 @@ function IncomingResponse() {
 
 IncomingResponse.prototype = new IncomingMessage();
 
-},{"./Constants":1,"./Grammar":6,"./NameAddrHeader":9,"./Utils":22,"debug":29}],17:[function(require,module,exports){
+},{"./Constants":1,"./Grammar":6,"./NameAddrHeader":9,"./Utils":24,"debug":31}],19:[function(require,module,exports){
 var T1 = 500,
   T2 = 4000,
   T4 = 5000;
@@ -17403,7 +18167,7 @@ var Timers = {
 
 module.exports = Timers;
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = {
   C: null,
   NonInviteClientTransaction: NonInviteClientTransaction,
@@ -18126,7 +18890,7 @@ function checkTransaction(ua, request) {
   }
 }
 
-},{"./Constants":1,"./Timers":17,"debug":29,"events":24,"util":28}],19:[function(require,module,exports){
+},{"./Constants":1,"./Timers":19,"debug":31,"events":26,"util":30}],21:[function(require,module,exports){
 module.exports = Transport;
 
 
@@ -18409,7 +19173,7 @@ Transport.prototype = {
   }
 };
 
-},{"./Constants":1,"./Parser":10,"./SIPMessage":16,"./UA":20,"./sanityCheck":23,"debug":29,"websocket":43}],20:[function(require,module,exports){
+},{"./Constants":1,"./Parser":10,"./SIPMessage":18,"./UA":22,"./sanityCheck":25,"debug":31,"websocket":45}],22:[function(require,module,exports){
 module.exports = UA;
 
 
@@ -18963,7 +19727,7 @@ UA.prototype.registrationFailed = function(data) {
  * Request reception
  */
 UA.prototype.receiveRequest = function(request) {
-  var dialog, session, message,
+  var dialog, session, message, replaces,
   method = request.method;
 
   // Check that request URI points to us
@@ -19020,8 +19784,23 @@ UA.prototype.receiveRequest = function(request) {
     switch(method) {
       case JsSIP_C.INVITE:
         if (rtcninja.hasWebRTC()) {
-          session = new RTCSession(this);
-          session.init_incoming(request);
+          if (request.hasHeader('replaces')) {
+            replaces = request.replaces;
+            dialog = this.findDialog(replaces.call_id, replaces.from_tag, replaces.to_tag);
+            if (dialog) {
+              session = dialog.owner;
+              if (!session.isEnded()) {
+                session.receiveRequest(request);
+              } else {
+                request.reply(603);
+              }
+            } else {
+              request.reply(481);
+            }
+          } else {
+            session = new RTCSession(this);
+            session.init_incoming(request);
+          }
         } else {
           debug('INVITE received but WebRTC is not supported');
           request.reply(488);
@@ -19052,7 +19831,7 @@ UA.prototype.receiveRequest = function(request) {
   }
   // In-dialog request
   else {
-    dialog = this.findDialog(request);
+    dialog = this.findDialog(request.call_id, request.from_tag, request.to_tag);
 
     if(dialog) {
       dialog.receiveRequest(request);
@@ -19104,15 +19883,15 @@ UA.prototype.findSession = function(request) {
 /**
  * Get the dialog to which the request belongs to, if any.
  */
-UA.prototype.findDialog = function(request) {
+UA.prototype.findDialog = function(call_id, from_tag, to_tag) {
   var
-  id = request.call_id + request.from_tag + request.to_tag,
+  id = call_id + from_tag + to_tag,
   dialog = this.dialogs[id];
 
   if(dialog) {
     return dialog;
   } else {
-    id = request.call_id + request.to_tag + request.from_tag;
+    id = call_id + to_tag + from_tag;
     dialog = this.dialogs[id];
     if(dialog) {
       return dialog;
@@ -19653,7 +20432,7 @@ UA.configuration_check = {
   }
 };
 
-},{"./Constants":1,"./Exceptions":5,"./Grammar":6,"./Message":8,"./RTCSession":11,"./Registrator":14,"./Transactions":18,"./Transport":19,"./URI":21,"./Utils":22,"debug":29,"events":24,"rtcninja":34,"util":28}],21:[function(require,module,exports){
+},{"./Constants":1,"./Exceptions":5,"./Grammar":6,"./Message":8,"./RTCSession":11,"./Registrator":16,"./Transactions":20,"./Transport":21,"./URI":23,"./Utils":24,"debug":31,"events":26,"rtcninja":36,"util":30}],23:[function(require,module,exports){
 module.exports = URI;
 
 
@@ -19865,7 +20644,7 @@ URI.parse = function(uri) {
   }
 };
 
-},{"./Constants":1,"./Grammar":6,"./Utils":22}],22:[function(require,module,exports){
+},{"./Constants":1,"./Grammar":6,"./Utils":24}],24:[function(require,module,exports){
 var Utils = {};
 
 module.exports = Utils;
@@ -20262,7 +21041,7 @@ Utils.calculateMD5 = function(string) {
   return temp.toLowerCase();
 };
 
-},{"./Constants":1,"./Grammar":6,"./URI":21}],23:[function(require,module,exports){
+},{"./Constants":1,"./Grammar":6,"./URI":23}],25:[function(require,module,exports){
 module.exports = sanityCheck;
 
 
@@ -20489,7 +21268,7 @@ function reply(status_code) {
   transport.send(response);
 }
 
-},{"./Constants":1,"./SIPMessage":16,"./Utils":22,"debug":29}],24:[function(require,module,exports){
+},{"./Constants":1,"./SIPMessage":18,"./Utils":24,"debug":31}],26:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20792,7 +21571,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -20817,7 +21596,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -20909,14 +21688,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -21506,7 +22285,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":27,"_process":26,"inherits":25}],29:[function(require,module,exports){
+},{"./support/isBuffer":29,"_process":28,"inherits":27}],31:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -21676,7 +22455,7 @@ function localstorage(){
   } catch (e) {}
 }
 
-},{"./debug":30}],30:[function(require,module,exports){
+},{"./debug":32}],32:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -21875,7 +22654,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":31}],31:[function(require,module,exports){
+},{"ms":33}],33:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -22002,7 +22781,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -22306,7 +23085,7 @@ function Adapter(options) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bowser":36,"debug":29}],33:[function(require,module,exports){
+},{"bowser":38,"debug":31}],35:[function(require,module,exports){
 'use strict';
 
 // Expose the RTCPeerConnection class.
@@ -23057,7 +23836,7 @@ function setProperties() {
 	});
 }
 
-},{"./Adapter":32,"debug":29,"merge":37}],34:[function(require,module,exports){
+},{"./Adapter":34,"debug":31,"merge":39}],36:[function(require,module,exports){
 'use strict';
 
 module.exports = rtcninja;
@@ -23147,14 +23926,14 @@ Object.defineProperty(rtcninja, 'called', {
 rtcninja.debug = require('debug');
 rtcninja.browser = browser;
 
-},{"./Adapter":32,"./RTCPeerConnection":33,"./version":35,"bowser":36,"debug":29}],35:[function(require,module,exports){
+},{"./Adapter":34,"./RTCPeerConnection":35,"./version":37,"bowser":38,"debug":31}],37:[function(require,module,exports){
 'use strict';
 
 // Expose the 'version' field of package.json.
 module.exports = require('../package.json').version;
 
 
-},{"../package.json":38}],36:[function(require,module,exports){
+},{"../package.json":40}],38:[function(require,module,exports){
 /*!
   * Bowser - a browser detector
   * https://github.com/ded/bowser
@@ -23432,7 +24211,7 @@ module.exports = require('../package.json').version;
   return bowser
 });
 
-},{}],37:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /*!
  * @name JavaScript/NodeJS Merge v1.2.0
  * @author yeikos
@@ -23608,7 +24387,7 @@ module.exports = require('../package.json').version;
 	}
 
 })(typeof module === 'object' && module && typeof module.exports === 'object' && module.exports);
-},{}],38:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
   "version": "0.6.2",
@@ -23670,7 +24449,7 @@ module.exports={
   "_from": "rtcninja@>=0.6.2 <0.7.0"
 }
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
       name: 'version',
@@ -23919,7 +24698,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 });
 
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 
@@ -23929,7 +24708,7 @@ exports.parseFmtpConfig = parser.parseFmtpConfig;
 exports.parsePayloads = parser.parsePayloads;
 exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 
-},{"./parser":41,"./writer":42}],41:[function(require,module,exports){
+},{"./parser":43,"./writer":44}],43:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -24024,7 +24803,7 @@ exports.parseRemoteCandidates = function (str) {
   return candidates;
 };
 
-},{"./grammar":39}],42:[function(require,module,exports){
+},{"./grammar":41}],44:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -24140,7 +24919,7 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":39}],43:[function(require,module,exports){
+},{"./grammar":41}],45:[function(require,module,exports){
 var _global = (function() { return this; })();
 var nativeWebSocket = _global.WebSocket || _global.MozWebSocket;
 
@@ -24177,10 +24956,10 @@ module.exports = {
     'version'      : require('./version')
 };
 
-},{"./version":44}],44:[function(require,module,exports){
+},{"./version":46}],46:[function(require,module,exports){
 module.exports = require('../package.json').version;
 
-},{"../package.json":45}],45:[function(require,module,exports){
+},{"../package.json":47}],47:[function(require,module,exports){
 module.exports={
   "name": "websocket",
   "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
@@ -24201,7 +24980,14 @@ module.exports={
     "email": "brian@worlize.com",
     "url": "https://www.worlize.com/"
   },
-  "version": "1.0.19",
+  "contributors": [
+    {
+      "name": "Iñaki Baz Castillo",
+      "email": "ibc@aliax.net",
+      "url": "http://dev.sipdoc.net"
+    }
+  ],
+  "version": "1.0.21",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theturtle32/WebSocket-Node.git"
@@ -24211,17 +24997,18 @@ module.exports={
     "node": ">=0.8.0"
   },
   "dependencies": {
-    "debug": "~2.1.0",
-    "nan": "1.8.x",
-    "typedarray-to-buffer": "~3.0.0"
+    "debug": "~2.2.0",
+    "nan": "~1.8.x",
+    "typedarray-to-buffer": "~3.0.3",
+    "yaeti": "~0.0.4"
   },
   "devDependencies": {
-    "buffer-equal": "0.0.1",
-    "faucet": "0.0.1",
+    "buffer-equal": "^0.0.1",
+    "faucet": "^0.0.1",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
-    "gulp-jshint": "^1.9.0",
-    "jshint-stylish": "^1.0.0",
-    "tape": "^3.0.0"
+    "gulp-jshint": "^1.11.2",
+    "jshint-stylish": "^1.0.2",
+    "tape": "^4.0.1"
   },
   "config": {
     "verbose": false
@@ -24237,15 +25024,15 @@ module.exports={
   },
   "browser": "lib/browser.js",
   "license": "Apache-2.0",
-  "gitHead": "da3bd5b04e9442c84881b2e9c13432cdbbae1f16",
+  "gitHead": "8f5d5f3ef3d946324fe016d525893546ff6500e1",
   "bugs": {
     "url": "https://github.com/theturtle32/WebSocket-Node/issues"
   },
-  "_id": "websocket@1.0.19",
-  "_shasum": "e62dbf1a3c5e0767425db7187cfa38f921dfb42c",
-  "_from": "websocket@>=1.0.19 <2.0.0",
-  "_npmVersion": "2.10.1",
-  "_nodeVersion": "0.12.4",
+  "_id": "websocket@1.0.21",
+  "_shasum": "f51f0a96ed19629af39922470ab591907f1c5bd9",
+  "_from": "websocket@>=1.0.21 <2.0.0",
+  "_npmVersion": "2.12.1",
+  "_nodeVersion": "2.3.4",
   "_npmUser": {
     "name": "theturtle32",
     "email": "brian@worlize.com"
@@ -24257,18 +25044,18 @@ module.exports={
     }
   ],
   "dist": {
-    "shasum": "e62dbf1a3c5e0767425db7187cfa38f921dfb42c",
-    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.19.tgz"
+    "shasum": "f51f0a96ed19629af39922470ab591907f1c5bd9",
+    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.21.tgz"
   },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.19.tgz"
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.21.tgz"
 }
 
-},{}],46:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.6.34",
+  "version": "0.7.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -24296,19 +25083,19 @@ module.exports={
     "debug": "^2.2.0",
     "rtcninja": "^0.6.2",
     "sdp-transform": "~1.4.0",
-    "websocket": "^1.0.19"
+    "websocket": "^1.0.21"
   },
   "devDependencies": {
-    "browserify": "^10.2.3",
+    "browserify": "^11.0.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
     "gulp-header": "^1.2.2",
-    "gulp-jshint": "^1.11.0",
+    "gulp-jshint": "^1.11.2",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.2.0",
-    "gulp-util": "^3.0.5",
+    "gulp-util": "^3.0.6",
     "jshint-stylish": "^1.0.1",
     "pegjs": "0.7.0",
     "vinyl-source-stream": "^1.1.0"
