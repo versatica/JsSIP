@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+Version 0.7.2 (released in 2015-07-27)
+---------------------------------------
+
+* Update dependencies.
+
+
+Version 0.7.1 (released in 2015-07-27)
+---------------------------------------
+
+* Update dependencies.
+
+
 Version 0.7.0 (released in 2015-07-23)
 ---------------------------------------
 
