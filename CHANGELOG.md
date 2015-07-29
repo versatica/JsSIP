@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.3 (released in 2015-07-29)
+---------------------------------------
+
+* FIX properly restart UA if start() is called while closing.
+
+
 Version 0.7.2 (released in 2015-07-27)
 ---------------------------------------
 
