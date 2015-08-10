@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.3
+ * JsSIP v0.7.4
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15530,18 +15530,43 @@ function receiveReinvite(request) {
   debug('receiveReinvite()');
 
   var
-    sdp, idx, direction,
+    sdp, idx, direction, m,
     self = this,
     contentType = request.getHeader('Content-Type'),
-    m,
     hold = false,
+    rejected = false,
     data = {
       request: request,
-      callback: undefined
+      callback: undefined,
+      reject: reject.bind(this)
     };
+
+  function reject(options) {
+    options = options || {};
+    rejected = true;
+
+    var
+      status_code = options.status_code || 403,
+      reason_phrase = options.reason_phrase || '',
+      extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [];
+
+    if (this.status !== C.STATUS_CONFIRMED) {
+      return false;
+    }
+
+    if (status_code < 300 || status_code >= 700) {
+      throw new TypeError('Invalid status_code: '+ status_code);
+    }
+
+    request.reply(status_code, reason_phrase, extraHeaders);
+  }
 
   // Emit 'reinvite'.
   this.emit('reinvite', data);
+
+  if (rejected) {
+    return;
+  }
 
   if (request.body) {
     this.late_sdp = false;
@@ -15642,18 +15667,43 @@ function receiveUpdate(request) {
   debug('receiveUpdate()');
 
   var
-    sdp, idx, direction,
+    sdp, idx, direction, m,
     self = this,
     contentType = request.getHeader('Content-Type'),
-    m,
+    rejected = false,
     hold = false,
     data = {
       request: request,
-      callback: undefined
+      callback: undefined,
+      reject: reject.bind(this)
     };
+
+  function reject(options) {
+    options = options || {};
+    rejected = true;
+
+    var
+      status_code = options.status_code || 403,
+      reason_phrase = options.reason_phrase || '',
+      extraHeaders = options.extraHeaders && options.extraHeaders.slice() || [];
+
+    if (this.status !== C.STATUS_CONFIRMED) {
+      return false;
+    }
+
+    if (status_code < 300 || status_code >= 700) {
+      throw new TypeError('Invalid status_code: '+ status_code);
+    }
+
+    request.reply(status_code, reason_phrase, extraHeaders);
+  }
 
   // Emit 'update'.
   this.emit('update', data);
+
+  if (rejected) {
+    return;
+  }
 
   if (! request.body) {
     var extraHeaders = [];
@@ -25072,7 +25122,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

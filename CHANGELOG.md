@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.4 (released in 2015-08-10)
+---------------------------------------
+
+* Allow rejecting an in-dialog INVITE or UPDATE message
+
+
 Version 0.7.3 (released in 2015-07-29)
 ---------------------------------------
 
