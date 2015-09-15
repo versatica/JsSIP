@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.5 (released in 2015-09-15)
+---------------------------------------
+
+* Don't ask for `getUserMedia` in `RTCSession.answer()` if no `mediaConstraints` are provided.
+
+
 Version 0.7.4 (released in 2015-08-10)
 ---------------------------------------
 

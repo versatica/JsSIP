@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.4
+ * JsSIP v0.7.5
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14505,15 +14505,20 @@ RTCSession.prototype.answer = function(options) {
   // TODO: This may throw an error, should react.
   createRTCConnection.call(this, pcConfig, rtcConstraints);
 
+  // If a local MediaStream is given use it.
   if (mediaStream) {
     userMediaSucceeded(mediaStream);
-  } else {
+  // If at least audio or video is requested prompt getUserMedia.
+  } else if (mediaConstraints.audio || mediaConstraints.video) {
     self.localMediaStreamLocallyGenerated = true;
     rtcninja.getUserMedia(
       mediaConstraints,
       userMediaSucceeded,
       userMediaFailed
     );
+  // Otherwise don't prompt getUserMedia.
+  } else {
+    userMediaSucceeded(null);
   }
 
   // User media succeeded
@@ -14521,7 +14526,9 @@ RTCSession.prototype.answer = function(options) {
     if (self.status === C.STATUS_TERMINATED) { return; }
 
     self.localMediaStream = stream;
-    self.connection.addStream(stream);
+    if (stream) {
+      self.connection.addStream(stream);
+    }
 
     if (! self.late_sdp) {
       self.connection.setRemoteDescription(
@@ -15932,9 +15939,8 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
       userMediaSucceeded,
       userMediaFailed
     );
-  }
   // Otherwise don't prompt getUserMedia.
-  else {
+  } else {
     userMediaSucceeded(null);
   }
 
@@ -24581,9 +24587,11 @@ var grammar = module.exports = {
           "rtpmap:%d %s/%s";
       }
     },
-    { //a=fmtp:108 profile-level-id=24;object=23;bitrate=64000
+    {
+      //a=fmtp:108 profile-level-id=24;object=23;bitrate=64000
+      //a=fmtp:111 minptime=10; useinbandfec=1
       push: 'fmtp',
-      reg: /^fmtp:(\d*) (\S*)/,
+      reg: /^fmtp:(\d*) ([\S| ]*)/,
       names: ['payload', 'config'],
       format: "fmtp:%d %s"
     },
@@ -24857,7 +24865,7 @@ var fmtpReducer = function (acc, expr) {
 };
 
 exports.parseFmtpConfig = function (str) {
-  return str.split(';').reduce(fmtpReducer, {});
+  return str.split(/\;\s?/).reduce(fmtpReducer, {});
 };
 
 exports.parsePayloads = function (str) {
@@ -25130,7 +25138,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -25156,7 +25164,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "rtcninja": "^0.6.3",
+    "rtcninja": "^0.6.4",
     "sdp-transform": "~1.4.0",
     "websocket": "^1.0.21"
   },
