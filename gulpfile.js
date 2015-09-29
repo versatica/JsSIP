@@ -8,7 +8,6 @@ var gutil = require('gulp-util');
 var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
-var filelog = require('gulp-filelog');
 var header = require('gulp-header');
 var expect = require('gulp-expect-file');
 var nodeunit = require('gulp-nodeunit-runner');
@@ -42,7 +41,6 @@ var expect_options = {
 gulp.task('lint', function() {
 	var src = ['gulpfile.js', 'lib/**/*.js', 'test/**/*.js'];
 	return gulp.src(src)
-		.pipe(filelog('lint'))
 		.pipe(expect(expect_options, src))
 		.pipe(jshint('.jshintrc'))
 		.pipe(jshint.reporter('jshint-stylish', {verbose: true}))
@@ -55,7 +53,6 @@ gulp.task('browserify', function() {
 		standalone: pkg.title
 	}).bundle()
 		.pipe(vinyl_source_stream(builds.uncompressed))
-		.pipe(filelog('browserify'))
 		.pipe(header(banner, banner_options))
 		.pipe(gulp.dest('dist/'));
 });
@@ -64,7 +61,6 @@ gulp.task('browserify', function() {
 gulp.task('uglify', function() {
 	var src = 'dist/' + builds.uncompressed;
 	return gulp.src(src)
-		.pipe(filelog('uglify'))
 		.pipe(expect(expect_options, src))
 		.pipe(uglify())
 		.pipe(header(banner, banner_options))
@@ -76,7 +72,6 @@ gulp.task('uglify', function() {
 gulp.task('copy', function() {
 	var src = 'dist/' + builds.uncompressed;
 	return gulp.src(src)
-		.pipe(filelog('copy'))
 		.pipe(expect(expect_options, src))
 		.pipe(rename(pkg.name + '.js'))
 		.pipe(gulp.dest('dist/'));
@@ -86,14 +81,8 @@ gulp.task('copy', function() {
 gulp.task('test', function() {
 	var src = 'test/*.js';
 	return gulp.src(src)
-		.pipe(filelog('test'))
 		.pipe(expect(expect_options, src))
 		.pipe(nodeunit({reporter: 'default'}));
-});
-
-
-gulp.task('watch', function() {
-	gulp.watch(['lib/**/*.js'], ['devel']);
 });
 
 

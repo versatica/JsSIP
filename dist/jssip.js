@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.5
+ * JsSIP v0.7.6
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -21694,7 +21694,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -21746,7 +21748,6 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
@@ -22871,7 +22872,7 @@ var browser = require('bowser'),
 	canRenegotiate = false,
 	oldSpecRTCOfferOptions = false,
 	browserVersion = Number(browser.version) || 0,
-	isDesktop = !!(!browser.mobile || !browser.tablet),
+	isDesktop = !!(!browser.mobile && !browser.tablet),
 	hasWebRTC = false,
 	virtGlobal, virtNavigator;
 
@@ -24470,7 +24471,7 @@ module.exports = require('../package.json').version;
 },{}],40:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -24502,31 +24503,31 @@ module.exports={
     "merge": "^1.2.0"
   },
   "devDependencies": {
-    "browserify": "^11.0.0",
+    "browserify": "^11.0.1",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
-    "gulp-header": "^1.2.2",
-    "gulp-jscs": "^1.6.0",
-    "gulp-jscs-stylish": "^1.1.0",
+    "gulp-header": "^1.7.1",
+    "gulp-jscs": "^2.0.0",
+    "gulp-jscs-stylish": "^1.1.2",
     "gulp-jshint": "^1.11.2",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.2.0",
-    "jshint-stylish": "^1.0.2",
+    "gulp-uglify": "^1.4.0",
+    "jshint-stylish": "^2.0.1",
     "retire": "^1.1.1",
-    "shelljs": "^0.5.1",
+    "shelljs": "^0.5.3",
     "vinyl-source-stream": "^1.1.0"
   },
   "readme": "# rtcninja.js <img src=\"http://www.pubnub.com/blog/wp-content/uploads/2014/01/google-webrtc-logo.png\" height=\"30\" width=\"30\">\n\nWebRTC API wrapper to deal with different browsers transparently, [eventually](http://iswebrtcreadyyet.com/) this library shouldn't be needed. We only have to wait until W3C group in charge [finishes the specification](https://tools.ietf.org/wg/rtcweb/) and the different browsers implement it correctly :sweat_smile:.\n\n<img src=\"http://images4.fanpop.com/image/photos/21800000/browser-fight-google-chrome-21865454-600-531.jpg\" height=\"250\" width=\"250\">\n\nSupported environments:\n* [Google Chrome](https://www.google.com/chrome/browser/desktop/index.html) (desktop & mobile)\n* [Google Canary](https://www.google.com/chrome/browser/canary.html) (desktop & mobile)\n* [Mozilla Firefox](https://www.mozilla.org/en-GB/firefox/new) (desktop & mobile)\n* [Firefox Nigthly](https://nightly.mozilla.org/) (desktop & mobile)\n* [Opera](http://www.opera.com/)\n* [Vivaldi](https://vivaldi.com/)\n* [CrossWalk](https://crosswalk-project.org/)\n* [Cordova](cordova.apache.org): iOS support, you only have to use our plugin [following these steps](https://github.com/eface2face/cordova-plugin-iosrtc#usage).\n* [Node-webkit](https://github.com/nwjs/nw.js/)\n\n\n## Installation\n\n### **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\nand then:\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n### **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja.js`: The uncompressed version.\n* `dist/rtcninja.min.js`: The compressed production-ready version.\n\nThey expose the global `window.rtcninja` module.\n\n\n## Usage\n\nIn the [examples](./examples/) folder we provide a complete one.\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Issues\n\nhttps://github.com/eface2face/rtcninja.js/issues\n\n\n## Developer guide\n\n* Create a branch with a name including your user and a meaningful word about the fix/feature you're going to implement, ie: \"jesusprubio/fixstuff\"\n* Use [GitHub pull requests](https://help.github.com/articles/using-pull-requests).\n* Conventions:\n * We use [JSHint](http://jshint.com/) and [Crockford's Styleguide](http://javascript.crockford.com/code.html).\n * Please run `grunt lint` to be sure your code fits with them.\n\n\n### Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Copyright & License\n\n* eFace2Face Inc.\n* [MIT](./LICENSE)\n",
   "readmeFilename": "README.md",
-  "gitHead": "3d2258f6b1b69cfede5d116bb278b49fddbb2998",
+  "gitHead": "18789cbefdb5a6c6c038ab4f1ce8e9e3813135b0",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.6.3",
+  "_id": "rtcninja@0.6.4",
   "scripts": {},
-  "_shasum": "96137cb04d712e82b46e42e7ed22b18500bf7bee",
-  "_from": "rtcninja@>=0.6.3 <0.7.0"
+  "_shasum": "7ede8577ce978cb431772d877967c53aadeb5e99",
+  "_from": "rtcninja@>=0.6.4 <0.7.0"
 }
 
 },{}],41:[function(require,module,exports){
@@ -24579,12 +24580,14 @@ var grammar = module.exports = {
   a: [
     { //a=rtpmap:110 opus/48000/2
       push: 'rtp',
-      reg: /^rtpmap:(\d*) ([\w\-]*)\/(\d*)(?:\s*\/(\S*))?/,
+      reg: /^rtpmap:(\d*) ([\w\-]*)(?:\s*\/(\d*)(?:\s*\/(\S*))?)?/,
       names: ['payload', 'codec', 'rate', 'encoding'],
       format: function (o) {
         return (o.encoding) ?
           "rtpmap:%d %s/%s/%s":
-          "rtpmap:%d %s/%s";
+          o.rate ?
+          "rtpmap:%d %s/%s":
+          "rtpmap:%d %s";
       }
     },
     {
@@ -25004,6 +25007,7 @@ module.exports = function (session, opts) {
 },{"./grammar":41}],45:[function(require,module,exports){
 var _global = (function() { return this; })();
 var nativeWebSocket = _global.WebSocket || _global.MozWebSocket;
+var websocket_version = require('./version');
 
 
 /**
@@ -25035,7 +25039,7 @@ function W3CWebSocket(uri, protocols) {
  */
 module.exports = {
     'w3cwebsocket' : nativeWebSocket ? W3CWebSocket : null,
-    'version'      : require('./version')
+    'version'      : websocket_version
 };
 
 },{"./version":46}],46:[function(require,module,exports){
@@ -25069,7 +25073,7 @@ module.exports={
       "url": "http://dev.sipdoc.net"
     }
   ],
-  "version": "1.0.21",
+  "version": "1.0.22",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theturtle32/WebSocket-Node.git"
@@ -25080,7 +25084,7 @@ module.exports={
   },
   "dependencies": {
     "debug": "~2.2.0",
-    "nan": "~1.8.x",
+    "nan": "~2.0.5",
     "typedarray-to-buffer": "~3.0.3",
     "yaeti": "~0.0.4"
   },
@@ -25106,15 +25110,15 @@ module.exports={
   },
   "browser": "lib/browser.js",
   "license": "Apache-2.0",
-  "gitHead": "8f5d5f3ef3d946324fe016d525893546ff6500e1",
+  "gitHead": "19108bbfd7d94a5cd02dbff3495eafee9e901ca4",
   "bugs": {
     "url": "https://github.com/theturtle32/WebSocket-Node/issues"
   },
-  "_id": "websocket@1.0.21",
-  "_shasum": "f51f0a96ed19629af39922470ab591907f1c5bd9",
-  "_from": "websocket@>=1.0.21 <2.0.0",
-  "_npmVersion": "2.12.1",
-  "_nodeVersion": "2.3.4",
+  "_id": "websocket@1.0.22",
+  "_shasum": "8c33e3449f879aaf518297c9744cebf812b9e3d8",
+  "_from": "websocket@>=1.0.22 <2.0.0",
+  "_npmVersion": "2.14.3",
+  "_nodeVersion": "3.3.1",
   "_npmUser": {
     "name": "theturtle32",
     "email": "brian@worlize.com"
@@ -25126,11 +25130,10 @@ module.exports={
     }
   ],
   "dist": {
-    "shasum": "f51f0a96ed19629af39922470ab591907f1c5bd9",
-    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.21.tgz"
+    "shasum": "8c33e3449f879aaf518297c9744cebf812b9e3d8",
+    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz"
   },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.21.tgz",
-  "readme": "ERROR: No README data found!"
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz"
 }
 
 },{}],48:[function(require,module,exports){
@@ -25138,7 +25141,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -25165,19 +25168,18 @@ module.exports={
   "dependencies": {
     "debug": "^2.2.0",
     "rtcninja": "^0.6.4",
-    "sdp-transform": "~1.4.0",
-    "websocket": "^1.0.21"
+    "sdp-transform": "~1.5.0",
+    "websocket": "^1.0.22"
   },
   "devDependencies": {
-    "browserify": "^11.0.0",
+    "browserify": "^11.2.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
-    "gulp-filelog": "^0.4.1",
-    "gulp-header": "^1.2.2",
+    "gulp-header": "^1.7.1",
     "gulp-jshint": "^1.11.2",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.2.0",
+    "gulp-uglify": "^1.4.1",
     "gulp-util": "^3.0.6",
     "jshint-stylish": "^1.0.1",
     "pegjs": "0.7.0",
