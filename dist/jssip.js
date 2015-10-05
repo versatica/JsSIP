@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.6
+ * JsSIP v0.7.7
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -13682,7 +13682,6 @@ module.exports = Parser;
  */
 var debugerror = require('debug')('JsSIP:ERROR:Parser');
 debugerror.log = console.warn.bind(console);
-var sdp_transform = require('sdp-transform');
 var Grammar = require('./Grammar');
 var SIPMessage = require('./SIPMessage');
 
@@ -13954,17 +13953,7 @@ Parser.parseMessage = function(data, ua) {
   return message;
 };
 
-
-/**
- * sdp-transform features.
- */
-Parser.parseSDP = sdp_transform.parse;
-Parser.writeSDP = sdp_transform.write;
-Parser.parseFmtpConfig = sdp_transform.parseFmtpConfig;
-Parser.parsePayloads = sdp_transform.parsePayloads;
-Parser.parseRemoteCandidates = sdp_transform.parseRemoteCandidates;
-
-},{"./Grammar":6,"./SIPMessage":18,"debug":31,"sdp-transform":42}],11:[function(require,module,exports){
+},{"./Grammar":6,"./SIPMessage":18,"debug":31}],11:[function(require,module,exports){
 module.exports = RTCSession;
 
 
@@ -13997,10 +13986,10 @@ var debug = require('debug')('JsSIP:RTCSession');
 var debugerror = require('debug')('JsSIP:ERROR:RTCSession');
 debugerror.log = console.warn.bind(console);
 var rtcninja = require('rtcninja');
+var sdp_transform = require('sdp-transform');
 var JsSIP_C = require('./Constants');
 var Exceptions = require('./Exceptions');
 var Transactions = require('./Transactions');
-var Parser = require('./Parser');
 var Utils = require('./Utils');
 var Timers = require('./Timers');
 var SIPMessage = require('./SIPMessage');
@@ -14438,7 +14427,7 @@ RTCSession.prototype.answer = function(options) {
   extraHeaders.unshift('Contact: ' + self.contact);
 
   // Determine incoming media from incoming SDP offer (if any).
-  sdp = Parser.parseSDP(request.body || '');
+  sdp = request.parseSDP();
 
   // Make sure sdp.media is an array, not the case if there is only one media
   if (! Array.isArray(sdp.media)) {
@@ -14564,14 +14553,14 @@ RTCSession.prototype.answer = function(options) {
     }
   }
 
-  function rtcSucceeded(sdp) {
+  function rtcSucceeded(desc) {
     if (self.status === C.STATUS_TERMINATED) { return; }
 
     // run for reply success callback
     function replySucceeded() {
       self.status = C.STATUS_WAITING_FOR_ACK;
 
-      setInvite2xxTimer.call(self, request, sdp);
+      setInvite2xxTimer.call(self, request, desc);
       setACKTimer.call(self);
       accepted.call(self, 'local');
     }
@@ -14584,7 +14573,7 @@ RTCSession.prototype.answer = function(options) {
     handleSessionTimersInIncomingRequest.call(self, request, extraHeaders);
 
     request.reply(200, null, extraHeaders,
-      sdp,
+      desc,
       replySucceeded,
       replyFailed
     );
@@ -15583,7 +15572,7 @@ function receiveReinvite(request) {
       return;
     }
 
-    sdp = Parser.parseSDP(request.body);
+    sdp = request.parseSDP();
 
     for (idx=0; idx < sdp.media.length; idx++) {
       m = sdp.media[idx];
@@ -15725,7 +15714,7 @@ function receiveUpdate(request) {
     return;
   }
 
-  sdp = Parser.parseSDP(request.body);
+  sdp = request.parseSDP();
 
   for (idx=0; idx < sdp.media.length; idx++) {
     m = sdp.media[idx];
@@ -15970,11 +15959,18 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
     failed.call(self, 'local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
   }
 
-  function rtcSucceeded(sdp) {
+  function rtcSucceeded(desc) {
     if (self.isCanceled || self.status === C.STATUS_TERMINATED) { return; }
 
-    self.request.body = sdp;
+    self.request.body = desc;
     self.status = C.STATUS_INVITE_SENT;
+
+    // Emit 'sending' so the app can mangle the body before the request
+    // is sent.
+    self.emit('sending', {
+      request: self.request
+    });
+
     request_sender.send();
   }
 
@@ -16407,7 +16403,7 @@ function mangleOffer(sdp) {
     return sdp;
   }
 
-  sdp = Parser.parseSDP(sdp);
+  sdp = sdp_transform.parse(sdp);
 
   // Local hold.
   if (this.localHold && ! this.remoteHold) {
@@ -16458,7 +16454,7 @@ function mangleOffer(sdp) {
     }
   }
 
-  return Parser.writeSDP(sdp);
+  return sdp_transform.write(sdp);
 }
 
 function setLocalMediaStatus() {
@@ -16719,7 +16715,7 @@ function onunmute(options) {
   });
 }
 
-},{"./Constants":1,"./Dialog":2,"./Exceptions":5,"./Parser":10,"./RTCSession/DTMF":12,"./RTCSession/ReferNotifier":13,"./RTCSession/ReferSubscriber":14,"./RTCSession/Request":15,"./RequestSender":17,"./SIPMessage":18,"./Timers":19,"./Transactions":20,"./Utils":24,"debug":31,"events":26,"rtcninja":36,"util":30}],12:[function(require,module,exports){
+},{"./Constants":1,"./Dialog":2,"./Exceptions":5,"./RTCSession/DTMF":12,"./RTCSession/ReferNotifier":13,"./RTCSession/ReferSubscriber":14,"./RTCSession/Request":15,"./RequestSender":17,"./SIPMessage":18,"./Timers":19,"./Transactions":20,"./Utils":24,"debug":31,"events":26,"rtcninja":36,"sdp-transform":42,"util":30}],12:[function(require,module,exports){
 module.exports = DTMF;
 
 
@@ -17646,6 +17642,7 @@ module.exports = {
  * Dependencies.
  */
 var debug = require('debug')('JsSIP:SIPMessage');
+var sdp_transform = require('sdp-transform');
 var JsSIP_C = require('./Constants');
 var Utils = require('./Utils');
 var NameAddrHeader = require('./NameAddrHeader');
@@ -17737,6 +17734,16 @@ OutgoingRequest.prototype = {
    * -param {String | Array} value header value
    */
   setHeader: function(name, value) {
+    var regexp, idx;
+
+    // Remove the header from extraHeaders if present.
+    regexp = new RegExp('^\\s*'+ name +'\\s*:','i');
+    for (idx=0; idx<this.extraHeaders.length; idx++) {
+      if (regexp.test(this.extraHeaders[idx])) {
+        this.extraHeaders.splice(idx, 1);
+      }
+    }
+
     this.headers[Utils.headerize(name)] = (Array.isArray(value)) ? value : [value];
   },
 
@@ -17819,6 +17826,22 @@ OutgoingRequest.prototype = {
     return false;
   },
 
+  /**
+   * Parse the current body as a SDP and store the resulting object
+   * into this.sdp.
+   * -param {Boolean} force: Parse even if this.sdp already exists.
+   *
+   * Returns this.sdp.
+   */
+  parseSDP: function(force) {
+    if (!force && this.sdp) {
+      return this.sdp;
+    } else {
+      this.sdp = sdp_transform.parse(this.body || '');
+      return this.sdp;
+    }
+  },
+
   toString: function() {
     var msg = '', header, length, idx,
       supported = [];
@@ -17892,6 +17915,7 @@ function IncomingMessage(){
   this.to = null;
   this.to_tag = null;
   this.body = null;
+  this.sdp = null;
 }
 
 IncomingMessage.prototype = {
@@ -18015,6 +18039,22 @@ IncomingMessage.prototype = {
   setHeader: function(name, value) {
     var header = { raw: value };
     this.headers[Utils.headerize(name)] = [header];
+  },
+
+  /**
+   * Parse the current body as a SDP and store the resulting object
+   * into this.sdp.
+   * -param {Boolean} force: Parse even if this.sdp already exists.
+   *
+   * Returns this.sdp.
+   */
+  parseSDP: function(force) {
+    if (!force && this.sdp) {
+      return this.sdp;
+    } else {
+      this.sdp = sdp_transform.parse(this.body || '');
+      return this.sdp;
+    }
   },
 
   toString: function() {
@@ -18198,7 +18238,7 @@ function IncomingResponse() {
 
 IncomingResponse.prototype = new IncomingMessage();
 
-},{"./Constants":1,"./Grammar":6,"./NameAddrHeader":9,"./Utils":24,"debug":31}],19:[function(require,module,exports){
+},{"./Constants":1,"./Grammar":6,"./NameAddrHeader":9,"./Utils":24,"debug":31,"sdp-transform":42}],19:[function(require,module,exports){
 var T1 = 500,
   T2 = 4000,
   T4 = 5000;
@@ -19020,7 +19060,15 @@ Transport.prototype = {
       (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
 
     try {
-      this.ws = new W3CWebSocket(this.server.ws_uri, 'sip', this.node_websocket_options.origin, this.node_websocket_options.headers, this.node_websocket_options.requestOptions, this.node_websocket_options.clientConfig);
+      // Hack in case W3CWebSocket is not the class exported by Node-WebSocket
+      // (may just happen if the above `var W3CWebSocket` line is overriden by
+      // `var W3CWebSocket = global.W3CWebSocket`).
+      if (W3CWebSocket.length > 3) {
+        this.ws = new W3CWebSocket(this.server.ws_uri, 'sip', this.node_websocket_options.origin, this.node_websocket_options.headers, this.node_websocket_options.requestOptions, this.node_websocket_options.clientConfig);
+      } else {
+        this.ws = new W3CWebSocket(this.server.ws_uri, 'sip');
+      }
+
       this.ws.binaryType = 'arraybuffer';
 
       this.ws.onopen = function() {
@@ -25141,7 +25189,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -25181,7 +25229,7 @@ module.exports={
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.4.1",
     "gulp-util": "^3.0.6",
-    "jshint-stylish": "^1.0.1",
+    "jshint-stylish": "^2.0.1",
     "pegjs": "0.7.0",
     "vinyl-source-stream": "^1.1.0"
   },

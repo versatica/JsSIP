@@ -2,7 +2,7 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.7-pre",
+  "version": "0.7.7",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -42,7 +42,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.4.1",
     "gulp-util": "^3.0.6",
-    "jshint-stylish": "^1.0.1",
+    "jshint-stylish": "^2.0.1",
     "pegjs": "0.7.0",
     "vinyl-source-stream": "^1.1.0"
   },

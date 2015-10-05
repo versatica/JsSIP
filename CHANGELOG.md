@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.7 (released in 2015-10-05)
+---------------------------------------
+
+* `RTCSession`: Add "sending" event to outgoing, a good chance for the app to mangle the INVITE or its SDP offer.
+
+
 Version 0.7.6 (released in 2015-09-29)
 ---------------------------------------
 
