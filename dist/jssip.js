@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.7
+ * JsSIP v0.7.8
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15312,6 +15312,18 @@ RTCSession.prototype.newDTMF = function(data) {
 };
 
 
+RTCSession.prototype.resetLocalMedia = function() {
+  debug('resetLocalMedia()');
+
+  // Reset all but remoteHold.
+  this.localHold = false;
+  this.audioMuted = false;
+  this.videoMuted = false;
+
+  setLocalMediaStatus.call(this);
+};
+
+
 /**
  * Private API.
  */
@@ -15919,7 +15931,10 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
 
   // If a local MediaStream is given use it.
   if (mediaStream) {
-    userMediaSucceeded(mediaStream);
+    // Wait a bit so the app can set events such as 'peerconnection' and 'connecting'.
+    setTimeout(function() {
+      userMediaSucceeded(mediaStream);
+    });
   // If at least audio or video is requested prompt getUserMedia.
   } else if (mediaConstraints.audio || mediaConstraints.video) {
     this.localMediaStreamLocallyGenerated = true;
@@ -16458,30 +16473,24 @@ function mangleOffer(sdp) {
 }
 
 function setLocalMediaStatus() {
-  if (this.localHold) {
-    debug('setLocalMediaStatus() | me on hold, mutting my media');
-    toogleMuteAudio.call(this, true);
-    toogleMuteVideo.call(this, true);
-    return;
-  }
-  else if (this.remoteHold) {
-    debug('setLocalMediaStatus() | remote on hold, mutting my media');
-    toogleMuteAudio.call(this, true);
-    toogleMuteVideo.call(this, true);
-    return;
+  var enableAudio = true,
+    enableVideo = true;
+
+  if (this.localHold || this.remoteHold) {
+    enableAudio = false;
+    enableVideo = false;
   }
 
   if (this.audioMuted) {
-    toogleMuteAudio.call(this, true);
-  } else {
-    toogleMuteAudio.call(this, false);
+    enableAudio = false;
   }
 
   if (this.videoMuted) {
-    toogleMuteVideo.call(this, true);
-  } else {
-    toogleMuteVideo.call(this, false);
+    enableVideo = false;
   }
+
+  toogleMuteAudio.call(this, !enableAudio);
+  toogleMuteVideo.call(this, !enableVideo);
 }
 
 /**
@@ -19008,6 +19017,8 @@ Transport.C = C;
  * Dependencies.
  */
 var debug = require('debug')('JsSIP:Transport');
+var debugerror = require('debug')('JsSIP:ERROR:Transport');
+debugerror.log = console.warn.bind(console);
 var JsSIP_C = require('./Constants');
 var Parser = require('./Parser');
 var UA = require('./UA');
@@ -19087,7 +19098,7 @@ Transport.prototype = {
         transport.onError(e);
       };
     } catch(e) {
-      debug('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
+      debugerror('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
       this.lastTransportError.code = null;
       this.lastTransportError.reason = e.message;
       this.ua.onTransportError(this);
@@ -19127,11 +19138,11 @@ Transport.prototype = {
     var message = msg.toString();
 
     if(this.ws && this.ws.readyState === this.ws.OPEN) {
-      debug('sending WebSocket message:\n\n' + message + '\n');
+      debug('sending WebSocket message:\n%s\n', message);
       this.ws.send(message);
       return true;
     } else {
-      debug('unable to send message, WebSocket is not open');
+      debugerror('unable to send message, WebSocket is not open');
       return false;
     }
   },
@@ -19164,7 +19175,7 @@ Transport.prototype = {
     debug('WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
 
     if(e.wasClean === false) {
-      debug('WebSocket abrupt disconnection');
+      debugerror('WebSocket abrupt disconnection');
     }
     // Transport was connected
     if (connected_before === true) {
@@ -19196,16 +19207,16 @@ Transport.prototype = {
       try {
         data = String.fromCharCode.apply(null, new Uint8Array(data));
       } catch(evt) {
-        debug('received WebSocket binary message failed to be converted into string, message discarded');
+        debugerror('received WebSocket binary message failed to be converted into string, message discarded');
         return;
       }
 
-      debug('received WebSocket binary message:\n\n' + data + '\n');
+      debug('received WebSocket binary message:\n%s\n', data);
     }
 
     // WebSocket text message.
     else {
-      debug('received WebSocket text message:\n\n' + data + '\n');
+      debug('received WebSocket text message:\n%s\n', data);
     }
 
     message = Parser.parseMessage(data, this.ua);
@@ -19252,7 +19263,7 @@ Transport.prototype = {
   },
 
   onError: function(e) {
-    debug('WebSocket connection error: %o', e);
+    debugerror('WebSocket connection error: %o', e);
   },
 
   /**
@@ -19264,7 +19275,7 @@ Transport.prototype = {
     this.reconnection_attempts += 1;
 
     if(this.reconnection_attempts > this.ua.configuration.ws_server_max_reconnection) {
-      debug('maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
+      debugerror('maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
       this.ua.onTransportError(this);
     } else {
       debug('trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
@@ -25189,7 +25200,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
