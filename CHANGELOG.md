@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.8 (released in 2015-10-13)
+---------------------------------------
+
+* `RTCSession`: Add `resetLocalMedia()` method to reset the session local MediaStream by enabling both its audio and video tracks (unless the remote peer is on hold).
+
+
 Version 0.7.7 (released in 2015-10-05)
 ---------------------------------------
 
