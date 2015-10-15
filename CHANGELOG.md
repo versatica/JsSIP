@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.9 (released in 2015-10-16)
+---------------------------------------
+
+* `UA`: Add `set(parameter, value)` method to change a configuration setting in runtime (currently just "password" is implemented).
+
+
 Version 0.7.8 (released in 2015-10-13)
 ---------------------------------------
 
