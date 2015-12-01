@@ -3,6 +3,7 @@
  */
 var browserify = require('browserify');
 var vinyl_source_stream = require('vinyl-source-stream');
+var vinyl_buffer = require('vinyl-buffer');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var jshint = require('gulp-jshint');
@@ -47,6 +48,7 @@ gulp.task('browserify', function() {
 		standalone: PKG.title
 	}).bundle()
 		.pipe(vinyl_source_stream(PKG.name + '.js'))
+		.pipe(vinyl_buffer())
 		.pipe(header(BANNER, BANNER_OPTIONS))
 		.pipe(gulp.dest('dist/'));
 });
