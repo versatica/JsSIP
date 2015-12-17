@@ -2,6 +2,12 @@ CHANGELOG
 =========
 
 
+Version 0.7.11 (released in 2015-12-17)
+---------------------------------------
+
+* Fix typo ("iceconnetionstatechange" => "iceconnectionstatechange"). Thanks to Vertika Srivastava.
+
+
 Version 0.7.10 (released in 2015-12-01)
 ---------------------------------------
 

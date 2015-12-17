@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.10
+ * JsSIP v0.7.11
  * the Javascript SIP library
  * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15392,7 +15392,7 @@ function createRTCConnection(pcConfig, rtcConstraints) {
   };
 
   this.connection.oniceconnectionstatechange = function(event, state) {
-    self.emit('iceconnetionstatechange', {state: state});
+    self.emit('iceconnectionstatechange', {state: state});
 
     // TODO: Do more with different states.
     if (state === 'failed') {
@@ -25223,7 +25223,8 @@ module.exports={
     "shasum": "8c33e3449f879aaf518297c9744cebf812b9e3d8",
     "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz"
   },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz"
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz",
+  "readme": "ERROR: No README data found!"
 }
 
 },{}],48:[function(require,module,exports){
@@ -25231,7 +25232,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
