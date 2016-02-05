@@ -2,6 +2,13 @@ CHANGELOG
 =========
 
 
+Version 0.7.12 (released in 2016-02-05)
+---------------------------------------
+
+* Accept new `UA` configuration parameters `ha1` and `realm` to avoid plain SIP password handling ([issue 353](https://github.com/versatica/JsSIP/issues/353)).
+* New `UA.set()` and `UA.get()` methods to set and retrieve computed configuration parameters in runtime.
+
+
 Version 0.7.11 (released in 2015-12-17)
 ---------------------------------------
 
