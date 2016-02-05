@@ -153,7 +153,7 @@ module.exports = {
     // Alter data.
     c3.uri.setParam('newUriParam', 'zxCV');
     c3.setParam('newHeaderParam', 'zxCV');
-    test.strictEqual(c3.toString(), '<sip:domain.com:5;newuriparam=zxcv>;newheaderparam=zxCV');
+    test.strictEqual(c3.toString(), '<sip:domain.com:5;newuriparam=zxCV>;newheaderparam=zxCV');
 
     test.done();
   },
