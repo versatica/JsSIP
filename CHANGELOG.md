@@ -2,6 +2,31 @@ CHANGELOG
 =========
 
 
+Version 0.7.16 (released in 2016-02-24)
+---------------------------------------
+
+* Fix [337](https://github.com/versatica/JsSIP/issues/337). Consistenly indicate registration status through events.
+
+
+Version 0.7.15 (released in 2016-02-24)
+---------------------------------------
+
+* Emit UA 'connected' event before sending REGISTER on transport connection
+* Fix [355](https://github.com/versatica/JsSIP/pull/355 ). call to non existent `parsed.error` function. Thanks Stéphane Alnet @shimaore
+
+
+Version 0.7.14 (released in 2016-02-17)
+---------------------------------------
+
+* Fix sips URI scheme parsing rule.
+
+
+Version 0.7.13 (released in 2016-02-10)
+---------------------------------------
+
+* Fix. Don't lowercase URI parameter values. Thanks to Alexandr Dubovikov @adubovikov
+
+
 Version 0.7.12 (released in 2016-02-05)
 ---------------------------------------
 
