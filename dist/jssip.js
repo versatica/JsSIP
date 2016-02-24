@@ -19813,6 +19813,9 @@ UA.prototype.onTransportClosed = function(transport) {
     code: transport.lastTransportError.code,
     reason: transport.lastTransportError.reason
   });
+
+  // Call registrator _onTransportClosed_
+  this._registrator.onTransportClosed();
 };
 
 /**
@@ -20180,8 +20183,6 @@ UA.prototype.closeSessionsOnTransportError = function() {
   for(idx in this.sessions) {
     this.sessions[idx].onTransportError();
   }
-  // Call registrator _onTransportClosed_
-  this._registrator.onTransportClosed();
 };
 
 UA.prototype.recoverTransport = function(ua) {
