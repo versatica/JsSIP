@@ -2,6 +2,12 @@ CHANGELOG
 =========
 
 
+Version 0.7.17 (released in 2016-02-25)
+---------------------------------------
+
+* Apply changes of 0.7.16 also to browserified files under `dist/` folder.
+
+
 Version 0.7.16 (released in 2016-02-24)
 ---------------------------------------
 
