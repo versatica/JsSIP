@@ -1,7 +1,7 @@
 /*
  * JsSIP v0.7.11
  * the Javascript SIP library
- * Copyright: 2012-2015 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
  * License: MIT
  */
@@ -14572,6 +14572,13 @@ RTCSession.prototype.answer = function(options) {
 
     handleSessionTimersInIncomingRequest.call(self, request, extraHeaders);
 
+    // Emit 'replying' so the app can mangle the body before the response SDP before it is sent.
+    var response = { body: desc };
+    self.emit('replying', {
+        response: response
+    });
+    desc = response.body;
+
     request.reply(200, null, extraHeaders,
       desc,
       replySucceeded,
@@ -22956,7 +22963,7 @@ var browser = require('bowser'),
 	canRenegotiate = false,
 	oldSpecRTCOfferOptions = false,
 	browserVersion = Number(browser.version) || 0,
-	isDesktop = !!(!browser.mobile && !browser.tablet),
+	isDesktop = !!(!browser.mobile && (!browser.tablet || (browser.msie && browserVersion >= 10))),
 	hasWebRTC = false,
 	virtGlobal, virtNavigator;
 
@@ -23039,7 +23046,7 @@ function Adapter(options) {
 		}
 		attachMediaStream = pluginiface.attachMediaStream;
 		canRenegotiate = pluginiface.canRenegotiate;
-		oldSpecRTCOfferOptions = true;  // TODO: Update when fixed in the plugin.
+		oldSpecRTCOfferOptions = true;
 	// Best effort (may be adater.js is loaded).
 	} else if (virtNavigator.getUserMedia && virtGlobal.RTCPeerConnection) {
 		hasWebRTC = true;
@@ -23057,7 +23064,7 @@ function Adapter(options) {
 			element.src = URL.createObjectURL(stream);
 			return element;
 		};
-		canRenegotiate = false;
+		canRenegotiate = true;
 		oldSpecRTCOfferOptions = false;
 	}
 
@@ -23146,7 +23153,7 @@ function Adapter(options) {
 
 		// Latest spec states that MediaStream has no stop() method and instead must
 		// call stop() on every MediaStreamTrack.
-		if (MediaStreamTrack && MediaStreamTrack.prototype && MediaStreamTrack.prototype.stop) {
+		try {
 			debug('closeMediaStream() | calling stop() on all the MediaStreamTrack');
 
 			var tracks, i, len;
@@ -23161,17 +23168,19 @@ function Adapter(options) {
 				for (i = 0, len = tracks.length; i < len; i += 1) {
 					tracks[i].stop();
 				}
-
 				tracks = stream.getVideoTracks();
 				for (i = 0, len = tracks.length; i < len; i += 1) {
 					tracks[i].stop();
 				}
 			}
-		// Deprecated by the spec, but still in use.
-		} else if (typeof stream.stop === 'function') {
-			debug('closeMediaStream() | calling stop() on the MediaStream');
+		} catch (error) {
+			// Deprecated by the spec, but still in use.
+			// NOTE: In Temasys IE plugin stream.stop is a callable 'object'.
+			if (typeof stream.stop === 'function' || typeof stream.stop === 'object') {
+				debug('closeMediaStream() | calling stop() on the MediaStream');
 
-			stream.stop();
+				stream.stop();
+			}
 		}
 	};
 
@@ -24555,7 +24564,7 @@ module.exports = require('../package.json').version;
 },{}],40:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": {
     "name": "Iñaki Baz Castillo",
@@ -24573,7 +24582,7 @@ module.exports={
   "homepage": "https://github.com/eface2face/rtcninja.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eface2face/rtcninja.js.git"
+    "url": "git+https://github.com/eface2face/rtcninja.js.git"
   },
   "keywords": [
     "webrtc"
@@ -24587,31 +24596,50 @@ module.exports={
     "merge": "^1.2.0"
   },
   "devDependencies": {
-    "browserify": "^11.0.1",
+    "browserify": "^13.0.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
     "gulp-header": "^1.7.1",
-    "gulp-jscs": "^2.0.0",
+    "gulp-jscs": "^3.0.2",
     "gulp-jscs-stylish": "^1.1.2",
-    "gulp-jshint": "^1.11.2",
+    "gulp-jshint": "^2.0.0",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.4.0",
+    "gulp-uglify": "^1.5.2",
     "jshint-stylish": "^2.0.1",
-    "retire": "^1.1.1",
-    "shelljs": "^0.5.3",
     "vinyl-source-stream": "^1.1.0"
   },
-  "readme": "# rtcninja.js <img src=\"http://www.pubnub.com/blog/wp-content/uploads/2014/01/google-webrtc-logo.png\" height=\"30\" width=\"30\">\n\nWebRTC API wrapper to deal with different browsers transparently, [eventually](http://iswebrtcreadyyet.com/) this library shouldn't be needed. We only have to wait until W3C group in charge [finishes the specification](https://tools.ietf.org/wg/rtcweb/) and the different browsers implement it correctly :sweat_smile:.\n\n<img src=\"http://images4.fanpop.com/image/photos/21800000/browser-fight-google-chrome-21865454-600-531.jpg\" height=\"250\" width=\"250\">\n\nSupported environments:\n* [Google Chrome](https://www.google.com/chrome/browser/desktop/index.html) (desktop & mobile)\n* [Google Canary](https://www.google.com/chrome/browser/canary.html) (desktop & mobile)\n* [Mozilla Firefox](https://www.mozilla.org/en-GB/firefox/new) (desktop & mobile)\n* [Firefox Nigthly](https://nightly.mozilla.org/) (desktop & mobile)\n* [Opera](http://www.opera.com/)\n* [Vivaldi](https://vivaldi.com/)\n* [CrossWalk](https://crosswalk-project.org/)\n* [Cordova](cordova.apache.org): iOS support, you only have to use our plugin [following these steps](https://github.com/eface2face/cordova-plugin-iosrtc#usage).\n* [Node-webkit](https://github.com/nwjs/nw.js/)\n\n\n## Installation\n\n### **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\nand then:\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n### **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja.js`: The uncompressed version.\n* `dist/rtcninja.min.js`: The compressed production-ready version.\n\nThey expose the global `window.rtcninja` module.\n\n\n## Usage\n\nIn the [examples](./examples/) folder we provide a complete one.\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Issues\n\nhttps://github.com/eface2face/rtcninja.js/issues\n\n\n## Developer guide\n\n* Create a branch with a name including your user and a meaningful word about the fix/feature you're going to implement, ie: \"jesusprubio/fixstuff\"\n* Use [GitHub pull requests](https://help.github.com/articles/using-pull-requests).\n* Conventions:\n * We use [JSHint](http://jshint.com/) and [Crockford's Styleguide](http://javascript.crockford.com/code.html).\n * Please run `grunt lint` to be sure your code fits with them.\n\n\n### Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Copyright & License\n\n* eFace2Face Inc.\n* [MIT](./LICENSE)\n",
-  "readmeFilename": "README.md",
-  "gitHead": "18789cbefdb5a6c6c038ab4f1ce8e9e3813135b0",
+  "gitHead": "43e97b1b62701128e4dfa6ac0a97d3dfbcd99c0e",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
   },
-  "_id": "rtcninja@0.6.4",
+  "_id": "rtcninja@0.6.5",
   "scripts": {},
-  "_shasum": "7ede8577ce978cb431772d877967c53aadeb5e99",
-  "_from": "rtcninja@>=0.6.4 <0.7.0"
+  "_shasum": "da7d56212307d26ec4d76e5b45df99e922e0d8a3",
+  "_from": "rtcninja@>=0.6.4 <0.7.0",
+  "_npmVersion": "2.5.1",
+  "_nodeVersion": "0.12.0",
+  "_npmUser": {
+    "name": "ibc",
+    "email": "ibc@aliax.net"
+  },
+  "dist": {
+    "shasum": "da7d56212307d26ec4d76e5b45df99e922e0d8a3",
+    "tarball": "http://registry.npmjs.org/rtcninja/-/rtcninja-0.6.5.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "ibc",
+      "email": "ibc@aliax.net"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-5-east.internal.npmjs.com",
+    "tmp": "tmp/rtcninja-0.6.5.tgz_1455126031928_0.529364233603701"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/rtcninja/-/rtcninja-0.6.5.tgz",
+  "readme": "ERROR: No README data found!"
 }
 
 },{}],41:[function(require,module,exports){
@@ -25272,6 +25300,7 @@ module.exports={
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.1",
     "gulp-util": "^3.0.7",
+    "jshint": "^2.8.0",
     "jshint-stylish": "^2.1.0",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",
