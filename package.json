@@ -2,7 +2,7 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.11",
+  "version": "0.7.17",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -28,12 +28,12 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "rtcninja": "^0.6.4",
+    "rtcninja": "^0.6.5",
     "sdp-transform": "~1.5.3",
     "websocket": "^1.0.22"
   },
   "devDependencies": {
-    "browserify": "^12.0.1",
+    "browserify": "^13.0.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-header": "^1.7.1",
@@ -42,7 +42,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.1",
     "gulp-util": "^3.0.7",
-    "jshint": "^2.8.0",
+    "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",

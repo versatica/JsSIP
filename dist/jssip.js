@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.11
+ * JsSIP v0.7.17
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -54,7 +54,7 @@ var C = {
     REJECTED: [403,603],
     NOT_FOUND: [404,604],
     UNAVAILABLE: [480,410,408,430],
-    ADDRESS_INCOMPLETE: [484],
+    ADDRESS_INCOMPLETE: [484, 424],
     INCOMPATIBLE_SDP: [488,606],
     AUTHENTICATION_ERROR:[401,407]
   },
@@ -112,6 +112,7 @@ var C = {
     421: 'Extension Required',
     422: 'Session Interval Too Small',  // RFC 4028
     423: 'Interval Too Brief',
+    424: 'Bad Location Information',  // RFC 6442
     428: 'Use Identity Header',  // RFC 4474
     429: 'Provide Referrer Identity',  // RFC 3892
     430: 'Flow Failed',  // RFC 5626
@@ -464,26 +465,51 @@ module.exports = DigestAuthentication;
  * Dependencies.
  */
 var debug = require('debug')('JsSIP:DigestAuthentication');
+var debugerror = require('debug')('JsSIP:ERROR:DigestAuthentication');
+debugerror.log = console.warn.bind(console);
 var Utils = require('./Utils');
 
 
-function DigestAuthentication(ua) {
-  this.username = ua.configuration.authorization_user;
-  this.password = ua.configuration.password;
+function DigestAuthentication(credentials) {
+  this.credentials = credentials;
   this.cnonce = null;
   this.nc = 0;
   this.ncHex = '00000000';
+  this.algorithm = null;
+  this.realm = null;
+  this.nonce = null;
+  this.opaque = null;
+  this.stale = null;
+  this.qop = null;
+  this.method = null;
+  this.uri = null;
+  this.ha1 = null;
   this.response = null;
 }
+
+
+DigestAuthentication.prototype.get = function(parameter) {
+  switch (parameter) {
+    case 'realm':
+      return this.realm;
+
+    case 'ha1':
+      return this.ha1;
+
+    default:
+      debugerror('get() | cannot get "%s" parameter', parameter);
+      return undefined;
+  }
+};
 
 
 /**
 * Performs Digest authentication given a SIP request and the challenge
 * received in a response to that request.
-* Returns true if credentials were successfully generated, false otherwise.
+* Returns true if auth was successfully generated, false otherwise.
 */
 DigestAuthentication.prototype.authenticate = function(request, challenge) {
-  // Inspect and validate the challenge.
+  var ha2, hex;
 
   this.algorithm = challenge.algorithm;
   this.realm = challenge.realm;
@@ -493,21 +519,36 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
 
   if (this.algorithm) {
     if (this.algorithm !== 'MD5') {
-      debug('challenge with Digest algorithm different than "MD5", authentication aborted');
+      debugerror('authenticate() | challenge with Digest algorithm different than "MD5", authentication aborted');
       return false;
     }
   } else {
     this.algorithm = 'MD5';
   }
 
-  if (! this.realm) {
-    debug('challenge without Digest realm, authentication aborted');
+  if (!this.nonce) {
+    debugerror('authenticate() | challenge without Digest nonce, authentication aborted');
     return false;
   }
 
-  if (! this.nonce) {
-    debug('challenge without Digest nonce, authentication aborted');
+  if (!this.realm) {
+    debugerror('authenticate() | challenge without Digest realm, authentication aborted');
     return false;
+  }
+
+  // If no plain SIP password is provided.
+  if (!this.credentials.password) {
+    // If ha1 is not provided we cannot authenticate.
+    if (!this.credentials.ha1) {
+      debugerror('authenticate() | no plain SIP password nor ha1 provided, authentication aborted');
+      return false;
+    }
+
+    // If the realm does not match the stored realm we cannot authenticate.
+    if (this.credentials.realm !== this.realm) {
+      debugerror('authenticate() | no plain SIP password, and stored `realm` does not match the given `realm`, cannot authenticate [stored:"%s", given:"%s"]', this.credentials.realm, this.realm);
+      return false;
+    }
   }
 
   // 'qop' can contain a list of values (Array). Let's choose just one.
@@ -518,7 +559,7 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
       this.qop = 'auth-int';
     } else {
       // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-      debug('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
+      debugerror('authenticate() | challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
       return false;
     }
   } else {
@@ -531,7 +572,8 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
   this.uri = request.ruri;
   this.cnonce = Utils.createRandomToken(12);
   this.nc += 1;
-  this.updateNcHex();
+  hex = Number(this.nc).toString(16);
+  this.ncHex = '00000000'.substr(0, 8-hex.length) + hex;
 
   // nc-value = 8LHEX. Max value = 'FFFFFFFF'.
   if (this.nc === 4294967296) {
@@ -540,39 +582,39 @@ DigestAuthentication.prototype.authenticate = function(request, challenge) {
   }
 
   // Calculate the Digest "response" value.
-  this.calculateResponse();
 
-  return true;
-};
-
-
-/**
-* Generate Digest 'response' value.
-*/
-DigestAuthentication.prototype.calculateResponse = function() {
-  var ha1, ha2;
-
-  // HA1 = MD5(A1) = MD5(username:realm:password)
-  ha1 = Utils.calculateMD5(this.username + ':' + this.realm + ':' + this.password);
+  // If we have plain SIP password then regenerate ha1.
+  if (this.credentials.password) {
+    // HA1 = MD5(A1) = MD5(username:realm:password)
+    this.ha1 = Utils.calculateMD5(this.credentials.username + ':' + this.realm + ':' + this.credentials.password);
+    //
+  // Otherwise reuse the stored ha1.
+  } else {
+    this.ha1 = this.credentials.ha1;
+  }
 
   if (this.qop === 'auth') {
     // HA2 = MD5(A2) = MD5(method:digestURI)
     ha2 = Utils.calculateMD5(this.method + ':' + this.uri);
     // response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2)
-    this.response = Utils.calculateMD5(ha1 + ':' + this.nonce + ':' + this.ncHex + ':' + this.cnonce + ':auth:' + ha2);
+    this.response = Utils.calculateMD5(this.ha1 + ':' + this.nonce + ':' + this.ncHex + ':' + this.cnonce + ':auth:' + ha2);
 
   } else if (this.qop === 'auth-int') {
     // HA2 = MD5(A2) = MD5(method:digestURI:MD5(entityBody))
     ha2 = Utils.calculateMD5(this.method + ':' + this.uri + ':' + Utils.calculateMD5(this.body ? this.body : ''));
     // response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2)
-    this.response = Utils.calculateMD5(ha1 + ':' + this.nonce + ':' + this.ncHex + ':' + this.cnonce + ':auth-int:' + ha2);
+    this.response = Utils.calculateMD5(this.ha1 + ':' + this.nonce + ':' + this.ncHex + ':' + this.cnonce + ':auth-int:' + ha2);
 
   } else if (this.qop === null) {
     // HA2 = MD5(A2) = MD5(method:digestURI)
     ha2 = Utils.calculateMD5(this.method + ':' + this.uri);
     // response = MD5(HA1:nonce:HA2)
-    this.response = Utils.calculateMD5(ha1 + ':' + this.nonce + ':' + ha2);
+    this.response = Utils.calculateMD5(this.ha1 + ':' + this.nonce + ':' + ha2);
   }
+
+  debug('authenticate() | response generated');
+
+  return true;
 };
 
 
@@ -582,12 +624,12 @@ DigestAuthentication.prototype.calculateResponse = function() {
 DigestAuthentication.prototype.toString = function() {
   var auth_params = [];
 
-  if (! this.response) {
+  if (!this.response) {
     throw new Error('response field does not exist, cannot generate Authorization header');
   }
 
   auth_params.push('algorithm=' + this.algorithm);
-  auth_params.push('username="' + this.username + '"');
+  auth_params.push('username="' + this.credentials.username + '"');
   auth_params.push('realm="' + this.realm + '"');
   auth_params.push('nonce="' + this.nonce + '"');
   auth_params.push('uri="' + this.uri + '"');
@@ -602,15 +644,6 @@ DigestAuthentication.prototype.toString = function() {
   }
 
   return 'Digest ' + auth_params.join(', ');
-};
-
-
-/**
-* Generate the 'nc' value as required by Digest in this.ncHex by reading this.nc.
-*/
-DigestAuthentication.prototype.updateNcHex = function() {
-  var hex = Number(this.nc).toString(16);
-  this.ncHex = '00000000'.substr(0, 8-hex.length) + hex;
 };
 
 },{"./Utils":24,"debug":31}],5:[function(require,module,exports){
@@ -758,6 +791,8 @@ module.exports = (function(){
         "SIP_URI_noparams": parse_SIP_URI_noparams,
         "SIP_URI": parse_SIP_URI,
         "uri_scheme": parse_uri_scheme,
+        "uri_scheme_sips": parse_uri_scheme_sips,
+        "uri_scheme_sip": parse_uri_scheme_sip,
         "userinfo": parse_userinfo,
         "user": parse_user,
         "user_unreserved": parse_user_unreserved,
@@ -3731,8 +3766,43 @@ module.exports = (function(){
       
       function parse_uri_scheme() {
         var result0;
+        
+        result0 = parse_uri_scheme_sips();
+        if (result0 === null) {
+          result0 = parse_uri_scheme_sip();
+        }
+        return result0;
+      }
+      
+      function parse_uri_scheme_sips() {
+        var result0;
         var pos0;
         
+        pos0 = pos;
+        if (input.substr(pos, 4).toLowerCase() === "sips") {
+          result0 = input.substr(pos, 4);
+          pos += 4;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"sips\"");
+          }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, scheme) {
+                            data.scheme = scheme.toLowerCase(); })(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_uri_scheme_sip() {
+        var result0;
+        var pos0;
+        
+        pos0 = pos;
         if (input.substr(pos, 3).toLowerCase() === "sip") {
           result0 = input.substr(pos, 3);
           pos += 3;
@@ -3742,24 +3812,12 @@ module.exports = (function(){
             matchFailed("\"sip\"");
           }
         }
+        if (result0 !== null) {
+          result0 = (function(offset, scheme) {
+                            data.scheme = scheme.toLowerCase(); })(pos0, result0);
+        }
         if (result0 === null) {
-          pos0 = pos;
-          if (input.substr(pos, 4).toLowerCase() === "sips") {
-            result0 = input.substr(pos, 4);
-            pos += 4;
-          } else {
-            result0 = null;
-            if (reportFailures === 0) {
-              matchFailed("\"sips\"");
-            }
-          }
-          if (result0 !== null) {
-            result0 = (function(offset) {
-                              data.scheme = uri_scheme.toLowerCase(); })(pos0);
-          }
-          if (result0 === null) {
-            pos = pos0;
-          }
+          pos = pos0;
         }
         return result0;
       }
@@ -6754,7 +6812,7 @@ module.exports = (function(){
                               else {
                                 value = value[1];
                               }
-                              data.uri_params[param.toLowerCase()] = value && value.toLowerCase();})(pos0, result0[0], result0[1]);
+                              data.uri_params[param.toLowerCase()] = value;})(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -13925,7 +13983,7 @@ Parser.parseMessage = function(data, ua) {
     }
     // data.indexOf returned -1 due to a malformed message.
     else if(headerEnd === -1) {
-      parsed.error('parseMessage() | malformed message');
+      debugerror('parseMessage() | malformed message');
       return;
     }
 
@@ -17534,7 +17592,7 @@ function RequestSender(applicant, ua) {
   this.applicant = applicant;
   this.method = applicant.request.method;
   this.request = applicant.request;
-  this.credentials = null;
+  this.auth = null;
   this.challenged = false;
   this.staled = false;
 
@@ -17560,6 +17618,7 @@ RequestSender.prototype = {
       default:
         this.clientTransaction = new Transactions.NonInviteClientTransaction(this, this.request, this.ua.transport);
     }
+
     this.clientTransaction.send();
   },
 
@@ -17584,14 +17643,16 @@ RequestSender.prototype = {
   * Authenticate request if needed or pass the response back to the applicant.
   */
   receiveResponse: function(response) {
-    var cseq, challenge, authorization_header_name,
+    var
+      cseq, challenge, authorization_header_name,
       status_code = response.status_code;
 
     /*
     * Authentication
     * Authenticate once. _challenged_ flag used to avoid infinite authentications.
     */
-    if ((status_code === 401 || status_code === 407) && this.ua.configuration.password !== null) {
+    if ((status_code === 401 || status_code === 407) &&
+        (this.ua.configuration.password !== null || this.ua.configuration.ha1 !== null)) {
 
       // Get and parse the appropriate WWW-Authenticate or Proxy-Authenticate header.
       if (response.status_code === 401) {
@@ -17603,23 +17664,32 @@ RequestSender.prototype = {
       }
 
       // Verify it seems a valid challenge.
-      if (! challenge) {
+      if (!challenge) {
         debug(response.status_code + ' with wrong or missing challenge, cannot authenticate');
         this.applicant.receiveResponse(response);
         return;
       }
 
       if (!this.challenged || (!this.staled && challenge.stale === true)) {
-        if (!this.credentials) {
-          this.credentials = new DigestAuthentication(this.ua);
+        if (!this.auth) {
+          this.auth = new DigestAuthentication({
+            username : this.ua.configuration.authorization_user,
+            password : this.ua.configuration.password,
+            realm    : this.ua.configuration.realm,
+            ha1      : this.ua.configuration.ha1
+          });
         }
 
         // Verify that the challenge is really valid.
-        if (!this.credentials.authenticate(this.request, challenge)) {
+        if (!this.auth.authenticate(this.request, challenge)) {
           this.applicant.receiveResponse(response);
           return;
         }
         this.challenged = true;
+
+        // Update ha1 and realm in the UA.
+        this.ua.set('realm', this.auth.get('realm'));
+        this.ua.set('ha1', this.auth.get('ha1'));
 
         if (challenge.stale) {
           this.staled = true;
@@ -17627,7 +17697,7 @@ RequestSender.prototype = {
 
         if (response.method === JsSIP_C.REGISTER) {
           cseq = this.applicant.cseq += 1;
-        } else if (this.request.dialog){
+        } else if (this.request.dialog) {
           cseq = this.request.dialog.local_seqnum += 1;
         } else {
           cseq = this.request.cseq + 1;
@@ -17635,7 +17705,7 @@ RequestSender.prototype = {
         }
         this.request.setHeader('cseq', cseq +' '+ this.method);
 
-        this.request.setHeader(authorization_header_name, this.credentials.toString());
+        this.request.setHeader(authorization_header_name, this.auth.toString());
         this.send();
       } else {
         this.applicant.receiveResponse(response);
@@ -19655,6 +19725,25 @@ UA.prototype.normalizeTarget = function(target) {
 };
 
 /**
+ * Allow retrieving configuration and autogenerated fields in runtime.
+ */
+UA.prototype.get = function(parameter) {
+  switch(parameter) {
+    case 'realm':
+      return this.configuration.realm;
+
+    case 'ha1':
+      return this.configuration.ha1;
+
+    default:
+      debugerror('get() | cannot get "%s" parameter in runtime', parameter);
+      return undefined;
+  }
+
+  return true;
+};
+
+/**
  * Allow configuration changes in runtime.
  * Returns true if the parameter could be set.
  */
@@ -19662,6 +19751,16 @@ UA.prototype.set = function(parameter, value) {
   switch(parameter) {
     case 'password':
       this.configuration.password = String(value);
+      break;
+
+    case 'realm':
+      this.configuration.realm = String(value);
+      break;
+
+    case 'ha1':
+      this.configuration.ha1 = String(value);
+      // Delete the plain SIP password.
+      this.configuration.password = null;
       break;
 
     default:
@@ -19722,6 +19821,9 @@ UA.prototype.onTransportClosed = function(transport) {
     code: transport.lastTransportError.code,
     reason: transport.lastTransportError.reason
   });
+
+  // Call registrator _onTransportClosed_
+  this._registrator.onTransportClosed();
 };
 
 /**
@@ -19782,13 +19884,13 @@ UA.prototype.onTransportConnected = function(transport) {
   this.status = C.STATUS_READY;
   this.error = null;
 
-  if(this.dynConfiguration.register) {
-    this._registrator.register();
-  }
-
   this.emit('connected', {
     transport: transport
   });
+
+  if(this.dynConfiguration.register) {
+    this._registrator.register();
+  }
 };
 
 
@@ -20089,8 +20191,6 @@ UA.prototype.closeSessionsOnTransportError = function() {
   for(idx in this.sessions) {
     this.sessions[idx].onTransportError();
   }
-  // Call registrator _onTransportClosed_
-  this._registrator.onTransportClosed();
 };
 
 UA.prototype.recoverTransport = function(ua) {
@@ -20133,8 +20233,14 @@ UA.prototype.loadConfig = function(configuration) {
     */
     via_host: Utils.createRandomToken(12) + '.invalid',
 
-    // Password
+    // SIP authentication password
     password: null,
+
+    // SIP authentication realm
+    realm: null,
+
+    // SIP authentication HA1 hash
+    ha1: null,
 
     // Registration parameters
     register_expires: 600,
@@ -20300,6 +20406,7 @@ UA.prototype.loadConfig = function(configuration) {
         debug('- ' + parameter + ': ' + settings[parameter]);
         break;
       case 'password':
+      case 'ha1':
         debug('- ' + parameter + ': ' + 'NOT SHOWN');
         break;
       default:
@@ -20341,6 +20448,8 @@ UA.configuration_skeleton = (function() {
       'session_timers', // true
       'node_websocket_options',
       'password',
+      'realm',
+      'ha1',
       'register_expires', // 600 seconds
       'registrar_server',
       'use_preloaded_route',
@@ -20353,7 +20462,7 @@ UA.configuration_skeleton = (function() {
   for(idx in parameters) {
     parameter = parameters[idx];
 
-    if (['password'].indexOf(parameter) !== -1) {
+    if (['password', 'realm', 'ha1'].indexOf(parameter) !== -1) {
       writable = true;
     } else {
       writable = false;
@@ -20550,6 +20659,14 @@ UA.configuration_check = {
       return String(password);
     },
 
+    realm: function(realm) {
+      return String(realm);
+    },
+
+    ha1: function(ha1) {
+      return String(ha1);
+    },
+
     register: function(register) {
       if (typeof register === 'boolean') {
         return register;
@@ -20668,7 +20785,7 @@ function URI(scheme, user, host, port, parameters, headers) {
 URI.prototype = {
   setParam: function(key, value) {
     if(key) {
-      this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString().toLowerCase();
+      this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString();
     }
   },
 
@@ -25260,7 +25377,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.11",
+  "version": "0.7.17",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -25286,12 +25403,12 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "rtcninja": "^0.6.4",
+    "rtcninja": "^0.6.5",
     "sdp-transform": "~1.5.3",
     "websocket": "^1.0.22"
   },
   "devDependencies": {
-    "browserify": "^12.0.1",
+    "browserify": "^13.0.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-header": "^1.7.1",
@@ -25300,7 +25417,7 @@ module.exports={
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.1",
     "gulp-util": "^3.0.7",
-    "jshint": "^2.8.0",
+    "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",
