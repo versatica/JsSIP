@@ -2,6 +2,13 @@ CHANGELOG
 =========
 
 
+Version 0.7.18 (released in 2016-03-23)
+---------------------------------------
+
+* Add INFO method to allowed methods list
+* Add SIP Code 424 RFC 6442
+
+
 Version 0.7.17 (released in 2016-02-25)
 ---------------------------------------
 
