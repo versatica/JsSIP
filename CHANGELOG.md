@@ -2,6 +2,12 @@ CHANGELOG
 =========
 
 
+Version 0.7.20 (released in 2016-04-05)
+---------------------------------------
+
+* `RTCSession/ReferSubscriber`: Fix typo that breaks exposed API.
+
+
 Version 0.7.19 (released in 2016-04-05)
 ---------------------------------------
 

@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.19
+ * JsSIP v0.7.20
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -17136,14 +17136,14 @@ ReferSubscriber.prototype.receiveNotify = function(request) {
     case /^100$/.test(status_line.status_code):
       this.emit('trying', {
         request: request,
-        satus_line: status_line
+        status_line: status_line
       });
       break;
 
     case /^1[0-9]{2}$/.test(status_line.status_code):
       this.emit('progress', {
         request: request,
-        satus_line: status_line
+        status_line: status_line
       });
       break;
 
@@ -17151,7 +17151,7 @@ ReferSubscriber.prototype.receiveNotify = function(request) {
       removeSubscriber.call(this);
       this.emit('accepted', {
         request: request,
-        satus_line: status_line
+        status_line: status_line
       });
       break;
 
@@ -17159,7 +17159,7 @@ ReferSubscriber.prototype.receiveNotify = function(request) {
       removeSubscriber.call(this);
       this.emit('failed', {
         request: request,
-        satus_line: status_line
+        status_line: status_line
       });
       break;
   }
@@ -23668,7 +23668,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.19",
+  "version": "0.7.20",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
