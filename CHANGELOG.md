@@ -2,6 +2,12 @@ CHANGELOG
 =========
 
 
+Version 0.7.19 (released in 2016-04-05)
+---------------------------------------
+
+* `RTCSession`: Make `refer()` method to return the corresponding instance of `ReferSubscriber` so the app can set and manage as many events as desired on it.
+
+
 Version 0.7.18 (released in 2016-03-23)
 ---------------------------------------
 
