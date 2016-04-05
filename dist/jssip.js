@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.20
+ * JsSIP v0.7.21
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14577,6 +14577,14 @@ RTCSession.prototype.answer = function(options) {
       self.connection.addStream(stream);
     }
 
+    // If it's an incoming INVITE without SDP notify the app with the
+    // RTCPeerConnection so it can do stuff on it before generating the offer.
+    if (! self.request.body) {
+      self.emit('peerconnection', {
+        peerconnection: self.connection
+      });
+    }
+
     if (! self.late_sdp) {
       self.connection.setRemoteDescription(
         new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
@@ -23668,7 +23676,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.20",
+  "version": "0.7.21",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

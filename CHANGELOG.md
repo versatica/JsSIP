@@ -2,6 +2,12 @@ CHANGELOG
 =========
 
 
+Version 0.7.21 (released in 2016-04-05)
+---------------------------------------
+
+* `RTCSession`: Also emit `peerconnection` event for incoming INVITE without SDP.
+
+
 Version 0.7.20 (released in 2016-04-05)
 ---------------------------------------
 
