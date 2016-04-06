@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 0.7.22 (released in XXXX-XX-XX)
+---------------------------------------
+
+* `UA`: `set()` allows changing user's display name.
+
 
 Version 0.7.21 (released in 2016-04-05)
 ---------------------------------------
