@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.21
+ * JsSIP v0.7.22
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15227,36 +15227,48 @@ RTCSession.prototype.receiveRequest = function(request) {
     // Requests arriving here are in-dialog requests.
     switch(request.method) {
       case JsSIP_C.ACK:
-        if(this.status === C.STATUS_WAITING_FOR_ACK) {
-          clearTimeout(this.timers.ackTimer);
-          clearTimeout(this.timers.invite2xxTimer);
+        if (this.status !== C.STATUS_WAITING_FOR_ACK) {
+          return;
+        }
 
-          if (this.late_sdp) {
-            if (!request.body) {
-              ended.call(this, 'remote', request, JsSIP_C.causes.MISSING_SDP);
-              break;
-            }
+        // Update signaling status.
+        this.status = C.STATUS_CONFIRMED;
 
-            this.connection.setRemoteDescription(
-              new rtcninja.RTCSessionDescription({type:'answer', sdp:request.body}),
-              // success
-              function() {
-                self.status = C.STATUS_CONFIRMED;
-              },
-              // failure
-              function() {
-                ended.call(self, 'remote', request, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
+        clearTimeout(this.timers.ackTimer);
+        clearTimeout(this.timers.invite2xxTimer);
+
+        if (this.late_sdp) {
+          if (!request.body) {
+            this.terminate({
+              cause: JsSIP_C.causes.MISSING_SDP,
+              status_code: 400
+            });
+            break;
+          }
+
+          this.connection.setRemoteDescription(
+            new rtcninja.RTCSessionDescription({type:'answer', sdp:request.body}),
+            // success
+            function() {
+              if (!self.is_confirmed) {
+                confirmed.call(self, 'remote', request);
               }
-            );
-          }
-          else {
-            this.status = C.STATUS_CONFIRMED;
-          }
-
-          if (this.status === C.STATUS_CONFIRMED && !this.is_confirmed) {
+            },
+            // failure
+            function() {
+              self.terminate({
+                cause: JsSIP_C.causes.BAD_MEDIA_DESCRIPTION,
+                status_code: 488
+              });
+            }
+          );
+        }
+        else {
+          if (!this.is_confirmed) {
             confirmed.call(this, 'remote', request);
           }
         }
+
         break;
       case JsSIP_C.BYE:
         if(this.status === C.STATUS_CONFIRMED) {
@@ -19752,19 +19764,31 @@ UA.prototype.get = function(parameter) {
  */
 UA.prototype.set = function(parameter, value) {
   switch(parameter) {
-    case 'password':
+    case 'password': {
       this.configuration.password = String(value);
       break;
+    }
 
-    case 'realm':
+    case 'realm': {
       this.configuration.realm = String(value);
       break;
+    }
 
-    case 'ha1':
+    case 'ha1': {
       this.configuration.ha1 = String(value);
       // Delete the plain SIP password.
       this.configuration.password = null;
       break;
+    }
+
+    case 'display_name': {
+      if (Grammar.parse('"' + value + '"', 'display_name') === -1) {
+        debugerror('set() | wrong "display_name"');
+        return false;
+      }
+      this.configuration.display_name = value;
+      break;
+    }
 
     default:
       debugerror('set() | cannot set "%s" parameter in runtime', parameter);
@@ -20462,10 +20486,14 @@ UA.configuration_skeleton = (function() {
       'via_host'
     ];
 
+  var writable_parameters = [
+    'password', 'realm', 'ha1', 'display_name'
+  ];
+
   for(idx in parameters) {
     parameter = parameters[idx];
 
-    if (['password', 'realm', 'ha1'].indexOf(parameter) !== -1) {
+    if (writable_parameters.indexOf(parameter) !== -1) {
       writable = true;
     } else {
       writable = false;
@@ -20601,7 +20629,7 @@ UA.configuration_check = {
     },
 
     display_name: function(display_name) {
-      if(Grammar.parse('"' + display_name + '"', 'display_name') === -1) {
+      if (Grammar.parse('"' + display_name + '"', 'display_name') === -1) {
         return;
       } else {
         return display_name;
@@ -23676,7 +23704,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.21",
+  "version": "0.7.22",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

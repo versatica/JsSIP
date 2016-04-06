@@ -1,10 +1,11 @@
 CHANGELOG
 =========
 
-Version 0.7.22 (released in XXXX-XX-XX)
+Version 0.7.22 (released in 2016-04-06)
 ---------------------------------------
 
 * `UA`: `set()` allows changing user's display name.
+* Ignore SDP answer in received ACK retransmissions (fix [367](https://github.com/versatica/JsSIP/issues/367)).
 
 
 Version 0.7.21 (released in 2016-04-05)
