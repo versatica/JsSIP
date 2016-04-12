@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 0.7.23 (released in 2016-04-12)
+---------------------------------------
+
+* `RTCSession`: Allow multiple calls to `refer()` at the same time.
+
+
 Version 0.7.22 (released in 2016-04-06)
 ---------------------------------------
 

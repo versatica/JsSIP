@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.22
+ * JsSIP v0.7.23
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -365,6 +365,9 @@ Dialog.prototype = {
       request_sender = new Dialog_RequestSender(this, applicant, request);
 
       request_sender.send();
+
+      // Return the instance of OutgoingRequest
+      return request;
   },
 
   receiveRequest: function(request) {
@@ -14123,6 +14126,9 @@ function RTCSession(ua) {
     timer: null  // A setTimeout.
   };
 
+  // Map of ReferSubscriber instances indexed by the REFER's CSeq number
+  this.referSubscribers = {};
+
   // Custom session empty object for high level use
   this.data = {};
 
@@ -15175,13 +15181,12 @@ RTCSession.prototype.renegotiate = function(options, done) {
 RTCSession.prototype.refer = function(target, options) {
   debug('refer()');
 
-  var originalTarget = target;
+  var self = this,
+    originalTarget = target,
+    referSubscriber,
+    id;
 
   if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-    return false;
-  }
-
-  if (this.referSubscriber) {
     return false;
   }
 
@@ -15191,10 +15196,25 @@ RTCSession.prototype.refer = function(target, options) {
     throw new TypeError('Invalid target: '+ originalTarget);
   }
 
-  this.referSubscriber = new RTCSession_ReferSubscriber(this);
-  this.referSubscriber.sendRefer(target, options);
+  referSubscriber = new RTCSession_ReferSubscriber(this);
+  referSubscriber.sendRefer(target, options);
 
-  return this.referSubscriber;
+  // Store in the map
+  id = referSubscriber.outgoingRequest.cseq;
+  this.referSubscribers[id] = referSubscriber;
+
+  // Listen for ending events so we can remove it from the map
+  referSubscriber.on('requestFailed', function() {
+    delete self.referSubscribers[id];
+  });
+  referSubscriber.on('accepted', function() {
+    delete self.referSubscribers[id];
+  });
+  referSubscriber.on('failed', function() {
+    delete self.referSubscribers[id];
+  });
+
+  return referSubscriber;
 };
 
 /**
@@ -15950,13 +15970,27 @@ function receiveNotify(request) {
 
   if (typeof request.event === undefined) {
     request.reply(400);
-  } else if (request.event.event !== 'refer') {
-    request.reply(489);
-  } else if (!this.referSubscriber) {
-    request.reply(481, 'Subscription does not exist');
-  } else {
-    this.referSubscriber.receiveNotify(request);
-    request.reply(200);
+  }
+
+  switch (request.event.event) {
+    case 'refer': {
+      var id = request.event.params.id;
+      var referSubscriber = this.referSubscribers[id];
+
+      if (!referSubscriber) {
+        request.reply(481, 'Subscription does not exist');
+        return;
+      }
+
+      referSubscriber.receiveNotify(request);
+      request.reply(200);
+
+      break;
+    }
+
+    default: {
+      request.reply(489);
+    }
   }
 }
 
@@ -17051,8 +17085,9 @@ var RTCSession_Request = require('./Request');
 
 function ReferSubscriber(session) {
   this.session = session;
-
   this.timer = null;
+  // Instance of REFER OutgoingRequest
+  this.outgoingRequest = null;
 
   events.EventEmitter.call(this);
 }
@@ -17093,9 +17128,8 @@ ReferSubscriber.prototype.sendRefer = function(target, options) {
   var request = new RTCSession_Request(this.session, JsSIP_C.REFER);
 
   this.timer = setTimeout(function() {
-      removeSubscriber.call(self);
-    }, C.expires * 1000
-  );
+    removeSubscriber.call(self);
+  }, C.expires * 1000);
 
   request.send({
     extraHeaders: extraHeaders,
@@ -17134,6 +17168,8 @@ ReferSubscriber.prototype.sendRefer = function(target, options) {
       }
     }
   });
+
+  this.outgoingRequest = request.outgoingRequest;
 };
 
 ReferSubscriber.prototype.receiveNotify = function(request) {
@@ -17211,6 +17247,8 @@ function Request(session, method) {
 
   this.session = session;
   this.method = method;
+  // Instance of OutgoingRequest
+  this.outgoingRequest = null;
 
   // Check RTCSession Status
   if (this.session.status !== RTCSession.C.STATUS_1XX_RECEIVED &&
@@ -17240,7 +17278,7 @@ Request.prototype.send = function(options) {
 
   this.eventHandlers = options.eventHandlers || {};
 
-  this.session.dialog.sendRequest(this, this.method, {
+  this.outgoingRequest = this.session.dialog.sendRequest(this, this.method, {
     extraHeaders: extraHeaders,
     body: body
   });
@@ -23704,7 +23742,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.22",
+  "version": "0.7.23",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
