@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 1.0.0 (released in 2016-05-11)
+---------------------------------------
+
+* `RTCSession`: new event on('sdp') to allow SDP modifications.
+
+
 Version 0.7.23 (released in 2016-04-12)
 ---------------------------------------
 
