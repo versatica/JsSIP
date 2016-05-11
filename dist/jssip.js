@@ -1,5 +1,5 @@
 /*
- * JsSIP v0.7.23
+ * JsSIP v1.0.0
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14592,8 +14592,11 @@ RTCSession.prototype.answer = function(options) {
     }
 
     if (! self.late_sdp) {
+      var e = {originator:'remote', type:'offer', sdp:request.body};
+      self.emit('sdp', e);
+
       self.connection.setRemoteDescription(
-        new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
+        new rtcninja.RTCSessionDescription({type:'offer', sdp:e.sdp}),
         // success
         remoteDescriptionSucceededOrNotNeeded,
         // failure
@@ -15266,8 +15269,11 @@ RTCSession.prototype.receiveRequest = function(request) {
             break;
           }
 
+          var e = {originator:'remote', type:'answer', sdp:request.body};
+          this.emit('sdp', e);
+
           this.connection.setRemoteDescription(
-            new rtcninja.RTCSessionDescription({type:'answer', sdp:request.body}),
+            new rtcninja.RTCSessionDescription({type:'answer', sdp:e.sdp}),
             // success
             function() {
               if (!self.is_confirmed) {
@@ -15549,7 +15555,12 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       if (! candidate) {
         connection.onicecandidate = null;
         self.rtcReady = true;
-        if (onSuccess) { onSuccess(connection.localDescription.sdp); }
+
+        if (onSuccess) {
+          var e = {originator:'local', type:type, sdp:connection.localDescription.sdp};
+          self.emit('sdp', e);
+          onSuccess(e.sdp);
+        }
         onSuccess = null;
       }
     };
@@ -15559,7 +15570,12 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       function() {
         if (connection.iceGatheringState === 'complete') {
           self.rtcReady = true;
-          if (onSuccess) { onSuccess(connection.localDescription.sdp); }
+
+          if (onSuccess) {
+            var e = {originator:'local', type:type, sdp:connection.localDescription.sdp};
+            self.emit('sdp', e);
+            onSuccess(e.sdp);
+          }
           onSuccess = null;
         }
       },
@@ -15705,8 +15721,11 @@ function receiveReinvite(request) {
       }
     }
 
+    var e = {originator:'remote', type:'offer', sdp:request.body};
+    this.emit('sdp', e);
+
     this.connection.setRemoteDescription(
-      new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
+      new rtcninja.RTCSessionDescription({type:'offer', sdp:e.sdp}),
       // success
       answer,
       // failure
@@ -15847,8 +15866,11 @@ function receiveUpdate(request) {
     }
   }
 
+  var e = {originator:'remote', type:'offer', sdp:request.body};
+  this.emit('sdp', e);
+
   this.connection.setRemoteDescription(
-    new rtcninja.RTCSessionDescription({type:'offer', sdp:request.body}),
+    new rtcninja.RTCSessionDescription({type:'offer', sdp:e.sdp}),
     // success
     function() {
       if (self.remoteHold === true && hold === false) {
@@ -16116,7 +16138,7 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
 function receiveInviteResponse(response) {
   debug('receiveInviteResponse()');
 
-  var cause, dialog,
+  var cause, dialog, e,
     self = this;
 
   // Handle 2XX retransmissions and responses from forked requests
@@ -16206,8 +16228,11 @@ function receiveInviteResponse(response) {
         break;
       }
 
+      e = {originator:'remote', type:'pranswer', sdp:response.body};
+      this.emit('sdp', e);
+
       this.connection.setRemoteDescription(
-        new rtcninja.RTCSessionDescription({type:'pranswer', sdp:response.body}),
+        new rtcninja.RTCSessionDescription({type:'pranswer', sdp:e.sdp}),
         // success
         null,
         // failure
@@ -16229,8 +16254,11 @@ function receiveInviteResponse(response) {
         break;
       }
 
+      e = {originator:'remote', type:'answer', sdp:response.body};
+      this.emit('sdp', e);
+
       this.connection.setRemoteDescription(
-        new rtcninja.RTCSessionDescription({type:'answer', sdp:response.body}),
+        new rtcninja.RTCSessionDescription({type:'answer', sdp:e.sdp}),
         // success
         function() {
           // Handle Session Timers.
@@ -16337,8 +16365,11 @@ function sendReinvite(options) {
       return;
     }
 
+    var e = {originator:'remote', type:'answer', sdp:response.body};
+    self.emit('sdp', e);
+
     self.connection.setRemoteDescription(
-      new rtcninja.RTCSessionDescription({type:'answer', sdp:response.body}),
+      new rtcninja.RTCSessionDescription({type:'answer', sdp:e.sdp}),
       // success
       function() {
         if (eventHandlers.succeeded) { eventHandlers.succeeded(response); }
@@ -16467,8 +16498,11 @@ function sendUpdate(options) {
         return;
       }
 
+      var e = {originator:'remote', type:'answer', sdp:response.body};
+      self.emit('sdp', e);
+
       self.connection.setRemoteDescription(
-        new rtcninja.RTCSessionDescription({type:'answer', sdp:response.body}),
+        new rtcninja.RTCSessionDescription({type:'answer', sdp:e.sdp}),
         // success
         function() {
           if (eventHandlers.succeeded) { eventHandlers.succeeded(response); }
@@ -23742,7 +23776,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "0.7.23",
+  "version": "1.0.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
