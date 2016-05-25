@@ -13,6 +13,13 @@
 * Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](http://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
 
 
+## Support
+
+* For questions or usage problems please use the **jssip** [public Google Group](https://groups.google.com/forum/#!forum/jssip).
+
+* For bug reports or feature requests open an [Github issue](https://github.com/versatica/JsSIP/issues).
+
+
 ## Getting Started
 
 The following simple JavaScript code creates a JsSIP User Agent instance and makes a SIP call:
