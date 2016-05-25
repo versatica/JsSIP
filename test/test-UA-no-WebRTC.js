@@ -40,6 +40,18 @@ module.exports = {
       }
     }
 
+    var transport = testUA.UA_TRANSPORT_AFTER_START;
+    var sockets = transport.sockets;
+    var socket = sockets[0].socket;
+
+    test.deepEqual(sockets.length, ua.transport.sockets.length, 'testing transport sockets number');
+    test.deepEqual(sockets[0].weight, ua.transport.sockets[0].weight, 'testing sockets weight');
+    test.deepEqual(socket.via_transport, ua.transport.via_transport, 'testing transport via_transport');
+    test.deepEqual(socket.sip_uri, ua.transport.sip_uri, 'testing transport sip_uri');
+    test.deepEqual(socket.url, ua.transport.url, 'testing transport url');
+
+    test.deepEqual(transport.recovery_options, ua.transport.recovery_options, 'testing transport recovery_options');
+
     ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
       eventHandlers: {
         failed: function(e) {
