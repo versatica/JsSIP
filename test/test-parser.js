@@ -315,4 +315,39 @@ module.exports = {
 
     test.done();
   },
+
+  'Parse host': function(test) {
+    var data, parsed;
+
+    data = 'versatica.com';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+
+    data = 'myhost123';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+
+    data = '1.2.3.4';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'IPv4');
+
+    data = '[1:0:fF::432]';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'IPv6');
+
+    data = '1.2.3.444';
+    test.ok(JsSIP.Grammar.parse(data, 'host') === -1);
+
+    data = 'iñaki.com';
+    test.ok(JsSIP.Grammar.parse(data, 'host') === -1);
+
+    data = '1.2.3.bar.qwe-asd.foo';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+
+    data = '1.2.3.4.bar.qwe-asd.foo';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
+    test.done();
+  },
 };
