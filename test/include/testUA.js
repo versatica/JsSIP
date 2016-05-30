@@ -39,7 +39,7 @@ module.exports = {
     'sockets': [{
       'socket': {
         'via_transport':'WS',
-        'sip_uri':'<sip:localhost:12345;transport=ws;lr>',
+        'sip_uri':'sip:localhost:12345;transport=ws',
         'url':'ws://localhost:12345'
       },
       'weight':0

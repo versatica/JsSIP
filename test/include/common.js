@@ -5,7 +5,12 @@ process.on('uncaughtException', function(error) {
   process.exit(1);
 });
 
-// Define global.navigator for borwser module.
+// Define global.WebSocket.
+global.WebSocket = function() {
+	this.close = function() {};
+};
+
+// Define global.navigator for bowser module.
 global.navigator = {
 	userAgent: ''
 };
