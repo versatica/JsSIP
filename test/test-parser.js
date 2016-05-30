@@ -3,7 +3,6 @@ var JsSIP = require('../');
 
 
 module.exports = {
-
   'parse URI': function(test) {
     var data = 'SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2';
     var uri = JsSIP.URI.parse(data);
@@ -275,12 +274,9 @@ module.exports = {
     test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
     test.strictEqual(parsed.host_type, 'domain');
 
-    // TODO: This is a valid 'domain' but PEGjs finds a valid IPv4 first and does not move
-    // to 'domain' after IPv4 parsing has failed.
-    // NOTE: Let's ignore this issue for now to make `grunt test` happy.
-    //data = '1.2.3.4.bar.qwe-asd.foo';
-    //test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    //test.strictEqual(parsed.host_type, 'domain');
+    data = '1.2.3.4.bar.qwe-asd.foo';
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
+    test.strictEqual(parsed.host_type, 'domain');
 
     test.done();
   },
@@ -314,40 +310,5 @@ module.exports = {
     test.strictEqual(parsed.from_tag, 'kun98clbf7');
 
     test.done();
-  },
-
-  'Parse host': function(test) {
-    var data, parsed;
-
-    data = 'versatica.com';
-    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    test.strictEqual(parsed.host_type, 'domain');
-
-    data = 'myhost123';
-    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    test.strictEqual(parsed.host_type, 'domain');
-
-    data = '1.2.3.4';
-    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    test.strictEqual(parsed.host_type, 'IPv4');
-
-    data = '[1:0:fF::432]';
-    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    test.strictEqual(parsed.host_type, 'IPv6');
-
-    data = '1.2.3.444';
-    test.ok(JsSIP.Grammar.parse(data, 'host') === -1);
-
-    data = 'iñaki.com';
-    test.ok(JsSIP.Grammar.parse(data, 'host') === -1);
-
-    data = '1.2.3.bar.qwe-asd.foo';
-    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    test.strictEqual(parsed.host_type, 'domain');
-
-    data = '1.2.3.4.bar.qwe-asd.foo';
-    test.ok((parsed = JsSIP.Grammar.parse(data, 'host')) !== -1);
-    test.strictEqual(parsed.host_type, 'domain');
-    test.done();
-  },
+  }
 };
