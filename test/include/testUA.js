@@ -15,9 +15,6 @@ module.exports = {
     use_preloaded_route: true,
     no_answer_timeout: 60000,
     session_timers: true,
-    hack_via_tcp: false,
-    hack_via_ws: true,
-    hack_ip_in_contact: false
   },
 
   UA_CONFIGURATION_AFTER_START: {
@@ -32,7 +29,6 @@ module.exports = {
     use_preloaded_route: true,
     no_answer_timeout: 60000 * 1000,  // Internally converted to miliseconds.
     session_timers: true,
-    hack_ip_in_contact: false
   },
 
   UA_TRANSPORT_AFTER_START: {
