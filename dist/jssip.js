@@ -1,5 +1,5 @@
 /*
- * JsSIP v1.0.1
+ * JsSIP v2.0.0
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -162,7 +162,7 @@ var C = {
 
 module.exports = C;
 
-},{"../package.json":50}],2:[function(require,module,exports){
+},{"../package.json":47}],2:[function(require,module,exports){
 module.exports = Dialog;
 
 
@@ -13479,7 +13479,7 @@ Object.defineProperties(JsSIP, {
   }
 });
 
-},{"../package.json":50,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":23,"./URI":24,"./Utils":25,"debug":33,"rtcninja":38}],8:[function(require,module,exports){
+},{"../package.json":47,"./Constants":1,"./Exceptions":5,"./Grammar":6,"./NameAddrHeader":9,"./UA":23,"./URI":24,"./Utils":25,"debug":33,"rtcninja":38}],8:[function(require,module,exports){
 module.exports = Message;
 
 
@@ -17937,8 +17937,8 @@ function OutgoingRequest(method, ruri, ua, params, extraHeaders, body) {
   // Route
   if (params.route_set) {
     this.setHeader('route', params.route_set);
-  } else if (ua.configuration.use_preloaded_route){
-    this.setHeader('route', ua.transport.sip_uri);
+  } else if (ua.configuration.use_preloaded_route) {
+    this.setHeader('route', '<' + ua.transport.sip_uri + ';lr>');
   }
 
   // Via
@@ -18534,25 +18534,34 @@ module.exports = Socket;
 /**
  * Dependencies.
  */
-var Utils =       require('./Utils');
-var debugerror =  require('debug')('JsSIP:ERROR:Socket');
+var Utils = require('./Utils');
+var Grammar = require('./Grammar');
+var debugerror = require('debug')('JsSIP:ERROR:Socket');
 
 function Socket() {}
 
 Socket.isSocket = function(socket) {
   if (typeof socket === 'undefined') {
-    debugerror('Undefined JsSIP.Socket instance');
+    debugerror('undefined JsSIP.Socket instance');
     return false;
   }
 
   // Check Properties
   try {
-    ['via_transport', 'url', 'sip_uri'].forEach(function(prop) {
-      if (!Utils.isString(socket[prop])) {
-        debugerror('Missing or invalid JsSIP.Socket property: '+ prop);
-        throw new Error();
-      }
-    });
+    if (!Utils.isString(socket.url)) {
+      debugerror('missing or invalid JsSIP.Socket url property');
+      throw new Error();
+    }
+
+    if (!Utils.isString(socket.via_transport)) {
+      debugerror('missing or invalid JsSIP.Socket via_transport property');
+      throw new Error();
+    }
+
+    if (Grammar.parse(socket.sip_uri, 'SIP_URI') === -1) {
+      debugerror('missing or invalid JsSIP.Socket sip_uri property');
+      throw new Error();
+    }
   } catch(e) {
     return false;
   }
@@ -18561,7 +18570,7 @@ Socket.isSocket = function(socket) {
   try {
     ['connect', 'disconnect', 'send'].forEach(function(method) {
       if (!Utils.isFunction(socket[method])) {
-        debugerror('Missing or invalid JsSIP.Socket method: '+ method);
+        debugerror('missing or invalid JsSIP.Socket method: ' + method);
         throw new Error();
       }
     });
@@ -18572,7 +18581,7 @@ Socket.isSocket = function(socket) {
   return true;
 };
 
-},{"./Utils":25,"debug":33}],20:[function(require,module,exports){
+},{"./Grammar":6,"./Utils":25,"debug":33}],20:[function(require,module,exports){
 var T1 = 500,
   T2 = 4000,
   T4 = 5000;
@@ -19580,8 +19589,6 @@ function getSocket() {
 }
 
 },{"./Socket":19,"debug":33}],23:[function(require,module,exports){
-/*jshint -W079 */ // ignore warning about redefinition of 'WebSocket'. It's secure.
-
 module.exports = UA;
 
 
@@ -19618,7 +19625,7 @@ var RTCSession = require('./RTCSession');
 var Message = require('./Message');
 var Transactions = require('./Transactions');
 var Transport = require('./Transport');
-var WebSocket = require('./WebSocket');
+var WebSocketInterface = require('./WebSocketInterface');
 var Socket = require('./Socket');
 var Utils = require('./Utils');
 var Exceptions = require('./Exceptions');
@@ -20269,6 +20276,9 @@ UA.prototype.loadConfig = function(configuration) {
     */
     via_host: Utils.createRandomToken(12) + '.invalid',
 
+    // SIP Contact URI
+    contact_uri: null,
+
     // SIP authentication password
     password: null,
 
@@ -20288,9 +20298,6 @@ UA.prototype.loadConfig = function(configuration) {
     // Session parameters
     no_answer_timeout: 60,
     session_timers: true,
-
-    // Hacks
-    hack_ip_in_contact: false,
   };
 
   // Pre-Configuration
@@ -20380,7 +20387,6 @@ UA.prototype.loadConfig = function(configuration) {
     // transport options not needed here anymore
     delete settings.connection_recovery_max_interval;
     delete settings.connection_recovery_min_interval;
-    delete settings.node_websocket_options;
     delete settings.ws_servers;
     delete settings.sockets;
   } catch (e) {
@@ -20408,14 +20414,19 @@ UA.prototype.loadConfig = function(configuration) {
   settings.no_answer_timeout = settings.no_answer_timeout * 1000;
 
   // Via Host
-  if (settings.hack_ip_in_contact) {
-    settings.via_host = Utils.getRandomTestNetIP();
+  if (settings.contact_uri) {
+    settings.via_host = settings.contact_uri.host;
+  }
+
+  // Contact URI
+  else {
+    settings.contact_uri = new URI('sip', Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'});
   }
 
   this.contact = {
     pub_gruu: null,
     temp_gruu: null,
-    uri: new URI('sip', Utils.createRandomToken(8), settings.via_host, null, {transport: 'ws'}),
+    uri: settings.contact_uri,
     toString: function(options) {
       options = options || {};
 
@@ -20485,22 +20496,23 @@ UA.configuration_skeleton = (function() {
 
       // Mandatory user configurable parameters
       'uri',
-      'ws_servers',
 
       // Optional user configurable parameters
       'authorization_user',
+      'contact_uri',
       'display_name',
-      'hack_ip_in_contact', //false
       'instance_id',
       'no_answer_timeout', // 30 seconds
       'session_timers', // true
-      'node_websocket_options',
       'password',
       'realm',
       'ha1',
       'register_expires', // 600 seconds
       'registrar_server',
+      'sockets',
       'use_preloaded_route',
+      'ws_servers',
+
 
       // Post-configuration generated parameters
       'via_core_value',
@@ -20590,17 +20602,20 @@ UA.configuration_check = {
       }
     },
 
+    contact_uri: function(contact_uri) {
+      if (typeof contact_uri === 'string') {
+        var uri = Grammar.parse(contact_uri,'SIP_URI');
+        if (uri !== -1) {
+          return uri;
+        }
+      }
+    },
+
     display_name: function(display_name) {
       if (Grammar.parse('"' + display_name + '"', 'display_name') === -1) {
         return;
       } else {
         return display_name;
-      }
-    },
-
-    hack_ip_in_contact: function(hack_ip_in_contact) {
-      if (typeof hack_ip_in_contact === 'boolean') {
-        return hack_ip_in_contact;
       }
     },
 
@@ -20630,10 +20645,6 @@ UA.configuration_check = {
       if (typeof session_timers === 'boolean') {
         return session_timers;
       }
-    },
-
-    node_websocket_options: function(node_websocket_options) {
-      return (typeof node_websocket_options === 'object') ? node_websocket_options : {};
     },
 
     password: function(password) {
@@ -20712,9 +20723,8 @@ UA.configuration_check = {
       }
     },
 
-    ws_servers: function(ws_servers, configuration) {
-      var idx, length, node_websocket_options,
-       sockets = [];
+    ws_servers: function(ws_servers) {
+      var idx, length, sockets = [];
 
       /* Allow defining ws_servers parameter as:
        *  String: "host"
@@ -20735,13 +20745,11 @@ UA.configuration_check = {
         return;
       }
 
-      node_websocket_options = UA.configuration_check.optional.node_websocket_options(configuration.node_websocket_options);
-
       length = ws_servers.length;
       for (idx = 0; idx < length; idx++) {
         try {
           sockets.push({
-            socket: new WebSocket(ws_servers[idx].ws_uri, node_websocket_options),
+            socket: new WebSocketInterface(ws_servers[idx].ws_uri),
             weight: ws_servers[idx].weight || 0
           });
         } catch(e) {
@@ -20854,7 +20862,7 @@ function onTransportData(data) {
  }
 }
 
-},{"./Constants":1,"./Exceptions":5,"./Grammar":6,"./Message":8,"./Parser":10,"./RTCSession":11,"./Registrator":16,"./SIPMessage":18,"./Socket":19,"./Transactions":21,"./Transport":22,"./URI":24,"./Utils":25,"./WebSocket":26,"./sanityCheck":27,"debug":33,"events":28,"rtcninja":38,"util":32}],24:[function(require,module,exports){
+},{"./Constants":1,"./Exceptions":5,"./Grammar":6,"./Message":8,"./Parser":10,"./RTCSession":11,"./Registrator":16,"./SIPMessage":18,"./Socket":19,"./Transactions":21,"./Transport":22,"./URI":24,"./Utils":25,"./WebSocketInterface":26,"./sanityCheck":27,"debug":33,"events":28,"rtcninja":38,"util":32}],24:[function(require,module,exports){
 module.exports = URI;
 
 
@@ -21482,28 +21490,22 @@ Utils.calculateMD5 = function(string) {
 };
 
 },{"./Constants":1,"./Grammar":6,"./URI":24}],26:[function(require,module,exports){
-module.exports = WebSocket;
+module.exports = WebSocketInterface;
 
 /**
  * Dependencies.
  */
-var Grammar =     require('./Grammar');
-var debug =       require('debug')('JsSIP:WebSocket');
-var debugerror =  require('debug')('JsSIP:ERROR:WebSocket');
+var Grammar = require('./Grammar');
+var debug = require('debug')('JsSIP:WebSocketInterface');
+var debugerror = require('debug')('JsSIP:ERROR:WebSocketInterface');
 
-// 'websocket' module uses the native WebSocket interface when bundled to run
-// in a browser.
-var W3CWebSocket = require('websocket').w3cwebsocket;
-
-function WebSocket(url, node_ws_options) {
+function WebSocketInterface(url) {
   debug('new()');
 
   var sip_uri = null;
   var via_transport = null;
 
   this.ws = null;
-
-  this.node_ws_options = node_ws_options || {};
 
   // setting the 'scheme' alters the sip_uri too (used in SIP Route header field)
   Object.defineProperties(this, {
@@ -21519,20 +21521,20 @@ function WebSocket(url, node_ws_options) {
 
   var parsed_url = Grammar.parse(url, 'absoluteURI');
 
-  if(parsed_url === -1) {
+  if (parsed_url === -1) {
     debugerror('invalid WebSocket URI: ' + url);
-    throw new TypeError('Invalid argument: '+ url);
+    throw new TypeError('Invalid argument: ' + url);
   } else if(parsed_url.scheme !== 'wss' && parsed_url.scheme !== 'ws') {
     debugerror('invalid WebSocket URI scheme: ' + parsed_url.scheme);
-    throw new TypeError('Invalid argument: '+ url);
+    throw new TypeError('Invalid argument: ' + url);
   } else {
-    sip_uri = '<sip:' + parsed_url.host +
-      (parsed_url.port ? ':' + parsed_url.port : '') + ';transport=ws;lr>';
+    sip_uri = 'sip:' + parsed_url.host +
+      (parsed_url.port ? ':' + parsed_url.port : '') + ';transport=ws';
     this.via_transport = parsed_url.scheme;
   }
 }
 
-WebSocket.prototype.connect = function () {
+WebSocketInterface.prototype.connect = function () {
   debug('connect()');
 
   if (this.isConnected()) {
@@ -21550,11 +21552,7 @@ WebSocket.prototype.connect = function () {
   debug('connecting to WebSocket ' + this.url);
 
   try {
-    this.ws = new W3CWebSocket(this.url, 'sip',
-        this.node_ws_options.origin,
-        this.node_ws_options.headers,
-        this.node_ws_options.requestOptions,
-        this.node_ws_options.clientConfig);
+    this.ws = new WebSocket(this.url, 'sip');
 
     this.ws.binaryType = 'arraybuffer';
 
@@ -21567,7 +21565,7 @@ WebSocket.prototype.connect = function () {
   }
 };
 
-WebSocket.prototype.disconnect = function() {
+WebSocketInterface.prototype.disconnect = function() {
   debug('disconnect()');
 
   if (this.ws) {
@@ -21576,10 +21574,10 @@ WebSocket.prototype.disconnect = function() {
   }
 };
 
-WebSocket.prototype.send = function(message) {
+WebSocketInterface.prototype.send = function(message) {
   debug('send()');
 
-  if (this.isConnected) {
+  if (this.isConnected()) {
     this.ws.send(message);
     return true;
   } else {
@@ -21588,11 +21586,11 @@ WebSocket.prototype.send = function(message) {
   }
 };
 
-WebSocket.prototype.isConnected = function() {
+WebSocketInterface.prototype.isConnected = function() {
   return this.ws && this.ws.readyState === this.ws.OPEN;
 };
 
-WebSocket.prototype.isConnecting = function() {
+WebSocketInterface.prototype.isConnecting = function() {
   return this.ws && this.ws.readyState === this.ws.CONNECTING;
 };
 
@@ -21627,7 +21625,7 @@ function onError(e) {
   debugerror('WebSocket ' + this.url + ' error: '+ e);
 }
 
-},{"./Grammar":6,"debug":33,"websocket":47}],27:[function(require,module,exports){
+},{"./Grammar":6,"debug":33}],27:[function(require,module,exports){
 module.exports = sanityCheck;
 
 
@@ -25549,144 +25547,11 @@ module.exports = function (session, opts) {
 };
 
 },{"./grammar":43}],47:[function(require,module,exports){
-var _global = (function() { return this; })();
-var nativeWebSocket = _global.WebSocket || _global.MozWebSocket;
-var websocket_version = require('./version');
-
-
-/**
- * Expose a W3C WebSocket class with just one or two arguments.
- */
-function W3CWebSocket(uri, protocols) {
-	var native_instance;
-
-	if (protocols) {
-		native_instance = new nativeWebSocket(uri, protocols);
-	}
-	else {
-		native_instance = new nativeWebSocket(uri);
-	}
-
-	/**
-	 * 'native_instance' is an instance of nativeWebSocket (the browser's WebSocket
-	 * class). Since it is an Object it will be returned as it is when creating an
-	 * instance of W3CWebSocket via 'new W3CWebSocket()'.
-	 *
-	 * ECMAScript 5: http://bclary.com/2004/11/07/#a-13.2.2
-	 */
-	return native_instance;
-}
-
-
-/**
- * Module exports.
- */
-module.exports = {
-    'w3cwebsocket' : nativeWebSocket ? W3CWebSocket : null,
-    'version'      : websocket_version
-};
-
-},{"./version":48}],48:[function(require,module,exports){
-module.exports = require('../package.json').version;
-
-},{"../package.json":49}],49:[function(require,module,exports){
-module.exports={
-  "name": "websocket",
-  "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
-  "keywords": [
-    "websocket",
-    "websockets",
-    "socket",
-    "networking",
-    "comet",
-    "push",
-    "RFC-6455",
-    "realtime",
-    "server",
-    "client"
-  ],
-  "author": {
-    "name": "Brian McKelvey",
-    "email": "brian@worlize.com",
-    "url": "https://www.worlize.com/"
-  },
-  "contributors": [
-    {
-      "name": "Iñaki Baz Castillo",
-      "email": "ibc@aliax.net",
-      "url": "http://dev.sipdoc.net"
-    }
-  ],
-  "version": "1.0.22",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/theturtle32/WebSocket-Node.git"
-  },
-  "homepage": "https://github.com/theturtle32/WebSocket-Node",
-  "engines": {
-    "node": ">=0.8.0"
-  },
-  "dependencies": {
-    "debug": "~2.2.0",
-    "nan": "~2.0.5",
-    "typedarray-to-buffer": "~3.0.3",
-    "yaeti": "~0.0.4"
-  },
-  "devDependencies": {
-    "buffer-equal": "^0.0.1",
-    "faucet": "^0.0.1",
-    "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
-    "gulp-jshint": "^1.11.2",
-    "jshint-stylish": "^1.0.2",
-    "tape": "^4.0.1"
-  },
-  "config": {
-    "verbose": false
-  },
-  "scripts": {
-    "install": "(node-gyp rebuild 2> builderror.log) || (exit 0)",
-    "test": "faucet test/unit",
-    "gulp": "gulp"
-  },
-  "main": "index",
-  "directories": {
-    "lib": "./lib"
-  },
-  "browser": "lib/browser.js",
-  "license": "Apache-2.0",
-  "gitHead": "19108bbfd7d94a5cd02dbff3495eafee9e901ca4",
-  "bugs": {
-    "url": "https://github.com/theturtle32/WebSocket-Node/issues"
-  },
-  "_id": "websocket@1.0.22",
-  "_shasum": "8c33e3449f879aaf518297c9744cebf812b9e3d8",
-  "_from": "websocket@>=1.0.22 <2.0.0",
-  "_npmVersion": "2.14.3",
-  "_nodeVersion": "3.3.1",
-  "_npmUser": {
-    "name": "theturtle32",
-    "email": "brian@worlize.com"
-  },
-  "maintainers": [
-    {
-      "name": "theturtle32",
-      "email": "brian@worlize.com"
-    }
-  ],
-  "dist": {
-    "shasum": "8c33e3449f879aaf518297c9744cebf812b9e3d8",
-    "tarball": "http://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz"
-  },
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz",
-  "readme": "ERROR: No README data found!"
-}
-
-},{}],50:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -25713,8 +25578,7 @@ module.exports={
   "dependencies": {
     "debug": "^2.2.0",
     "rtcninja": "^0.6.7",
-    "sdp-transform": "^1.6.2",
-    "websocket": "^1.0.22"
+    "sdp-transform": "^1.6.2"
   },
   "devDependencies": {
     "browserify": "^13.0.1",
