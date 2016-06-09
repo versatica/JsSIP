@@ -4,7 +4,7 @@ CHANGELOG
 Version 2.0.1 (released in 2016-06-09)
 --------------------------------------
 
-* Export `JsSIP.Socket` and `JsSIP.WebSocketInterface` (otherwise they are not ussable).
+* Export `JsSIP.WebSocketInterface`.
 
 Version 2.0.0 (released in 2016-06-07)
 --------------------------------------
