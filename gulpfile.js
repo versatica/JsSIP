@@ -92,6 +92,7 @@ gulp.task('grammar', function(cb) {
 
 			var grammar = fs.readFileSync('lib/Grammar.js').toString();
 			var modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
+			modified_grammar = modified_grammar.replace(/\s+$/mg, '');
 			fs.writeFileSync('lib/Grammar.js', modified_grammar);
 			gutil.log('grammar: ' + gutil.colors.yellow('done'));
 			cb();
