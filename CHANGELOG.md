@@ -1,10 +1,17 @@
 CHANGELOG
 =========
 
+Version 2.0.2 (released in 2016-06-17)
+--------------------------------------
+
+* Fix `gulp-header` dependency version.
+
+
 Version 2.0.1 (released in 2016-06-09)
 --------------------------------------
 
 * Export `JsSIP.WebSocketInterface`.
+
 
 Version 2.0.0 (released in 2016-06-07)
 --------------------------------------
@@ -15,6 +22,7 @@ Version 2.0.0 (released in 2016-06-07)
 * Fix #370. Outgoing request instance being shared by two transactions.
 * Fix #296. Abrupt transport disconnection on UA.stop().
 * Socket interface. Make JsSIP socket agnostic.
+
 
 Version 1.0.1 (released in 2016-05-17)
 ---------------------------------------
