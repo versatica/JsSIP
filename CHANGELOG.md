@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 2.0.3 (released in 2016-08-23)
+--------------------------------------
+
+* Fix #385. No CANCEL request sent for authenticated requests.
+
+
 Version 2.0.2 (released in 2016-06-17)
 --------------------------------------
 
