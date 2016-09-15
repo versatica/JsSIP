@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 2.0.4 (released in 2016-09-15)
+--------------------------------------
+
+* Fix #400. Corrupt NPM packege.
+
+
 Version 2.0.3 (released in 2016-08-23)
 --------------------------------------
 

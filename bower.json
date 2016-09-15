@@ -1,6 +1,5 @@
 {
   "name": "jssip",
-  "version": "2.0.3",
   "description": "the Javascript SIP library",
   "main": "dist/jssip.js",
   "homepage": "http://jssip.net",
