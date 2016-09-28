@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 2.0.5 (released in 2016-09-28)
+--------------------------------------
+
+* Update dependencies.
+
+
 Version 2.0.4 (released in 2016-09-15)
 --------------------------------------
 

@@ -1,5 +1,5 @@
 /*
- * JsSIP v2.0.4
+ * JsSIP v2.0.5
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -21423,8 +21423,12 @@ EventEmitter.prototype.emit = function(type) {
       er = arguments[1];
       if (er instanceof Error) {
         throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
       }
-      throw TypeError('Uncaught, unspecified "error" event.');
     }
   }
 
@@ -21664,33 +21668,7 @@ function isUndefined(arg) {
 }
 
 },{}],29:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],30:[function(require,module,exports){
 // shim for using process in browser
-
 var process = module.exports = {};
 
 // cached from whatever global is present so that test runners that stub it
@@ -21701,22 +21679,84 @@ var process = module.exports = {};
 var cachedSetTimeout;
 var cachedClearTimeout;
 
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
 (function () {
-  try {
-    cachedSetTimeout = setTimeout;
-  } catch (e) {
-    cachedSetTimeout = function () {
-      throw new Error('setTimeout is not defined');
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
     }
-  }
-  try {
-    cachedClearTimeout = clearTimeout;
-  } catch (e) {
-    cachedClearTimeout = function () {
-      throw new Error('clearTimeout is not defined');
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
     }
-  }
 } ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
 var queue = [];
 var draining = false;
 var currentQueue;
@@ -21741,7 +21781,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = cachedSetTimeout(cleanUpNextTick);
+    var timeout = runTimeout(cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -21758,7 +21798,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    cachedClearTimeout(timeout);
+    runClearTimeout(timeout);
 }
 
 process.nextTick = function (fun) {
@@ -21770,7 +21810,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        cachedSetTimeout(drainQueue, 0);
+        runTimeout(drainQueue);
     }
 };
 
@@ -21808,6 +21848,31 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
+
+},{}],30:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
 
 },{}],31:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
@@ -22406,7 +22471,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":31,"_process":30,"inherits":29}],33:[function(require,module,exports){
+},{"./support/isBuffer":31,"_process":29,"inherits":30}],33:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -23397,7 +23462,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -23423,21 +23488,21 @@ module.exports={
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "rtcninja": "^0.6.7",
+    "rtcninja": "^0.7.0",
     "sdp-transform": "^1.6.2"
   },
   "devDependencies": {
-    "browserify": "^13.0.1",
+    "browserify": "^13.1.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
-    "gulp-header": "1.8.2",
+    "gulp-header": "1.8.8",
     "gulp-jshint": "^2.0.1",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.3",
+    "gulp-uglify": "^2.0.0",
     "gulp-util": "^3.0.7",
-    "jshint": "^2.9.2",
-    "jshint-stylish": "^2.2.0",
+    "jshint": "^2.9.3",
+    "jshint-stylish": "^2.2.1",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
@@ -23463,6 +23528,7 @@ var browser = require('bowser'),
 
 	// Internal vars
 	getUserMedia = null,
+	mediaDevices = null,
 	RTCPeerConnection = null,
 	RTCSessionDescription = null,
 	RTCIceCandidate = null,
@@ -23474,14 +23540,12 @@ var browser = require('bowser'),
 	browserVersion = Number(browser.version) || 0,
 	isDesktop = !!(!browser.mobile && (!browser.tablet || (browser.msie && browserVersion >= 10))),
 	hasWebRTC = false,
-	virtGlobal, virtNavigator;
+	// Dirty trick to get this library working in a Node-webkit env with browserified libs
+	virtGlobal = global.window || global,
+	// Don't fail in Node
+	virtNavigator = virtGlobal.navigator || {};
 
 debugerror.log = console.warn.bind(console);
-
-// Dirty trick to get this library working in a Node-webkit env with browserified libs
-virtGlobal = global.window || global;
-// Don't fail in Node
-virtNavigator = virtGlobal.navigator || {};
 
 
 // Constructor.
@@ -23499,6 +23563,7 @@ function Adapter(options) {
 	) {
 		hasWebRTC = true;
 		getUserMedia = virtNavigator.webkitGetUserMedia.bind(virtNavigator);
+		mediaDevices = virtNavigator.mediaDevices;
 		RTCPeerConnection = virtGlobal.webkitRTCPeerConnection;
 		RTCSessionDescription = virtGlobal.RTCSessionDescription;
 		RTCIceCandidate = virtGlobal.RTCIceCandidate;
@@ -23514,17 +23579,34 @@ function Adapter(options) {
 		};
 		canRenegotiate = true;
 		oldSpecRTCOfferOptions = false;
-	// Firefox desktop, Firefox Android.
+	// Old Firefox desktop, old Firefox Android.
 	} else if (
-		(isDesktop && browser.firefox && browserVersion >= 22) ||
-		(browser.android && browser.firefox && browserVersion >= 33) ||
+		(browser.firefox && browserVersion < 47) ||
 		(virtNavigator.mozGetUserMedia && virtGlobal.mozRTCPeerConnection)
 	) {
 		hasWebRTC = true;
 		getUserMedia = virtNavigator.mozGetUserMedia.bind(virtNavigator);
+		mediaDevices = virtNavigator.mediaDevices;
 		RTCPeerConnection = virtGlobal.mozRTCPeerConnection;
 		RTCSessionDescription = virtGlobal.mozRTCSessionDescription;
 		RTCIceCandidate = virtGlobal.mozRTCIceCandidate;
+		MediaStreamTrack = virtGlobal.MediaStreamTrack;
+		attachMediaStream = function (element, stream) {
+			element.src = URL.createObjectURL(stream);
+			return element;
+		};
+		canRenegotiate = false;
+		oldSpecRTCOfferOptions = false;
+	// Modern Firefox desktop, modern Firefox Android.
+	} else if (
+		((browser.firefox || browser.gecko) && browserVersion >= 47)
+	) {
+		hasWebRTC = true;
+		getUserMedia = virtNavigator.mozGetUserMedia.bind(virtNavigator);
+		mediaDevices = virtNavigator.mediaDevices;
+		RTCPeerConnection = virtGlobal.RTCPeerConnection;
+		RTCSessionDescription = virtGlobal.RTCSessionDescription;
+		RTCIceCandidate = virtGlobal.RTCIceCandidate;
 		MediaStreamTrack = virtGlobal.MediaStreamTrack;
 		attachMediaStream = function (element, stream) {
 			element.src = URL.createObjectURL(stream);
@@ -23544,6 +23626,7 @@ function Adapter(options) {
 
 		hasWebRTC = true;
 		getUserMedia = pluginiface.getUserMedia;
+		mediaDevices = pluginiface.mediaDevices;
 		RTCPeerConnection = pluginiface.RTCPeerConnection;
 		RTCSessionDescription = pluginiface.RTCSessionDescription;
 		RTCIceCandidate = pluginiface.RTCIceCandidate;
@@ -23560,6 +23643,7 @@ function Adapter(options) {
 	} else if (virtNavigator.getUserMedia && virtGlobal.RTCPeerConnection) {
 		hasWebRTC = true;
 		getUserMedia = virtNavigator.getUserMedia.bind(virtNavigator);
+		mediaDevices = virtNavigator.mediaDevices;
 		RTCPeerConnection = virtGlobal.RTCPeerConnection;
 		RTCSessionDescription = virtGlobal.RTCSessionDescription;
 		RTCIceCandidate = virtGlobal.RTCIceCandidate;
@@ -23632,6 +23716,9 @@ function Adapter(options) {
 			}
 		};
 	}
+
+	// Expose mediaDevices.
+	Adapter.mediaDevices = mediaDevices;
 
 	// Expose RTCPeerConnection.
 	Adapter.RTCPeerConnection = RTCPeerConnection || throwNonSupported('RTCPeerConnection');
@@ -24546,6 +24633,7 @@ function rtcninja(options) {
 
 	// Expose WebRTC API and utils.
 	rtcninja.getUserMedia = iface.getUserMedia;
+	rtcninja.mediaDevices = iface.mediaDevices;
 	rtcninja.RTCSessionDescription = iface.RTCSessionDescription;
 	rtcninja.RTCIceCandidate = iface.RTCIceCandidate;
 	rtcninja.MediaStreamTrack = iface.MediaStreamTrack;
@@ -24614,7 +24702,7 @@ module.exports = require('../package.json').version;
 
 !function (name, definition) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (typeof define == 'function' && define.amd) define(definition)
+  else if (typeof define == 'function' && define.amd) define(name, definition)
   else this[name] = definition()
 }('bowser', function () {
   /**
@@ -24646,6 +24734,7 @@ module.exports = require('../package.json').version;
       , tizen = /tizen/i.test(ua)
       , webos = /(web|hpw)os/i.test(ua)
       , windowsphone = /windows phone/i.test(ua)
+      , samsungBrowser = /SamsungBrowser/i.test(ua)
       , windows = !windowsphone && /windows/i.test(ua)
       , mac = !iosdevice && !silk && /macintosh/i.test(ua)
       , linux = !android && !sailfish && !tizen && !webos && /linux/i.test(ua)
@@ -24656,11 +24745,26 @@ module.exports = require('../package.json').version;
       , xbox = /xbox/i.test(ua)
       , result
 
-    if (/opera|opr|opios/i.test(ua)) {
+    if (/opera/i.test(ua)) {
+      //  an old Opera
       result = {
         name: 'Opera'
       , opera: t
       , version: versionIdentifier || getFirstMatch(/(?:opera|opr|opios)[\s\/](\d+(\.\d+)?)/i)
+      }
+    } else if (/opr|opios/i.test(ua)) {
+      // a new Opera
+      result = {
+        name: 'Opera'
+        , opera: t
+        , version: getFirstMatch(/(?:opr|opios)[\s\/](\d+(\.\d+)?)/i) || versionIdentifier
+      }
+    }
+    else if (/SamsungBrowser/i.test(ua)) {
+      result = {
+        name: 'Samsung Internet for Android'
+        , samsungBrowser: t
+        , version: versionIdentifier || getFirstMatch(/(?:SamsungBrowser)[\s\/](\d+(\.\d+)?)/i)
       }
     }
     else if (/coast/i.test(ua)) {
@@ -24980,6 +25084,7 @@ module.exports = require('../package.json').version;
         (result.yandexbrowser && result.version >= 15) ||
 		    (result.vivaldi && result.version >= 1.0) ||
         (result.chrome && result.version >= 20) ||
+        (result.samsungBrowser && result.version >= 4) ||
         (result.firefox && result.version >= 20.0) ||
         (result.safari && result.version >= 6) ||
         (result.opera && result.version >= 10.0) ||
@@ -25003,7 +25108,7 @@ module.exports = require('../package.json').version;
     return result
   }
 
-  var bowser = detect(typeof navigator !== 'undefined' ? navigator.userAgent : '')
+  var bowser = detect(typeof navigator !== 'undefined' ? navigator.userAgent || '' : '')
 
   bowser.test = function (browserList) {
     for (var i = 0; i < browserList.length; ++i) {
@@ -25043,7 +25148,7 @@ module.exports = require('../package.json').version;
       return Array.prototype.map.call(arr, iterator);
     }
     for (i = 0; i < arr.length; i++) {
-      result = iterator(arr[i]);
+      result.push(iterator(arr[i]));
     }
     return result;
   }
@@ -25351,7 +25456,7 @@ arguments[4][35][0].apply(exports,arguments)
 },{}],50:[function(require,module,exports){
 module.exports={
   "name": "rtcninja",
-  "version": "0.6.8",
+  "version": "0.7.0",
   "description": "WebRTC API wrapper to deal with different browsers",
   "author": "Iñaki Baz Castillo <inaki.baz@eface2face.com> (http://eface2face.com)",
   "contributors": [
@@ -25368,26 +25473,26 @@ module.exports={
     "webrtc"
   ],
   "engines": {
-    "node": ">=0.10.32"
+    "node": ">=0.12.0"
   },
   "dependencies": {
-    "bowser": "^1.4.1",
+    "bowser": "^1.4.6",
     "debug": "^2.2.0",
     "merge": "^1.2.0"
   },
   "devDependencies": {
-    "browserify": "^13.0.1",
+    "browserify": "^13.1.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-filelog": "^0.4.1",
-    "gulp-header": "^1.8.7",
+    "gulp-header": "^1.8.8",
     "gulp-jscs": "^3.0.2",
     "gulp-jscs-stylish": "^1.4.0",
     "gulp-jshint": "^2.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.4",
-    "jshint": "^2.9.2",
-    "jshint-stylish": "^2.2.0",
+    "jshint": "^2.9.3",
+    "jshint-stylish": "^2.2.1",
     "vinyl-source-stream": "^1.1.0"
   }
 }
