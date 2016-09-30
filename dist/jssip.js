@@ -1,5 +1,5 @@
 /*
- * JsSIP v2.0.5
+ * JsSIP v2.0.6
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -18048,10 +18048,16 @@ module.exports = Socket;
 var Utils = require('./Utils');
 var Grammar = require('./Grammar');
 var debugerror = require('debug')('JsSIP:ERROR:Socket');
+debugerror.log = console.warn.bind(console);
 
 function Socket() {}
 
 Socket.isSocket = function(socket) {
+  // Ignore if an array is given
+  if (Array.isArray(socket)) {
+    return false;
+  }
+
   if (typeof socket === 'undefined') {
     debugerror('undefined JsSIP.Socket instance');
     return false;
@@ -19156,6 +19162,8 @@ var sanityCheck = require('./sanityCheck');
  * @throws {TypeError} If no configuration is given.
  */
 function UA(configuration) {
+  debug('new() [configuration:%o]', configuration);
+
   this.cache = {
     credentials: {}
   };
@@ -21009,9 +21017,10 @@ module.exports = WebSocketInterface;
 var Grammar = require('./Grammar');
 var debug = require('debug')('JsSIP:WebSocketInterface');
 var debugerror = require('debug')('JsSIP:ERROR:WebSocketInterface');
+debugerror.log = console.warn.bind(console);
 
 function WebSocketInterface(url) {
-  debug('new()');
+  debug('new() [url:"%s"]', url);
 
   var sip_uri = null;
   var via_transport = null;
@@ -23462,7 +23471,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

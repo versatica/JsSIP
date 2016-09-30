@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 2.0.6 (released in 2016-09-30)
+--------------------------------------
+
+* Improve library logs.
+
+
 Version 2.0.5 (released in 2016-09-28)
 --------------------------------------
 
