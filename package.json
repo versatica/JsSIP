@@ -2,7 +2,7 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "2.0.6",
+  "version": "3.0.0-pre1",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "rtcninja": "^0.7.0",
-    "sdp-transform": "^1.6.2"
+    "sdp-transform": "^1.6.2",
+    "webrtc-adapter": "^2.0.5"
   },
   "devDependencies": {
     "browserify": "^13.1.0",
