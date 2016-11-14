@@ -42,8 +42,8 @@ ua.start();
 var session = null;
 
 // HTML5 <video> elements in which local and remote video will be shown
-var selfView =   document.getElementById('my-video');
-var remoteView =  document.getElementById('peer-video');
+var localVideo = document.getElementById('local-video');
+var remoteVideo =  document.getElementById('remote-video');
 
 // Register callbacks to desired call events
 var eventHandlers = {
@@ -61,16 +61,16 @@ var eventHandlers = {
 
     console.log('call confirmed');
 
-    // Attach local stream to selfView
-    selfView = JsSIP.rtcninja.attachMediaStream(selfView, local_stream);
+    // Attach local stream to localVideo
+    localVideo.srcObject = local_stream;
   },
   'addstream': function(e){
     var stream = e.stream;
 
     console.log('remote stream added');
 
-    // Attach remote stream to remoteView
-    remoteView = JsSIP.rtcninja.attachMediaStream(remoteView, stream);
+    // Attach remote stream to remoteVideo
+    remoteVideo.srcObject = stream;
   }
 };
 
