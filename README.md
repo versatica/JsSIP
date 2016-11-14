@@ -27,10 +27,11 @@ The following simple JavaScript code creates a JsSIP User Agent instance and mak
 ```javascript
 // Create our JsSIP instance and run it:
 
+let socket = new JsSIP.WebSocketInterface('wss://sip.myhost.com');
 var configuration = {
-  'ws_servers': 'ws://sip-ws.example.com',
-  'uri': 'sip:alice@example.com',
-  'password': 'superpassword'
+  sockets  : [ socket ],
+  uri      : 'sip:alice@example.com',
+  password : 'superpassword'
 };
 
 var ua = new JsSIP.UA(configuration);
