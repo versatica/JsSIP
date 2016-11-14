@@ -37,50 +37,28 @@ var ua = new JsSIP.UA(configuration);
 
 ua.start();
 
-
-// Make an audio/video call:
-var session = null;
-
-// HTML5 <video> elements in which local and remote video will be shown
-var localVideo = document.getElementById('local-video');
-var remoteVideo =  document.getElementById('remote-video');
-
 // Register callbacks to desired call events
 var eventHandlers = {
-  'progress': function(e){
+  'progress': function(e) {
     console.log('call is in progress');
   },
-  'failed': function(e){
+  'failed': function(e) {
     console.log('call failed with cause: '+ e.data.cause);
   },
-  'ended': function(e){
+  'ended': function(e) {
     console.log('call ended with cause: '+ e.data.cause);
   },
-  'confirmed': function(e){
-    var local_stream = session.connection.getLocalStreams()[0];
-
+  'confirmed': function(e) {
     console.log('call confirmed');
-
-    // Attach local stream to localVideo
-    localVideo.srcObject = local_stream;
-  },
-  'addstream': function(e){
-    var stream = e.stream;
-
-    console.log('remote stream added');
-
-    // Attach remote stream to remoteVideo
-    remoteVideo.srcObject = stream;
   }
 };
 
 var options = {
-  'eventHandlers': eventHandlers,
-  'mediaConstraints': {'audio': true, 'video': true}
+  'eventHandlers'    : eventHandlers,
+  'mediaConstraints' : { 'audio': true, 'video': true }
 };
 
-
-session = ua.call('sip:bob@example.com', options);
+var session = ua.call('sip:bob@example.com', options);
 ```
 
 Want to see more? Check the full documentation at http://jssip.net/documentation/.
