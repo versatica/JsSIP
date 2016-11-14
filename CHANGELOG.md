@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+Version 3.0.0 (released in 2016-11-XX)
+--------------------------------------
+
+* Remove `rtcninja` dependency. Instead use `webrtc-adapter`.
+* `RTCSession:`: Remove `RTCPeerConnection` event wrappers. The app can access them via `session.connection`.
+* `RTCSession:`: Emit WebRTC related events when internal calls to `getUserMedia()`, `createOffer()`, etc. fail.
+
+
 Version 2.0.6 (released in 2016-09-30)
 --------------------------------------
 
