@@ -27,21 +27,21 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.2.0",
+    "debug": "2.2.0",
     "sdp-transform": "^1.6.2",
-    "webrtc-adapter": "^2.0.5"
+    "webrtc-adapter": "^2.0.7"
   },
   "devDependencies": {
-    "browserify": "^13.1.0",
+    "browserify": "^13.1.1",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-header": "1.8.8",
-    "gulp-jshint": "^2.0.1",
+    "gulp-jshint": "^2.0.3",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.0",
     "gulp-util": "^3.0.7",
-    "jshint": "^2.9.3",
+    "jshint": "^2.9.4",
     "jshint-stylish": "^2.2.1",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",
