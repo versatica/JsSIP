@@ -19196,6 +19196,8 @@ function UA(configuration) {
   // Custom UA empty object for high level use
   this.data = {};
 
+  this.closeTimer = null;
+
   Object.defineProperties(this, {
     transactionsCount: {
       get: function() {
@@ -19272,22 +19274,21 @@ util.inherits(UA, events.EventEmitter);
 UA.prototype.start = function() {
   debug('start()');
 
-  var self = this;
-
-  function connect() {
-    debug('restarting UA');
-    self.status = C.STATUS_READY;
-    self.transport.connect();
-  }
-
   if (this.status === C.STATUS_INIT) {
     this.transport.connect();
   } else if(this.status === C.STATUS_USER_CLOSED) {
-    if (!this.isConnected()) {
-      connect();
-    } else {
-      this.once('disconnected', connect);
+    debug('restarting UA');
+
+    // disconnect
+    if (this.closeTimer !== null) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+      this.transport.disconnect();
     }
+
+    // reconnect
+    this.status = C.STATUS_INIT;
+    this.transport.connect();
   } else if (this.status === C.STATUS_READY) {
     debug('UA is in READY status, not restarted');
   } else {
@@ -19443,7 +19444,8 @@ UA.prototype.stop = function() {
     ua.transport.disconnect();
   }
   else {
-    setTimeout(function() {
+    this.closeTimer = setTimeout(function() {
+      ua.closeTimer = null;
       ua.transport.disconnect();
     }, 2000);
   }
@@ -21101,7 +21103,7 @@ WebSocketInterface.prototype.connect = function () {
   }
 
   if (this.ws) {
-    this.ws.close();
+    this.disconnect();
   }
 
   debug('connecting to WebSocket ' + this.url);
@@ -21124,6 +21126,12 @@ WebSocketInterface.prototype.disconnect = function() {
   debug('disconnect()');
 
   if (this.ws) {
+    // unbind websocket event callbacks
+    this.ws.onopen    = function() {};
+    this.ws.onclose   = function() {};
+    this.ws.onmessage = function() {};
+    this.ws.onerror   = function() {};
+
     this.ws.close();
     this.ws = null;
   }
