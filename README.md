@@ -13,6 +13,11 @@
 * Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](http://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
 
 
+## NOTE
+
+Starting from 3.0.0, JsSIP no longer includes the [rtcninja](https://github.com/eface2face/rtcninja.js/) module. However, the [jssip-rtcninja](https://www.npmjs.com/package/jssip-rtcninja) package is based on the `2.0.x` branch, which does include `rtcninja`.
+
+
 ## Support
 
 * For questions or usage problems please use the **jssip** [public Google Group](https://groups.google.com/forum/#!forum/jssip).

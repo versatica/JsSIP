@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-Version 3.0.0 (released in 2016-11-XX)
+Version 3.0.0 (released in 2016-11-19)
 --------------------------------------
 
 * Remove `rtcninja` dependency. Instead use `webrtc-adapter`.

@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.0-pre1
+ * JsSIP v3.0.0
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -19148,7 +19148,6 @@ var RTCSession = require('./RTCSession');
 var Message = require('./Message');
 var Transactions = require('./Transactions');
 var Transport = require('./Transport');
-var WebSocketInterface = require('./WebSocketInterface');
 var Socket = require('./Socket');
 var Utils = require('./Utils');
 var Exceptions = require('./Exceptions');
@@ -19880,9 +19879,6 @@ UA.prototype.loadConfig = function(configuration) {
 
   // Transport
   var sockets = [];
-  if (settings.ws_servers && Array.isArray(settings.ws_servers)) {
-    sockets = sockets.concat(settings.ws_servers);
-  }
 
   if (settings.sockets && Array.isArray(settings.sockets)) {
     sockets = sockets.concat(settings.sockets);
@@ -19907,7 +19903,6 @@ UA.prototype.loadConfig = function(configuration) {
     // transport options not needed here anymore
     delete settings.connection_recovery_max_interval;
     delete settings.connection_recovery_min_interval;
-    delete settings.ws_servers;
     delete settings.sockets;
   } catch (e) {
     debugerror(e);
@@ -20031,8 +20026,6 @@ UA.configuration_skeleton = (function() {
       'registrar_server',
       'sockets',
       'use_preloaded_route',
-      'ws_servers',
-
 
       // Post-configuration generated parameters
       'via_core_value',
@@ -20241,44 +20234,6 @@ UA.configuration_check = {
       if (typeof use_preloaded_route === 'boolean') {
         return use_preloaded_route;
       }
-    },
-
-    ws_servers: function(ws_servers) {
-      var idx, length, sockets = [];
-
-      /* Allow defining ws_servers parameter as:
-       *  String: "host"
-       *  Array of Strings: ["host1", "host2"]
-       *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
-       *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
-       */
-      if (typeof ws_servers === 'string') {
-        ws_servers = [{ws_uri: ws_servers}];
-      } else if (Array.isArray(ws_servers) && ws_servers.length) {
-        length = ws_servers.length;
-        for (idx = 0; idx < length; idx++) {
-          if (typeof ws_servers[idx] === 'string') {
-            ws_servers[idx] = {ws_uri: ws_servers[idx]};
-          }
-        }
-      } else {
-        return;
-      }
-
-      length = ws_servers.length;
-      for (idx = 0; idx < length; idx++) {
-        try {
-          sockets.push({
-            socket: new WebSocketInterface(ws_servers[idx].ws_uri),
-            weight: ws_servers[idx].weight || 0
-          });
-        } catch(e) {
-          debugerror(e);
-          return;
-        }
-      }
-
-      return sockets;
     }
   }
 };
@@ -20382,7 +20337,7 @@ function onTransportData(data) {
  }
 }
 
-},{"./Constants":1,"./Exceptions":5,"./Grammar":6,"./Message":8,"./Parser":10,"./RTCSession":11,"./Registrator":16,"./SIPMessage":18,"./Socket":19,"./Transactions":21,"./Transport":22,"./URI":24,"./Utils":25,"./WebSocketInterface":26,"./sanityCheck":27,"debug":33,"events":28,"util":32}],24:[function(require,module,exports){
+},{"./Constants":1,"./Exceptions":5,"./Grammar":6,"./Message":8,"./Parser":10,"./RTCSession":11,"./Registrator":16,"./SIPMessage":18,"./Socket":19,"./Transactions":21,"./Transport":22,"./URI":24,"./Utils":25,"./sanityCheck":27,"debug":33,"events":28,"util":32}],24:[function(require,module,exports){
 module.exports = URI;
 
 
@@ -26215,7 +26170,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.0-pre1",
+  "version": "3.0.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -26242,14 +26197,14 @@ module.exports={
   "dependencies": {
     "debug": "2.2.0",
     "sdp-transform": "^1.6.2",
-    "webrtc-adapter": "^2.0.7"
+    "webrtc-adapter": "^2.0.8"
   },
   "devDependencies": {
     "browserify": "^13.1.1",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
     "gulp-header": "1.8.8",
-    "gulp-jshint": "^2.0.3",
+    "gulp-jshint": "^2.0.4",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.0",
