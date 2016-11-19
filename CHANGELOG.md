@@ -9,6 +9,7 @@ Version 3.0.0 (released in 2016-11-19)
 * `RTCSession:`: Emit WebRTC related events when internal calls to `getUserMedia()`, `createOffer()`, etc. fail.
 * Use debug NPM fixed "2.0.0" version (until a pending bug in such a library is fixed).
 * `UA`: Remove `ws_servers` option.
+* `UA`: Allow immediate restart
 
 
 Version 2.0.6 (released in 2016-09-30)
