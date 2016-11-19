@@ -1,5 +1,5 @@
 /*
- * JsSIP v2.0.6
+ * JsSIP v2.0.7
  * the Javascript SIP library
  * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -24964,6 +24964,8 @@ module.exports={
     "jshint-stylish": "^2.2.1",
     "vinyl-source-stream": "^1.1.0"
   },
+  "readme": "# rtcninja.js <img src=\"http://www.pubnub.com/blog/wp-content/uploads/2014/01/google-webrtc-logo.png\" height=\"30\" width=\"30\">\n\nWebRTC API wrapper to deal with different browsers transparently, [eventually](http://iswebrtcreadyyet.com/) this library shouldn't be needed. We only have to wait until W3C group in charge [finishes the specification](https://tools.ietf.org/wg/rtcweb/) and the different browsers implement it correctly :sweat_smile:.\n\n<img src=\"http://images4.fanpop.com/image/photos/21800000/browser-fight-google-chrome-21865454-600-531.jpg\" height=\"250\" width=\"250\">\n\nSupported environments:\n* [Google Chrome](https://www.google.com/chrome/browser/desktop/index.html) (desktop & mobile)\n* [Google Canary](https://www.google.com/chrome/browser/canary.html) (desktop & mobile)\n* [Mozilla Firefox](https://www.mozilla.org/en-GB/firefox/new) (desktop & mobile)\n* [Firefox Nigthly](https://nightly.mozilla.org/) (desktop & mobile)\n* [Opera](http://www.opera.com/)\n* [Vivaldi](https://vivaldi.com/)\n* [CrossWalk](https://crosswalk-project.org/)\n* [Cordova](http://cordova.apache.org/): iOS support, you only have to use our plugin [following these steps](https://github.com/eface2face/cordova-plugin-iosrtc#usage).\n* [NW.js](https://github.com/nwjs/nw.js/)\n* [Electron](https://github.com/atom/electron)\n\n\n## Installation\n\n### **npm**:\n\n```bash\n$ npm install rtcninja\n```\n\nand then:\n\n```javascript\nvar rtcninja = require('rtcninja');\n```\n\n### **bower**:\n\n```bash\n$ bower install rtcninja\n```\n\n\n## Browserified library\n\nTake a browserified version of the library from the `dist/` folder:\n\n* `dist/rtcninja.js`: The uncompressed version.\n* `dist/rtcninja.min.js`: The compressed production-ready version.\n\nThey expose the global `window.rtcninja` module.\n\n\n## Usage\n\nIn the [examples](./examples/) folder we provide a complete one.\n\n```javascript\n// Must first call it.\nrtcninja();\n\n// Then check.\nif (rtcninja.hasWebRTC()) {\n    // Do something.\n}\nelse {\n    // Do something.\n}\n```\n\n\n## Documentation\n\nYou can read the full [API documentation](docs/index.md) in the docs folder.\n\n\n## Issues\n\nhttps://github.com/eface2face/rtcninja.js/issues\n\n\n## Developer guide\n\n* Create a branch with a name including your user and a meaningful word about the fix/feature you're going to implement, ie: \"jesusprubio/fixstuff\"\n* Use [GitHub pull requests](https://help.github.com/articles/using-pull-requests).\n* Conventions:\n * We use [JSHint](http://jshint.com/) and [Crockford's Styleguide](http://javascript.crockford.com/code.html).\n * Please run `grunt lint` to be sure your code fits with them.\n\n\n### Debugging\n\nThe library includes the Node [debug](https://github.com/visionmedia/debug) module. In order to enable debugging:\n\nIn Node set the `DEBUG=rtcninja*` environment variable before running the application, or set it at the top of the script:\n\n```javascript\nprocess.env.DEBUG = 'rtcninja*';\n```\n\nIn the browser run `rtcninja.debug.enable('rtcninja*');` and reload the page. Note that the debugging settings are stored into the browser LocalStorage. To disable it run `rtcninja.debug.disable('rtcninja*');`.\n\n\n## Copyright & License\n\n* eFace2Face Inc.\n* [MIT](./LICENSE)\n",
+  "readmeFilename": "README.md",
   "gitHead": "7160d2718fcf4a2ca0f90641456f35aa7294b837",
   "bugs": {
     "url": "https://github.com/eface2face/rtcninja.js/issues"
@@ -24971,29 +24973,7 @@ module.exports={
   "_id": "rtcninja@0.7.0",
   "scripts": {},
   "_shasum": "8a57d8e51ef0777f16105a33ac99e4de515cd540",
-  "_from": "rtcninja@>=0.7.0 <0.8.0",
-  "_npmVersion": "2.15.9",
-  "_nodeVersion": "4.5.0",
-  "_npmUser": {
-    "name": "ibc",
-    "email": "ibc@aliax.net"
-  },
-  "dist": {
-    "shasum": "8a57d8e51ef0777f16105a33ac99e4de515cd540",
-    "tarball": "https://registry.npmjs.org/rtcninja/-/rtcninja-0.7.0.tgz"
-  },
-  "maintainers": [
-    {
-      "name": "ibc",
-      "email": "ibc@aliax.net"
-    }
-  ],
-  "_npmOperationalInternal": {
-    "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/rtcninja-0.7.0.tgz_1475058681576_0.9719346789643168"
-  },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/rtcninja/-/rtcninja-0.7.0.tgz"
+  "_from": "rtcninja@>=0.7.0 <0.8.0"
 }
 
 },{}],43:[function(require,module,exports){
@@ -25488,10 +25468,10 @@ module.exports = function (session, opts) {
 
 },{"./grammar":43}],47:[function(require,module,exports){
 module.exports={
-  "name": "jssip",
+  "name": "jssip-rtcninja",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -25516,7 +25496,7 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.2.0",
+    "debug": "2.3.0",
     "rtcninja": "^0.7.0",
     "sdp-transform": "^1.6.2"
   },

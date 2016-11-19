@@ -1,8 +1,8 @@
 {
-  "name": "jssip",
+  "name": "jssip-rtcninja",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27,7 +27,7 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.2.0",
+    "debug": "2.3.0",
     "rtcninja": "^0.7.0",
     "sdp-transform": "^1.6.2"
   },

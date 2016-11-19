@@ -1,7 +1,7 @@
 {
   "name": "jssip",
   "description": "the Javascript SIP library",
-  "main": "dist/jssip.js",
+  "main": "dist/jssip-rtcninja.js",
   "homepage": "http://jssip.net",
   "authors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
