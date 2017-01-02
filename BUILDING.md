@@ -16,19 +16,22 @@ You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com
 ## How to build JsSIP
 
 Clone a copy of the main JsSIP git repository by running:
+
 ```bash
 $ git clone https://github.com/versatica/JsSIP.git JsSIP
 $ cd JsSIP
 ```
 
-Install `gulp-cli` 4.0 globally (which provides the `gulp` command):
+Install `gulp-cli` (>= 1.2.2) globally (which provides the `gulp` command):
+
 ```bash
-$ npm install -g gulpjs/gulp-cli#4.0
+$ npm install -g gulp-cli
 ```
 
 (you can also use the local `gulp` executable located in `node_modules/.bin/gulp`).
 
 Install the Node.js dependencies:
+
 ```bash
 $ npm install
 ```
@@ -55,6 +58,7 @@ $ gulp test
 ### Changes in JsSIP Grammar
 
 If you modify `lib/Grammar.pegjs` then you need to recompile it:
+
 ```bash
 $ gulp devel
 $ gulp dist
