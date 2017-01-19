@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.0.1 (released in 2017-01-19)
+--------------------------------------
+
+* Close #419. Allow sending the DTMF 'R' key. Used to report a hook flash.
+
+
 Version 3.0.0 (released in 2016-11-19)
 --------------------------------------
 

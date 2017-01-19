@@ -1,7 +1,7 @@
 /*
- * JsSIP v3.0.0
+ * JsSIP v3.0.1
  * the Javascript SIP library
- * Copyright: 2012-2016 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
  * License: MIT
  */
@@ -14468,7 +14468,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
   }
 
   // Check tones
-  if (!tones || typeof tones !== 'string' || !tones.match(/^[0-9A-D#*,]+$/i)) {
+  if (!tones || typeof tones !== 'string' || !tones.match(/^[0-9A-DR#*,]+$/i)) {
     throw new TypeError('Invalid tones: '+ tones);
   }
 
@@ -16533,7 +16533,7 @@ DTMF.prototype.send = function(tone, options) {
   }
 
   // Check tone value
-  if (!tone.match(/^[0-9A-D#*]$/)) {
+  if (!tone.match(/^[0-9A-DR#*]$/)) {
     throw new TypeError('Invalid tone: '+ tone);
   } else {
     this.tone = tone;
@@ -26178,7 +26178,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -26203,7 +26203,7 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "2.2.0",
+    "debug": "^2.3.3",
     "sdp-transform": "^1.6.2",
     "webrtc-adapter": "^2.0.8"
   },
