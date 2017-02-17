@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+
+Version 3.0.2 (released in 2017-02-17)
+--------------------------------------
+
+* Fix #418. Incorrect socket status on failure.
+
+
 Version 3.0.1 (released in 2017-01-19)
 --------------------------------------
 
