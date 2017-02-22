@@ -14528,7 +14528,7 @@ RTCSession.prototype.sendDTMF = function(tones, options) {
     } else {
       var dtmf = new RTCSession_DTMF(self);
       options.eventHandlers = {
-        failed: function() { self.tones = null; }
+        onFailed: function() { self.tones = null; }
       };
       dtmf.send(tone, options);
       timeout = duration + interToneGap;
@@ -16487,6 +16487,8 @@ DTMF.C = C;
 /**
  * Dependencies.
  */
+var util = require('util');
+var events = require('events');
 var debug = require('debug')('JsSIP:RTCSession:DTMF');
 var debugerror = require('debug')('JsSIP:ERROR:RTCSession:DTMF');
 debugerror.log = console.warn.bind(console);
@@ -16500,8 +16502,11 @@ function DTMF(session) {
   this.direction = null;
   this.tone = null;
   this.duration = null;
+
+  events.EventEmitter.call(this);
 }
 
+util.inherits(DTMF, events.EventEmitter);
 
 DTMF.prototype.send = function(tone, options) {
   var extraHeaders, body;
@@ -16566,29 +16571,38 @@ DTMF.prototype.receiveResponse = function(response) {
       break;
 
     case /^2[0-9]{2}$/.test(response.status_code):
-      debug('onSuccessResponse');
-      if (this.eventHandlers.onSuccessResponse) { this.eventHandlers.onSuccessResponse(response); }
+      this.emit('succeeded', {
+        originator: 'remote',
+        response: response
+      });
       break;
 
     default:
-      if (this.eventHandlers.onErrorResponse) { this.eventHandlers.onErrorResponse(response); }
+      if (this.eventHandlers.onFailed) {
+        this.eventHandlers.onFailed();
+      }
+
+      this.emit('failed', {
+        originator: 'remote',
+        response: response
+      });
       break;
   }
 };
 
 DTMF.prototype.onRequestTimeout = function() {
   debugerror('onRequestTimeout');
-  if (this.eventHandlers.onRequestTimeout) { this.eventHandlers.onRequestTimeout(); }
+  this.owner.onRequestTimeout();
 };
 
 DTMF.prototype.onTransportError = function() {
   debugerror('onTransportError');
-  if (this.eventHandlers.onTransportError) { this.eventHandlers.onTransportError(); }
+  this.owner.onTransportError();
 };
 
 DTMF.prototype.onDialogError = function() {
   debugerror('onDialogError');
-  if (this.eventHandlers.onDialogError) { this.eventHandlers.onDialogError(); }
+  this.owner.onDialogError();
 };
 
 DTMF.prototype.init_incoming = function(request) {
@@ -16630,7 +16644,7 @@ DTMF.prototype.init_incoming = function(request) {
   }
 };
 
-},{"../Constants":1,"../Exceptions":5,"../RTCSession":11,"debug":34}],13:[function(require,module,exports){
+},{"../Constants":1,"../Exceptions":5,"../RTCSession":11,"debug":34,"events":28,"util":32}],13:[function(require,module,exports){
 module.exports = ReferNotifier;
 
 

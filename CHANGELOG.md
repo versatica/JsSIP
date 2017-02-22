@@ -2,6 +2,12 @@ CHANGELOG
 =========
 
 
+Version 3.0.3 (released in 2017-02-22)
+--------------------------------------
+
+* Fix #426. Properly emit DTMF events.
+
+
 Version 3.0.2 (released in 2017-02-17)
 --------------------------------------
 
