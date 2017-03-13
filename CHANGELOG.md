@@ -2,6 +2,13 @@ CHANGELOG
 =========
 
 
+Version 3.0.4 (released in 2017-03-13)
+--------------------------------------
+
+* Update deps.
+* If ICE fails, terminate the session with status code 408.
+
+
 Version 3.0.3 (released in 2017-02-22)
 --------------------------------------
 
