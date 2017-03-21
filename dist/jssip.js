@@ -14160,6 +14160,8 @@ RTCSession.prototype.answer = function(options) {
       .catch(function(error) {
         userMediaFailed(error);
 
+        debugerror('emit "getusermediafailed" [error:%o]', error);
+
         self.emit('getusermediafailed', error);
       });
   // Otherwise don't prompt getUserMedia.
@@ -14179,6 +14181,8 @@ RTCSession.prototype.answer = function(options) {
     // If it's an incoming INVITE without SDP notify the app with the
     // RTCPeerConnection so it can do stuff on it before generating the offer.
     if (! self.request.body) {
+      debug('emit "peerconnection"');
+
       self.emit('peerconnection', {
         peerconnection: self.connection
       });
@@ -14188,6 +14192,8 @@ RTCSession.prototype.answer = function(options) {
       var e = {originator:'remote', type:'offer', sdp:request.body};
       var offer = new RTCSessionDescription({type:'offer', sdp:e.sdp});
 
+      debug('emit "sdp"');
+
       self.emit('sdp', e);
 
       self.connection.setRemoteDescription(offer)
@@ -14195,6 +14201,8 @@ RTCSession.prototype.answer = function(options) {
         .catch(function(error) {
           request.reply(488);
           failed.call(self, 'system', null, JsSIP_C.causes.WEBRTC_ERROR);
+
+          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
           self.emit('peerconnection:setremotedescriptionfailed', error);
         });
@@ -14978,7 +14986,7 @@ RTCSession.prototype.onTransportError = function() {
 
 
 RTCSession.prototype.onRequestTimeout = function() {
-  debug('onRequestTimeout');
+  debugerror('onRequestTimeout()');
 
   if(this.status !== C.STATUS_TERMINATED) {
     this.terminate({
@@ -15069,6 +15077,7 @@ function setACKTimer() {
   this.timers.ackTimer = setTimeout(function() {
     if(self.status === C.STATUS_WAITING_FOR_ACK) {
       debug('no ACK received, terminating the session');
+
       clearTimeout(self.timers.invite2xxTimer);
       sendRequest.call(self, JsSIP_C.BYE);
       ended.call(self, 'remote', null, JsSIP_C.causes.NO_ACK);
@@ -15111,6 +15120,8 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
         self.rtcReady = true;
         if (onFailure) { onFailure(error); }
 
+        debugerror('emit "peerconnection:createofferfailed" [error:%o]', error);
+
         self.emit('peerconnection:createofferfailed', error);
       });
   }
@@ -15120,6 +15131,8 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       .catch(function(error) {
         self.rtcReady = true;
         if (onFailure) { onFailure(error); }
+
+        debugerror('emit "peerconnection:createanswerfailed" [error:%o]', error);
 
         self.emit('peerconnection:createanswerfailed', error);
       });
@@ -15142,6 +15155,8 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
         if (onSuccess) {
           var e = {originator:'local', type:type, sdp:connection.localDescription.sdp};
 
+          debug('emit "sdp"');
+
           self.emit('sdp', e);
           onSuccess(e.sdp);
         }
@@ -15157,6 +15172,8 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
           if (onSuccess) {
             var e = {originator:'local', type:type, sdp:connection.localDescription.sdp};
 
+            debug('emit "sdp"');
+
             self.emit('sdp', e);
             onSuccess(e.sdp);
             onSuccess = null;
@@ -15166,6 +15183,8 @@ function createLocalDescription(type, onSuccess, onFailure, constraints) {
       .catch(function(error) {
         self.rtcReady = true;
         if (onFailure) { onFailure(error); }
+
+        debugerror('emit "peerconnection:setlocaldescriptionfailed" [error:%o]', error);
 
         self.emit('peerconnection:setlocaldescriptionfailed', error);
       });
@@ -15315,6 +15334,8 @@ function receiveReinvite(request) {
       .catch(function(error) {
         request.reply(488);
 
+        debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+
         self.emit('peerconnection:setremotedescriptionfailed', error);
       });
   }
@@ -15426,6 +15447,7 @@ function receiveUpdate(request) {
 
   if (contentType !== 'application/sdp') {
     debug('invalid Content-Type');
+
     request.reply(415);
     return;
   }
@@ -15453,6 +15475,8 @@ function receiveUpdate(request) {
 
   var e = {originator:'remote', type:'offer', sdp:request.body};
   var offer = new RTCSessionDescription({type:'offer', sdp:e.sdp});
+
+  debug('emit "sdp"');
 
   this.emit('sdp', e);
 
@@ -15487,6 +15511,8 @@ function receiveUpdate(request) {
     })
     .catch(function(error) {
       request.reply(488);
+
+      debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
       self.emit('peerconnection:setremotedescriptionfailed', error);
     });
@@ -15559,6 +15585,8 @@ function receiveRefer(request) {
   request.reply(202);
 
   notifier = new RTCSession_ReferNotifier(this, request.cseq);
+
+  debug('emit "refer"');
 
   // Emit 'refer'.
   this.emit('refer', {
@@ -15664,6 +15692,8 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
       {
         userMediaFailed(error);
 
+        debugerror('emit "getusermediafailed" [error:%o]', error);
+
         self.emit('getusermediafailed', error);
       });
   // Otherwise don't prompt getUserMedia.
@@ -15679,6 +15709,8 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
     if (stream) {
       self.connection.addStream(stream);
     }
+
+    debug('emit "peerconnection"');
 
     // Notify the app with the RTCPeerConnection so it can do stuff on it
     // before generating the offer.
@@ -15702,6 +15734,8 @@ function sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream) 
 
     self.request.body = desc;
     self.status = C.STATUS_INVITE_SENT;
+
+    debug('emit "sending" [request:%o]', self.request);
 
     // Emit 'sending' so the app can mangle the body before the request
     // is sent.
@@ -15815,6 +15849,8 @@ function receiveInviteResponse(response) {
         break;
       }
 
+      debug('emit "sdp"');
+
       e = {originator:'remote', type:'pranswer', sdp:response.body};
       this.emit('sdp', e);
 
@@ -15822,6 +15858,8 @@ function receiveInviteResponse(response) {
 
       this.connection.setRemoteDescription(pranswer)
         .catch(function(error) {
+          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
+
           self.emit('peerconnection:setremotedescriptionfailed', error);
         });
       break;
@@ -15840,6 +15878,8 @@ function receiveInviteResponse(response) {
         break;
       }
 
+      debug('emit "sdp"');
+
       e = {originator:'remote', type:'answer', sdp:response.body};
       this.emit('sdp', e);
 
@@ -15857,6 +15897,8 @@ function receiveInviteResponse(response) {
         .catch(function(error) {
           acceptAndTerminate.call(self, response, 488, 'Not Acceptable Here');
           failed.call(self, 'remote', response, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
+
+          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
           self.emit('peerconnection:setremotedescriptionfailed', error);
         });
@@ -15954,6 +15996,8 @@ function sendReinvite(options) {
     var e = {originator:'remote', type:'answer', sdp:response.body};
     var answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
 
+    debug('emit "sdp"');
+
     self.emit('sdp', e);
 
     self.connection.setRemoteDescription(answer)
@@ -15964,6 +16008,8 @@ function sendReinvite(options) {
       })
       .catch(function(error) {
         onFailed();
+
+        debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
         self.emit('peerconnection:setremotedescriptionfailed', error);
       });
@@ -16091,6 +16137,8 @@ function sendUpdate(options) {
       var e = {originator:'remote', type:'answer', sdp:response.body};
       var answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
 
+      debug('emit "sdp"');
+
       self.emit('sdp', e);
 
       self.connection.setRemoteDescription(answer)
@@ -16101,6 +16149,8 @@ function sendUpdate(options) {
         })
         .catch(function(error) {
           onFailed();
+
+          debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
           self.emit('peerconnection:setremotedescriptionfailed', error);
         });
@@ -16352,7 +16402,7 @@ function toogleMuteVideo(mute) {
 }
 
 function newRTCSession(originator, request) {
-  debug('newRTCSession');
+  debug('newRTCSession()');
 
   this.ua.newRTCSession({
     originator: originator,
@@ -16364,6 +16414,8 @@ function newRTCSession(originator, request) {
 function connecting(request) {
   debug('session connecting');
 
+  debug('emit "connecting"');
+
   this.emit('connecting', {
     request: request
   });
@@ -16371,6 +16423,8 @@ function connecting(request) {
 
 function progress(originator, response) {
   debug('session progress');
+
+  debug('emit "progress"');
 
   this.emit('progress', {
     originator: originator,
@@ -16383,6 +16437,8 @@ function accepted(originator, message) {
 
   this.start_time = new Date();
 
+  debug('emit "accepted"');
+
   this.emit('accepted', {
     originator: originator,
     response: message || null
@@ -16393,6 +16449,8 @@ function confirmed(originator, ack) {
   debug('session confirmed');
 
   this.is_confirmed = true;
+
+  debug('emit "confirmed"');
 
   this.emit('confirmed', {
     originator: originator,
@@ -16406,6 +16464,9 @@ function ended(originator, message, cause) {
   this.end_time = new Date();
 
   this.close();
+
+  debug('emit "ended"');
+
   this.emit('ended', {
     originator: originator,
     message: message || null,
@@ -16417,6 +16478,9 @@ function failed(originator, message, cause) {
   debug('session failed');
 
   this.close();
+
+  debug('emit "failed"');
+
   this.emit('failed', {
     originator: originator,
     message: message || null,
@@ -16429,6 +16493,8 @@ function onhold(originator) {
 
   setLocalMediaStatus.call(this);
 
+  debug('emit "hold"');
+
   this.emit('hold', {
     originator: originator
   });
@@ -16438,6 +16504,8 @@ function onunhold(originator) {
   debug('session onunhold');
 
   setLocalMediaStatus.call(this);
+
+  debug('emit "unhold"');
 
   this.emit('unhold', {
     originator: originator
@@ -16449,6 +16517,8 @@ function onmute(options) {
 
   setLocalMediaStatus.call(this);
 
+  debug('emit "muted"');
+
   this.emit('muted', {
     audio: options.audio,
     video: options.video
@@ -16459,6 +16529,8 @@ function onunmute(options) {
   debug('session onunmute');
 
   setLocalMediaStatus.call(this);
+
+  debug('emit "unmuted"');
 
   this.emit('unmuted', {
     audio: options.audio,
@@ -21540,14 +21612,17 @@ function save(namespaces) {
  */
 
 function load() {
+  var r;
   try {
-    return exports.storage.debug;
+    r = exports.storage.debug;
   } catch(e) {}
 
   // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-  if (typeof process !== 'undefined' && 'env' in process) {
-    return process.env.DEBUG;
+  if (!r && typeof process !== 'undefined' && 'env' in process) {
+    r = process.env.DEBUG;
   }
+
+  return r;
 }
 
 /**
@@ -26691,7 +26766,7 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.6.2",
+    "debug": "^2.6.3",
     "sdp-transform": "^2.3.0",
     "webrtc-adapter": "^3.2.0"
   },
@@ -26703,7 +26778,7 @@ module.exports={
     "gulp-jshint": "^2.0.4",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^2.1.0",
+    "gulp-uglify": "^2.1.2",
     "gulp-util": "^3.0.8",
     "jshint": "^2.9.4",
     "jshint-stylish": "^2.2.1",

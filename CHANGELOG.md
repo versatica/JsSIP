@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.0.5 (released in 2017-03-21)
+--------------------------------------
+
+* Update deps.
+* Add more debug logs into `RTCSession` class.
+
 
 Version 3.0.4 (released in 2017-03-13)
 --------------------------------------
