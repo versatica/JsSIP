@@ -5,8 +5,7 @@ You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com
 
 ### Node.js
 
-* [Install Node.js via package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
-* [Install Node.js from sources](http://nodejs.org)
+* [Install Node.js](https://nodejs.org/en/download/)
 
 ### Git
 
