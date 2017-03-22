@@ -15889,7 +15889,7 @@ function receiveInviteResponse(response) {
         .then(function() {
           // Be ready for 200 with SDP after a 180/183 with SDP. We created a SDP 'answer'
           // for it, so check the current signaling state.
-          if (self.connecting.signalingState === 'stable') {
+          if (self.connection.signalingState === 'stable') {
             return self.connection.createOffer()
               .then(function(offer) {
                 return self.connection.setLocalDescription(offer);
