@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-Version 3.0.6 (released in 2017-XX-XX)
+Version 3.0.6 (released in 2017-03-22)
 --------------------------------------
 
 * Fix #428. Don't use `pranswer` for early media. Instead create an `answer` and do a workaround when the 200 arrives.
