@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.6
+ * JsSIP v3.0.7
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -21241,7 +21241,14 @@ function onClose(e) {
     debug('WebSocket abrupt disconnection');
   }
 
-  this.ondisconnect(e.wasClean, e.code, e.reason);
+  var data = {
+    socket: this,
+    error: !e.wasClean,
+    code: e.code,
+    reason: e.reason
+  };
+
+  this.ondisconnect(data);
 }
 
 function onMessage(e) {
@@ -26762,7 +26769,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

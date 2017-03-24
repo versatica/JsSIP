@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.0.7 (released in 2017-03-24)
+--------------------------------------
+
+* Fix #431. Fix UA's `disconnect` event by properly providing an object with all the documente fields (thanks @nicketson for reporting it).
+
+
 Version 3.0.6 (released in 2017-03-22)
 --------------------------------------
 
