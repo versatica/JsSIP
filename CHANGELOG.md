@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.0.8 (released in 2017-05-03)
+--------------------------------------
+
+* Generic SIP INFO support.
+
+
 Version 3.0.7 (released in 2017-03-24)
 --------------------------------------
 
