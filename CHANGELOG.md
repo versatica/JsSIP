@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+Version 0.6.0 (to be released)
+--------------------------------------
+* [(6583659)](https://github.com/versatica/JsSIP/commit/6583659) Replaced event module with EventEmitter. `event.sender` is now `this` and `event.data` is `event`.
+* [(6205ba1)](https://github.com/versatica/JsSIP/commit/6205ba1) Removed `log` and `trace_sip` configuration options. Logging is now handled by the [debug module](https://github.com/visionmedia/debug).
 
 Version 3.0.8 (released in 2017-05-03)
 --------------------------------------
