@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.8
+ * JsSIP v3.0.10
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14191,11 +14191,11 @@ RTCSession.prototype.answer = function(options) {
 
     if (! self.late_sdp) {
       var e = {originator:'remote', type:'offer', sdp:request.body};
-      var offer = new RTCSessionDescription({type:'offer', sdp:e.sdp});
 
       debug('emit "sdp"');
-
       self.emit('sdp', e);
+
+      var offer = new RTCSessionDescription({type:'offer', sdp:e.sdp});
 
       self.connection.setRemoteDescription(offer)
         .then(remoteDescriptionSucceededOrNotNeeded)
@@ -15497,11 +15497,11 @@ function receiveUpdate(request) {
   }
 
   var e = {originator:'remote', type:'offer', sdp:request.body};
-  var offer = new RTCSessionDescription({type:'offer', sdp:e.sdp});
 
   debug('emit "sdp"');
-
   this.emit('sdp', e);
+
+  var offer = new RTCSessionDescription({type:'offer', sdp:e.sdp});
 
   this.connection.setRemoteDescription(offer)
     .then(function() {
@@ -15872,9 +15872,10 @@ function receiveInviteResponse(response) {
         break;
       }
 
+      e = {originator:'remote', type:'answer', sdp:response.body};
+
       debug('emit "sdp"');
 
-      e = {originator:'remote', type:'answer', sdp:response.body};
       this.emit('sdp', e);
 
       answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
@@ -15901,9 +15902,9 @@ function receiveInviteResponse(response) {
         break;
       }
 
-      debug('emit "sdp"');
-
       e = {originator:'remote', type:'answer', sdp:response.body};
+
+      debug('emit "sdp"');
       this.emit('sdp', e);
 
       answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
@@ -16038,11 +16039,11 @@ function sendReinvite(options) {
     }
 
     var e = {originator:'remote', type:'answer', sdp:response.body};
-    var answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
 
     debug('emit "sdp"');
-
     self.emit('sdp', e);
+
+    var answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
 
     self.connection.setRemoteDescription(answer)
       .then(function() {
@@ -16179,11 +16180,11 @@ function sendUpdate(options) {
       }
 
       var e = {originator:'remote', type:'answer', sdp:response.body};
-      var answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
 
       debug('emit "sdp"');
-
       self.emit('sdp', e);
+
+      var answer = new RTCSessionDescription({type:'answer', sdp:e.sdp});
 
       self.connection.setRemoteDescription(answer)
         .then(function() {
@@ -26479,7 +26480,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.8",
+  "version": "3.0.10",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
