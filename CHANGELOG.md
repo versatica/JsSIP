@@ -1,10 +1,16 @@
 CHANGELOG
 =========
 
+Version 3.0.11 (released in 2017-05-21)
+--------------------------------------
+
+* `RTCSession`: Emit "peerconnection" also for incoming calls.
+
+
 Version 3.0.10 (released in 2017-05-17)
 --------------------------------------
 
-* Emit SDP before new RTCSessionDescription. Thanks to @StarLeafRob.
+* Emit SDP before new `RTCSessionDescription`. Thanks to @StarLeafRob.
 
 
 Version 3.0.8 (released in 2017-05-03)
