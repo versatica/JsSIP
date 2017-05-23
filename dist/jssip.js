@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.11
+ * JsSIP v3.0.12
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -17334,12 +17334,18 @@ Registrator.prototype = {
             expires = this.expires;
           }
 
-          // Re-Register before the expiration interval has elapsed.
+          // Re-Register or emit an event before the expiration interval has elapsed.
           // For that, decrease the expires value. ie: 3 seconds
           this.registrationTimer = setTimeout(function() {
             self.registrationTimer = null;
-            self.register();
-          }, (expires * 1000) - 3000);
+            // If there are no listeners for registrationExpiring, renew registration
+            // If there are listeners, let the function listening do the register call
+            if (self.ua.listeners('registrationExpiring').length === 0) {
+              self.register();
+            } else {
+              self.ua.emit('registrationExpiring');
+            }
+          }, (expires * 1000) - 5000);
 
           //Save gruu values
           if (contact.hasParam('temp-gruu')) {
@@ -27379,7 +27385,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

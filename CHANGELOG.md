@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.0.12 (released in 2017-05-23)
+--------------------------------------
+
+* `UA`: Add `registrationExpiring` event (#442). Credits to @danjenkins.
+
+
 Version 3.0.11 (released in 2017-05-21)
 --------------------------------------
 
