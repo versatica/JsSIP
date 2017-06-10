@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.0.13 (released in 2017-06-10)
+--------------------------------------
+
+* `Registrator`: Don't send a Register request if another is on progress. Thanks to Paul Grebenc.
+
+
 Version 3.0.12 (released in 2017-05-23)
 --------------------------------------
 
