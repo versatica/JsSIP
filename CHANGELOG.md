@@ -1,6 +1,115 @@
 CHANGELOG
 =========
 
+Version 3.0.13 (released in 2017-06-10)
+--------------------------------------
+
+* `Registrator`: Don't send a Register request if another is on progress. Thanks to Paul Grebenc.
+
+
+Version 3.0.12 (released in 2017-05-23)
+--------------------------------------
+
+* `UA`: Add `registrationExpiring` event (#442). Credits to @danjenkins.
+
+
+Version 3.0.11 (released in 2017-05-21)
+--------------------------------------
+
+* `RTCSession`: Emit "peerconnection" also for incoming calls.
+
+
+Version 3.0.10 (released in 2017-05-17)
+--------------------------------------
+
+* Emit SDP before new `RTCSessionDescription`. Thanks to @StarLeafRob.
+
+
+Version 3.0.8 (released in 2017-05-03)
+--------------------------------------
+
+* Generic SIP INFO support.
+
+
+Version 3.0.7 (released in 2017-03-24)
+--------------------------------------
+
+* Fix #431. Fix UA's `disconnect` event by properly providing an object with all the documente fields (thanks @nicketson for reporting it).
+
+
+Version 3.0.6 (released in 2017-03-22)
+--------------------------------------
+
+* Fix #428. Don't use `pranswer` for early media. Instead create an `answer` and do a workaround when the 200 arrives.
+
+
+Version 3.0.5 (released in 2017-03-21)
+--------------------------------------
+
+* Update deps.
+* Add more debug logs into `RTCSession` class.
+
+
+Version 3.0.4 (released in 2017-03-13)
+--------------------------------------
+
+* Update deps.
+* If ICE fails, terminate the session with status code 408.
+
+
+Version 3.0.3 (released in 2017-02-22)
+--------------------------------------
+
+* Fix #426. Properly emit DTMF events.
+
+
+Version 3.0.2 (released in 2017-02-17)
+--------------------------------------
+
+* Fix #418. Incorrect socket status on failure.
+
+
+Version 3.0.1 (released in 2017-01-19)
+--------------------------------------
+
+* Close #419. Allow sending the DTMF 'R' key. Used to report a hook flash.
+
+
+Version 3.0.0 (released in 2016-11-19)
+--------------------------------------
+
+* Remove `rtcninja` dependency. Instead use `webrtc-adapter`.
+* `RTCSession:`: Remove `RTCPeerConnection` event wrappers. The app can access them via `session.connection`.
+* `RTCSession:`: Emit WebRTC related events when internal calls to `getUserMedia()`, `createOffer()`, etc. fail.
+* Use debug NPM fixed "2.0.0" version (until a pending bug in such a library is fixed).
+* `UA`: Remove `ws_servers` option.
+* `UA`: Allow immediate restart
+
+
+Version 2.0.6 (released in 2016-09-30)
+--------------------------------------
+
+* Improve library logs.
+
+
+Version 2.0.5 (released in 2016-09-28)
+--------------------------------------
+
+* Update dependencies.
+
+
+Version 2.0.4 (released in 2016-09-15)
+--------------------------------------
+
+* Fix #400. Corrupt NPM packege.
+
+
+Version 2.0.3 (released in 2016-08-23)
+--------------------------------------
+
+* Fix #385. No CANCEL request sent for authenticated requests.
+
+
 Version 2.0.2 (released in 2016-06-17)
 --------------------------------------
 

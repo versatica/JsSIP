@@ -1,9 +1,12 @@
 module.exports = {
-
   UA_CONFIGURATION: {
     uri: 'sip:f%61keUA@jssip.net',
     password: '1234ññññ',
-    ws_servers: 'ws://localhost:12345',
+    'sockets': [{
+      'via_transport':'WS',
+      'sip_uri':'sip:localhost:12345;transport=ws',
+      'url':'ws://localhost:12345'
+    }],
     display_name: 'Fake UA ð→€ł !!!',
     authorization_user: 'fakeUA',
     instance_id: 'uuid:8f1fa16a-1165-4a96-8341-785b1ef24f12',

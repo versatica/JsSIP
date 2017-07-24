@@ -19,6 +19,8 @@ module.exports = {
   'UA no WS connection': function(test) {
     var ua = new JsSIP.UA(testUA.UA_CONFIGURATION);
 
+    console.log('LALALALALALA');
+
     test.ok(ua instanceof(JsSIP.UA));
 
     ua.start();
@@ -34,6 +36,9 @@ module.exports = {
         case 'uri':
         case 'registrar_server':
           test.deepEqual(ua.configuration[parameter].toString(), testUA.UA_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);
+          break;
+        case 'sockets':
+          console.warn('IGNORE SOCKETS');
           break;
         default:
           test.deepEqual(ua.configuration[parameter], testUA.UA_CONFIGURATION_AFTER_START[parameter], 'testing parameter ' + parameter);

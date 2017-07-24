@@ -2,7 +2,7 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "2.0.2",
+  "version": "3.0.13",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27,22 +27,22 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^2.2.0",
-    "rtcninja": "^0.6.7",
-    "sdp-transform": "^1.6.2"
+    "debug": "^2.6.8",
+    "sdp-transform": "^2.3.0",
+    "webrtc-adapter": "^3.4.3"
   },
   "devDependencies": {
-    "browserify": "^13.0.1",
+    "browserify": "^14.3.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-expect-file": "0.0.7",
-    "gulp-header": "1.8.2",
-    "gulp-jshint": "^2.0.1",
+    "gulp-header": "1.8.8",
+    "gulp-jshint": "^2.0.4",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.3",
-    "gulp-util": "^3.0.7",
-    "jshint": "^2.9.2",
-    "jshint-stylish": "^2.2.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "jshint": "^2.9.4",
+    "jshint-stylish": "^2.2.1",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
