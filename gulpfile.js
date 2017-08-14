@@ -2,8 +2,8 @@
  * Dependencies.
  */
 var browserify = require('browserify');
-var vinyl_source_stream = require('vinyl-source-stream');
-var vinyl_buffer = require('vinyl-buffer');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var jshint = require('gulp-jshint');
@@ -32,6 +32,10 @@ const EXPECT_OPTIONS = {
 	checkRealFile: true
 };
 
+function logError(error)
+{
+	gutil.log(gutil.colors.red(String(error)));
+}
 
 gulp.task('lint', function() {
 	var src = ['gulpfile.js', 'lib/**/*.js', 'test/**/*.js'];
@@ -45,11 +49,25 @@ gulp.task('lint', function() {
 
 
 gulp.task('browserify', function() {
-	return browserify([path.join(__dirname, PKG.main)], {
-		standalone: PKG.title
-	}).bundle()
-		.pipe(vinyl_source_stream(PKG.name + '.js'))
-		.pipe(vinyl_buffer())
+	return browserify(
+		{
+			entries      : PKG.main,
+			extensions   : [ '.js' ],
+			// Required for sourcemaps (must be false otherwise).
+			debug        : false,
+			// Required for watchify (not used here).
+			cache        : null,
+			// Required for watchify (not used here).
+			packageCache : null,
+			// Required to be true only for watchify (not used here).
+			fullPaths    : false,
+			standalone   : PKG.title
+		})
+		.bundle()
+		.on('error', logError)
+		.pipe(source(`${PKG.name}.js`))
+		.pipe(buffer())
+		.pipe(rename(`${PKG.name}.js`))
 		.pipe(header(BANNER, BANNER_OPTIONS))
 		.pipe(gulp.dest('dist/'));
 });
