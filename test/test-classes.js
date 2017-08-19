@@ -140,8 +140,6 @@ module.exports = {
     name.display_name = '';
     test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
 
-    test.deepEqual(name.parameters, {});
-
     name.setParam('Foo', null);
     test.strictEqual(name.hasParam('FOO'), true);
 
