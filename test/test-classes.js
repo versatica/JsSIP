@@ -12,8 +12,6 @@ module.exports = {
     test.strictEqual(uri.user, 'alice');
     test.strictEqual(uri.host, 'jssip.net');
     test.strictEqual(uri.port, 6060);
-    test.deepEqual(uri.parameters, {});
-    test.deepEqual(uri.headers, {});
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net:6060');
     test.strictEqual(uri.toAor(), 'sip:alice@jssip.net');
     test.strictEqual(uri.toAor(false), 'sip:alice@jssip.net');
