@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+Version 3.0.14 (released in 2017-08-31)
+--------------------------------------
+* Update dependencies.
+
 Version 3.0.13 (released in 2017-06-10)
 --------------------------------------
 
