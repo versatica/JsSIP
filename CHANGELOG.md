@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.17 (released in 2017-10-12)
+--------------------------------------
+* RTCSession: process NOTIFY in early state.
+
+
 Version 3.0.16 (released in 2017-10-12)
 --------------------------------------
 * Fix #457. Properly retrieve ReferSubscriber. Thanks @btaens.

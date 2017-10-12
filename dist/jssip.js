@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.16
+ * JsSIP v3.0.17
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14934,7 +14934,12 @@ RTCSession.prototype.receiveRequest = function(request) {
         }
         break;
       case JsSIP_C.INFO:
-        if(this.status === C.STATUS_CONFIRMED || this.status === C.STATUS_WAITING_FOR_ACK || this.status === C.STATUS_INVITE_RECEIVED) {
+        if(this.status === C.STATUS_1XX_RECEIVED ||
+          this.status === C.STATUS_WAITING_FOR_ANSWER ||
+          this.status === C.STATUS_ANSWERED ||
+          this.status === C.STATUS_WAITING_FOR_ACK ||
+          this.status === C.STATUS_CONFIRMED
+        ) {
           contentType = request.getHeader('content-type');
           if (contentType && (contentType.match(/^application\/dtmf-relay/i))) {
             new RTCSession_DTMF(this).init_incoming(request);
@@ -27412,7 +27417,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.16",
+  "version": "3.0.17",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
