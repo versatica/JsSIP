@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.17
+ * JsSIP v3.0.18
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -226,6 +226,7 @@ function Dialog(owner, message, type, state) {
     this.remote_uri = message.parseHeader('from').uri;
     this.remote_target = contact.uri;
     this.route_set = message.getHeaders('record-route');
+    this.ack_seqnum = this.remote_seqnum;
   }
   // RFC 3261 12.1.2
   else if(type === 'UAC') {
@@ -243,6 +244,7 @@ function Dialog(owner, message, type, state) {
     this.remote_uri = message.parseHeader('to').uri;
     this.remote_target = contact.uri;
     this.route_set = message.getHeaders('record-route').reverse();
+    this.ack_seqnum = null;
   }
 
   this.owner = owner;
@@ -302,11 +304,17 @@ Dialog.prototype = {
     if(!this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
     } else if(request.cseq < this.remote_seqnum) {
-        //Do not try to reply to an ACK request.
-        if (request.method !== JsSIP_C.ACK) {
-          request.reply(500);
+        if(request.method === JsSIP_C.ACK) {
+          // We are not expecting any ACK with lower seqnum than the current one.
+          // Or this is not the ACK we are waiting for.
+          if(this.ack_seqnum === null || request.cseq !== this.ack_seqnum) {
+            return false;
+          }
         }
-        return false;
+        else {
+          request.reply(500);
+          return false;
+        }
     } else if(request.cseq > this.remote_seqnum) {
       this.remote_seqnum = request.cseq;
     }
@@ -374,6 +382,15 @@ Dialog.prototype = {
     //Check in-dialog request
     if(!this.checkInDialogRequest(request)) {
       return;
+    }
+
+    //ACK received. Cleanup this.ack_seqnum
+    if(request.method === JsSIP_C.ACK && this.ack_seqnum !== null) {
+      this.ack_seqnum = null;
+    }
+    //INVITE received. Set this.ack_seqnum
+    else if (request.method === JsSIP_C.INVITE) {
+        this.ack_seqnum = request.cseq;
     }
 
     this.owner.receiveRequest(request);
@@ -27417,7 +27434,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.17",
+  "version": "3.0.18",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

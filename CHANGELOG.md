@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.18 (released in 2017-10-13)
+--------------------------------------
+* Dialog: ACK to initial INVITE could have lower CSeq than current remote_cseq.
+
+
 Version 3.0.17 (released in 2017-10-12)
 --------------------------------------
 * RTCSession: process INFO in early state.
