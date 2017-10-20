@@ -1,6 +1,31 @@
 CHANGELOG
 =========
 
+Version 3.0.18 (released in 2017-10-13)
+--------------------------------------
+* Dialog: ACK to initial INVITE could have lower CSeq than current remote_cseq.
+
+
+Version 3.0.17 (released in 2017-10-12)
+--------------------------------------
+* RTCSession: process INFO in early state.
+
+
+Version 3.0.16 (released in 2017-10-12)
+--------------------------------------
+* Fix #457. Properly retrieve ReferSubscriber. Thanks @btaens.
+
+
+Version 3.0.15 (released in 2017-08-31)
+--------------------------------------
+* Fix #457. Support NOTIFY requests to REFER subscriptions without Event id parameter.
+
+
+Version 3.0.14 (released in 2017-08-31)
+--------------------------------------
+* Update dependencies.
+
+
 Version 3.0.13 (released in 2017-06-10)
 --------------------------------------
 
