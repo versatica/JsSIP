@@ -31,18 +31,32 @@
     "sdp-transform": "^2.3.0",
     "webrtc-adapter": "^5.0.0"
   },
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
+    ]
+  },
   "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "7.3.0",
     "browserify": "^14.3.0",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
+    "gulp-eslint": "^4.0.0",
     "gulp-expect-file": "0.0.7",
     "gulp-header": "1.8.9",
-    "gulp-jshint": "^2.0.4",
     "gulp-nodeunit-runner": "^0.2.2",
+    "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0",
     "gulp-util": "^3.0.8",
-    "jshint": "^2.9.4",
-    "jshint-stylish": "^2.2.1",
+    "eslint": "^4.4.1",
     "pegjs": "0.7.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
