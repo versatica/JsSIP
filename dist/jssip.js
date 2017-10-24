@@ -21779,7 +21779,7 @@ module.exports = function (_EventEmitter) {
 
       for (var parameter in this._configuration) {
         if (Object.prototype.hasOwnProperty.call(this._configuration, parameter)) {
-          if (writable_parameters.indexOf(parameter)) {
+          if (writable_parameters.indexOf(parameter) !== -1) {
             Object.defineProperty(this._configuration, parameter, {
               writable: true,
               configurable: false
@@ -22579,14 +22579,14 @@ exports.calculateMD5 = function (string) {
       var _c = str.charCodeAt(n);
 
       if (_c < 128) {
-        utftext += str.fromCharCode(_c);
+        utftext += String.fromCharCode(_c);
       } else if (_c > 127 && _c < 2048) {
-        utftext += str.fromCharCode(_c >> 6 | 192);
-        utftext += str.fromCharCode(_c & 63 | 128);
+        utftext += String.fromCharCode(_c >> 6 | 192);
+        utftext += String.fromCharCode(_c & 63 | 128);
       } else {
-        utftext += str.fromCharCode(_c >> 12 | 224);
-        utftext += str.fromCharCode(_c >> 6 & 63 | 128);
-        utftext += str.fromCharCode(_c & 63 | 128);
+        utftext += String.fromCharCode(_c >> 12 | 224);
+        utftext += String.fromCharCode(_c >> 6 & 63 | 128);
+        utftext += String.fromCharCode(_c & 63 | 128);
       }
     }
 
