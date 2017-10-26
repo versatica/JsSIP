@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.21 (released in 2017-10-26)
+--------------------------------------
+* WebSocketInterface: Add 'via_transport' setter.
+
+
 Version 3.0.20 (released in 2017-10-24)
 --------------------------------------
 * Fix typo on ES6 transpiling.

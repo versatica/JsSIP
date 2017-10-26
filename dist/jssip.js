@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.19
+ * JsSIP v3.0.20
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -22970,6 +22970,9 @@ module.exports = function () {
     key: 'via_transport',
     get: function get() {
       return this._via_transport;
+    },
+    set: function set(value) {
+      this._via_transport = value.toUpperCase();
     }
   }, {
     key: 'sip_uri',
@@ -28441,7 +28444,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.19",
+  "version": "3.0.20",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
