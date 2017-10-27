@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.21
+ * JsSIP v3.0.22
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -19187,6 +19187,26 @@ var InitialOutgoingInviteRequest = function (_OutgoingRequest) {
     value: function cancel(reason) {
       this.transaction.cancel(reason);
     }
+  }, {
+    key: 'clone',
+    value: function clone() {
+      var request = new InitialOutgoingInviteRequest(this.ruri, this.ua);
+
+      Object.keys(this.headers).forEach(function (name) {
+        request.headers[name] = this.headers[name].slice();
+      }, this);
+
+      request.body = this.body;
+      request.extraHeaders = Utils.cloneArray(this.extraHeaders);
+      request.to = this.to;
+      request.from = this.from;
+      request.call_id = this.call_id;
+      request.cseq = this.cseq;
+
+      request.transaction = this.transaction;
+
+      return request;
+    }
   }]);
 
   return InitialOutgoingInviteRequest;
@@ -22839,7 +22859,7 @@ module.exports = function () {
       throw new TypeError('Invalid argument: ' + url);
     } else {
       this._sip_uri = 'sip:' + parsed_url.host + (parsed_url.port ? ':' + parsed_url.port : '') + ';transport=ws';
-      this._via_transport = parsed_url.scheme;
+      this._via_transport = parsed_url.scheme.toUpperCase();
     }
   }
 
@@ -28444,7 +28464,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.21",
+  "version": "3.0.22",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

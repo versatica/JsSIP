@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 3.0.22 (released in 2017-10-27)
+--------------------------------------
+* Tests: enable test-UA-no-WebRTC tests.
+* WebSocketInterface: uppercase the via_transport attribute.
+* Fix #469. new method InitialOutgoingInviteRequest::clone().
+
+
 Version 3.0.21 (released in 2017-10-26)
 --------------------------------------
 * WebSocketInterface: Add 'via_transport' setter.
