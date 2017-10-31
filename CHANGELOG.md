@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+Version 3.0.23 (released in 2017-10-31)
+--------------------------------------
+* Fix typo. Thanks @michelepra.
+
 
 Version 3.0.22 (released in 2017-10-27)
 --------------------------------------
