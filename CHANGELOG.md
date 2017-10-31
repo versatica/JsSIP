@@ -1,6 +1,28 @@
 CHANGELOG
 =========
 
+Version 3.0.22 (released in 2017-10-27)
+--------------------------------------
+* Tests: enable test-UA-no-WebRTC tests.
+* WebSocketInterface: uppercase the via_transport attribute.
+* Fix #469. new method InitialOutgoingInviteRequest::clone().
+
+
+Version 3.0.21 (released in 2017-10-26)
+--------------------------------------
+* WebSocketInterface: Add 'via_transport' setter.
+
+
+Version 3.0.20 (released in 2017-10-24)
+--------------------------------------
+* Fix typo on ES6 transpiling.
+
+
+Version 3.0.19 (released in 2017-10-21)
+--------------------------------------
+* ES6 transpiling. Modernize full JsSIP code.
+
+
 Version 3.0.18 (released in 2017-10-13)
 --------------------------------------
 * Dialog: ACK to initial INVITE could have lower CSeq than current remote_cseq.

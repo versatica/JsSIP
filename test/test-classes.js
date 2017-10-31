@@ -1,18 +1,17 @@
 require('./include/common');
-var JsSIP = require('../');
+const JsSIP = require('../');
 
 
 module.exports = {
 
-  'new URI': function(test) {
-    var uri = new JsSIP.URI(null, 'alice', 'jssip.net', 6060);
+  'new URI' : function(test)
+  {
+    const uri = new JsSIP.URI(null, 'alice', 'jssip.net', 6060);
 
     test.strictEqual(uri.scheme, 'sip');
     test.strictEqual(uri.user, 'alice');
     test.strictEqual(uri.host, 'jssip.net');
     test.strictEqual(uri.port, 6060);
-    test.deepEqual(uri.parameters, {});
-    test.deepEqual(uri.headers, {});
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net:6060');
     test.strictEqual(uri.toAor(), 'sip:alice@jssip.net');
     test.strictEqual(uri.toAor(false), 'sip:alice@jssip.net');
@@ -37,14 +36,16 @@ module.exports = {
     uri.user = 'alice';
 
     test.throws(
-      function() {
+      function()
+      {
         uri.host = null;
       },
       TypeError
     );
     test.throws(
-      function() {
-        uri.host = {bar: 'foo'};
+      function()
+      {
+        uri.host = { bar: 'foo' };
       },
       TypeError
     );
@@ -60,10 +61,10 @@ module.exports = {
     uri.port = undefined;
     test.strictEqual(uri.port, null);
 
-    uri.port = 'ABCD';  // Should become null.
+    uri.port = 'ABCD'; // Should become null.
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
 
-    uri.port = '123ABCD';  // Should become 123.
+    uri.port = '123ABCD'; // Should become 123.
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net:123');
 
     uri.port = 0;
@@ -97,20 +98,21 @@ module.exports = {
 
     uri.setHeader('Foo', 'LALALA');
     test.strictEqual(uri.hasHeader('FOO'), true);
-    test.deepEqual(uri.getHeader('FOO'), ['LALALA']);
+    test.deepEqual(uri.getHeader('FOO'), [ 'LALALA' ]);
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net?Foo=LALALA');
 
-    uri.setHeader('bAz', ['ABC-1', 'ABC-2']);
-    test.deepEqual(uri.getHeader('baz'), ['ABC-1', 'ABC-2']);
+    uri.setHeader('bAz', [ 'ABC-1', 'ABC-2' ]);
+    test.deepEqual(uri.getHeader('baz'), [ 'ABC-1', 'ABC-2' ]);
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net?Foo=LALALA&Baz=ABC-1&Baz=ABC-2');
 
-    test.deepEqual(uri.deleteHeader('baZ'), ['ABC-1', 'ABC-2']);
+    test.deepEqual(uri.deleteHeader('baZ'), [ 'ABC-1', 'ABC-2' ]);
     test.deepEqual(uri.deleteHeader('NOO'), undefined);
 
     uri.clearHeaders();
     test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
 
-    var uri2 = uri.clone();
+    const uri2 = uri.clone();
+
     test.strictEqual(uri2.toString(), uri.toString());
     uri2.user = 'popo';
     test.strictEqual(uri2.user, 'popo');
@@ -119,9 +121,10 @@ module.exports = {
     test.done();
   },
 
-  'new NameAddr': function(test) {
-    var uri = new JsSIP.URI('sip', 'alice', 'jssip.net');
-    var name = new JsSIP.NameAddrHeader(uri, 'Alice æßð');
+  'new NameAddr' : function(test)
+  {
+    const uri = new JsSIP.URI('sip', 'alice', 'jssip.net');
+    const name = new JsSIP.NameAddrHeader(uri, 'Alice æßð');
 
     test.strictEqual(name.display_name, 'Alice æßð');
     test.strictEqual(name.toString(), '"Alice æßð" <sip:alice@jssip.net>');
@@ -135,8 +138,6 @@ module.exports = {
     name.display_name = '';
     test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
 
-    test.deepEqual(name.parameters, {});
-
     name.setParam('Foo', null);
     test.strictEqual(name.hasParam('FOO'), true);
 
@@ -149,7 +150,8 @@ module.exports = {
     name.clearParams();
     test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
 
-    var name2 = name.clone();
+    const name2 = name.clone();
+
     test.strictEqual(name2.toString(), name.toString());
     name2.display_name = '@ł€';
     test.strictEqual(name2.display_name, '@ł€');
