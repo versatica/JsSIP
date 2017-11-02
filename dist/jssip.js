@@ -14877,7 +14877,7 @@ module.exports = function (_EventEmitter) {
 
       // If a local MediaStream is given use it.
       if (mediaStream) {
-        userMediaSucceeded(mediaStream);
+        userMediaSucceeded.call(this, mediaStream);
       }
       // If at least audio or video is requested prompt getUserMedia.
       else if (mediaConstraints.audio || mediaConstraints.video) {
@@ -16582,7 +16582,7 @@ module.exports = function (_EventEmitter) {
       if (mediaStream) {
         // Wait a bit so the app can set events such as 'peerconnection' and 'connecting'.
         setTimeout(function () {
-          userMediaSucceeded(mediaStream);
+          userMediaSucceeded.call(_this22, mediaStream);
         });
         // If at least audio or video is requested prompt getUserMedia.
       } else if (mediaConstraints.audio || mediaConstraints.video) {
@@ -29476,7 +29476,7 @@ module.exports={
   "dependencies": {
     "debug": "^3.0.1",
     "sdp-transform": "^2.3.0",
-    "webrtc-adapter": "^5.0.0"
+    "webrtc-adapter": "^5.0.6"
   },
   "browserify": {
     "transform": [
