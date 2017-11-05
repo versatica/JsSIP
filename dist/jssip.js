@@ -14907,12 +14907,6 @@ module.exports = function (_EventEmitter) {
           this._connection.addStream(stream);
         }
 
-        debug('emit "peerconnection"');
-
-        this.emit('peerconnection', {
-          peerconnection: this._connection
-        });
-
         if (!this._late_sdp) {
           var e = { originator: 'remote', type: 'offer', sdp: request.body };
 
@@ -15910,6 +15904,12 @@ module.exports = function (_EventEmitter) {
           });
         }
       });
+
+      debug('emit "peerconnection"');
+
+      this.emit('peerconnection', {
+        peerconnection: this._connection
+      });
     }
   }, {
     key: '_createLocalDescription',
@@ -16609,14 +16609,6 @@ module.exports = function (_EventEmitter) {
         if (stream) {
           this._connection.addStream(stream);
         }
-
-        debug('emit "peerconnection"');
-
-        // Notify the app with the RTCPeerConnection so it can do stuff on it
-        // before generating the offer.
-        this.emit('peerconnection', {
-          peerconnection: this._connection
-        });
 
         this._connecting(this._request);
         this._createLocalDescription('offer', rtcSucceeded.bind(this), rtcFailed.bind(this), rtcOfferConstraints);

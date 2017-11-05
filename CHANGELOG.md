@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.24 (released in 2017-11-5)
+--------------------------------------
+* Fix #421. Fire RTCSession 'peerconnection' event as soon as its created
+
+
 Version 3.0.23 (released in 2017-10-31)
 --------------------------------------
 * Fix typo. Thanks @michelepra.
