@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.25 (released in 2017-11-6)
+--------------------------------------
+* Use promise chaining to prevent PeerConnection state race conditions. Thanks @davies147
+
+
 Version 3.0.24 (released in 2017-11-5)
 --------------------------------------
 * Fix #421. Fire RTCSession 'peerconnection' event as soon as its created
