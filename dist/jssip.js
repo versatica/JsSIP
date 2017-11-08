@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.23
+ * JsSIP v3.0.26
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14355,6 +14355,9 @@ module.exports = function (_EventEmitter) {
     // The RTCPeerConnection instance (public attribute).
     _this._connection = null;
 
+    // Prevent races on serial PeerConnction operations.
+    _this._connectionPromiseQueue = Promise.resolve();
+
     // Incoming/Outgoing request being currently processed.
     _this._request = null;
 
@@ -14915,7 +14918,9 @@ module.exports = function (_EventEmitter) {
 
           var offer = new RTCSessionDescription({ type: 'offer', sdp: e.sdp });
 
-          this._connection.setRemoteDescription(offer).then(remoteDescriptionSucceededOrNotNeeded.bind(this)).catch(function (error) {
+          this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+            return _this4._connection.setRemoteDescription(offer);
+          }).then(remoteDescriptionSucceededOrNotNeeded.bind(this)).catch(function (error) {
             request.reply(488);
             _this4._failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
 
@@ -15591,7 +15596,9 @@ module.exports = function (_EventEmitter) {
 
               this.emit('sdp', e);
 
-              this._connection.setRemoteDescription(answer).then(function () {
+              this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+                return _this11._connection.setRemoteDescription(answer);
+              }).then(function () {
                 if (!_this11._is_confirmed) {
                   _this11._confirmed('remote', request);
                 }
@@ -15923,7 +15930,9 @@ module.exports = function (_EventEmitter) {
       this._rtcReady = false;
 
       if (type === 'offer') {
-        connection.createOffer(constraints).then(createSucceeded.bind(this)).catch(function (error) {
+        this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+          return connection.createOffer(constraints);
+        }).then(createSucceeded.bind(this)).catch(function (error) {
           _this14._rtcReady = true;
           if (onFailure) {
             onFailure(error);
@@ -15934,7 +15943,9 @@ module.exports = function (_EventEmitter) {
           _this14.emit('peerconnection:createofferfailed', error);
         });
       } else if (type === 'answer') {
-        connection.createAnswer(constraints).then(createSucceeded.bind(this)).catch(function (error) {
+        this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+          return connection.createAnswer(constraints);
+        }).then(createSucceeded.bind(this)).catch(function (error) {
           _this14._rtcReady = true;
           if (onFailure) {
             onFailure(error);
@@ -16166,7 +16177,9 @@ module.exports = function (_EventEmitter) {
 
         this.emit('sdp', e);
 
-        this._connection.setRemoteDescription(offer).then(doAnswer.bind(this)).catch(function (error) {
+        this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+          return _this16._connection.setRemoteDescription(offer);
+        }).then(doAnswer.bind(this)).catch(function (error) {
           request.reply(488);
 
           debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
@@ -16335,7 +16348,9 @@ module.exports = function (_EventEmitter) {
 
       var offer = new RTCSessionDescription({ type: 'offer', sdp: e.sdp });
 
-      this._connection.setRemoteDescription(offer).then(function () {
+      this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+        return _this18._connection.setRemoteDescription(offer);
+      }).then(function () {
         if (_this18._remoteHold === true && hold === false) {
           _this18._remoteHold = false;
           _this18._onunhold('remote');
@@ -16742,7 +16757,9 @@ module.exports = function (_EventEmitter) {
 
             var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
-            this._connection.setRemoteDescription(answer).catch(function (error) {
+            this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+              return _this23._connection.setRemoteDescription(answer);
+            }).catch(function (error) {
               debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
               _this23.emit('peerconnection:setremotedescriptionfailed', error);
@@ -16772,7 +16789,7 @@ module.exports = function (_EventEmitter) {
 
             var _answer = new RTCSessionDescription({ type: 'answer', sdp: _e.sdp });
 
-            Promise.resolve().then(function () {
+            this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
               // Be ready for 200 with SDP after a 180/183 with SDP. We created a SDP 'answer'
               // for it, so check the current signaling state.
               if (_this23._connection.signalingState === 'stable') {
@@ -16909,7 +16926,9 @@ module.exports = function (_EventEmitter) {
 
         var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
-        this._connection.setRemoteDescription(answer).then(function () {
+        this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+          return _this25._connection.setRemoteDescription(answer);
+        }).then(function () {
           if (eventHandlers.succeeded) {
             eventHandlers.succeeded(response);
           }
@@ -17049,7 +17068,9 @@ module.exports = function (_EventEmitter) {
 
           var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
-          this._connection.setRemoteDescription(answer).then(function () {
+          this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
+            return _this27._connection.setRemoteDescription(answer);
+          }).then(function () {
             if (eventHandlers.succeeded) {
               eventHandlers.succeeded(response);
             }
@@ -17631,9 +17652,9 @@ module.exports = function (_EventEmitter) {
       return this._connection;
     }
   }, {
-    key: 'direcion',
+    key: 'direction',
     get: function get() {
-      return this._direcion;
+      return this._direction;
     }
   }, {
     key: 'local_identity',
@@ -29441,7 +29462,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.23",
+  "version": "3.0.26",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

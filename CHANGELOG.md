@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.26 (released in 2017-11-8)
+--------------------------------------
+* Fix #473. Typo. Thanks @ikq.
+
+
 Version 3.0.25 (released in 2017-11-6)
 --------------------------------------
 * Use promise chaining to prevent PeerConnection state race conditions. Thanks @davies147
