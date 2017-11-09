@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.28 (released in 2017-11-9)
+--------------------------------------
+* Fix improper call to userMediaSucceeded. Thanks @iclems
+
+
 Version 3.0.27 (released in 2017-11-9)
 --------------------------------------
 * Registrator: add missing getter. Thanks Martin Ekblom.

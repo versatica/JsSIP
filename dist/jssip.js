@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.27
+ * JsSIP v3.0.28
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14880,7 +14880,7 @@ module.exports = function (_EventEmitter) {
 
       // If a local MediaStream is given use it.
       if (mediaStream) {
-        userMediaSucceeded(mediaStream);
+        userMediaSucceeded.call(this, mediaStream);
       }
       // If at least audio or video is requested prompt getUserMedia.
       else if (mediaConstraints.audio || mediaConstraints.video) {
@@ -16597,7 +16597,7 @@ module.exports = function (_EventEmitter) {
       if (mediaStream) {
         // Wait a bit so the app can set events such as 'peerconnection' and 'connecting'.
         setTimeout(function () {
-          userMediaSucceeded(mediaStream);
+          userMediaSucceeded.call(_this22, mediaStream);
         });
         // If at least audio or video is requested prompt getUserMedia.
       } else if (mediaConstraints.audio || mediaConstraints.video) {
@@ -29467,7 +29467,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.27",
+  "version": "3.0.28",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
