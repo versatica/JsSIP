@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.0.27 (released in 2017-11-9)
+--------------------------------------
+* Registrator: add missing getter. Thanks Martin Ekblom.
+
+
 Version 3.0.26 (released in 2017-11-8)
 --------------------------------------
 * Fix #473. Typo. Thanks @ikq.
