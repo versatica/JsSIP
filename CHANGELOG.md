@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.1.0 (released in 2017-11-10)
+--------------------------------------
+* New UA configuration parameter 'session_timers_refresh_method'. Thanks @michelepra
+
+
 Version 3.0.28 (released in 2017-11-9)
 --------------------------------------
 * Fix improper call to userMediaSucceeded. Thanks @iclems

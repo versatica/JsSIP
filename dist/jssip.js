@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.0.28
+ * JsSIP v3.1.0
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -37,6 +37,7 @@ exports.settings = {
 
   // Session parameters.
   session_timers: true,
+  session_timers_refresh_method: JsSIP_C.UPDATE,
   no_answer_timeout: 60,
 
   // Registration parameters.
@@ -184,6 +185,15 @@ var checks = {
     session_timers: function session_timers(_session_timers) {
       if (typeof _session_timers === 'boolean') {
         return _session_timers;
+      }
+    },
+    session_timers_refresh_method: function session_timers_refresh_method(method) {
+      if (typeof method === 'string') {
+        method = method.toUpperCase();
+
+        if (method === JsSIP_C.INVITE || method === JsSIP_C.UPDATE) {
+          return method;
+        }
       }
     },
     password: function password(_password) {
@@ -14407,6 +14417,7 @@ module.exports = function (_EventEmitter) {
     // Session Timers (RFC 4028).
     _this._sessionTimers = {
       enabled: _this._ua.configuration.session_timers,
+      refreshMethod: _this._ua.configuration.session_timers_refresh_method,
       defaultExpires: JsSIP_C.SESSION_EXPIRES,
       currentExpires: null,
       running: false,
@@ -17337,13 +17348,11 @@ module.exports = function (_EventEmitter) {
 
           debug('runSessionTimer() | sending session refresh request');
 
-          _this28._sendUpdate({
-            eventHandlers: {
-              succeeded: function succeeded(response) {
-                _this28._handleSessionTimersInIncomingResponse(response);
-              }
-            }
-          });
+          if (_this28._sessionTimers.refreshMethod === JsSIP_C.UPDATE) {
+            _this28._sendUpdate();
+          } else {
+            _this28._sendReinvite();
+          }
         }, expires * 500); // Half the given interval (as the RFC states).
       }
 
@@ -21158,11 +21167,7 @@ module.exports = function (_EventEmitter) {
   }, {
     key: 'isRegistered',
     value: function isRegistered() {
-      if (this._registrator.registered) {
-        return true;
-      } else {
-        return false;
-      }
+      return this._registrator.registered;
     }
 
     /**
@@ -29467,7 +29472,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.0.28",
+  "version": "3.1.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
