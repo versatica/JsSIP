@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.1.0
+ * JsSIP v3.1.1
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -906,9 +906,11 @@ module.exports = function () {
 
   }, {
     key: 'authenticate',
-    value: function authenticate(_ref, challenge) {
+    value: function authenticate(_ref, challenge) /* test interface */{
       var method = _ref.method,
-          ruri = _ref.ruri;
+          ruri = _ref.ruri,
+          body = _ref.body;
+      var cnonce = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
       this._algorithm = challenge.algorithm;
       this._realm = challenge.realm;
@@ -957,10 +959,10 @@ module.exports = function () {
 
       // 'qop' can contain a list of values (Array). Let's choose just one.
       if (challenge.qop) {
-        if (challenge.qop.indexOf('auth') > -1) {
-          this._qop = 'auth';
-        } else if (challenge.qop.indexOf('auth-int') > -1) {
+        if (challenge.qop.indexOf('auth-int') > -1) {
           this._qop = 'auth-int';
+        } else if (challenge.qop.indexOf('auth') > -1) {
+          this._qop = 'auth';
         } else {
           // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
           debugerror('authenticate() | challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
@@ -975,7 +977,7 @@ module.exports = function () {
 
       this._method = method;
       this._uri = ruri;
-      this._cnonce = Utils.createRandomToken(12);
+      this._cnonce = cnonce || Utils.createRandomToken(12);
       this._nc += 1;
       var hex = Number(this._nc).toString(16);
 
@@ -1008,7 +1010,7 @@ module.exports = function () {
         this._response = Utils.calculateMD5(this._ha1 + ':' + this._nonce + ':' + this._ncHex + ':' + this._cnonce + ':auth:' + ha2);
       } else if (this._qop === 'auth-int') {
         // HA2 = MD5(A2) = MD5(method:digestURI:MD5(entityBody)).
-        ha2 = Utils.calculateMD5(this._method + ':' + this._uri + ':' + Utils.calculateMD5(this.body ? this.body : ''));
+        ha2 = Utils.calculateMD5(this._method + ':' + this._uri + ':' + Utils.calculateMD5(body ? body : ''));
         // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
         this._response = Utils.calculateMD5(this._ha1 + ':' + this._nonce + ':' + this._ncHex + ':' + this._cnonce + ':auth-int:' + ha2);
       } else if (this._qop === null) {
@@ -29472,7 +29474,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

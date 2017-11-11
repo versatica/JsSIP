@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.1.1 (released in 2017-11-11)
+--------------------------------------
+* DigestAuthentication: fix 'auth-int' qop authentication
+* DigestAuthentication: add tests
+
+
 Version 3.1.0 (released in 2017-11-10)
 --------------------------------------
 * New UA configuration parameter 'session_timers_refresh_method'. Thanks @michelepra
