@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.1.1
+ * JsSIP v3.1.2
  * the Javascript SIP library
  * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -15605,9 +15605,11 @@ module.exports = function (_EventEmitter) {
               }
 
               var e = { originator: 'remote', type: 'answer', sdp: request.body };
-              var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
+              debug('emit "sdp"');
               this.emit('sdp', e);
+
+              var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
               this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
                 return _this11._connection.setRemoteDescription(answer);
@@ -16186,9 +16188,11 @@ module.exports = function (_EventEmitter) {
         }
 
         var e = { originator: 'remote', type: 'offer', sdp: request.body };
-        var offer = new RTCSessionDescription({ type: 'offer', sdp: e.sdp });
 
+        debug('emit "sdp"');
         this.emit('sdp', e);
+
+        var offer = new RTCSessionDescription({ type: 'offer', sdp: e.sdp });
 
         this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
           return _this16._connection.setRemoteDescription(offer);
@@ -16765,7 +16769,6 @@ module.exports = function (_EventEmitter) {
             var e = { originator: 'remote', type: 'answer', sdp: response.body };
 
             debug('emit "sdp"');
-
             this.emit('sdp', e);
 
             var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
@@ -16803,8 +16806,8 @@ module.exports = function (_EventEmitter) {
             var _answer = new RTCSessionDescription({ type: 'answer', sdp: _e.sdp });
 
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
-              // Be ready for 200 with SDP after a 180/183 with SDP. We created a SDP 'answer'
-              // for it, so check the current signaling state.
+              // Be ready for 200 with SDP after a 180/183 with SDP.
+              // We created a SDP 'answer' for it, so check the current signaling state.
               if (_this23._connection.signalingState === 'stable') {
                 return _this23._connection.createOffer().then(function (offer) {
                   return _this23._connection.setLocalDescription(offer);
@@ -22872,7 +22875,7 @@ module.exports = function () {
     this._url = url;
     this._sip_uri = null;
     this._via_transport = null;
-    this.ws = null;
+    this._ws = null;
 
     var parsed_url = Grammar.parse(url, 'absoluteURI');
 
@@ -29474,7 +29477,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
