@@ -22876,7 +22876,7 @@ module.exports = function () {
     this._url = url;
     this._sip_uri = null;
     this._via_transport = null;
-    this.ws = null;
+    this._ws = null;
 
     var parsed_url = Grammar.parse(url, 'absoluteURI');
 
