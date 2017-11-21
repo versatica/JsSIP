@@ -15605,9 +15605,11 @@ module.exports = function (_EventEmitter) {
               }
 
               var e = { originator: 'remote', type: 'answer', sdp: request.body };
-              var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
+              debug('emit "sdp"');
               this.emit('sdp', e);
+
+              var answer = new RTCSessionDescription({ type: 'answer', sdp: e.sdp });
 
               this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
                 return _this11._connection.setRemoteDescription(answer);
@@ -16186,9 +16188,11 @@ module.exports = function (_EventEmitter) {
         }
 
         var e = { originator: 'remote', type: 'offer', sdp: request.body };
-        var offer = new RTCSessionDescription({ type: 'offer', sdp: e.sdp });
 
+        debug('emit "sdp"');
         this.emit('sdp', e);
+
+        var offer = new RTCSessionDescription({ type: 'offer', sdp: e.sdp });
 
         this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
           return _this16._connection.setRemoteDescription(offer);
@@ -16803,8 +16807,8 @@ module.exports = function (_EventEmitter) {
             var _answer = new RTCSessionDescription({ type: 'answer', sdp: _e.sdp });
 
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
-              // Be ready for 200 with SDP after a 180/183 with SDP. We created a SDP 'answer'
-              // for it, so check the current signaling state.
+              // Be ready for 200 with SDP after a 180/183 with SDP.
+              // We created a SDP 'answer' for it, so check the current signaling state.
               if (_this23._connection.signalingState === 'stable') {
                 return _this23._connection.createOffer().then(function (offer) {
                   return _this23._connection.setLocalDescription(offer);
@@ -24453,9 +24457,7 @@ function writeMediaSection(transceiver, caps, type, stream, dtlsRole) {
 
   sdp += 'a=mid:' + transceiver.mid + '\r\n';
 
-  if (transceiver.direction) {
-    sdp += 'a=' + transceiver.direction + '\r\n';
-  } else if (transceiver.rtpSender && transceiver.rtpReceiver) {
+  if (transceiver.rtpSender && transceiver.rtpReceiver) {
     sdp += 'a=sendrecv\r\n';
   } else if (transceiver.rtpSender) {
     sdp += 'a=sendonly\r\n';
@@ -24529,7 +24531,6 @@ function filterIceServers(iceServers, edgeVersion) {
       server.urls = isString ? urls[0] : urls;
       return !!urls.length;
     }
-    return false;
   });
 }
 
@@ -24641,6 +24642,24 @@ function maybeAddCandidate(iceTransport, candidate) {
     iceTransport.addRemoteCandidate(candidate);
   }
   return !alreadyAdded;
+}
+
+
+// https://w3c.github.io/mediacapture-main/#mediastream
+// Helper function to add the track to the stream and
+// dispatch the event ourselves.
+function addTrackToStreamAndFireEvent(track, stream) {
+  stream.addTrack(track);
+  var e = new Event('addtrack'); // TODO: MediaStreamTrackEvent
+  e.track = track;
+  stream.dispatchEvent(e);
+}
+
+function removeTrackFromStreamAndFireEvent(track, stream) {
+  stream.removeTrack(track);
+  var e = new Event('removetrack'); // TODO: MediaStreamTrackEvent
+  e.track = track;
+  stream.dispatchEvent(e);
 }
 
 module.exports = function(window, edgeVersion) {
@@ -24770,6 +24789,7 @@ module.exports = function(window, edgeVersion) {
       sendEncodingParameters: null,
       recvEncodingParameters: null,
       stream: null,
+      associatedRemoteMediaStreams: [],
       wantReceive: true
     };
     if (this.usingBundle && hasBundleTransport) {
@@ -24832,12 +24852,50 @@ module.exports = function(window, edgeVersion) {
     }
   };
 
-  RTCPeerConnection.prototype.removeStream = function(stream) {
-    var idx = this.localStreams.indexOf(stream);
-    if (idx > -1) {
-      this.localStreams.splice(idx, 1);
-      this._maybeFireNegotiationNeeded();
+  RTCPeerConnection.prototype.removeTrack = function(sender) {
+    if (!(sender instanceof window.RTCRtpSender)) {
+      throw new TypeError('Argument 1 of RTCPeerConnection.removeTrack ' +
+          'does not implement interface RTCRtpSender.');
     }
+
+    var transceiver = this.transceivers.find(function(t) {
+      return t.rtpSender === sender;
+    });
+
+    if (!transceiver) {
+      var err = new Error('Sender was not created by this connection.');
+      err.name = 'InvalidAccessError';
+      throw err;
+    }
+    var stream = transceiver.stream;
+
+    transceiver.rtpSender.stop();
+    transceiver.rtpSender = null;
+    transceiver.track = null;
+    transceiver.stream = null;
+
+    // remove the stream from the set of local streams
+    var localStreams = this.transceivers.map(function(t) {
+      return t.stream;
+    });
+    if (localStreams.indexOf(stream) === -1 &&
+        this.localStreams.indexOf(stream) > -1) {
+      this.localStreams.splice(this.localStreams.indexOf(stream), 1);
+    }
+
+    this._maybeFireNegotiationNeeded();
+  };
+
+  RTCPeerConnection.prototype.removeStream = function(stream) {
+    var self = this;
+    stream.getTracks().forEach(function(track) {
+      var sender = self.getSenders().find(function(s) {
+        return s.track === track;
+      });
+      if (sender) {
+        self.removeTrack(sender);
+      }
+    });
   };
 
   RTCPeerConnection.prototype.getSenders = function() {
@@ -25323,6 +25381,7 @@ module.exports = function(window, edgeVersion) {
           ssrc: (2 * sdpMLineIndex + 2) * 1001
         }];
 
+        // TODO: rewrite to use http://w3c.github.io/webrtc-pc/#set-associated-remote-streams
         var isNewTrack = false;
         if (direction === 'sendrecv' || direction === 'sendonly') {
           isNewTrack = !transceiver.rtpReceiver;
@@ -25354,9 +25413,20 @@ module.exports = function(window, edgeVersion) {
               }
               stream = streams.default;
             }
-            stream.addTrack(track);
+            addTrackToStreamAndFireEvent(track, stream);
             receiverList.push([track, rtpReceiver, stream]);
+            transceiver.associatedRemoteMediaStreams.push(stream);
           }
+        } else if (transceiver.rtpReceiver && transceiver.rtpReceiver.track) {
+          transceiver.associatedRemoteMediaStreams.forEach(function(s) {
+            var nativeTrack = s.getTracks().find(function(t) {
+              return t.id === transceiver.rtpReceiver.track.id;
+            });
+            if (nativeTrack) {
+              removeTrackFromStreamAndFireEvent(nativeTrack, s);
+            }
+          });
+          transceiver.associatedRemoteMediaStreams = [];
         }
 
         transceiver.localCapabilities = localCapabilities;
@@ -25411,6 +25481,7 @@ module.exports = function(window, edgeVersion) {
             direction === 'sendrecv' || direction === 'recvonly',
             direction === 'sendrecv' || direction === 'sendonly');
 
+        // TODO: rewrite to use http://w3c.github.io/webrtc-pc/#set-associated-remote-streams
         if (rtpReceiver &&
             (direction === 'sendrecv' || direction === 'sendonly')) {
           track = rtpReceiver.track;
@@ -25418,13 +25489,13 @@ module.exports = function(window, edgeVersion) {
             if (!streams[remoteMsid.stream]) {
               streams[remoteMsid.stream] = new window.MediaStream();
             }
-            streams[remoteMsid.stream].addTrack(track);
+            addTrackToStreamAndFireEvent(track, streams[remoteMsid.stream]);
             receiverList.push([track, rtpReceiver, streams[remoteMsid.stream]]);
           } else {
             if (!streams.default) {
               streams.default = new window.MediaStream();
             }
-            streams.default.addTrack(track);
+            addTrackToStreamAndFireEvent(track, streams.default);
             receiverList.push([track, rtpReceiver, streams.default]);
           }
         } else {
