@@ -15,7 +15,13 @@ module.exports = {
         /* eslint no-unused-vars: 0*/
         const ua = new JsSIP.UA({ 'lalala': 'lololo' });
       },
-      JsSIP.Exceptions.ConfigurationError
+      // Error validation.
+      // NOTE: We should use JsSIP.Exceptions.ConfigurationError, but
+      // babel does not properly create Error subclasses.
+      function(error)
+      {
+        return error.name === 'CONFIGURATION_ERROR';
+      }
     );
 
     test.done();
@@ -85,8 +91,7 @@ module.exports = {
       function()
       {
         ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE');
-      },
-      JsSIP.Exceptions.TypeError
+      }
     );
 
     ua.stop();

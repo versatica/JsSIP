@@ -2,14 +2,12 @@
 'use strict';
 /* eslint-enable strict */
 
-/**
- * Dependencies.
- */
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
 const gulp = require('gulp');
 const gutil = require('gulp-util');
+const babel = require('gulp-babel');
 const uglify = require('gulp-uglify');
 const rename = require('gulp-rename');
 const header = require('gulp-header');
@@ -52,6 +50,13 @@ gulp.task('lint', function()
     .pipe(eslint.format());
 });
 
+gulp.task('babel', function()
+{
+  return gulp
+    .src([ 'lib/**/*.js' ])
+    .pipe(babel())
+    .pipe(gulp.dest('lib-es5'));
+});
 
 gulp.task('browserify', function()
 {
@@ -78,7 +83,6 @@ gulp.task('browserify', function()
     .pipe(gulp.dest('dist/'));
 });
 
-
 gulp.task('uglify', function()
 {
   const src = `dist/${ PKG.name }.js`;
@@ -90,7 +94,6 @@ gulp.task('uglify', function()
     .pipe(rename(`${PKG.name }.min.js`))
     .pipe(gulp.dest('dist/'));
 });
-
 
 gulp.task('test', function()
 {
@@ -108,7 +111,6 @@ gulp.task('test', function()
     .pipe(expect(EXPECT_OPTIONS, src))
     .pipe(nodeunit({ reporter: 'default' }));
 });
-
 
 gulp.task('grammar', function(cb)
 {
@@ -141,7 +143,8 @@ gulp.task('grammar', function(cb)
   );
 });
 
-
 gulp.task('devel', gulp.series('grammar'));
-gulp.task('dist', gulp.series('lint', 'test', 'browserify', 'uglify'));
+
+gulp.task('dist', gulp.series('lint', 'babel', 'test', 'browserify', 'uglify'));
+
 gulp.task('default', gulp.series('dist'));
