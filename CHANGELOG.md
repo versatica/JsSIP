@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+Version 3.1.3 (released in 2017-11-28)
+--------------------------------------
+* Produce ES5 tree and expose it as main in package.json (related to #472)
+* Fix #481. ReferSubscriber: properly access RTCSession non-public attributes
+
+
+Version 3.1.2 (released in 2017-11-21)
+--------------------------------------
+* RTCSession: emit 'sdp' event before creating offer/answer
+
+
 Version 3.1.1 (released in 2017-11-11)
 --------------------------------------
 * DigestAuthentication: fix 'auth-int' qop authentication
