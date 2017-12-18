@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.1.4 (released in 2017-12-18)
+--------------------------------------
+* Fix #482 and cleanup Registrator.js
+
+
 Version 3.1.3 (released in 2017-11-28)
 --------------------------------------
 * Produce ES5 tree and expose it as main in package.json (related to #472)
