@@ -128,6 +128,11 @@ var checks = {
         return _authorization_user;
       }
     },
+    client_user_agent: function client_user_agent(_client_user_agent) {
+      if (typeof _client_user_agent === 'string') {
+        return _client_user_agent;
+      }
+    },
     connection_recovery_max_interval: function connection_recovery_max_interval(_connection_recovery_max_interval) {
       if (Utils.isDecimal(_connection_recovery_max_interval)) {
         var value = Number(_connection_recovery_max_interval);
@@ -19156,10 +19161,12 @@ var OutgoingRequest = function () {
 
       supported.push('outbound');
 
+      var userAgent = this.ua.configuration.client_user_agent || JsSIP_C.USER_AGENT;
+
       // Allow.
       msg += 'Allow: ' + JsSIP_C.ALLOWED_METHODS + '\r\n';
       msg += 'Supported: ' + supported + '\r\n';
-      msg += 'User-Agent: ' + JsSIP_C.USER_AGENT + '\r\n';
+      msg += 'User-Agent: ' + userAgent + '\r\n';
 
       if (this.body) {
         var length = Utils.str_utf8_length(this.body);
