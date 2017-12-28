@@ -19,7 +19,8 @@ before_script:
   - gulp devel dist
 
 script:
-  - gulp test
+  - gulp devel
+  - gulp dist
 
 notifications:
   email:
