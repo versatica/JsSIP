@@ -29609,13 +29609,15 @@ module.exports={
   "dependencies": {
     "debug": "^3.1.0",
     "sdp-transform": "^2.3.0",
-    "webrtc-adapter": "^6.0.2"
+    "webrtc-adapter": "^6.0.3"
   },
   "devDependencies": {
+    "ansi-colors": "^1.0.1",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "browserify": "^14.3.0",
-    "eslint": "^4.4.1",
+    "browserify": "^14.5.0",
+    "eslint": "^4.14.0",
+    "fancy-log": "^1.3.2",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-babel": "^7.0.0",
     "gulp-eslint": "^4.0.0",
