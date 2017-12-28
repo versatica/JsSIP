@@ -29605,10 +29605,12 @@ module.exports={
     "webrtc-adapter": "^6.0.3"
   },
   "devDependencies": {
+    "ansi-colors": "^1.0.1",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "browserify": "^14.5.0",
     "eslint": "^4.14.0",
+    "fancy-log": "^1.3.2",
     "gulp": "git+https://github.com/gulpjs/gulp.git#4.0",
     "gulp-babel": "^7.0.0",
     "gulp-eslint": "^4.0.0",
@@ -29618,7 +29620,6 @@ module.exports={
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0",
-    "gulp-util": "^3.0.8",
     "pegjs": "^0.7.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"

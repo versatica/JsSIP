@@ -2,22 +2,23 @@
 'use strict';
 /* eslint-enable strict */
 
+const fs = require('fs');
+const path = require('path');
+const exec = require('child_process').exec;
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
 const gulp = require('gulp');
-const gutil = require('gulp-util');
 const babel = require('gulp-babel');
 const uglify = require('gulp-uglify');
 const rename = require('gulp-rename');
 const header = require('gulp-header');
 const expect = require('gulp-expect-file');
 const nodeunit = require('gulp-nodeunit-runner');
-const fs = require('fs');
-const path = require('path');
-const exec = require('child_process').exec;
 const eslint = require('gulp-eslint');
 const plumber = require('gulp-plumber');
+const log = require('fancy-log');
+const colors = require('ansi-colors');
 
 const PKG = require('./package.json');
 
@@ -37,7 +38,7 @@ const EXPECT_OPTIONS = {
 
 function logError(error)
 {
-  gutil.log(gutil.colors.red(String(error)));
+  log(colors.red(String(error)));
 }
 
 gulp.task('lint', function()
@@ -118,7 +119,7 @@ gulp.task('grammar', function(cb)
   const Grammar_pegjs = path.resolve('lib/Grammar.pegjs');
   const Grammar_js = path.resolve('lib/Grammar.js');
 
-  gutil.log('grammar: compiling Grammar.pegjs into Grammar.js...');
+  log('grammar: compiling Grammar.pegjs into Grammar.js...');
 
   exec(`${local_pegjs } ${ Grammar_pegjs } ${ Grammar_js}`,
     function(error, stdout, stderr)
@@ -127,17 +128,17 @@ gulp.task('grammar', function(cb)
       {
         cb(new Error(stderr));
       }
-      gutil.log(`grammar: ${ gutil.colors.yellow('done')}`);
+      log(`grammar: ${ colors.yellow('done')}`);
 
       // Modify the generated Grammar.js file with custom changes.
-      gutil.log('grammar: applying custom changes to Grammar.js...');
+      log('grammar: applying custom changes to Grammar.js...');
 
       const grammar = fs.readFileSync('lib/Grammar.js').toString();
       let modified_grammar = grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
 
       modified_grammar = modified_grammar.replace(/\s+$/mg, '');
       fs.writeFileSync('lib/Grammar.js', modified_grammar);
-      gutil.log(`grammar: ${ gutil.colors.yellow('done')}`);
+      log(`grammar: ${ colors.yellow('done')}`);
       cb();
     }
   );
