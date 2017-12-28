@@ -29619,7 +29619,7 @@ module.exports={
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0",
     "gulp-util": "^3.0.8",
-    "pegjs": "0.10.0",
+    "pegjs": "^0.7.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
