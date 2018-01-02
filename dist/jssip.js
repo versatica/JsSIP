@@ -1,7 +1,7 @@
 /*
  * JsSIP v3.1.4
  * the Javascript SIP library
- * Copyright: 2012-2017 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
  * License: MIT
  */
@@ -128,9 +128,9 @@ var checks = {
         return _authorization_user;
       }
     },
-    client_user_agent: function client_user_agent(_client_user_agent) {
-      if (typeof _client_user_agent === 'string') {
-        return _client_user_agent;
+    user_agent: function user_agent(_user_agent) {
+      if (typeof _user_agent === 'string') {
+        return _user_agent;
       }
     },
     connection_recovery_max_interval: function connection_recovery_max_interval(_connection_recovery_max_interval) {
@@ -19161,7 +19161,7 @@ var OutgoingRequest = function () {
 
       supported.push('outbound');
 
-      var userAgent = this.ua.configuration.client_user_agent || JsSIP_C.USER_AGENT;
+      var userAgent = this.ua.configuration.user_agent || JsSIP_C.USER_AGENT;
 
       // Allow.
       msg += 'Allow: ' + JsSIP_C.ALLOWED_METHODS + '\r\n';
@@ -29627,8 +29627,7 @@ module.exports={
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0",
-    "gulp-util": "^3.0.8",
-    "pegjs": "0.7.0",
+    "pegjs": "^0.7.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
