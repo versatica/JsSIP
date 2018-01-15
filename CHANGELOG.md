@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.2 (released in 2018-01-15)
+--------------------------------------
+* Remove wrong NPM dependencies.
+
+
 Version 3.2.1 (released in 2018-01-15)
 --------------------------------------
 * Fix parsing of NOTIFY bodies during a REFER transaction (fixes #493).
