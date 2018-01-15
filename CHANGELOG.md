@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.3 (released in 2018-01-15)
+--------------------------------------
+* RTCSession: Fix #492. Add missing log line for RTCPeerConnection error.
+
+
 Version 3.2.2 (released in 2018-01-15)
 --------------------------------------
 * Remove wrong NPM dependencies.
