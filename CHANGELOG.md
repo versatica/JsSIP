@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.1 (released in 2018-01-15)
+--------------------------------------
+* Fix parsing of NOTIFY bodies during a REFER transaction (fixes #493).
+
+
 Version 3.2.0 (released in 2018-01-15)
 --------------------------------------
 * Config: new configuration parameter 'user_agent'
