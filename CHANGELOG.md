@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 3.2.0 (released in 2018-01-15)
+--------------------------------------
+* Config: new configuration parameter 'user_agent'
+* RTCSession/Info: Fix. Call session.sendRequest() with the correct parameters
+* Config: Fix #491. Implement all documented flavours of 'sockets' parameter
+
+
 Version 3.1.4 (released in 2017-12-18)
 --------------------------------------
 * Fix #482 and cleanup Registrator.js
