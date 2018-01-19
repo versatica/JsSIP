@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.2.3
+ * JsSIP v3.2.4
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -80,10 +80,10 @@ var checks = {
           for (var _iterator = _sockets2[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
             var socket = _step.value;
 
-            if (Socket.isSocket(socket)) {
-              _sockets.push({ socket: socket });
-            } else if (Object.prototype.hasOwnProperty.call(socket, 'socket') && Socket.isSocket(socket.socket)) {
+            if (Object.prototype.hasOwnProperty.call(socket, 'socket') && Socket.isSocket(socket.socket)) {
               _sockets.push(socket);
+            } else if (Socket.isSocket(socket)) {
+              _sockets.push({ socket: socket });
             }
           }
         } catch (err) {
@@ -29585,7 +29585,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.3",
+  "version": "3.2.4",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.4 (released in 2018-01-19)
+--------------------------------------
+* Config: #494. Switch Socket check order. Thanks 'Igor Kolosov'.
+
+
 Version 3.2.3 (released in 2018-01-15)
 --------------------------------------
 * RTCSession: Fix #492. Add missing log line for RTCPeerConnection error.
