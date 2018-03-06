@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.5 (released in 2018-03-06)
+--------------------------------------
+* RTCSession: prefer promises over callbacks for readability.
+
+
 Version 3.2.4 (released in 2018-01-19)
 --------------------------------------
 * Config: #494. Switch Socket check order. Thanks 'Igor Kolosov'.
