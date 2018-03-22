@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.6 (released in 2018-03-22)
+--------------------------------------
+* RTCSession: custom local description trigger support
+
+
 Version 3.2.5 (released in 2018-03-06)
 --------------------------------------
 * RTCSession: prefer promises over callbacks for readability.
