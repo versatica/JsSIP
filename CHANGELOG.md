@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+Version 3.2.8 (released in 2018-04-05)
+--------------------------------------
+* Fix #511. Add missing payload on 'UA:disconnected' event.
+
+
+Version 3.2.7 (released in 2018-03-23)
+--------------------------------------
+* Fix regression (#509): ua.call() not working if stream is given.
+
+
 Version 3.2.6 (released in 2018-03-22)
 --------------------------------------
 * RTCSession: custom local description trigger support
