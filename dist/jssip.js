@@ -17656,6 +17656,11 @@ module.exports = function (_EventEmitter) {
       return this._connection;
     }
   }, {
+    key: 'contact',
+    get: function get() {
+      return this._contact;
+    }
+  }, {
     key: 'direction',
     get: function get() {
       return this._direction;
@@ -18137,6 +18142,8 @@ module.exports = function (_EventEmitter) {
       var referTo = 'Refer-To: <' + target + (replaces ? '?Replaces=' + replaces : '') + '>';
 
       extraHeaders.push(referTo);
+
+      extraHeaders.push('Contact: ' + this._session.contact);
 
       var request = this._session.sendRequest(JsSIP_C.REFER, {
         extraHeaders: extraHeaders,
