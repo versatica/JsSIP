@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.9 (released in 2018-04-20)
+--------------------------------------
+* RTCSession: Add Contact header to REFER request.
+
+
 Version 3.2.8 (released in 2018-04-05)
 --------------------------------------
 * Fix #511. Add missing payload on 'UA:disconnected' event.
