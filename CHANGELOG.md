@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.10 (released in 2018-04-24)
+--------------------------------------
+* Include the NPM **events** dependency for those who don't use **browserify** but **webpack**.
+
+
 Version 3.2.9 (released in 2018-04-20)
 --------------------------------------
 * RTCSession: Add Contact header to REFER request. Thanks Julien Royer for reporting.
