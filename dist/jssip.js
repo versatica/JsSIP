@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.2.9
+ * JsSIP v3.2.10
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14263,6 +14263,11 @@ function parseHeader(message, data, headerStart, headerEnd) {
       if (parsed) {
         message.event = parsed;
       }
+      break;
+    // Allow multiple call info headers.
+    case 'call-info':
+      message.addHeader(headerName, headerValue);
+      parsed = 0;
       break;
     default:
       // Do not parse this header.
@@ -30226,7 +30231,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.9",
+  "version": "3.2.10",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
