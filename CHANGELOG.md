@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.11 (released in 2018-06-03)
+--------------------------------------
+* Close #519. Parser: Do not overwrite unknwon header fields. Thanks @rprinz08.
+
+
 Version 3.2.10 (released in 2018-04-24)
 --------------------------------------
 * Include the NPM **events** dependency for those who don't use **browserify** but **webpack**.
