@@ -25,15 +25,15 @@ module.exports =
 	},
 	rules:
 	{
-		'array-bracket-spacing': [ 2, 'always',
-		{
-			objectsInArrays: true,
-			arraysInArrays: true
-		}],
+		// 'array-bracket-spacing': [ 2, 'always',
+		// {
+		// 	objectsInArrays: true,
+		// 	arraysInArrays: true
+		// }],
 		'arrow-parens': [ 2, 'always' ],
 		'arrow-spacing': 2,
 		'block-spacing': [ 2, 'always' ],
-		'brace-style': [ 2, 'allman', { allowSingleLine: true } ],
+		// 'brace-style': [ 2, 'allman', { allowSingleLine: true } ],
 		'camelcase': 0,
 		'comma-dangle': 2,
 		'comma-spacing': [ 2, { before: false, after: true } ],
@@ -59,7 +59,7 @@ module.exports =
 			}
 		}],
 		'keyword-spacing': 2,
-		'linebreak-style': [ 2, 'unix' ],
+		// 'linebreak-style': [ 2, 'unix' ],
 		'lines-around-comment': [ 2,
 		{
 			allowBlockStart: true,
