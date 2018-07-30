@@ -21786,7 +21786,11 @@ module.exports = function (_EventEmitter) {
 
       // Via Host.
       if (this._configuration.contact_uri) {
-        this._configuration.via_host = this._configuration.contact_uri.host;
+        // this._configuration.via_host = this._configuration.contact_uri.host;
+        // TODO: for user in Contact by zhaolei
+        this._configuration.via_host = Utils.createRandomToken(12) + '.invalid';
+        this._configuration.contact_uri = new URI('sip', this._configuration.contact_uri.user, this._configuration.via_host, null, { transport: 'ws' });
+        // end
       }
 
       // Contact URI.
