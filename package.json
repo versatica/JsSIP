@@ -29,6 +29,7 @@
   "dependencies": {
     "debug": "^3.1.0",
     "events": "^2.0.0",
+    "react-native-debug": "^3.0.0",
     "sdp-transform": "^2.4.1",
     "webrtc-adapter": "^6.1.5"
   },
