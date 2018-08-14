@@ -9,7 +9,7 @@
     "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
     "Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
   ],
-  "main": "lib/JsSIP.js",
+  "main": "lib-es5/JsSIP.js",
   "keywords": [
     "sip",
     "websocket",
