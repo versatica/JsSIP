@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.2.12 (released in 2018-09-17)
+--------------------------------------
+* Update deps.
+* Add missing `error` in 'getusermediafailed' event (thanks @jonastelzio).
+
+
 Version 3.2.11 (released in 2018-06-03)
 --------------------------------------
 * Close #519. Parser: Do not overwrite unknwon header fields. Thanks @rprinz08.
