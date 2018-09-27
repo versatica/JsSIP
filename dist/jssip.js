@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.2.13
+ * JsSIP v3.2.14
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -14584,6 +14584,9 @@ module.exports = function (_EventEmitter) {
 
       this._id = this._request.call_id + this._from_tag;
 
+      // Create a new RTCPeerConnection instance.
+      this._createRTCConnection(pcConfig, rtcConstraints);
+
       // Set internal properties.
       this._direction = 'outgoing';
       this._local_identity = this._request.from;
@@ -14595,9 +14598,6 @@ module.exports = function (_EventEmitter) {
       }
 
       this._newRTCSession('local', this._request);
-
-      // Create a new RTCPeerConnection instance.
-      this._createRTCConnection(pcConfig, rtcConstraints);
 
       this._sendInitialRequest(mediaConstraints, rtcOfferConstraints, mediaStream);
     }
@@ -29624,7 +29624,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.13",
+  "version": "3.2.14",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
