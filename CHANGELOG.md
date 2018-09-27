@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.2.13 (released in 2018-09-27)
+--------------------------------------
+* Close #521, #534. RTCSession: Fix 'connection' event order on outgoing calls.
+
+
 Version 3.2.12 (released in 2018-09-17)
 --------------------------------------
 * Update deps.
