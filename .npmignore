@@ -1,6 +1,5 @@
-node_modules/
-dist/
-npm-debug.log
-.gitignore
-NO_GIT/
+/node_modules/
+/dist/
+/.gitignore
+/NO_GIT/
 

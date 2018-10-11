@@ -1,79 +1,101 @@
 CHANGELOG
 =========
 
+Version 3.2.15 (released in 2018-10-11)
+--------------------------------------
+
+* Remove `webrtc-adapter` dependency. It's up to the application developer whether to include it into his application or not.
+* Update dependencies.
+
+
 Version 3.2.14 (released in 2018-09-27)
 --------------------------------------
+
 * Revert previous release. Requires a mayor version upgrade for such a cosmetic change.
 
 
 Version 3.2.13 (released in 2018-09-27)
 --------------------------------------
+
 * Close #521, #534. RTCSession: Fix 'connection' event order on outgoing calls.
 
 
 Version 3.2.12 (released in 2018-09-17)
 --------------------------------------
+
 * Update deps.
 * Add missing `error` in 'getusermediafailed' event (thanks @jonastelzio).
 
 
 Version 3.2.11 (released in 2018-06-03)
 --------------------------------------
+
 * Close #519. Parser: Do not overwrite unknwon header fields. Thanks @rprinz08.
 
 
 Version 3.2.10 (released in 2018-04-24)
 --------------------------------------
+
 * Include the NPM **events** dependency for those who don't use **browserify** but **webpack**.
 
 
 Version 3.2.9 (released in 2018-04-20)
 --------------------------------------
+
 * RTCSession: Add Contact header to REFER request. Thanks Julien Royer for reporting.
 
 
 Version 3.2.8 (released in 2018-04-05)
 --------------------------------------
+
 * Fix #511. Add missing payload on 'UA:disconnected' event.
 
 
 Version 3.2.7 (released in 2018-03-23)
 --------------------------------------
+
 * Fix regression (#509): ua.call() not working if stream is given.
 
 
 Version 3.2.6 (released in 2018-03-22)
 --------------------------------------
+
 * RTCSession: custom local description trigger support
 
 
 Version 3.2.5 (released in 2018-03-06)
 --------------------------------------
+
 * RTCSession: prefer promises over callbacks for readability.
 
 
 Version 3.2.4 (released in 2018-01-19)
 --------------------------------------
+
 * Config: #494. Switch Socket check order. Thanks 'Igor Kolosov'.
 
 
 Version 3.2.3 (released in 2018-01-15)
 --------------------------------------
+
 * RTCSession: Fix #492. Add missing log line for RTCPeerConnection error.
 
 
 Version 3.2.2 (released in 2018-01-15)
 --------------------------------------
+
 * Remove wrong NPM dependencies.
 
 
 Version 3.2.1 (released in 2018-01-15)
 --------------------------------------
+
 * Fix parsing of NOTIFY bodies during a REFER transaction (fixes #493).
 
 
 Version 3.2.0 (released in 2018-01-15)
 --------------------------------------
+
 * Config: new configuration parameter 'user_agent'
 * RTCSession/Info: Fix. Call session.sendRequest() with the correct parameters
 * Config: Fix #491. Implement all documented flavours of 'sockets' parameter
@@ -81,63 +103,75 @@ Version 3.2.0 (released in 2018-01-15)
 
 Version 3.1.4 (released in 2017-12-18)
 --------------------------------------
+
 * Fix #482 and cleanup Registrator.js
 
 
 Version 3.1.3 (released in 2017-11-28)
 --------------------------------------
+
 * Produce ES5 tree and expose it as main in package.json (related to #472)
 * Fix #481. ReferSubscriber: properly access RTCSession non-public attributes
 
 
 Version 3.1.2 (released in 2017-11-21)
 --------------------------------------
+
 * RTCSession: emit 'sdp' event before creating offer/answer
 
 
 Version 3.1.1 (released in 2017-11-11)
 --------------------------------------
+
 * DigestAuthentication: fix 'auth-int' qop authentication
 * DigestAuthentication: add tests
 
 
 Version 3.1.0 (released in 2017-11-10)
 --------------------------------------
+
 * New UA configuration parameter 'session_timers_refresh_method'. Thanks @michelepra
 
 
 Version 3.0.28 (released in 2017-11-9)
 --------------------------------------
+
 * Fix improper call to userMediaSucceeded. Thanks @iclems
 
 
 Version 3.0.27 (released in 2017-11-9)
 --------------------------------------
+
 * Registrator: add missing getter. Thanks Martin Ekblom.
 
 
 Version 3.0.26 (released in 2017-11-8)
 --------------------------------------
+
 * Fix #473. Typo. Thanks @ikq.
 
 
 Version 3.0.25 (released in 2017-11-6)
 --------------------------------------
+
 * Use promise chaining to prevent PeerConnection state race conditions. Thanks @davies147
 
 
 Version 3.0.24 (released in 2017-11-5)
 --------------------------------------
+
 * Fix #421. Fire RTCSession 'peerconnection' event as soon as its created
 
 
 Version 3.0.23 (released in 2017-10-31)
 --------------------------------------
+
 * Fix typo. Thanks @michelepra.
 
 
 Version 3.0.22 (released in 2017-10-27)
 --------------------------------------
+
 * Tests: enable test-UA-no-WebRTC tests.
 * WebSocketInterface: uppercase the via_transport attribute.
 * Fix #469. new method InitialOutgoingInviteRequest::clone().
@@ -145,41 +179,49 @@ Version 3.0.22 (released in 2017-10-27)
 
 Version 3.0.21 (released in 2017-10-26)
 --------------------------------------
+
 * WebSocketInterface: Add 'via_transport' setter.
 
 
 Version 3.0.20 (released in 2017-10-24)
 --------------------------------------
+
 * Fix typo on ES6 transpiling.
 
 
 Version 3.0.19 (released in 2017-10-21)
 --------------------------------------
+
 * ES6 transpiling. Modernize full JsSIP code.
 
 
 Version 3.0.18 (released in 2017-10-13)
 --------------------------------------
+
 * Dialog: ACK to initial INVITE could have lower CSeq than current remote_cseq.
 
 
 Version 3.0.17 (released in 2017-10-12)
 --------------------------------------
+
 * RTCSession: process INFO in early state.
 
 
 Version 3.0.16 (released in 2017-10-12)
 --------------------------------------
+
 * Fix #457. Properly retrieve ReferSubscriber. Thanks @btaens.
 
 
 Version 3.0.15 (released in 2017-08-31)
 --------------------------------------
+
 * Fix #457. Support NOTIFY requests to REFER subscriptions without Event id parameter.
 
 
 Version 3.0.14 (released in 2017-08-31)
 --------------------------------------
+
 * Update dependencies.
 
 
@@ -718,7 +760,7 @@ Version 0.4.2 (released in 2014-10-24)
 Version 0.4.1 (released in 2014-10-21)
 --------------------------------------
 
-This version is included into the [Bower](http://bower.io/) registry which means `$ bower install jssip`.
+* This version is included into the [Bower](http://bower.io/) registry which means `$ bower install jssip`.
 
 
 Version 0.4.0 (released in 2014-10-21)
