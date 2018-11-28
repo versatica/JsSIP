@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.2.15
+ * JsSIP v3.2.16
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -18930,7 +18930,7 @@ function (_EventEmitter) {
 
       debug('receiveRefer()');
 
-      if (_typeof(request.refer_to) === undefined) {
+      if (!request.refer_to) {
         debug('no Refer-To header field present in REFER');
         request.reply(400);
         return;
@@ -19007,7 +19007,7 @@ function (_EventEmitter) {
     value: function _receiveNotify(request) {
       debug('receiveNotify()');
 
-      if (_typeof(request.event) === undefined) {
+      if (!request.event) {
         request.reply(400);
       }
 
@@ -27711,7 +27711,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.15",
+  "version": "3.2.16",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27736,16 +27736,16 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
+    "ansi-colors": "^3.2.1",
     "debug": "^4.1.0",
     "events": "^3.0.0",
     "sdp-transform": "^2.4.1"
   },
   "devDependencies": {
-    "ansi-colors": "^3.1.0",
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
     "browserify": "^16.2.3",
-    "eslint": "^5.6.1",
+    "eslint": "^5.9.0",
     "fancy-log": "^1.3.2",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
@@ -27753,7 +27753,7 @@ module.exports={
     "gulp-expect-file": "^1.0.0",
     "gulp-header": "^2.0.5",
     "gulp-nodeunit-runner": "^0.2.2",
-    "gulp-plumber": "^1.2.0",
+    "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",
     "gulp-uglify-es": "^1.0.4",
     "pegjs": "^0.7.0",

@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 3.2.16 (released in 2018-11-28)
+---------------------------------------
+
+* Fix typos thanks to the [LGTM](https://lgtm.com/projects/g/versatica/JsSIP/alerts/?mode=list) project.
+* Update deps.
+
+
 Version 3.2.15 (released in 2018-10-11)
 --------------------------------------
 
