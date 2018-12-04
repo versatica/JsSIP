@@ -17498,7 +17498,9 @@ function (_EventEmitter) {
         _this3._localMediaStream = stream;
 
         if (stream) {
-          _this3._connection.addStream(stream);
+          stream.getTracks().forEach(function (track) {
+            _this3._connection.addTrack(track, stream);
+          });
         }
       }) // Set remote description.
       .then(function () {
@@ -19141,7 +19143,9 @@ function (_EventEmitter) {
         _this21._localMediaStream = stream;
 
         if (stream) {
-          _this21._connection.addStream(stream);
+          stream.getTracks().forEach(function (track) {
+            _this21._connection.addTrack(track, stream);
+          });
         } // TODO: should this be triggered here?
 
 
@@ -19865,38 +19869,18 @@ function (_EventEmitter) {
   }, {
     key: "_toogleMuteAudio",
     value: function _toogleMuteAudio(mute) {
-      var streams = this._connection.getLocalStreams();
+      var senders = this._connection.getSenders();
 
       var _iteratorNormalCompletion8 = true;
       var _didIteratorError8 = false;
       var _iteratorError8 = undefined;
 
       try {
-        for (var _iterator8 = streams[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var stream = _step8.value;
-          var tracks = stream.getAudioTracks();
-          var _iteratorNormalCompletion9 = true;
-          var _didIteratorError9 = false;
-          var _iteratorError9 = undefined;
+        for (var _iterator8 = senders[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var sender = _step8.value;
 
-          try {
-            for (var _iterator9 = tracks[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var track = _step9.value;
-              track.enabled = !mute;
-            }
-          } catch (err) {
-            _didIteratorError9 = true;
-            _iteratorError9 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
-                _iterator9.return();
-              }
-            } finally {
-              if (_didIteratorError9) {
-                throw _iteratorError9;
-              }
-            }
+          if (sender.track && sender.track.kind === 'audio') {
+            sender.track.enabled = !mute;
           }
         }
       } catch (err) {
@@ -19917,51 +19901,31 @@ function (_EventEmitter) {
   }, {
     key: "_toogleMuteVideo",
     value: function _toogleMuteVideo(mute) {
-      var streams = this._connection.getLocalStreams();
+      var senders = this._connection.getSenders();
 
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator10 = streams[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var stream = _step10.value;
-          var tracks = stream.getVideoTracks();
-          var _iteratorNormalCompletion11 = true;
-          var _didIteratorError11 = false;
-          var _iteratorError11 = undefined;
+        for (var _iterator9 = senders[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var sender = _step9.value;
 
-          try {
-            for (var _iterator11 = tracks[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-              var track = _step11.value;
-              track.enabled = !mute;
-            }
-          } catch (err) {
-            _didIteratorError11 = true;
-            _iteratorError11 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
-                _iterator11.return();
-              }
-            } finally {
-              if (_didIteratorError11) {
-                throw _iteratorError11;
-              }
-            }
+          if (sender.track && sender.track.kind === 'video') {
+            sender.track.enabled = !mute;
           }
         }
       } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
-            _iterator10.return();
+          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+            _iterator9.return();
           }
         } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
