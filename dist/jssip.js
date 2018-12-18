@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.2.16
+ * JsSIP v3.2.17
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -17498,7 +17498,9 @@ function (_EventEmitter) {
         _this3._localMediaStream = stream;
 
         if (stream) {
-          _this3._connection.addStream(stream);
+          stream.getTracks().forEach(function (track) {
+            _this3._connection.addTrack(track, stream);
+          });
         }
       }) // Set remote description.
       .then(function () {
@@ -17839,14 +17841,14 @@ function (_EventEmitter) {
         audioMuted = true;
         this._audioMuted = true;
 
-        this._toogleMuteAudio(true);
+        this._toggleMuteAudio(true);
       }
 
       if (this._videoMuted === false && options.video) {
         videoMuted = true;
         this._videoMuted = true;
 
-        this._toogleMuteVideo(true);
+        this._toggleMuteVideo(true);
       }
 
       if (audioMuted === true || videoMuted === true) {
@@ -17876,7 +17878,7 @@ function (_EventEmitter) {
         this._audioMuted = false;
 
         if (this._localHold === false) {
-          this._toogleMuteAudio(false);
+          this._toggleMuteAudio(false);
         }
       }
 
@@ -17885,7 +17887,7 @@ function (_EventEmitter) {
         this._videoMuted = false;
 
         if (this._localHold === false) {
-          this._toogleMuteVideo(false);
+          this._toggleMuteVideo(false);
         }
       }
 
@@ -19141,7 +19143,9 @@ function (_EventEmitter) {
         _this21._localMediaStream = stream;
 
         if (stream) {
-          _this21._connection.addStream(stream);
+          stream.getTracks().forEach(function (track) {
+            _this21._connection.addTrack(track, stream);
+          });
         } // TODO: should this be triggered here?
 
 
@@ -19764,9 +19768,9 @@ function (_EventEmitter) {
         enableVideo = false;
       }
 
-      this._toogleMuteAudio(!enableAudio);
+      this._toggleMuteAudio(!enableAudio);
 
-      this._toogleMuteVideo(!enableVideo);
+      this._toggleMuteVideo(!enableVideo);
     }
     /**
      * Handle SessionTimers for an incoming INVITE or UPDATE.
@@ -19863,41 +19867,20 @@ function (_EventEmitter) {
         }
     }
   }, {
-    key: "_toogleMuteAudio",
-    value: function _toogleMuteAudio(mute) {
-      var streams = this._connection.getLocalStreams();
+    key: "_toggleMuteAudio",
+    value: function _toggleMuteAudio(mute) {
+      var senders = this._connection.getSenders().filter(function (sender) {
+        return sender.track && sender.track.kind === 'audio';
+      });
 
       var _iteratorNormalCompletion8 = true;
       var _didIteratorError8 = false;
       var _iteratorError8 = undefined;
 
       try {
-        for (var _iterator8 = streams[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var stream = _step8.value;
-          var tracks = stream.getAudioTracks();
-          var _iteratorNormalCompletion9 = true;
-          var _didIteratorError9 = false;
-          var _iteratorError9 = undefined;
-
-          try {
-            for (var _iterator9 = tracks[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var track = _step9.value;
-              track.enabled = !mute;
-            }
-          } catch (err) {
-            _didIteratorError9 = true;
-            _iteratorError9 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
-                _iterator9.return();
-              }
-            } finally {
-              if (_didIteratorError9) {
-                throw _iteratorError9;
-              }
-            }
-          }
+        for (var _iterator8 = senders[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var sender = _step8.value;
+          sender.track.enabled = !mute;
         }
       } catch (err) {
         _didIteratorError8 = true;
@@ -19915,53 +19898,32 @@ function (_EventEmitter) {
       }
     }
   }, {
-    key: "_toogleMuteVideo",
-    value: function _toogleMuteVideo(mute) {
-      var streams = this._connection.getLocalStreams();
+    key: "_toggleMuteVideo",
+    value: function _toggleMuteVideo(mute) {
+      var senders = this._connection.getSenders().filter(function (sender) {
+        return sender.track && sender.track.kind === 'video';
+      });
 
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator10 = streams[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var stream = _step10.value;
-          var tracks = stream.getVideoTracks();
-          var _iteratorNormalCompletion11 = true;
-          var _didIteratorError11 = false;
-          var _iteratorError11 = undefined;
-
-          try {
-            for (var _iterator11 = tracks[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-              var track = _step11.value;
-              track.enabled = !mute;
-            }
-          } catch (err) {
-            _didIteratorError11 = true;
-            _iteratorError11 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
-                _iterator11.return();
-              }
-            } finally {
-              if (_didIteratorError11) {
-                throw _iteratorError11;
-              }
-            }
-          }
+        for (var _iterator9 = senders[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var sender = _step9.value;
+          sender.track.enabled = !mute;
         }
       } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
-            _iterator10.return();
+          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+            _iterator9.return();
           }
         } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
@@ -22596,7 +22558,7 @@ function (_EventEmitter2) {
       var _this6 = this;
 
       var ack = new SIPMessage.OutgoingRequest(JsSIP_C.ACK, this.request.ruri, this.ua, {
-        'route_set': this.request.getHeader('route'),
+        'route_set': this.request.getHeaders('route'),
         'call_id': this.request.getHeader('call-id'),
         'cseq': this.request.cseq
       });
@@ -22617,7 +22579,7 @@ function (_EventEmitter2) {
       }
 
       var cancel = new SIPMessage.OutgoingRequest(JsSIP_C.CANCEL, this.request.ruri, this.ua, {
-        'route_set': this.request.getHeader('route'),
+        'route_set': this.request.getHeaders('route'),
         'call_id': this.request.getHeader('call-id'),
         'cseq': this.request.cseq
       });
@@ -27711,7 +27673,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.16",
+  "version": "3.2.17",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 3.2.17 (released in 2018-12-18)
+---------------------------------------
+
+* InviteClientTransaction: Add full route set to ACK and CANCEL requests. Thanks @nicketson.
+* RTCSession: switch to tracks from deprecated stream API. Thanks @nicketson.
+
+
 Version 3.2.16 (released in 2018-11-28)
 ---------------------------------------
 
