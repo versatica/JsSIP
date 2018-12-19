@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.2.17
+ * JsSIP v3.3.0
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -24075,6 +24075,15 @@ function (_EventEmitter) {
              */
             break;
 
+          case JsSIP_C.NOTIFY:
+            // Receive new sip event.
+            this.emit('sipEvent', {
+              event: request.event,
+              request: request
+            });
+            request.reply(200);
+            break;
+
           default:
             request.reply(405);
             break;
@@ -27673,7 +27682,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.17",
+  "version": "3.3.0",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
