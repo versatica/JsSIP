@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.2 (released in 2018-12-19)
+---------------------------------------
+
+* Registrator. Support multiple entries in the same Contact header field (#544).
+
+
 Version 3.3.1 (released in 2018-12-19)
 ---------------------------------------
 

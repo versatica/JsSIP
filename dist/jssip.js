@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.1
+ * JsSIP v3.3.2
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -20844,12 +20844,20 @@ function () {
         onReceiveResponse: function onReceiveResponse(response) {
           var contact;
           var expires;
-          var numContacts = response.getHeaders('contact').length; // Discard responses to older REGISTER/un-REGISTER requests.
+
+          if (!response.hasHeader('Contact')) {
+            debug('no Contact header in response to REGISTER, response ignored');
+            return;
+          } // Discard responses to older REGISTER/un-REGISTER requests.
+
 
           if (response.cseq !== _this._cseq) {
             return;
-          } // Clear registration timer.
+          }
 
+          var contacts = response.headers['Contact'].reduce(function (a, b) {
+            return a.concat(b.parsed);
+          }, []); // Clear registration timer.
 
           if (_this._registrationTimer !== null) {
             clearTimeout(_this._registrationTimer);
@@ -20862,28 +20870,18 @@ function () {
               break;
 
             case /^2[0-9]{2}$/.test(response.status_code):
-              _this._registering = false; // Search the Contact pointing to us and update the expires value accordingly.
+              _this._registering = false; // Get the Contact pointing to us and update the expires value accordingly.
 
-              if (!numContacts) {
-                debug('no Contact header in response to REGISTER, response ignored');
-                break;
-              }
-
-              while (numContacts--) {
-                contact = response.parseHeader('contact', numContacts);
-
-                if (contact.uri.user === _this._ua.contact.uri.user) {
-                  expires = contact.getParam('expires');
-                  break;
-                } else {
-                  contact = null;
-                }
-              }
+              contact = contacts.find(function (element) {
+                return element.uri.user === _this._ua.contact.uri.user;
+              });
 
               if (!contact) {
                 debug('no Contact header pointing to us, response ignored');
                 break;
               }
+
+              expires = contact.getParam('expires');
 
               if (!expires && response.hasHeader('expires')) {
                 expires = response.getHeader('expires');
@@ -27418,29 +27416,6 @@ var grammar = module.exports = {
       names: ['filterMode', 'netType', 'addressTypes', 'destAddress', 'srcList'],
       format: 'source-filter: %s %s %s %s %s'
     },
-    { //a=bundle-only
-      name: 'bundleOnly',
-      reg: /^(bundle-only)/
-    },
-    { //a=label:1
-      name: 'label',
-      reg: /^label:(.+)/,
-      format: 'label:%s'
-    },
-    {
-      // RFC version 26 for SCTP over DTLS
-      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-5
-      name:'sctpPort',
-      reg: /^sctp-port:(\d+)$/,
-      format: 'sctp-port:%s'
-    },
-    {
-      // RFC version 26 for SCTP over DTLS
-      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-6
-      name:'maxMessageSize',
-      reg: /^max-message-size:(\d+)$/,
-      format: 'max-message-size:%s'
-    },
     { // any a= that we don't understand is kepts verbatim on media.invalid
       push: 'invalid',
       names: ['value']
@@ -27721,7 +27696,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
