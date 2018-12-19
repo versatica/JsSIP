@@ -1,10 +1,17 @@
 CHANGELOG
 =========
 
-Version 3.3.3 (released in 2018-12-19)
+Version 3.3.1 (released in 2018-12-19)
+---------------------------------------
+
+* RTCSession: fire 'sdp' event on renegotiation (#543).
+
+
+Version 3.3.0 (released in 2018-12-19)
 ---------------------------------------
 
 * UA: new 'sipEvent' event for out of dialog NOTIFY requests.
+
 
 Version 3.2.17 (released in 2018-12-18)
 ---------------------------------------

@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.0
+ * JsSIP v3.3.1
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
@@ -19376,6 +19376,14 @@ function (_EventEmitter) {
         return _this23._createLocalDescription('offer', rtcOfferConstraints);
       }).then(function (sdp) {
         sdp = _this23._mangleOffer(sdp);
+        var e = {
+          originator: 'local',
+          type: 'offer',
+          sdp: sdp
+        };
+        debug('emit "sdp"');
+
+        _this23.emit('sdp', e);
 
         _this23.sendRequest(JsSIP_C.INVITE, {
           extraHeaders: extraHeaders,
@@ -19490,6 +19498,14 @@ function (_EventEmitter) {
           return _this25._createLocalDescription('offer', rtcOfferConstraints);
         }).then(function (sdp) {
           sdp = _this25._mangleOffer(sdp);
+          var e = {
+            originator: 'local',
+            type: 'offer',
+            sdp: sdp
+          };
+          debug('emit "sdp"');
+
+          _this25.emit('sdp', e);
 
           _this25.sendRequest(JsSIP_C.UPDATE, {
             extraHeaders: extraHeaders,
@@ -27682,7 +27698,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "homepage": "http://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
