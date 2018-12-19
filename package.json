@@ -27,12 +27,12 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "ansi-colors": "^3.2.3",
     "debug": "^4.1.0",
     "events": "^3.0.0",
     "sdp-transform": "^2.7.0"
   },
   "devDependencies": {
+    "ansi-colors": "^3.2.3",
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.0",
     "browserify": "^16.2.3",
