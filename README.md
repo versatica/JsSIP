@@ -1,6 +1,6 @@
 <p align="center"><a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner-new.png"/></a></p>
 
-[![Build Status](https://travis-ci.org/versatica/JsSIP.png?branch=new-design)](https://travis-ci.org/versatica/JsSIP)
+[![Build Status](https://api.travis-ci.com/versatica/JsSIP.png)](https://travis-ci.com/versatica/JsSIP)
 [![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/context:javascript)
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/alerts)
 
@@ -76,7 +76,7 @@ Want to see more? Check the full documentation at http://jssip.net/documentation
 
 Check our **Tryit JsSIP** online demo:
 
-* [tryit.jssip.net](http://tryit.jssip.net)
+* [tryit.jssip.net](https://tryit.jssip.net)
 
 
 ## Website and Documentation
