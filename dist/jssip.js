@@ -2,7 +2,7 @@
  * JsSIP v3.3.2
  * the Javascript SIP library
  * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
- * Homepage: http://jssip.net
+ * Homepage: https://jssip.net
  * License: MIT
  */
 
@@ -354,7 +354,7 @@ module.exports = {
   SUBSCRIBE: 'SUBSCRIBE',
 
   /* SIP Response Reasons
-   * DOC: http://www.iana.org/assignments/sip-parameters
+   * DOC: https://www.iana.org/assignments/sip-parameters
    * Copied from https://github.com/versatica/OverSIP/blob/master/lib/oversip/sip/constants.rb#L7
    */
   REASON_PHRASE: {
@@ -19311,7 +19311,7 @@ function (_EventEmitter) {
               // Be ready for 200 with SDP after a 180/183 with SDP.
               // We created a SDP 'answer' for it, so check the current signaling state.
               if (_this22._connection.signalingState === 'stable') {
-                return _this22._connection.createOffer().then(function (offer) {
+                return _this22._connection.createOffer(_this22._rtcOfferConstraints).then(function (offer) {
                   return _this22._connection.setLocalDescription(offer);
                 }).catch(function (error) {
                   _this22._acceptAndTerminate(response, 500, error.toString());
@@ -22212,7 +22212,7 @@ var debugerror = require('debug')('JsSIP:ERROR:Socket');
 
 debugerror.log = console.warn.bind(console);
 /**
- * Interface documentation: http://jssip.net/documentation/$last_version/api/socket/
+ * Interface documentation: https://jssip.net/documentation/$last_version/api/socket/
  *
  * interface Socket {
  *  attribute String via_transport
@@ -24794,7 +24794,7 @@ var createRandomToken = exports.createRandomToken = function (size) {
 
 exports.newTag = function () {
   return createRandomToken(10);
-}; // http://stackoverflow.com/users/109538/broofa.
+}; // https://stackoverflow.com/users/109538/broofa.
 
 
 exports.newUUID = function () {
@@ -24928,7 +24928,7 @@ exports.sipErrorCause = function (status_code) {
   return JsSIP_C.causes.SIP_FAILURE_CODE;
 };
 /**
-* Generate a random Test-Net IP (http://tools.ietf.org/html/rfc5735)
+* Generate a random Test-Net IP (https://tools.ietf.org/html/rfc5735)
 */
 
 
@@ -24938,7 +24938,7 @@ exports.getRandomTestNetIP = function () {
   }
 
   return "192.0.2.".concat(getOctet(1, 254));
-}; // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info.
+}; // MD5 (Message-Digest Algorithm) https://www.webtoolkit.info.
 
 
 exports.calculateMD5 = function (string) {
@@ -27416,6 +27416,29 @@ var grammar = module.exports = {
       names: ['filterMode', 'netType', 'addressTypes', 'destAddress', 'srcList'],
       format: 'source-filter: %s %s %s %s %s'
     },
+    { //a=bundle-only
+      name: 'bundleOnly',
+      reg: /^(bundle-only)/
+    },
+    { //a=label:1
+      name: 'label',
+      reg: /^label:(.+)/,
+      format: 'label:%s'
+    },
+    {
+      // RFC version 26 for SCTP over DTLS
+      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-5
+      name:'sctpPort',
+      reg: /^sctp-port:(\d+)$/,
+      format: 'sctp-port:%s'
+    },
+    {
+      // RFC version 26 for SCTP over DTLS
+      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-6
+      name:'maxMessageSize',
+      reg: /^max-message-size:(\d+)$/,
+      format: 'max-message-size:%s'
+    },
     { // any a= that we don't understand is kepts verbatim on media.invalid
       push: 'invalid',
       names: ['value']
@@ -27697,7 +27720,7 @@ module.exports={
   "title": "JsSIP",
   "description": "the Javascript SIP library",
   "version": "3.3.2",
-  "homepage": "http://jssip.net",
+  "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
     "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",

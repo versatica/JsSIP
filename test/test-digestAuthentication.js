@@ -2,7 +2,7 @@ require('./include/common');
 const DigestAuthentication = require('../lib/DigestAuthentication.js');
 
 // Results of this tests originally obtained from RFC 2617 and:
-// 'http://pernau.at/kd/sipdigest.php'
+// 'https://pernau.at/kd/sipdigest.php'
 
 module.exports = {
   'parse no auth testrealm@host.com -RFC 2617-' : function(test)
