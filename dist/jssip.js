@@ -1,7 +1,7 @@
 /*
- * JsSIP v3.3.2
+ * JsSIP v3.3.3
  * the Javascript SIP library
- * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -18976,7 +18976,7 @@ function (_EventEmitter) {
           var response = _ref3.response;
           notifier.notify(response.status_code, response.reason_phrase);
         });
-        session.on('failed', function (_ref4) {
+        session.on('_failed', function (_ref4) {
           var message = _ref4.message,
               cause = _ref4.cause;
 
@@ -20014,7 +20014,14 @@ function (_EventEmitter) {
   }, {
     key: "_failed",
     value: function _failed(originator, message, cause) {
-      debug('session failed');
+      debug('session failed'); // Emit private '_failed' event first.
+
+      debug('emit "_failed"');
+      this.emit('_failed', {
+        originator: originator,
+        message: message || null,
+        cause: cause
+      });
 
       this._close();
 
@@ -20842,22 +20849,11 @@ function () {
           _this._cseq += 1;
         },
         onReceiveResponse: function onReceiveResponse(response) {
-          var contact;
-          var expires;
-
-          if (!response.hasHeader('Contact')) {
-            debug('no Contact header in response to REGISTER, response ignored');
-            return;
-          } // Discard responses to older REGISTER/un-REGISTER requests.
-
-
+          // Discard responses to older REGISTER/un-REGISTER requests.
           if (response.cseq !== _this._cseq) {
             return;
-          }
+          } // Clear registration timer.
 
-          var contacts = response.headers['Contact'].reduce(function (a, b) {
-            return a.concat(b.parsed);
-          }, []); // Clear registration timer.
 
           if (_this._registrationTimer !== null) {
             clearTimeout(_this._registrationTimer);
@@ -20866,80 +20862,95 @@ function () {
 
           switch (true) {
             case /^1[0-9]{2}$/.test(response.status_code):
-              // Ignore provisional responses.
-              break;
-
-            case /^2[0-9]{2}$/.test(response.status_code):
-              _this._registering = false; // Get the Contact pointing to us and update the expires value accordingly.
-
-              contact = contacts.find(function (element) {
-                return element.uri.user === _this._ua.contact.uri.user;
-              });
-
-              if (!contact) {
-                debug('no Contact header pointing to us, response ignored');
+              {
+                // Ignore provisional responses.
                 break;
               }
 
-              expires = contact.getParam('expires');
+            case /^2[0-9]{2}$/.test(response.status_code):
+              {
+                _this._registering = false;
 
-              if (!expires && response.hasHeader('expires')) {
-                expires = response.getHeader('expires');
-              }
-
-              if (!expires) {
-                expires = _this._expires;
-              }
-
-              expires = Number(expires);
-              if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES; // Re-Register or emit an event before the expiration interval has elapsed.
-              // For that, decrease the expires value. ie: 3 seconds.
-
-              _this._registrationTimer = setTimeout(function () {
-                _this._registrationTimer = null; // If there are no listeners for registrationExpiring, renew registration.
-                // If there are listeners, let the function listening do the register call.
-
-                if (_this._ua.listeners('registrationExpiring').length === 0) {
-                  _this.register();
-                } else {
-                  _this._ua.emit('registrationExpiring');
+                if (!response.hasHeader('Contact')) {
+                  debug('no Contact header in response to REGISTER, response ignored');
+                  break;
                 }
-              }, expires * 1000 - 5000); // Save gruu values.
 
-              if (contact.hasParam('temp-gruu')) {
-                _this._ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g, '');
-              }
+                var contacts = response.headers['Contact'].reduce(function (a, b) {
+                  return a.concat(b.parsed);
+                }, []); // Get the Contact pointing to us and update the expires value accordingly.
 
-              if (contact.hasParam('pub-gruu')) {
-                _this._ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g, '');
-              }
-
-              if (!_this._registered) {
-                _this._registered = true;
-
-                _this._ua.registered({
-                  response: response
+                var contact = contacts.find(function (element) {
+                  return element.uri.user === _this._ua.contact.uri.user;
                 });
-              }
 
-              break;
+                if (!contact) {
+                  debug('no Contact header pointing to us, response ignored');
+                  break;
+                }
+
+                var expires = contact.getParam('expires');
+
+                if (!expires && response.hasHeader('expires')) {
+                  expires = response.getHeader('expires');
+                }
+
+                if (!expires) {
+                  expires = _this._expires;
+                }
+
+                expires = Number(expires);
+                if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES; // Re-Register or emit an event before the expiration interval has elapsed.
+                // For that, decrease the expires value. ie: 3 seconds.
+
+                _this._registrationTimer = setTimeout(function () {
+                  _this._registrationTimer = null; // If there are no listeners for registrationExpiring, renew registration.
+                  // If there are listeners, let the function listening do the register call.
+
+                  if (_this._ua.listeners('registrationExpiring').length === 0) {
+                    _this.register();
+                  } else {
+                    _this._ua.emit('registrationExpiring');
+                  }
+                }, expires * 1000 - 5000); // Save gruu values.
+
+                if (contact.hasParam('temp-gruu')) {
+                  _this._ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g, '');
+                }
+
+                if (contact.hasParam('pub-gruu')) {
+                  _this._ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g, '');
+                }
+
+                if (!_this._registered) {
+                  _this._registered = true;
+
+                  _this._ua.registered({
+                    response: response
+                  });
+                }
+
+                break;
+              }
             // Interval too brief RFC3261 10.2.8.
 
             case /^423$/.test(response.status_code):
-              if (response.hasHeader('min-expires')) {
-                // Increase our registration interval to the suggested minimum.
-                _this._expires = Number(response.getHeader('min-expires'));
-                if (_this._expires < MIN_REGISTER_EXPIRES) _this._expires = MIN_REGISTER_EXPIRES; // Attempt the registration again immediately.
+              {
+                if (response.hasHeader('min-expires')) {
+                  // Increase our registration interval to the suggested minimum.
+                  _this._expires = Number(response.getHeader('min-expires'));
+                  if (_this._expires < MIN_REGISTER_EXPIRES) _this._expires = MIN_REGISTER_EXPIRES; // Attempt the registration again immediately.
 
-                _this.register();
-              } else {
-                // This response MUST contain a Min-Expires header field
-                debug('423 response received for REGISTER without Min-Expires');
+                  _this.register();
+                } else {
+                  // This response MUST contain a Min-Expires header field.
+                  debug('423 response received for REGISTER without Min-Expires');
 
-                _this._registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
+                  _this._registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
+                }
+
+                break;
               }
-
-              break;
 
             default:
               {
@@ -26617,7 +26628,9 @@ function setup(env) {
 	}
 
 	function extend(namespace, delimiter) {
-		return createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		newDebug.log = this.log;
+		return newDebug;
 	}
 
 	/**
@@ -27719,7 +27732,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27744,16 +27757,16 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "debug": "^4.1.0",
+    "debug": "^4.1.1",
     "events": "^3.0.0",
     "sdp-transform": "^2.7.0"
   },
   "devDependencies": {
-    "ansi-colors": "^3.2.3",
     "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-env": "^7.2.3",
+    "ansi-colors": "^3.2.3",
     "browserify": "^16.2.3",
-    "eslint": "^5.10.0",
+    "eslint": "^5.11.1",
     "fancy-log": "^1.3.3",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",

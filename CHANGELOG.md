@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 3.3.3 (released in 2019-01-02)
+---------------------------------------
+
+* Registrator: Don't check Contact header if final response is not 2XX (#558). Thanks @ikq for reporting.
+* Update deps.
+
+
 Version 3.3.2 (released in 2018-12-19)
 ---------------------------------------
 
