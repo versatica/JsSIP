@@ -1,8 +1,8 @@
 /*
- * JsSIP v3.2.16
+ * JsSIP v3.3.3
  * the Javascript SIP library
- * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
- * Homepage: http://jssip.net
+ * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Homepage: https://jssip.net
  * License: MIT
  */
 
@@ -354,7 +354,7 @@ module.exports = {
   SUBSCRIBE: 'SUBSCRIBE',
 
   /* SIP Response Reasons
-   * DOC: http://www.iana.org/assignments/sip-parameters
+   * DOC: https://www.iana.org/assignments/sip-parameters
    * Copied from https://github.com/versatica/OverSIP/blob/master/lib/oversip/sip/constants.rb#L7
    */
   REASON_PHRASE: {
@@ -17498,7 +17498,9 @@ function (_EventEmitter) {
         _this3._localMediaStream = stream;
 
         if (stream) {
-          _this3._connection.addStream(stream);
+          stream.getTracks().forEach(function (track) {
+            _this3._connection.addTrack(track, stream);
+          });
         }
       }) // Set remote description.
       .then(function () {
@@ -17839,14 +17841,14 @@ function (_EventEmitter) {
         audioMuted = true;
         this._audioMuted = true;
 
-        this._toogleMuteAudio(true);
+        this._toggleMuteAudio(true);
       }
 
       if (this._videoMuted === false && options.video) {
         videoMuted = true;
         this._videoMuted = true;
 
-        this._toogleMuteVideo(true);
+        this._toggleMuteVideo(true);
       }
 
       if (audioMuted === true || videoMuted === true) {
@@ -17876,7 +17878,7 @@ function (_EventEmitter) {
         this._audioMuted = false;
 
         if (this._localHold === false) {
-          this._toogleMuteAudio(false);
+          this._toggleMuteAudio(false);
         }
       }
 
@@ -17885,7 +17887,7 @@ function (_EventEmitter) {
         this._videoMuted = false;
 
         if (this._localHold === false) {
-          this._toogleMuteVideo(false);
+          this._toggleMuteVideo(false);
         }
       }
 
@@ -18974,7 +18976,7 @@ function (_EventEmitter) {
           var response = _ref3.response;
           notifier.notify(response.status_code, response.reason_phrase);
         });
-        session.on('failed', function (_ref4) {
+        session.on('_failed', function (_ref4) {
           var message = _ref4.message,
               cause = _ref4.cause;
 
@@ -19141,7 +19143,9 @@ function (_EventEmitter) {
         _this21._localMediaStream = stream;
 
         if (stream) {
-          _this21._connection.addStream(stream);
+          stream.getTracks().forEach(function (track) {
+            _this21._connection.addTrack(track, stream);
+          });
         } // TODO: should this be triggered here?
 
 
@@ -19307,7 +19311,7 @@ function (_EventEmitter) {
               // Be ready for 200 with SDP after a 180/183 with SDP.
               // We created a SDP 'answer' for it, so check the current signaling state.
               if (_this22._connection.signalingState === 'stable') {
-                return _this22._connection.createOffer().then(function (offer) {
+                return _this22._connection.createOffer(_this22._rtcOfferConstraints).then(function (offer) {
                   return _this22._connection.setLocalDescription(offer);
                 }).catch(function (error) {
                   _this22._acceptAndTerminate(response, 500, error.toString());
@@ -19372,6 +19376,14 @@ function (_EventEmitter) {
         return _this23._createLocalDescription('offer', rtcOfferConstraints);
       }).then(function (sdp) {
         sdp = _this23._mangleOffer(sdp);
+        var e = {
+          originator: 'local',
+          type: 'offer',
+          sdp: sdp
+        };
+        debug('emit "sdp"');
+
+        _this23.emit('sdp', e);
 
         _this23.sendRequest(JsSIP_C.INVITE, {
           extraHeaders: extraHeaders,
@@ -19486,6 +19498,14 @@ function (_EventEmitter) {
           return _this25._createLocalDescription('offer', rtcOfferConstraints);
         }).then(function (sdp) {
           sdp = _this25._mangleOffer(sdp);
+          var e = {
+            originator: 'local',
+            type: 'offer',
+            sdp: sdp
+          };
+          debug('emit "sdp"');
+
+          _this25.emit('sdp', e);
 
           _this25.sendRequest(JsSIP_C.UPDATE, {
             extraHeaders: extraHeaders,
@@ -19764,9 +19784,9 @@ function (_EventEmitter) {
         enableVideo = false;
       }
 
-      this._toogleMuteAudio(!enableAudio);
+      this._toggleMuteAudio(!enableAudio);
 
-      this._toogleMuteVideo(!enableVideo);
+      this._toggleMuteVideo(!enableVideo);
     }
     /**
      * Handle SessionTimers for an incoming INVITE or UPDATE.
@@ -19863,41 +19883,20 @@ function (_EventEmitter) {
         }
     }
   }, {
-    key: "_toogleMuteAudio",
-    value: function _toogleMuteAudio(mute) {
-      var streams = this._connection.getLocalStreams();
+    key: "_toggleMuteAudio",
+    value: function _toggleMuteAudio(mute) {
+      var senders = this._connection.getSenders().filter(function (sender) {
+        return sender.track && sender.track.kind === 'audio';
+      });
 
       var _iteratorNormalCompletion8 = true;
       var _didIteratorError8 = false;
       var _iteratorError8 = undefined;
 
       try {
-        for (var _iterator8 = streams[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var stream = _step8.value;
-          var tracks = stream.getAudioTracks();
-          var _iteratorNormalCompletion9 = true;
-          var _didIteratorError9 = false;
-          var _iteratorError9 = undefined;
-
-          try {
-            for (var _iterator9 = tracks[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var track = _step9.value;
-              track.enabled = !mute;
-            }
-          } catch (err) {
-            _didIteratorError9 = true;
-            _iteratorError9 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
-                _iterator9.return();
-              }
-            } finally {
-              if (_didIteratorError9) {
-                throw _iteratorError9;
-              }
-            }
-          }
+        for (var _iterator8 = senders[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var sender = _step8.value;
+          sender.track.enabled = !mute;
         }
       } catch (err) {
         _didIteratorError8 = true;
@@ -19915,53 +19914,32 @@ function (_EventEmitter) {
       }
     }
   }, {
-    key: "_toogleMuteVideo",
-    value: function _toogleMuteVideo(mute) {
-      var streams = this._connection.getLocalStreams();
+    key: "_toggleMuteVideo",
+    value: function _toggleMuteVideo(mute) {
+      var senders = this._connection.getSenders().filter(function (sender) {
+        return sender.track && sender.track.kind === 'video';
+      });
 
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator10 = streams[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var stream = _step10.value;
-          var tracks = stream.getVideoTracks();
-          var _iteratorNormalCompletion11 = true;
-          var _didIteratorError11 = false;
-          var _iteratorError11 = undefined;
-
-          try {
-            for (var _iterator11 = tracks[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-              var track = _step11.value;
-              track.enabled = !mute;
-            }
-          } catch (err) {
-            _didIteratorError11 = true;
-            _iteratorError11 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
-                _iterator11.return();
-              }
-            } finally {
-              if (_didIteratorError11) {
-                throw _iteratorError11;
-              }
-            }
-          }
+        for (var _iterator9 = senders[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var sender = _step9.value;
+          sender.track.enabled = !mute;
         }
       } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
-            _iterator10.return();
+          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+            _iterator9.return();
           }
         } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
@@ -20036,7 +20014,14 @@ function (_EventEmitter) {
   }, {
     key: "_failed",
     value: function _failed(originator, message, cause) {
-      debug('session failed');
+      debug('session failed'); // Emit private '_failed' event first.
+
+      debug('emit "_failed"');
+      this.emit('_failed', {
+        originator: originator,
+        message: message || null,
+        cause: cause
+      });
 
       this._close();
 
@@ -20864,10 +20849,7 @@ function () {
           _this._cseq += 1;
         },
         onReceiveResponse: function onReceiveResponse(response) {
-          var contact;
-          var expires;
-          var numContacts = response.getHeaders('contact').length; // Discard responses to older REGISTER/un-REGISTER requests.
-
+          // Discard responses to older REGISTER/un-REGISTER requests.
           if (response.cseq !== _this._cseq) {
             return;
           } // Clear registration timer.
@@ -20880,90 +20862,95 @@ function () {
 
           switch (true) {
             case /^1[0-9]{2}$/.test(response.status_code):
-              // Ignore provisional responses.
-              break;
+              {
+                // Ignore provisional responses.
+                break;
+              }
 
             case /^2[0-9]{2}$/.test(response.status_code):
-              _this._registering = false; // Search the Contact pointing to us and update the expires value accordingly.
+              {
+                _this._registering = false;
 
-              if (!numContacts) {
-                debug('no Contact header in response to REGISTER, response ignored');
-                break;
-              }
-
-              while (numContacts--) {
-                contact = response.parseHeader('contact', numContacts);
-
-                if (contact.uri.user === _this._ua.contact.uri.user) {
-                  expires = contact.getParam('expires');
+                if (!response.hasHeader('Contact')) {
+                  debug('no Contact header in response to REGISTER, response ignored');
                   break;
-                } else {
-                  contact = null;
                 }
-              }
 
-              if (!contact) {
-                debug('no Contact header pointing to us, response ignored');
+                var contacts = response.headers['Contact'].reduce(function (a, b) {
+                  return a.concat(b.parsed);
+                }, []); // Get the Contact pointing to us and update the expires value accordingly.
+
+                var contact = contacts.find(function (element) {
+                  return element.uri.user === _this._ua.contact.uri.user;
+                });
+
+                if (!contact) {
+                  debug('no Contact header pointing to us, response ignored');
+                  break;
+                }
+
+                var expires = contact.getParam('expires');
+
+                if (!expires && response.hasHeader('expires')) {
+                  expires = response.getHeader('expires');
+                }
+
+                if (!expires) {
+                  expires = _this._expires;
+                }
+
+                expires = Number(expires);
+                if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES; // Re-Register or emit an event before the expiration interval has elapsed.
+                // For that, decrease the expires value. ie: 3 seconds.
+
+                _this._registrationTimer = setTimeout(function () {
+                  _this._registrationTimer = null; // If there are no listeners for registrationExpiring, renew registration.
+                  // If there are listeners, let the function listening do the register call.
+
+                  if (_this._ua.listeners('registrationExpiring').length === 0) {
+                    _this.register();
+                  } else {
+                    _this._ua.emit('registrationExpiring');
+                  }
+                }, expires * 1000 - 5000); // Save gruu values.
+
+                if (contact.hasParam('temp-gruu')) {
+                  _this._ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g, '');
+                }
+
+                if (contact.hasParam('pub-gruu')) {
+                  _this._ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g, '');
+                }
+
+                if (!_this._registered) {
+                  _this._registered = true;
+
+                  _this._ua.registered({
+                    response: response
+                  });
+                }
+
                 break;
               }
-
-              if (!expires && response.hasHeader('expires')) {
-                expires = response.getHeader('expires');
-              }
-
-              if (!expires) {
-                expires = _this._expires;
-              }
-
-              expires = Number(expires);
-              if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES; // Re-Register or emit an event before the expiration interval has elapsed.
-              // For that, decrease the expires value. ie: 3 seconds.
-
-              _this._registrationTimer = setTimeout(function () {
-                _this._registrationTimer = null; // If there are no listeners for registrationExpiring, renew registration.
-                // If there are listeners, let the function listening do the register call.
-
-                if (_this._ua.listeners('registrationExpiring').length === 0) {
-                  _this.register();
-                } else {
-                  _this._ua.emit('registrationExpiring');
-                }
-              }, expires * 1000 - 5000); // Save gruu values.
-
-              if (contact.hasParam('temp-gruu')) {
-                _this._ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g, '');
-              }
-
-              if (contact.hasParam('pub-gruu')) {
-                _this._ua.contact.pub_gruu = contact.getParam('pub-gruu').replace(/"/g, '');
-              }
-
-              if (!_this._registered) {
-                _this._registered = true;
-
-                _this._ua.registered({
-                  response: response
-                });
-              }
-
-              break;
             // Interval too brief RFC3261 10.2.8.
 
             case /^423$/.test(response.status_code):
-              if (response.hasHeader('min-expires')) {
-                // Increase our registration interval to the suggested minimum.
-                _this._expires = Number(response.getHeader('min-expires'));
-                if (_this._expires < MIN_REGISTER_EXPIRES) _this._expires = MIN_REGISTER_EXPIRES; // Attempt the registration again immediately.
+              {
+                if (response.hasHeader('min-expires')) {
+                  // Increase our registration interval to the suggested minimum.
+                  _this._expires = Number(response.getHeader('min-expires'));
+                  if (_this._expires < MIN_REGISTER_EXPIRES) _this._expires = MIN_REGISTER_EXPIRES; // Attempt the registration again immediately.
 
-                _this.register();
-              } else {
-                // This response MUST contain a Min-Expires header field
-                debug('423 response received for REGISTER without Min-Expires');
+                  _this.register();
+                } else {
+                  // This response MUST contain a Min-Expires header field.
+                  debug('423 response received for REGISTER without Min-Expires');
 
-                _this._registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
+                  _this._registrationFailure(response, JsSIP_C.causes.SIP_FAILURE_CODE);
+                }
+
+                break;
               }
-
-              break;
 
             default:
               {
@@ -22236,7 +22223,7 @@ var debugerror = require('debug')('JsSIP:ERROR:Socket');
 
 debugerror.log = console.warn.bind(console);
 /**
- * Interface documentation: http://jssip.net/documentation/$last_version/api/socket/
+ * Interface documentation: https://jssip.net/documentation/$last_version/api/socket/
  *
  * interface Socket {
  *  attribute String via_transport
@@ -22596,7 +22583,7 @@ function (_EventEmitter2) {
       var _this6 = this;
 
       var ack = new SIPMessage.OutgoingRequest(JsSIP_C.ACK, this.request.ruri, this.ua, {
-        'route_set': this.request.getHeader('route'),
+        'route_set': this.request.getHeaders('route'),
         'call_id': this.request.getHeader('call-id'),
         'cseq': this.request.cseq
       });
@@ -22617,7 +22604,7 @@ function (_EventEmitter2) {
       }
 
       var cancel = new SIPMessage.OutgoingRequest(JsSIP_C.CANCEL, this.request.ruri, this.ua, {
-        'route_set': this.request.getHeader('route'),
+        'route_set': this.request.getHeaders('route'),
         'call_id': this.request.getHeader('call-id'),
         'cseq': this.request.cseq
       });
@@ -24113,6 +24100,15 @@ function (_EventEmitter) {
              */
             break;
 
+          case JsSIP_C.NOTIFY:
+            // Receive new sip event.
+            this.emit('sipEvent', {
+              event: request.event,
+              request: request
+            });
+            request.reply(200);
+            break;
+
           default:
             request.reply(405);
             break;
@@ -24809,7 +24805,7 @@ var createRandomToken = exports.createRandomToken = function (size) {
 
 exports.newTag = function () {
   return createRandomToken(10);
-}; // http://stackoverflow.com/users/109538/broofa.
+}; // https://stackoverflow.com/users/109538/broofa.
 
 
 exports.newUUID = function () {
@@ -24943,7 +24939,7 @@ exports.sipErrorCause = function (status_code) {
   return JsSIP_C.causes.SIP_FAILURE_CODE;
 };
 /**
-* Generate a random Test-Net IP (http://tools.ietf.org/html/rfc5735)
+* Generate a random Test-Net IP (https://tools.ietf.org/html/rfc5735)
 */
 
 
@@ -24953,7 +24949,7 @@ exports.getRandomTestNetIP = function () {
   }
 
   return "192.0.2.".concat(getOctet(1, 254));
-}; // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info.
+}; // MD5 (Message-Digest Algorithm) https://www.webtoolkit.info.
 
 
 exports.calculateMD5 = function (string) {
@@ -26632,7 +26628,9 @@ function setup(env) {
 	}
 
 	function extend(namespace, delimiter) {
-		return createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		newDebug.log = this.log;
+		return newDebug;
 	}
 
 	/**
@@ -27431,6 +27429,29 @@ var grammar = module.exports = {
       names: ['filterMode', 'netType', 'addressTypes', 'destAddress', 'srcList'],
       format: 'source-filter: %s %s %s %s %s'
     },
+    { //a=bundle-only
+      name: 'bundleOnly',
+      reg: /^(bundle-only)/
+    },
+    { //a=label:1
+      name: 'label',
+      reg: /^label:(.+)/,
+      format: 'label:%s'
+    },
+    {
+      // RFC version 26 for SCTP over DTLS
+      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-5
+      name:'sctpPort',
+      reg: /^sctp-port:(\d+)$/,
+      format: 'sctp-port:%s'
+    },
+    {
+      // RFC version 26 for SCTP over DTLS
+      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-6
+      name:'maxMessageSize',
+      reg: /^max-message-size:(\d+)$/,
+      format: 'max-message-size:%s'
+    },
     { // any a= that we don't understand is kepts verbatim on media.invalid
       push: 'invalid',
       names: ['value']
@@ -27711,8 +27732,8 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.2.16",
-  "homepage": "http://jssip.net",
+  "version": "3.3.3",
+  "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
     "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
@@ -27736,22 +27757,22 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "ansi-colors": "^3.2.1",
-    "debug": "^4.1.0",
+    "debug": "^4.1.1",
     "events": "^3.0.0",
-    "sdp-transform": "^2.4.1"
+    "sdp-transform": "^2.7.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/preset-env": "^7.1.6",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "ansi-colors": "^3.2.3",
     "browserify": "^16.2.3",
-    "eslint": "^5.9.0",
-    "fancy-log": "^1.3.2",
+    "eslint": "^5.11.1",
+    "fancy-log": "^1.3.3",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^5.0.0",
     "gulp-expect-file": "^1.0.0",
-    "gulp-header": "^2.0.5",
+    "gulp-header": "^2.0.7",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",

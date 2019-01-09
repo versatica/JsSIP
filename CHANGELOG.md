@@ -1,6 +1,38 @@
 CHANGELOG
 =========
 
+Version 3.3.3 (released in 2019-01-02)
+---------------------------------------
+
+* Registrator: Don't check Contact header if final response is not 2XX (#558). Thanks @ikq for reporting.
+* Update deps.
+
+
+Version 3.3.2 (released in 2018-12-19)
+---------------------------------------
+
+* Registrator. Support multiple entries in the same Contact header field (#544).
+
+
+Version 3.3.1 (released in 2018-12-19)
+---------------------------------------
+
+* RTCSession: fire 'sdp' event on renegotiation (#543).
+
+
+Version 3.3.0 (released in 2018-12-19)
+---------------------------------------
+
+* UA: new 'sipEvent' event for out of dialog NOTIFY requests.
+
+
+Version 3.2.17 (released in 2018-12-18)
+---------------------------------------
+
+* InviteClientTransaction: Add full route set to ACK and CANCEL requests. Thanks @nicketson.
+* RTCSession: switch to tracks from deprecated stream API. Thanks @nicketson.
+
+
 Version 3.2.16 (released in 2018-11-28)
 ---------------------------------------
 
@@ -767,16 +799,16 @@ Version 0.4.2 (released in 2014-10-24)
 Version 0.4.1 (released in 2014-10-21)
 --------------------------------------
 
-* This version is included into the [Bower](http://bower.io/) registry which means `$ bower install jssip`.
+* This version is included into the [Bower](https://bower.io/) registry which means `$ bower install jssip`.
 
 
 Version 0.4.0 (released in 2014-10-21)
 --------------------------------------
 
-* (http://jssip.net/documentation/0.4.x/api/session) Hold/Unhold implementation
-* (http://jssip.net/documentation/0.4.x/api/session) Mute/Unmute implementation
-* (http://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#instance_id) New 'instance_id' configuration parameter
-* (http://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#log) New 'log' configuration parameter
+* (https://jssip.net/documentation/0.4.x/api/session) Hold/Unhold implementation
+* (https://jssip.net/documentation/0.4.x/api/session) Mute/Unmute implementation
+* (https://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#instance_id) New 'instance_id' configuration parameter
+* (https://jssip.net/documentation/0.4.x/api/ua_configuration_parameters/#log) New 'log' configuration parameter
 * [(34b235c)](https://github.com/versatica/JsSIP/commit/34b235c) Fix #246. Increase the event emiter max listener number to 50
 * [(9a1ebdf)](https://github.com/versatica/JsSIP/commit/9a1ebdf) Late SDP implementation. Handle SDP-less incoming INVITEs
 * [(f0cc4c1)](https://github.com/versatica/JsSIP/commit/f0cc4c1) Fix #253. RTCSession: instead of "started" emit "accepted" when 2XX and "confirmed" when ACK
