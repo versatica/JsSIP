@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 3.3.4 (released in 2019-01-15)
+---------------------------------------
+
+* Add debugging logs in DigestAuthentication.js (related to #561).
+* Update deps.
+
+
 Version 3.3.3 (released in 2019-01-02)
 ---------------------------------------
 

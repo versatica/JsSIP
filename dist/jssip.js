@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.3
+ * JsSIP v3.3.4
  * the Javascript SIP library
  * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -1024,21 +1024,28 @@ function () {
           this._ha1 = this._credentials.ha1;
         }
 
+      var a2;
       var ha2;
 
       if (this._qop === 'auth') {
         // HA2 = MD5(A2) = MD5(method:digestURI).
-        ha2 = Utils.calculateMD5("".concat(this._method, ":").concat(this._uri)); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
+        a2 = "".concat(this._method, ":").concat(this._uri);
+        ha2 = Utils.calculateMD5(a2);
+        debug('authenticate() | using qop=auth [a2:"%s"]', a2); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
 
         this._response = Utils.calculateMD5("".concat(this._ha1, ":").concat(this._nonce, ":").concat(this._ncHex, ":").concat(this._cnonce, ":auth:").concat(ha2));
       } else if (this._qop === 'auth-int') {
         // HA2 = MD5(A2) = MD5(method:digestURI:MD5(entityBody)).
-        ha2 = Utils.calculateMD5("".concat(this._method, ":").concat(this._uri, ":").concat(Utils.calculateMD5(body ? body : ''))); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
+        a2 = "".concat(this._method, ":").concat(this._uri, ":").concat(Utils.calculateMD5(body ? body : ''));
+        ha2 = Utils.calculateMD5(a2);
+        debug('authenticate() | using qop=auth-int [a2:"%s"]', a2); // Response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2).
 
         this._response = Utils.calculateMD5("".concat(this._ha1, ":").concat(this._nonce, ":").concat(this._ncHex, ":").concat(this._cnonce, ":auth-int:").concat(ha2));
       } else if (this._qop === null) {
         // HA2 = MD5(A2) = MD5(method:digestURI).
-        ha2 = Utils.calculateMD5("".concat(this._method, ":").concat(this._uri)); // Response = MD5(HA1:nonce:HA2).
+        a2 = "".concat(this._method, ":").concat(this._uri);
+        ha2 = Utils.calculateMD5(a2);
+        debug('authenticate() | using qop=null [a2:"%s"]', a2); // Response = MD5(HA1:nonce:HA2).
 
         this._response = Utils.calculateMD5("".concat(this._ha1, ":").concat(this._nonce, ":").concat(ha2));
       }
@@ -27882,7 +27889,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27916,12 +27923,12 @@ module.exports={
     "@babel/preset-env": "^7.2.3",
     "ansi-colors": "^3.2.3",
     "browserify": "^16.2.3",
-    "eslint": "^5.11.1",
+    "eslint": "^5.12.0",
     "fancy-log": "^1.3.3",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^5.0.0",
-    "gulp-expect-file": "^1.0.0",
+    "gulp-expect-file": "^1.0.1",
     "gulp-header": "^2.0.7",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-plumber": "^1.2.1",
