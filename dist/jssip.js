@@ -1,7 +1,7 @@
 /*
  * JsSIP v3.2.11
  * the Javascript SIP library
- * Copyright: 2012-2018 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: http://jssip.net
  * License: MIT
  */
@@ -16001,34 +16001,35 @@ module.exports = function (_EventEmitter) {
 
         // Add 'pc.onicencandidate' event handler to resolve on last candidate.
         return new Promise(function (resolve) {
-          var finished = false;
-          var listener = void 0;
+          // let finished = false;
+          var _listener = void 0;
 
-          var ready = function ready() {
-            connection.removeEventListener('icecandidate', listener);
+          connection.addEventListener('icecandidate', _listener = function listener(event) {
+            var that = _this13;
 
-            finished = true;
-            _this13._rtcReady = true;
+            setTimeout(function () {
+              if (connection.iceGatheringState === 'complete') {
+                return;
+              }
+              debug('ICE Timeout reached!');
+              connection.removeEventListener('icecandidate', _listener);
+              that._rtcReady = true;
+              var e = { originator: 'local', type: type, sdp: connection.localDescription.sdp };
 
-            var e = { originator: 'local', type: type, sdp: connection.localDescription.sdp };
-
-            debug('emit "sdp"');
-
-            _this13.emit('sdp', e);
-
-            resolve(e.sdp);
-          };
-
-          connection.addEventListener('icecandidate', listener = function listener(event) {
+              debug('emit "sdp"');
+              that.emit('sdp', e);
+              resolve(e.sdp);
+            }, 2000);
             var candidate = event.candidate;
 
-            if (candidate) {
-              _this13.emit('icecandidate', {
-                candidate: candidate,
-                ready: ready
-              });
-            } else if (!finished) {
-              ready();
+            if (!candidate) {
+              connection.removeEventListener('icecandidate', _listener);
+              _this13._rtcReady = true;
+              var _e = { originator: 'local', type: type, sdp: connection.localDescription.sdp };
+
+              debug('emit "sdp"');
+              _this13.emit('sdp', _e);
+              resolve(_e.sdp);
             }
           });
         });
@@ -16792,12 +16793,12 @@ module.exports = function (_EventEmitter) {
               break;
             }
 
-            var _e = { originator: 'remote', type: 'answer', sdp: response.body };
+            var _e2 = { originator: 'remote', type: 'answer', sdp: response.body };
 
             debug('emit "sdp"');
-            this.emit('sdp', _e);
+            this.emit('sdp', _e2);
 
-            var _answer = new RTCSessionDescription({ type: 'answer', sdp: _e.sdp });
+            var _answer = new RTCSessionDescription({ type: 'answer', sdp: _e2.sdp });
 
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
               // Be ready for 200 with SDP after a 180/183 with SDP.
