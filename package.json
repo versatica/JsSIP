@@ -2,12 +2,11 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
-    "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)",
-    "Saúl Ibarra Corretgé <saghul@gmail.com> (https://github.com/saghul)"
+    "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)"
   ],
   "main": "lib-es5/JsSIP.js",
   "keywords": [
@@ -32,11 +31,11 @@
     "sdp-transform": "^2.7.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
     "ansi-colors": "^3.2.3",
     "browserify": "^16.2.3",
-    "eslint": "^5.12.0",
+    "eslint": "^5.14.1",
     "fancy-log": "^1.3.3",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
@@ -52,6 +51,7 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "scripts": {
+    "lint": "gulp lint",
     "test": "gulp test",
     "prepublishOnly": "gulp babel"
   }
