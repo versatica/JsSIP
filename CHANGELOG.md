@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.6 (released in 2019-04-12)
+---------------------------------------
+
+* Fix NameAddrHeader `display_name` handling (#573). Credits to @nicketson.
+
+
 Version 3.3.5 (released in 2019-02-26)
 ---------------------------------------
 
