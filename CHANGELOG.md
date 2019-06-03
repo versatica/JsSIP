@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+Version 3.3.6 (released in 2019-04-12)
+---------------------------------------
+
+* Fix NameAddrHeader `display_name` handling (#573). Credits to @nicketson.
+
+
+Version 3.3.5 (released in 2019-02-26)
+---------------------------------------
+
+* Add `.babelrc` into `.npmignore` (related to #489).
+* Update deps.
+
+
 Version 3.3.4 (released in 2019-01-15)
 ---------------------------------------
 
