@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.6
+ * JsSIP v3.3.7
  * the Javascript SIP library
  * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -93,8 +93,8 @@ var checks = {
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-              _iterator["return"]();
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
             }
           } finally {
             if (_didIteratorError) {
@@ -16718,8 +16718,8 @@ function parseHeader(message, data, headerStart, headerEnd) {
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-              _iterator["return"]();
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
             }
           } finally {
             if (_didIteratorError) {
@@ -16764,8 +16764,8 @@ function parseHeader(message, data, headerStart, headerEnd) {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-              _iterator2["return"]();
+            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+              _iterator2.return();
             }
           } finally {
             if (_didIteratorError2) {
@@ -17390,8 +17390,8 @@ function (_EventEmitter) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
           }
         } finally {
           if (_didIteratorError) {
@@ -17416,8 +17416,8 @@ function (_EventEmitter) {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-              _iterator2["return"]();
+            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+              _iterator2.return();
             }
           } finally {
             if (_didIteratorError2) {
@@ -17444,8 +17444,8 @@ function (_EventEmitter) {
           _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-              _iterator3["return"]();
+            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+              _iterator3.return();
             }
           } finally {
             if (_didIteratorError3) {
@@ -17487,7 +17487,7 @@ function (_EventEmitter) {
         } // Audio and/or video requested, prompt getUserMedia.
         else if (mediaConstraints.audio || mediaConstraints.video) {
             _this3._localMediaStreamLocallyGenerated = true;
-            return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
+            return navigator.mediaDevices.getUserMedia(mediaConstraints).catch(function (error) {
               if (_this3._status === C.STATUS_TERMINATED) {
                 throw new Error('terminated');
               }
@@ -17537,7 +17537,7 @@ function (_EventEmitter) {
         });
         _this3._connectionPromiseQueue = _this3._connectionPromiseQueue.then(function () {
           return _this3._connection.setRemoteDescription(offer);
-        })["catch"](function (error) {
+        }).catch(function (error) {
           request.reply(488);
 
           _this3._failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
@@ -17559,12 +17559,12 @@ function (_EventEmitter) {
         _this3._connecting(request);
 
         if (!_this3._late_sdp) {
-          return _this3._createLocalDescription('answer', rtcAnswerConstraints)["catch"](function () {
+          return _this3._createLocalDescription('answer', rtcAnswerConstraints).catch(function () {
             request.reply(500);
             throw new Error('_createLocalDescription() failed');
           });
         } else {
-          return _this3._createLocalDescription('offer', _this3._rtcOfferConstraints)["catch"](function () {
+          return _this3._createLocalDescription('offer', _this3._rtcOfferConstraints).catch(function () {
             request.reply(500);
             throw new Error('_createLocalDescription() failed');
           });
@@ -17588,7 +17588,7 @@ function (_EventEmitter) {
         }, function () {
           _this3._failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
         });
-      })["catch"](function (error) {
+      }).catch(function (error) {
         if (_this3._status === C.STATUS_TERMINATED) {
           return;
         }
@@ -18197,7 +18197,7 @@ function (_EventEmitter) {
                 if (!_this10._is_confirmed) {
                   _this10._confirmed('remote', request);
                 }
-              })["catch"](function (error) {
+              }).catch(function (error) {
                 _this10.terminate({
                   cause: JsSIP_C.causes.BAD_MEDIA_DESCRIPTION,
                   status_code: 488
@@ -18528,7 +18528,7 @@ function (_EventEmitter) {
       return Promise.resolve() // Create Offer or Answer.
       .then(function () {
         if (type === 'offer') {
-          return connection.createOffer(constraints)["catch"](function (error) {
+          return connection.createOffer(constraints).catch(function (error) {
             debugerror('emit "peerconnection:createofferfailed" [error:%o]', error);
 
             _this13.emit('peerconnection:createofferfailed', error);
@@ -18536,7 +18536,7 @@ function (_EventEmitter) {
             return Promise.reject(error);
           });
         } else {
-          return connection.createAnswer(constraints)["catch"](function (error) {
+          return connection.createAnswer(constraints).catch(function (error) {
             debugerror('emit "peerconnection:createanswerfailed" [error:%o]', error);
 
             _this13.emit('peerconnection:createanswerfailed', error);
@@ -18546,7 +18546,7 @@ function (_EventEmitter) {
         }
       }) // Set local description.
       .then(function (desc) {
-        return connection.setLocalDescription(desc)["catch"](function (error) {
+        return connection.setLocalDescription(desc).catch(function (error) {
           _this13._rtcReady = true;
           debugerror('emit "peerconnection:setlocaldescriptionfailed" [error:%o]', error);
 
@@ -18713,7 +18713,7 @@ function (_EventEmitter) {
           return _this14._createLocalDescription('offer', _this14._rtcOfferConstraints);
         }).then(function (sdp) {
           sendAnswer.call(_this14, sdp);
-        })["catch"](function () {
+        }).catch(function () {
           request.reply(500);
         });
         return;
@@ -18733,7 +18733,7 @@ function (_EventEmitter) {
         }
 
         sendAnswer.call(_this14, desc);
-      })["catch"](function (error) {
+      }).catch(function (error) {
         debugerror(error);
       });
 
@@ -18822,7 +18822,7 @@ function (_EventEmitter) {
         }
 
         sendAnswer.call(_this16, desc);
-      })["catch"](function (error) {
+      }).catch(function (error) {
         debugerror(error);
       });
 
@@ -18873,8 +18873,8 @@ function (_EventEmitter) {
         _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
-            _iterator4["return"]();
+          if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+            _iterator4.return();
           }
         } finally {
           if (_didIteratorError4) {
@@ -18900,7 +18900,7 @@ function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-        return _this17._connection.setRemoteDescription(offer)["catch"](function (error) {
+        return _this17._connection.setRemoteDescription(offer).catch(function (error) {
           request.reply(488);
           debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -18928,7 +18928,7 @@ function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function () {
+        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints).catch(function () {
           request.reply(500);
           throw new Error('_createLocalDescription() failed');
         });
@@ -19135,7 +19135,7 @@ function (_EventEmitter) {
         } // Request for user media access.
         else if (mediaConstraints.audio || mediaConstraints.video) {
             _this21._localMediaStreamLocallyGenerated = true;
-            return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
+            return navigator.mediaDevices.getUserMedia(mediaConstraints).catch(function (error) {
               if (_this21._status === C.STATUS_TERMINATED) {
                 throw new Error('terminated');
               }
@@ -19165,7 +19165,7 @@ function (_EventEmitter) {
 
         _this21._connecting(_this21._request);
 
-        return _this21._createLocalDescription('offer', rtcOfferConstraints)["catch"](function (error) {
+        return _this21._createLocalDescription('offer', rtcOfferConstraints).catch(function (error) {
           _this21._failed('local', null, JsSIP_C.causes.WEBRTC_ERROR);
 
           throw error;
@@ -19184,7 +19184,7 @@ function (_EventEmitter) {
         });
 
         request_sender.send();
-      })["catch"](function (error) {
+      }).catch(function (error) {
         if (_this21._status === C.STATUS_TERMINATED) {
           return;
         }
@@ -19283,7 +19283,7 @@ function (_EventEmitter) {
             });
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
               return _this22._connection.setRemoteDescription(answer);
-            })["catch"](function (error) {
+            }).catch(function (error) {
               debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
               _this22.emit('peerconnection:setremotedescriptionfailed', error);
@@ -19327,7 +19327,7 @@ function (_EventEmitter) {
               if (_this22._connection.signalingState === 'stable') {
                 return _this22._connection.createOffer(_this22._rtcOfferConstraints).then(function (offer) {
                   return _this22._connection.setLocalDescription(offer);
-                })["catch"](function (error) {
+                }).catch(function (error) {
                   _this22._acceptAndTerminate(response, 500, error.toString());
 
                   _this22._failed('local', response, JsSIP_C.causes.WEBRTC_ERROR);
@@ -19343,7 +19343,7 @@ function (_EventEmitter) {
                 _this22.sendRequest(JsSIP_C.ACK);
 
                 _this22._confirmed('local', null);
-              })["catch"](function (error) {
+              }).catch(function (error) {
                 _this22._acceptAndTerminate(response, 488, 'Not Acceptable Here');
 
                 _this22._failed('remote', response, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
@@ -19424,7 +19424,7 @@ function (_EventEmitter) {
             }
           }
         });
-      })["catch"](function () {
+      }).catch(function () {
         onFailed();
       });
 
@@ -19470,7 +19470,7 @@ function (_EventEmitter) {
           if (eventHandlers.succeeded) {
             eventHandlers.succeeded(response);
           }
-        })["catch"](function (error) {
+        }).catch(function (error) {
           onFailed.call(_this24);
           debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -19546,7 +19546,7 @@ function (_EventEmitter) {
               }
             }
           });
-        })["catch"](function () {
+        }).catch(function () {
           onFailed.call(_this25);
         });
       } // No SDP.
@@ -19618,7 +19618,7 @@ function (_EventEmitter) {
             if (eventHandlers.succeeded) {
               eventHandlers.succeeded(response);
             }
-          })["catch"](function (error) {
+          }).catch(function (error) {
             onFailed.call(_this26);
             debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -19698,8 +19698,8 @@ function (_EventEmitter) {
           _iteratorError5 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
-              _iterator5["return"]();
+            if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+              _iterator5.return();
             }
           } finally {
             if (_didIteratorError5) {
@@ -19729,8 +19729,8 @@ function (_EventEmitter) {
             _iteratorError6 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
-                _iterator6["return"]();
+              if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
+                _iterator6.return();
               }
             } finally {
               if (_didIteratorError6) {
@@ -19766,8 +19766,8 @@ function (_EventEmitter) {
               _iteratorError7 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
-                  _iterator7["return"]();
+                if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
+                  _iterator7.return();
                 }
               } finally {
                 if (_didIteratorError7) {
@@ -19917,8 +19917,8 @@ function (_EventEmitter) {
         _iteratorError8 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion8 && _iterator8["return"] != null) {
-            _iterator8["return"]();
+          if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
+            _iterator8.return();
           }
         } finally {
           if (_didIteratorError8) {
@@ -19948,8 +19948,8 @@ function (_EventEmitter) {
         _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion9 && _iterator9["return"] != null) {
-            _iterator9["return"]();
+          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+            _iterator9.return();
           }
         } finally {
           if (_didIteratorError9) {
@@ -20645,7 +20645,10 @@ function (_EventEmitter) {
 
 
       var referTo = "Refer-To: <".concat(target).concat(replaces ? "?Replaces=".concat(replaces) : '', ">");
-      extraHeaders.push(referTo);
+      extraHeaders.push(referTo); // Referred-By header field.
+
+      var referredBy = "Referred-By: <".concat(this._session._ua._configuration.uri._scheme, ":").concat(this._session._ua._configuration.uri._user, "@").concat(this._session._ua._configuration.uri._host, ">");
+      extraHeaders.push(referredBy);
       extraHeaders.push("Contact: ".concat(this._session.contact));
 
       var request = this._session.sendRequest(JsSIP_C.REFER, {
@@ -21442,8 +21445,8 @@ function () {
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-              _iterator["return"]();
+            if (!_iteratorNormalCompletion && _iterator.return != null) {
+              _iterator.return();
             }
           } finally {
             if (_didIteratorError) {
@@ -21482,8 +21485,8 @@ function () {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-              _iterator2["return"]();
+            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+              _iterator2.return();
             }
           } finally {
             if (_didIteratorError2) {
@@ -21512,8 +21515,8 @@ function () {
           _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-              _iterator3["return"]();
+            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+              _iterator3.return();
             }
           } finally {
             if (_didIteratorError3) {
@@ -21555,8 +21558,8 @@ function () {
           _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
-              _iterator4["return"]();
+            if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+              _iterator4.return();
             }
           } finally {
             if (_didIteratorError4) {
@@ -21607,8 +21610,8 @@ function () {
             _iteratorError5 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
-                _iterator5["return"]();
+              if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+                _iterator5.return();
               }
             } finally {
               if (_didIteratorError5) {
@@ -21634,8 +21637,8 @@ function () {
         _iteratorError6 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
-            _iterator6["return"]();
+          if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
+            _iterator6.return();
           }
         } finally {
           if (_didIteratorError6) {
@@ -21835,8 +21838,8 @@ function () {
         _iteratorError7 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
-            _iterator7["return"]();
+          if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
+            _iterator7.return();
           }
         } finally {
           if (_didIteratorError7) {
@@ -22019,8 +22022,8 @@ function (_IncomingMessage) {
           _iteratorError8 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion8 && _iterator8["return"] != null) {
-              _iterator8["return"]();
+            if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
+              _iterator8.return();
             }
           } finally {
             if (_didIteratorError8) {
@@ -22045,8 +22048,8 @@ function (_IncomingMessage) {
         _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion9 && _iterator9["return"] != null) {
-            _iterator9["return"]();
+          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
+            _iterator9.return();
           }
         } finally {
           if (_didIteratorError9) {
@@ -22080,8 +22083,8 @@ function (_IncomingMessage) {
         _iteratorError10 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion10 && _iterator10["return"] != null) {
-            _iterator10["return"]();
+          if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
+            _iterator10.return();
           }
         } finally {
           if (_didIteratorError10) {
@@ -22174,8 +22177,8 @@ function (_IncomingMessage) {
         _iteratorError11 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion11 && _iterator11["return"] != null) {
-            _iterator11["return"]();
+          if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
+            _iterator11.return();
           }
         } finally {
           if (_didIteratorError11) {
@@ -22341,11 +22344,11 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -22403,7 +22406,7 @@ function (_EventEmitter) {
 
     _this.request.setHeader('via', via);
 
-    _this.ua.newTransaction(_assertThisInitialized(_this));
+    _this.ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this)));
 
     return _this;
   }
@@ -22517,13 +22520,13 @@ function (_EventEmitter2) {
     _this4.transport = transport;
     _this4.request = request;
     _this4.eventHandlers = eventHandlers;
-    request.transaction = _assertThisInitialized(_this4);
+    request.transaction = _assertThisInitialized(_assertThisInitialized(_this4));
     var via = "SIP/2.0/".concat(transport.via_transport);
     via += " ".concat(ua.configuration.via_host, ";branch=").concat(_this4.id);
 
     _this4.request.setHeader('via', via);
 
-    _this4.ua.newTransaction(_assertThisInitialized(_this4));
+    _this4.ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this4)));
 
     return _this4;
   }
@@ -22757,9 +22760,9 @@ function (_EventEmitter4) {
     _this9.transport = transport;
     _this9.request = request;
     _this9.last_response = '';
-    request.server_transaction = _assertThisInitialized(_this9);
+    request.server_transaction = _assertThisInitialized(_assertThisInitialized(_this9));
     _this9.state = C.STATUS_TRYING;
-    ua.newTransaction(_assertThisInitialized(_this9));
+    ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this9)));
     return _this9;
   }
 
@@ -22877,9 +22880,9 @@ function (_EventEmitter5) {
     _this11.transport = transport;
     _this11.request = request;
     _this11.last_response = '';
-    request.server_transaction = _assertThisInitialized(_this11);
+    request.server_transaction = _assertThisInitialized(_assertThisInitialized(_this11));
     _this11.state = C.STATUS_PROCEEDING;
-    ua.newTransaction(_assertThisInitialized(_this11));
+    ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this11)));
     _this11.resendProvisionalTimer = null;
     request.reply(100);
     return _this11;
@@ -23486,8 +23489,6 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
@@ -23495,6 +23496,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -23604,7 +23607,7 @@ function (_EventEmitter) {
     } // Initialize registrator.
 
 
-    _this._registrator = new Registrator(_assertThisInitialized(_this));
+    _this._registrator = new Registrator(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
@@ -24401,8 +24404,8 @@ function onTransportDisconnect(data) {
   // Run _onTransportError_ callback on every client transaction using _transport_.
   var client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
-  for (var _i = 0, _client_transactions = client_transactions; _i < _client_transactions.length; _i++) {
-    var type = _client_transactions[_i];
+  for (var _i = 0; _i < client_transactions.length; _i++) {
+    var type = client_transactions[_i];
 
     for (var id in this._transactions[type]) {
       if (Object.prototype.hasOwnProperty.call(this._transactions[type], id)) {
@@ -24672,8 +24675,8 @@ function () {
             _iteratorError = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-                _iterator["return"]();
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
               }
             } finally {
               if (_didIteratorError) {
@@ -24788,8 +24791,8 @@ exports.hasMethods = function (obj) {
     methodNames[_key - 1] = arguments[_key];
   }
 
-  for (var _i = 0, _methodNames = methodNames; _i < _methodNames.length; _i++) {
-    var methodName = _methodNames[_i];
+  for (var _i = 0; _i < methodNames.length; _i++) {
+    var methodName = methodNames[_i];
 
     if (isFunction(obj[methodName])) {
       return false;
@@ -25218,8 +25221,8 @@ exports.closeMediaStream = function (stream) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
           }
         } finally {
           if (_didIteratorError) {
@@ -25244,8 +25247,8 @@ exports.closeMediaStream = function (stream) {
         _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-            _iterator2["return"]();
+          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+            _iterator2.return();
           }
         } finally {
           if (_didIteratorError2) {
@@ -25270,8 +25273,8 @@ exports.closeMediaStream = function (stream) {
         _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-            _iterator3["return"]();
+          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+            _iterator3.return();
           }
         } finally {
           if (_didIteratorError3) {
@@ -25499,8 +25502,8 @@ module.exports = function (m, u, t) {
   ua = u;
   transport = t;
 
-  for (var _i = 0, _all = all; _i < _all.length; _i++) {
-    var _check2 = _all[_i];
+  for (var _i = 0; _i < all.length; _i++) {
+    var _check2 = all[_i];
 
     if (_check2() === false) {
       return false;
@@ -25508,16 +25511,16 @@ module.exports = function (m, u, t) {
   }
 
   if (message instanceof SIPMessage.IncomingRequest) {
-    for (var _i2 = 0, _requests = requests; _i2 < _requests.length; _i2++) {
-      var check = _requests[_i2];
+    for (var _i2 = 0; _i2 < requests.length; _i2++) {
+      var check = requests[_i2];
 
       if (check() === false) {
         return false;
       }
     }
   } else if (message instanceof SIPMessage.IncomingResponse) {
-    for (var _i3 = 0, _responses = responses; _i3 < _responses.length; _i3++) {
-      var _check = _responses[_i3];
+    for (var _i3 = 0; _i3 < responses.length; _i3++) {
+      var _check = responses[_i3];
 
       if (_check() === false) {
         return false;
@@ -25648,8 +25651,8 @@ function rfc3261_18_3_response() {
 function minimumHeaders() {
   var mandatoryHeaders = ['from', 'to', 'call_id', 'cseq', 'via'];
 
-  for (var _i4 = 0, _mandatoryHeaders = mandatoryHeaders; _i4 < _mandatoryHeaders.length; _i4++) {
-    var header = _mandatoryHeaders[_i4];
+  for (var _i4 = 0; _i4 < mandatoryHeaders.length; _i4++) {
+    var header = mandatoryHeaders[_i4];
 
     if (!message.hasHeader(header)) {
       debug("missing mandatory header field : ".concat(header, ", dropping the response"));
@@ -25677,8 +25680,8 @@ function reply(status_code) {
     _iteratorError = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-        _iterator["return"]();
+      if (!_iteratorNormalCompletion && _iterator.return != null) {
+        _iterator.return();
       }
     } finally {
       if (_didIteratorError) {
@@ -26639,9 +26642,7 @@ function setup(env) {
 	}
 
 	function extend(namespace, delimiter) {
-		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
-		newDebug.log = this.log;
-		return newDebug;
+		return createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
 	}
 
 	/**
@@ -27743,7 +27744,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.6",
+  "version": "3.3.7",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

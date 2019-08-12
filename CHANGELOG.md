@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.7 (released in 2019-08-12)
+---------------------------------------
+
+* Add referred-by header to refer messages (#572). Credits to @swysor.
+
+
 Version 3.3.6 (released in 2019-04-12)
 ---------------------------------------
 
