@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.8 (released in 2019-09-24)
+---------------------------------------
+
+* Move connection recovery defaults to Constants (#593). Credits to @KraftyKraft.
+
+
 Version 3.3.7 (released in 2019-08-12)
 ---------------------------------------
 

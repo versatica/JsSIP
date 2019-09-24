@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.7
+ * JsSIP v3.3.8
  * the Javascript SIP library
  * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -46,8 +46,8 @@ exports.settings = {
   registrar_server: null,
   // Connection options.
   sockets: null,
-  connection_recovery_max_interval: null,
-  connection_recovery_min_interval: null,
+  connection_recovery_max_interval: JsSIP_C.CONNECTION_RECOVERY_MAX_INTERVAL,
+  connection_recovery_min_interval: JsSIP_C.CONNECTION_RECOVERY_MIN_INTERVAL,
 
   /*
    * Host address.
@@ -453,7 +453,9 @@ module.exports = {
   ACCEPTED_BODY_TYPES: 'application/sdp, application/dtmf-relay',
   MAX_FORWARDS: 69,
   SESSION_EXPIRES: 90,
-  MIN_SESSION_EXPIRES: 60
+  MIN_SESSION_EXPIRES: 60,
+  CONNECTION_RECOVERY_MAX_INTERVAL: 30,
+  CONNECTION_RECOVERY_MIN_INTERVAL: 2
 };
 },{"../package.json":38}],3:[function(require,module,exports){
 "use strict";
@@ -23168,6 +23170,8 @@ var debug = require('debug')('JsSIP:Transport');
 
 var debugerror = require('debug')('JsSIP:ERROR:Transport');
 
+var JsSIP_C = require('./Constants');
+
 debugerror.log = console.warn.bind(console);
 /**
  * Constants
@@ -23183,10 +23187,10 @@ var C = {
   SOCKET_STATUS_ERROR: 1,
   // Recovery options.
   recovery_options: {
-    min_interval: 2,
-    // minimum interval in seconds between recover attempts
-    max_interval: 30 // maximum interval in seconds between recover attempts
-
+    // minimum interval in seconds between recover attempts.
+    min_interval: JsSIP_C.CONNECTION_RECOVERY_MIN_INTERVAL,
+    // maximum interval in seconds between recover attempts.
+    max_interval: JsSIP_C.CONNECTION_RECOVERY_MAX_INTERVAL
   }
 };
 /*
@@ -23478,7 +23482,7 @@ function () {
 
   return Transport;
 }();
-},{"./Socket":20,"debug":30}],24:[function(require,module,exports){
+},{"./Constants":2,"./Socket":20,"debug":30}],24:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -27744,7 +27748,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.7",
+  "version": "3.3.8",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
