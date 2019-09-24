@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.9 (released in 2019-09-24)
+---------------------------------------
+
+* Added NOTIFY to allowed methods (#593). Credits to @ikq.
+
+
 Version 3.3.8 (released in 2019-09-24)
 ---------------------------------------
 
