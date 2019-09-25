@@ -1,6 +1,24 @@
 CHANGELOG
 =========
 
+Version 3.3.9 (released in 2019-09-24)
+---------------------------------------
+
+* Added NOTIFY to allowed methods (#593). Credits to @ikq.
+
+
+Version 3.3.8 (released in 2019-09-24)
+---------------------------------------
+
+* Move connection recovery defaults to Constants (#593). Credits to @KraftyKraft.
+
+
+Version 3.3.7 (released in 2019-08-12)
+---------------------------------------
+
+* Add referred-by header to refer messages (#572). Credits to @swysor.
+
+
 Version 3.3.6 (released in 2019-04-12)
 ---------------------------------------
 
