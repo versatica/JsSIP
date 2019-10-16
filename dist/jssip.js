@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.9
+ * JsSIP v3.3.10
  * the Javascript SIP library
  * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -18216,7 +18216,7 @@ function (_EventEmitter) {
             break;
 
           case JsSIP_C.BYE:
-            if (this._status === C.STATUS_CONFIRMED) {
+            if (this._status === C.STATUS_CONFIRMED || this._status === C.STATUS_WAITING_FOR_ACK) {
               request.reply(200);
 
               this._ended('remote', request, JsSIP_C.causes.BYE);
@@ -27748,7 +27748,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.9",
+  "version": "3.3.10",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
