@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.10 (released in 2019-10-16)
+---------------------------------------
+
+* RTCSession: honor BYE while in WAITING_FOR_ACK state (#597). Thanks @Egorikhin.
+
+
 Version 3.3.9 (released in 2019-09-24)
 ---------------------------------------
 
