@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.3.11 (released in 2019-10-24)
+---------------------------------------
+
+* RTCSession: don't relay on 'icecandidate' event with null candidate (#598). Thanks @skanizaj.
+
+
 Version 3.3.10 (released in 2019-10-16)
 ---------------------------------------
 
