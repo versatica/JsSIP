@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.3.10
+ * JsSIP v3.3.11
  * the Javascript SIP library
  * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -18575,10 +18575,12 @@ function (_EventEmitter) {
 
         return new Promise(function (resolve) {
           var finished = false;
-          var listener;
+          var iceCandidateListener;
+          var iceGatheringStateListener;
 
           var ready = function ready() {
-            connection.removeEventListener('icecandidate', listener);
+            connection.removeEventListener('icecandidate', iceCandidateListener);
+            connection.removeEventListener('icegatheringstatechange', iceGatheringStateListener);
             finished = true;
             _this13._rtcReady = true;
             var e = {
@@ -18593,7 +18595,7 @@ function (_EventEmitter) {
             resolve(e.sdp);
           };
 
-          connection.addEventListener('icecandidate', listener = function listener(event) {
+          connection.addEventListener('icecandidate', iceCandidateListener = function iceCandidateListener(event) {
             var candidate = event.candidate;
 
             if (candidate) {
@@ -18602,6 +18604,11 @@ function (_EventEmitter) {
                 ready: ready
               });
             } else if (!finished) {
+              ready();
+            }
+          });
+          connection.addEventListener('icegatheringstatechange', iceGatheringStateListener = function iceGatheringStateListener() {
+            if (connection.iceGatheringState === 'complete' && !finished) {
               ready();
             }
           });
@@ -27748,7 +27755,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.3.10",
+  "version": "3.3.11",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
