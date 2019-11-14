@@ -20134,7 +20134,9 @@ function (_EventEmitter) {
         return sender.track && sender.track.kind === 'audio';
       });
 
-      return dtmfSender && dtmfSender.dtmf;
+      if (dtmfSender) {
+        return dtmfSender.dtmf;
+      }
     }
   }, {
     key: "C",
