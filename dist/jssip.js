@@ -17815,9 +17815,15 @@ function (_EventEmitter) {
         } else {
           switch (type) {
             case RFC2833:
-              this._getDTMFRTPSender().insertDTMF(tone, duration, interToneGap);
+              {
+                var sender = this._getDTMFRTPSender();
 
-              break;
+                if (sender) {
+                  sender.insertDTMF(tone, duration, interToneGap);
+                }
+
+                break;
+              }
 
             default:
               {
@@ -20124,17 +20130,11 @@ function (_EventEmitter) {
   }, {
     key: "_getDTMFRTPSender",
     value: function _getDTMFRTPSender() {
-      var streams = this._connection.getLocalStreams();
+      var dtmfSender = this._connection.getSenders().find(function (sender) {
+        return sender.track && sender.track.kind === 'audio';
+      });
 
-      if (streams.length > 0) {
-        var audioTracks = streams[0].getAudioTracks();
-
-        if (audioTracks.length > 0) {
-          var dtmfSender = this._connection.createDTMFSender(audioTracks[0]);
-
-          return dtmfSender;
-        }
-      }
+      return dtmfSender && dtmfSender.dtmf;
     }
   }, {
     key: "C",
