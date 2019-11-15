@@ -20134,7 +20134,7 @@ function (_EventEmitter) {
         return sender.track && sender.track.kind === 'audio';
       });
 
-      if (dtmfSender) {
+      if (dtmfSender && dtmfSender.dtmf && dtmfSender.dtmf.canInsertDTMF) {
         return dtmfSender.dtmf;
       }
     }
