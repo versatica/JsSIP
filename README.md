@@ -1,16 +1,18 @@
-<p align="center"><a href="http://jssip.net"><img src="http://jssip.net/images/jssip-banner-new.png"/></a></p>
+<p align="center"><a href="https://jssip.net"><img src="https://jssip.net/images/jssip-banner-new.png"/></a></p>
 
-[![Build Status](https://travis-ci.org/versatica/JsSIP.png?branch=new-design)](https://travis-ci.org/versatica/JsSIP)
+[![Build Status](https://api.travis-ci.com/versatica/JsSIP.png)](https://travis-ci.com/versatica/JsSIP)
+[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/context:javascript)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/alerts)
 
 ## Overview
 
 * Runs in the browser and Node.js.
-* SIP over [WebSocket](http://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
-* Audio/video calls ([WebRTC](http://jssip.net/documentation/misc/webrtc)) and instant messaging
+* SIP over [WebSocket](https://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
+* Audio/video calls ([WebRTC](https://jssip.net/documentation/misc/webrtc)) and instant messaging
 * Lightweight!
 * Easy to use and powerful user API
-* Works with OverSIP, Kamailio, Asterisk. Mobicents and repro (reSIProcate) servers ([more info](http://jssip.net/documentation/misc/interoperability))
-* Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](http://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
+* Works with OverSIP, Kamailio, Asterisk. Mobicents and repro (reSIProcate) servers ([more info](https://jssip.net/documentation/misc/interoperability))
+* Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](https://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
 
 
 ## NOTE
@@ -67,26 +69,25 @@ var options = {
 var session = ua.call('sip:bob@example.com', options);
 ```
 
-Want to see more? Check the full documentation at http://jssip.net/documentation/.
+Want to see more? Check the full documentation at https://jssip.net/documentation/.
 
 
 ## Online Demo
 
 Check our **Tryit JsSIP** online demo:
 
-* [tryit.jssip.net](http://tryit.jssip.net)
+* [tryit.jssip.net](https://tryit.jssip.net)
 
 
 ## Website and Documentation
 
-* [jssip.net](http://jssip.net/)
+* [jssip.net](https://jssip.net/)
 
 
 ## Download
 
 * As Node module: `$ npm install jssip`
-* As Bower module: `$ bower install jssip`
-* Manually: [jssip.net/download](http://jssip.net/download/)
+* Manually: [jssip.net/download](https://jssip.net/download/)
 
 
 ## Authors
@@ -109,4 +110,4 @@ Check our **Tryit JsSIP** online demo:
 
 ## License
 
-JsSIP is released under the [MIT license](http://jssip.net/license).
+JsSIP is released under the [MIT license](https://jssip.net/license).

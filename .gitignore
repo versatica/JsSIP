@@ -1,4 +1,2 @@
-node_modules/
-lib-es5/
-npm-debug.log
-
+/node_modules/
+/lib-es5/

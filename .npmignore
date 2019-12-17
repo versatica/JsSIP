@@ -1,6 +1,6 @@
-node_modules/
-dist/
-npm-debug.log
-.gitignore
-NO_GIT/
+/node_modules/
+/dist/
+/.gitignore
+/.babelrc
+/NO_GIT/
 

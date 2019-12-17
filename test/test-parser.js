@@ -44,12 +44,14 @@ module.exports = {
 
   'parse NameAddr' : function(test)
   {
-    const data = '"Iñaki ðđøþ" <SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+    const data = ' "Iñaki ðđøþ foo \\"bar\\" \\\\\\\\ \\\\ \\\\d \\\\\\\\d \\\\\' \\\\\\"sdf\\\\\\"" ' +
+          '<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+
     const name = JsSIP.NameAddrHeader.parse(data);
 
     // Parsed data.
     test.ok(name instanceof(JsSIP.NameAddrHeader));
-    test.strictEqual(name.display_name, 'Iñaki ðđøþ');
+    test.strictEqual(name.display_name, 'Iñaki ðđøþ foo "bar" \\\\ \\ \\d \\\\d \\\' \\"sdf\\"');
     test.strictEqual(name.hasParam('qwe'), true);
     test.strictEqual(name.hasParam('asd'), true);
     test.strictEqual(name.hasParam('nooo'), false);
@@ -81,6 +83,45 @@ module.exports = {
     test.strictEqual(name.toString(), '<sip:aliCE@versatica.com:6060;transport=tcp;foo=ABc;baz?X-Header-1=AaA1&X-Header-1=AAA2&X-Header-2=BbB>;qwe=QWE;asd');
     uri.user = 'Iñaki:PASSWD';
     test.strictEqual(uri.toAor(), 'sip:I%C3%B1aki:PASSWD@versatica.com');
+
+    test.done();
+  },
+
+  'parse NameAddr with token display_name' : function(test)
+  {
+    const data = 'Foo    Foo Bar\tBaz<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+
+    const name = JsSIP.NameAddrHeader.parse(data);
+
+    // Parsed data.
+    test.ok(name instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(name.display_name, 'Foo Foo Bar Baz');
+
+    test.done();
+  },
+
+  'parse NameAddr with no space between DQUOTE and LAQUOT' : function(test)
+  {
+    const data = '"Foo"<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+
+    const name = JsSIP.NameAddrHeader.parse(data);
+
+    // Parsed data.
+    test.ok(name instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(name.display_name, 'Foo');
+
+    test.done();
+  },
+
+  'parse NameAddr with no display_name' : function(test)
+  {
+    const data = '<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
+
+    const name = JsSIP.NameAddrHeader.parse(data);
+
+    // Parsed data.
+    test.ok(name instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(name.display_name, undefined);
 
     test.done();
   },

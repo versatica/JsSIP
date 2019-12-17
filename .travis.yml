@@ -7,26 +7,24 @@ branches:
 language: node_js
 
 node_js:
-  - 6
-  - 7
-  - 8
+- 6
+- 8
+- 10
 
 install:
-  - npm install
+- npm install
 
 before_script:
-  - npm install -g gulp-cli
-  - gulp devel dist
+- npm install -g gulp-cli
+- gulp devel
 
 script:
-  - gulp devel
-  - gulp dist
+- gulp dist
 
 notifications:
   email:
     recipients:
       - jmillan@aliax.net
       - ibc@aliax.net
-      - saghul@gmail.com
     on_success: change
     on_failure: always

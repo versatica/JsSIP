@@ -1,6 +1,6 @@
 ## What you need to build JsSIP
 
-You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com/).
+You just need to have [Node.js](https://nodejs.org/) and [Git](https://git-scm.com/).
 
 
 ### Node.js
@@ -9,7 +9,7 @@ You just need to have [Node.js](http://nodejs.org/) and [Git](http://git-scm.com
 
 ### Git
 
-* [Install Git](http://git-scm.com/book/en/Getting-Started-Installing-Git)
+* [Install Git](https://git-scm.com/book/en/Getting-Started-Installing-Git)
 
 
 ## How to build JsSIP
