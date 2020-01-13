@@ -1,5 +1,5 @@
 {
-  "name": "jssip",
+  "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
   "version": "3.3.11",
@@ -20,10 +20,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/versatica/JsSIP.git"
+    "url": "https://github.com/Krivega/JsSIP.git"
   },
   "bugs": {
-    "url": "https://github.com/versatica/JsSIP/issues"
+    "url": "https://github.com/Krivega/JsSIP/issues"
   },
   "dependencies": {
     "debug": "^4.1.1",
