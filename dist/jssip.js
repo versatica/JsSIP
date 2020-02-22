@@ -1,7 +1,7 @@
 /*
  * JsSIP v3.3.11
  * the Javascript SIP library
- * Copyright: 2012-2019 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -93,8 +93,8 @@ var checks = {
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
             }
           } finally {
             if (_didIteratorError) {
@@ -1077,7 +1077,7 @@ function () {
 },{"./Utils":26,"debug":30}],6:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -16097,7 +16097,7 @@ module.exports = {
 },{"../package.json":38,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":10,"./UA":24,"./URI":25,"./Utils":26,"./WebSocketInterface":27,"debug":30}],9:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -16720,8 +16720,8 @@ function parseHeader(message, data, headerStart, headerEnd) {
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
             }
           } finally {
             if (_didIteratorError) {
@@ -16766,8 +16766,8 @@ function parseHeader(message, data, headerStart, headerEnd) {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
+            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+              _iterator2["return"]();
             }
           } finally {
             if (_didIteratorError2) {
@@ -16881,7 +16881,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
 },{"./Grammar":7,"./SIPMessage":19,"debug":30}],12:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -17392,8 +17392,8 @@ function (_EventEmitter) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -17418,8 +17418,8 @@ function (_EventEmitter) {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
+            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+              _iterator2["return"]();
             }
           } finally {
             if (_didIteratorError2) {
@@ -17446,8 +17446,8 @@ function (_EventEmitter) {
           _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-              _iterator3.return();
+            if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+              _iterator3["return"]();
             }
           } finally {
             if (_didIteratorError3) {
@@ -17489,7 +17489,7 @@ function (_EventEmitter) {
         } // Audio and/or video requested, prompt getUserMedia.
         else if (mediaConstraints.audio || mediaConstraints.video) {
             _this3._localMediaStreamLocallyGenerated = true;
-            return navigator.mediaDevices.getUserMedia(mediaConstraints).catch(function (error) {
+            return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
               if (_this3._status === C.STATUS_TERMINATED) {
                 throw new Error('terminated');
               }
@@ -17539,7 +17539,7 @@ function (_EventEmitter) {
         });
         _this3._connectionPromiseQueue = _this3._connectionPromiseQueue.then(function () {
           return _this3._connection.setRemoteDescription(offer);
-        }).catch(function (error) {
+        })["catch"](function (error) {
           request.reply(488);
 
           _this3._failed('system', null, JsSIP_C.causes.WEBRTC_ERROR);
@@ -17561,12 +17561,12 @@ function (_EventEmitter) {
         _this3._connecting(request);
 
         if (!_this3._late_sdp) {
-          return _this3._createLocalDescription('answer', rtcAnswerConstraints).catch(function () {
+          return _this3._createLocalDescription('answer', rtcAnswerConstraints)["catch"](function () {
             request.reply(500);
             throw new Error('_createLocalDescription() failed');
           });
         } else {
-          return _this3._createLocalDescription('offer', _this3._rtcOfferConstraints).catch(function () {
+          return _this3._createLocalDescription('offer', _this3._rtcOfferConstraints)["catch"](function () {
             request.reply(500);
             throw new Error('_createLocalDescription() failed');
           });
@@ -17590,7 +17590,7 @@ function (_EventEmitter) {
         }, function () {
           _this3._failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
         });
-      }).catch(function (error) {
+      })["catch"](function (error) {
         if (_this3._status === C.STATUS_TERMINATED) {
           return;
         }
@@ -18199,7 +18199,7 @@ function (_EventEmitter) {
                 if (!_this10._is_confirmed) {
                   _this10._confirmed('remote', request);
                 }
-              }).catch(function (error) {
+              })["catch"](function (error) {
                 _this10.terminate({
                   cause: JsSIP_C.causes.BAD_MEDIA_DESCRIPTION,
                   status_code: 488
@@ -18530,7 +18530,7 @@ function (_EventEmitter) {
       return Promise.resolve() // Create Offer or Answer.
       .then(function () {
         if (type === 'offer') {
-          return connection.createOffer(constraints).catch(function (error) {
+          return connection.createOffer(constraints)["catch"](function (error) {
             debugerror('emit "peerconnection:createofferfailed" [error:%o]', error);
 
             _this13.emit('peerconnection:createofferfailed', error);
@@ -18538,7 +18538,7 @@ function (_EventEmitter) {
             return Promise.reject(error);
           });
         } else {
-          return connection.createAnswer(constraints).catch(function (error) {
+          return connection.createAnswer(constraints)["catch"](function (error) {
             debugerror('emit "peerconnection:createanswerfailed" [error:%o]', error);
 
             _this13.emit('peerconnection:createanswerfailed', error);
@@ -18548,7 +18548,7 @@ function (_EventEmitter) {
         }
       }) // Set local description.
       .then(function (desc) {
-        return connection.setLocalDescription(desc).catch(function (error) {
+        return connection.setLocalDescription(desc)["catch"](function (error) {
           _this13._rtcReady = true;
           debugerror('emit "peerconnection:setlocaldescriptionfailed" [error:%o]', error);
 
@@ -18722,7 +18722,7 @@ function (_EventEmitter) {
           return _this14._createLocalDescription('offer', _this14._rtcOfferConstraints);
         }).then(function (sdp) {
           sendAnswer.call(_this14, sdp);
-        }).catch(function () {
+        })["catch"](function () {
           request.reply(500);
         });
         return;
@@ -18742,7 +18742,7 @@ function (_EventEmitter) {
         }
 
         sendAnswer.call(_this14, desc);
-      }).catch(function (error) {
+      })["catch"](function (error) {
         debugerror(error);
       });
 
@@ -18831,7 +18831,7 @@ function (_EventEmitter) {
         }
 
         sendAnswer.call(_this16, desc);
-      }).catch(function (error) {
+      })["catch"](function (error) {
         debugerror(error);
       });
 
@@ -18882,8 +18882,8 @@ function (_EventEmitter) {
         _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-            _iterator4.return();
+          if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+            _iterator4["return"]();
           }
         } finally {
           if (_didIteratorError4) {
@@ -18909,7 +18909,7 @@ function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-        return _this17._connection.setRemoteDescription(offer).catch(function (error) {
+        return _this17._connection.setRemoteDescription(offer)["catch"](function (error) {
           request.reply(488);
           debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -18937,7 +18937,7 @@ function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints).catch(function () {
+        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function () {
           request.reply(500);
           throw new Error('_createLocalDescription() failed');
         });
@@ -19144,7 +19144,7 @@ function (_EventEmitter) {
         } // Request for user media access.
         else if (mediaConstraints.audio || mediaConstraints.video) {
             _this21._localMediaStreamLocallyGenerated = true;
-            return navigator.mediaDevices.getUserMedia(mediaConstraints).catch(function (error) {
+            return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
               if (_this21._status === C.STATUS_TERMINATED) {
                 throw new Error('terminated');
               }
@@ -19174,7 +19174,7 @@ function (_EventEmitter) {
 
         _this21._connecting(_this21._request);
 
-        return _this21._createLocalDescription('offer', rtcOfferConstraints).catch(function (error) {
+        return _this21._createLocalDescription('offer', rtcOfferConstraints)["catch"](function (error) {
           _this21._failed('local', null, JsSIP_C.causes.WEBRTC_ERROR);
 
           throw error;
@@ -19193,7 +19193,7 @@ function (_EventEmitter) {
         });
 
         request_sender.send();
-      }).catch(function (error) {
+      })["catch"](function (error) {
         if (_this21._status === C.STATUS_TERMINATED) {
           return;
         }
@@ -19292,7 +19292,7 @@ function (_EventEmitter) {
             });
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
               return _this22._connection.setRemoteDescription(answer);
-            }).catch(function (error) {
+            })["catch"](function (error) {
               debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
               _this22.emit('peerconnection:setremotedescriptionfailed', error);
@@ -19336,7 +19336,7 @@ function (_EventEmitter) {
               if (_this22._connection.signalingState === 'stable') {
                 return _this22._connection.createOffer(_this22._rtcOfferConstraints).then(function (offer) {
                   return _this22._connection.setLocalDescription(offer);
-                }).catch(function (error) {
+                })["catch"](function (error) {
                   _this22._acceptAndTerminate(response, 500, error.toString());
 
                   _this22._failed('local', response, JsSIP_C.causes.WEBRTC_ERROR);
@@ -19352,7 +19352,7 @@ function (_EventEmitter) {
                 _this22.sendRequest(JsSIP_C.ACK);
 
                 _this22._confirmed('local', null);
-              }).catch(function (error) {
+              })["catch"](function (error) {
                 _this22._acceptAndTerminate(response, 488, 'Not Acceptable Here');
 
                 _this22._failed('remote', response, JsSIP_C.causes.BAD_MEDIA_DESCRIPTION);
@@ -19433,7 +19433,7 @@ function (_EventEmitter) {
             }
           }
         });
-      }).catch(function () {
+      })["catch"](function () {
         onFailed();
       });
 
@@ -19479,7 +19479,7 @@ function (_EventEmitter) {
           if (eventHandlers.succeeded) {
             eventHandlers.succeeded(response);
           }
-        }).catch(function (error) {
+        })["catch"](function (error) {
           onFailed.call(_this24);
           debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -19555,7 +19555,7 @@ function (_EventEmitter) {
               }
             }
           });
-        }).catch(function () {
+        })["catch"](function () {
           onFailed.call(_this25);
         });
       } // No SDP.
@@ -19627,7 +19627,7 @@ function (_EventEmitter) {
             if (eventHandlers.succeeded) {
               eventHandlers.succeeded(response);
             }
-          }).catch(function (error) {
+          })["catch"](function (error) {
             onFailed.call(_this26);
             debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -19707,8 +19707,8 @@ function (_EventEmitter) {
           _iteratorError5 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
-              _iterator5.return();
+            if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
+              _iterator5["return"]();
             }
           } finally {
             if (_didIteratorError5) {
@@ -19738,8 +19738,8 @@ function (_EventEmitter) {
             _iteratorError6 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
-                _iterator6.return();
+              if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
+                _iterator6["return"]();
               }
             } finally {
               if (_didIteratorError6) {
@@ -19775,8 +19775,8 @@ function (_EventEmitter) {
               _iteratorError7 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
-                  _iterator7.return();
+                if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
+                  _iterator7["return"]();
                 }
               } finally {
                 if (_didIteratorError7) {
@@ -19926,8 +19926,8 @@ function (_EventEmitter) {
         _iteratorError8 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
-            _iterator8.return();
+          if (!_iteratorNormalCompletion8 && _iterator8["return"] != null) {
+            _iterator8["return"]();
           }
         } finally {
           if (_didIteratorError8) {
@@ -19957,8 +19957,8 @@ function (_EventEmitter) {
         _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
-            _iterator9.return();
+          if (!_iteratorNormalCompletion9 && _iterator9["return"] != null) {
+            _iterator9["return"]();
           }
         } finally {
           if (_didIteratorError9) {
@@ -20180,7 +20180,7 @@ function (_EventEmitter) {
 },{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./RTCSession/DTMF":13,"./RTCSession/Info":14,"./RTCSession/ReferNotifier":15,"./RTCSession/ReferSubscriber":16,"./RequestSender":18,"./SIPMessage":19,"./Timers":21,"./Transactions":22,"./URI":25,"./Utils":26,"debug":30,"events":29,"sdp-transform":35}],13:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -20379,7 +20379,7 @@ module.exports.C = C;
 },{"../Constants":2,"../Exceptions":6,"../Utils":26,"debug":30,"events":29}],14:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -20582,7 +20582,7 @@ function () {
 },{"../Constants":2,"debug":30}],16:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -21293,7 +21293,7 @@ function () {
 },{"./Constants":2,"./DigestAuthentication":5,"./Transactions":22,"debug":30}],19:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -21454,8 +21454,8 @@ function () {
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
             }
           } finally {
             if (_didIteratorError) {
@@ -21494,8 +21494,8 @@ function () {
           _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-              _iterator2.return();
+            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+              _iterator2["return"]();
             }
           } finally {
             if (_didIteratorError2) {
@@ -21524,8 +21524,8 @@ function () {
           _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-              _iterator3.return();
+            if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+              _iterator3["return"]();
             }
           } finally {
             if (_didIteratorError3) {
@@ -21567,8 +21567,8 @@ function () {
           _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
-              _iterator4.return();
+            if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+              _iterator4["return"]();
             }
           } finally {
             if (_didIteratorError4) {
@@ -21619,8 +21619,8 @@ function () {
             _iteratorError5 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
-                _iterator5.return();
+              if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
+                _iterator5["return"]();
               }
             } finally {
               if (_didIteratorError5) {
@@ -21646,8 +21646,8 @@ function () {
         _iteratorError6 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion6 && _iterator6.return != null) {
-            _iterator6.return();
+          if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
+            _iterator6["return"]();
           }
         } finally {
           if (_didIteratorError6) {
@@ -21847,8 +21847,8 @@ function () {
         _iteratorError7 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion7 && _iterator7.return != null) {
-            _iterator7.return();
+          if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
+            _iterator7["return"]();
           }
         } finally {
           if (_didIteratorError7) {
@@ -22031,8 +22031,8 @@ function (_IncomingMessage) {
           _iteratorError8 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion8 && _iterator8.return != null) {
-              _iterator8.return();
+            if (!_iteratorNormalCompletion8 && _iterator8["return"] != null) {
+              _iterator8["return"]();
             }
           } finally {
             if (_didIteratorError8) {
@@ -22057,8 +22057,8 @@ function (_IncomingMessage) {
         _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion9 && _iterator9.return != null) {
-            _iterator9.return();
+          if (!_iteratorNormalCompletion9 && _iterator9["return"] != null) {
+            _iterator9["return"]();
           }
         } finally {
           if (_didIteratorError9) {
@@ -22092,8 +22092,8 @@ function (_IncomingMessage) {
         _iteratorError10 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion10 && _iterator10.return != null) {
-            _iterator10.return();
+          if (!_iteratorNormalCompletion10 && _iterator10["return"] != null) {
+            _iterator10["return"]();
           }
         } finally {
           if (_didIteratorError10) {
@@ -22186,8 +22186,8 @@ function (_IncomingMessage) {
         _iteratorError11 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion11 && _iterator11.return != null) {
-            _iterator11.return();
+          if (!_iteratorNormalCompletion11 && _iterator11["return"] != null) {
+            _iterator11["return"]();
           }
         } finally {
           if (_didIteratorError11) {
@@ -22341,7 +22341,7 @@ module.exports = {
 },{}],22:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -22353,11 +22353,11 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -22415,7 +22415,7 @@ function (_EventEmitter) {
 
     _this.request.setHeader('via', via);
 
-    _this.ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.ua.newTransaction(_assertThisInitialized(_this));
 
     return _this;
   }
@@ -22529,13 +22529,13 @@ function (_EventEmitter2) {
     _this4.transport = transport;
     _this4.request = request;
     _this4.eventHandlers = eventHandlers;
-    request.transaction = _assertThisInitialized(_assertThisInitialized(_this4));
+    request.transaction = _assertThisInitialized(_this4);
     var via = "SIP/2.0/".concat(transport.via_transport);
     via += " ".concat(ua.configuration.via_host, ";branch=").concat(_this4.id);
 
     _this4.request.setHeader('via', via);
 
-    _this4.ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this4)));
+    _this4.ua.newTransaction(_assertThisInitialized(_this4));
 
     return _this4;
   }
@@ -22769,9 +22769,9 @@ function (_EventEmitter4) {
     _this9.transport = transport;
     _this9.request = request;
     _this9.last_response = '';
-    request.server_transaction = _assertThisInitialized(_assertThisInitialized(_this9));
+    request.server_transaction = _assertThisInitialized(_this9);
     _this9.state = C.STATUS_TRYING;
-    ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this9)));
+    ua.newTransaction(_assertThisInitialized(_this9));
     return _this9;
   }
 
@@ -22889,9 +22889,9 @@ function (_EventEmitter5) {
     _this11.transport = transport;
     _this11.request = request;
     _this11.last_response = '';
-    request.server_transaction = _assertThisInitialized(_assertThisInitialized(_this11));
+    request.server_transaction = _assertThisInitialized(_this11);
     _this11.state = C.STATUS_PROCEEDING;
-    ua.newTransaction(_assertThisInitialized(_assertThisInitialized(_this11)));
+    ua.newTransaction(_assertThisInitialized(_this11));
     _this11.resendProvisionalTimer = null;
     request.reply(100);
     return _this11;
@@ -23492,13 +23492,15 @@ function () {
 },{"./Constants":2,"./Socket":20,"debug":30}],24:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
@@ -23507,8 +23509,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -23618,7 +23618,7 @@ function (_EventEmitter) {
     } // Initialize registrator.
 
 
-    _this._registrator = new Registrator(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._registrator = new Registrator(_assertThisInitialized(_this));
     return _this;
   }
 
@@ -24415,8 +24415,8 @@ function onTransportDisconnect(data) {
   // Run _onTransportError_ callback on every client transaction using _transport_.
   var client_transactions = ['nict', 'ict', 'nist', 'ist'];
 
-  for (var _i = 0; _i < client_transactions.length; _i++) {
-    var type = client_transactions[_i];
+  for (var _i = 0, _client_transactions = client_transactions; _i < _client_transactions.length; _i++) {
+    var type = _client_transactions[_i];
 
     for (var id in this._transactions[type]) {
       if (Object.prototype.hasOwnProperty.call(this._transactions[type], id)) {
@@ -24686,8 +24686,8 @@ function () {
             _iteratorError = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion && _iterator.return != null) {
-                _iterator.return();
+              if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+                _iterator["return"]();
               }
             } finally {
               if (_didIteratorError) {
@@ -24760,7 +24760,7 @@ function () {
 },{"./Constants":2,"./Grammar":7,"./Utils":26}],26:[function(require,module,exports){
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 var JsSIP_C = require('./Constants');
 
@@ -24802,8 +24802,8 @@ exports.hasMethods = function (obj) {
     methodNames[_key - 1] = arguments[_key];
   }
 
-  for (var _i = 0; _i < methodNames.length; _i++) {
-    var methodName = methodNames[_i];
+  for (var _i = 0, _methodNames = methodNames; _i < _methodNames.length; _i++) {
+    var methodName = _methodNames[_i];
 
     if (isFunction(obj[methodName])) {
       return false;
@@ -25232,8 +25232,8 @@ exports.closeMediaStream = function (stream) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -25258,8 +25258,8 @@ exports.closeMediaStream = function (stream) {
         _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
           }
         } finally {
           if (_didIteratorError2) {
@@ -25284,8 +25284,8 @@ exports.closeMediaStream = function (stream) {
         _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-            _iterator3.return();
+          if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+            _iterator3["return"]();
           }
         } finally {
           if (_didIteratorError3) {
@@ -25512,29 +25512,85 @@ module.exports = function (m, u, t) {
   message = m;
   ua = u;
   transport = t;
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
 
-  for (var _i = 0; _i < all.length; _i++) {
-    var _check2 = all[_i];
+  try {
+    for (var _iterator = all[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _check2 = _step.value;
 
-    if (_check2() === false) {
-      return false;
+      if (_check2() === false) {
+        return false;
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
     }
   }
 
   if (message instanceof SIPMessage.IncomingRequest) {
-    for (var _i2 = 0; _i2 < requests.length; _i2++) {
-      var check = requests[_i2];
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
-      if (check() === false) {
-        return false;
+    try {
+      for (var _iterator2 = requests[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var check = _step2.value;
+
+        if (check() === false) {
+          return false;
+        }
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+          _iterator2["return"]();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
       }
     }
   } else if (message instanceof SIPMessage.IncomingResponse) {
-    for (var _i3 = 0; _i3 < responses.length; _i3++) {
-      var _check = responses[_i3];
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
-      if (_check() === false) {
-        return false;
+    try {
+      for (var _iterator3 = responses[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var _check = _step3.value;
+
+        if (_check() === false) {
+          return false;
+        }
+      }
+    } catch (err) {
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+          _iterator3["return"]();
+        }
+      } finally {
+        if (_didIteratorError3) {
+          throw _iteratorError3;
+        }
       }
     }
   } // Everything is OK.
@@ -25662,8 +25718,8 @@ function rfc3261_18_3_response() {
 function minimumHeaders() {
   var mandatoryHeaders = ['from', 'to', 'call_id', 'cseq', 'via'];
 
-  for (var _i4 = 0; _i4 < mandatoryHeaders.length; _i4++) {
-    var header = mandatoryHeaders[_i4];
+  for (var _i = 0, _mandatoryHeaders = mandatoryHeaders; _i < _mandatoryHeaders.length; _i++) {
+    var header = _mandatoryHeaders[_i];
 
     if (!message.hasHeader(header)) {
       debug("missing mandatory header field : ".concat(header, ", dropping the response"));
@@ -25677,26 +25733,26 @@ function reply(status_code) {
   var vias = message.getHeaders('via');
   var to;
   var response = "SIP/2.0 ".concat(status_code, " ").concat(JsSIP_C.REASON_PHRASE[status_code], "\r\n");
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+  var _iteratorNormalCompletion4 = true;
+  var _didIteratorError4 = false;
+  var _iteratorError4 = undefined;
 
   try {
-    for (var _iterator = vias[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var via = _step.value;
+    for (var _iterator4 = vias[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+      var via = _step4.value;
       response += "Via: ".concat(via, "\r\n");
     }
   } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
+    _didIteratorError4 = true;
+    _iteratorError4 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
+      if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+        _iterator4["return"]();
       }
     } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
+      if (_didIteratorError4) {
+        throw _iteratorError4;
       }
     }
   }
@@ -26653,7 +26709,9 @@ function setup(env) {
 	}
 
 	function extend(namespace, delimiter) {
-		return createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		newDebug.log = this.log;
+		return newDebug;
 	}
 
 	/**
@@ -26804,7 +26862,7 @@ module.exports = function(val, options) {
   var type = typeof val;
   if (type === 'string' && val.length > 0) {
     return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
+  } else if (type === 'number' && isFinite(val)) {
     return options.long ? fmtLong(val) : fmtShort(val);
   }
   throw new Error(
@@ -26826,7 +26884,7 @@ function parse(str) {
   if (str.length > 100) {
     return;
   }
-  var match = /^((?:\d+)?\-?\d?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
     str
   );
   if (!match) {
@@ -27129,7 +27187,8 @@ var grammar = module.exports = {
     name: 'version',
     reg: /^(\d*)$/
   }],
-  o: [{ //o=- 20518 0 IN IP4 203.0.113.1
+  o: [{
+    // o=- 20518 0 IN IP4 203.0.113.1
     // NB: sessionId will be a String in most cases because it is huge
     name: 'origin',
     reg: /^(\S*) (\d*) (\d*) (\S*) IP(\d) (\S*)/,
@@ -27142,158 +27201,199 @@ var grammar = module.exports = {
   u: [{ name: 'uri' }],
   e: [{ name: 'email' }],
   p: [{ name: 'phone' }],
-  z: [{ name: 'timezones' }], // TODO: this one can actually be parsed properly..
+  z: [{ name: 'timezones' }], // TODO: this one can actually be parsed properly...
   r: [{ name: 'repeats' }],   // TODO: this one can also be parsed properly
-  //k: [{}], // outdated thing ignored
-  t: [{ //t=0 0
+  // k: [{}], // outdated thing ignored
+  t: [{
+    // t=0 0
     name: 'timing',
     reg: /^(\d*) (\d*)/,
     names: ['start', 'stop'],
     format: '%d %d'
   }],
-  c: [{ //c=IN IP4 10.47.197.26
+  c: [{
+    // c=IN IP4 10.47.197.26
     name: 'connection',
     reg: /^IN IP(\d) (\S*)/,
     names: ['version', 'ip'],
     format: 'IN IP%d %s'
   }],
-  b: [{ //b=AS:4000
+  b: [{
+    // b=AS:4000
     push: 'bandwidth',
     reg: /^(TIAS|AS|CT|RR|RS):(\d*)/,
     names: ['type', 'limit'],
     format: '%s:%s'
   }],
-  m: [{ //m=video 51744 RTP/AVP 126 97 98 34 31
+  m: [{
+    // m=video 51744 RTP/AVP 126 97 98 34 31
     // NB: special - pushes to session
     // TODO: rtp/fmtp should be filtered by the payloads found here?
-    reg: /^(\w*) (\d*) ([\w\/]*)(?: (.*))?/,
+    reg: /^(\w*) (\d*) ([\w/]*)(?: (.*))?/,
     names: ['type', 'port', 'protocol', 'payloads'],
     format: '%s %d %s %s'
   }],
   a: [
-    { //a=rtpmap:110 opus/48000/2
+    {
+      // a=rtpmap:110 opus/48000/2
       push: 'rtp',
-      reg: /^rtpmap:(\d*) ([\w\-\.]*)(?:\s*\/(\d*)(?:\s*\/(\S*))?)?/,
+      reg: /^rtpmap:(\d*) ([\w\-.]*)(?:\s*\/(\d*)(?:\s*\/(\S*))?)?/,
       names: ['payload', 'codec', 'rate', 'encoding'],
       format: function (o) {
-        return (o.encoding) ?
-          'rtpmap:%d %s/%s/%s':
-          o.rate ?
-          'rtpmap:%d %s/%s':
-          'rtpmap:%d %s';
+        return (o.encoding)
+          ? 'rtpmap:%d %s/%s/%s'
+          : o.rate
+            ? 'rtpmap:%d %s/%s'
+            : 'rtpmap:%d %s';
       }
     },
-    { //a=fmtp:108 profile-level-id=24;object=23;bitrate=64000
-      //a=fmtp:111 minptime=10; useinbandfec=1
+    {
+      // a=fmtp:108 profile-level-id=24;object=23;bitrate=64000
+      // a=fmtp:111 minptime=10; useinbandfec=1
       push: 'fmtp',
       reg: /^fmtp:(\d*) ([\S| ]*)/,
       names: ['payload', 'config'],
       format: 'fmtp:%d %s'
     },
-    { //a=control:streamid=0
+    {
+      // a=control:streamid=0
       name: 'control',
       reg: /^control:(.*)/,
       format: 'control:%s'
     },
-    { //a=rtcp:65179 IN IP4 193.84.77.194
+    {
+      // a=rtcp:65179 IN IP4 193.84.77.194
       name: 'rtcp',
       reg: /^rtcp:(\d*)(?: (\S*) IP(\d) (\S*))?/,
       names: ['port', 'netType', 'ipVer', 'address'],
       format: function (o) {
-        return (o.address != null) ?
-          'rtcp:%d %s IP%d %s':
-          'rtcp:%d';
+        return (o.address != null)
+          ? 'rtcp:%d %s IP%d %s'
+          : 'rtcp:%d';
       }
     },
-    { //a=rtcp-fb:98 trr-int 100
+    {
+      // a=rtcp-fb:98 trr-int 100
       push: 'rtcpFbTrrInt',
       reg: /^rtcp-fb:(\*|\d*) trr-int (\d*)/,
       names: ['payload', 'value'],
       format: 'rtcp-fb:%d trr-int %d'
     },
-    { //a=rtcp-fb:98 nack rpsi
+    {
+      // a=rtcp-fb:98 nack rpsi
       push: 'rtcpFb',
       reg: /^rtcp-fb:(\*|\d*) ([\w-_]*)(?: ([\w-_]*))?/,
       names: ['payload', 'type', 'subtype'],
       format: function (o) {
-        return (o.subtype != null) ?
-          'rtcp-fb:%s %s %s':
-          'rtcp-fb:%s %s';
+        return (o.subtype != null)
+          ? 'rtcp-fb:%s %s %s'
+          : 'rtcp-fb:%s %s';
       }
     },
-    { //a=extmap:2 urn:ietf:params:rtp-hdrext:toffset
-      //a=extmap:1/recvonly URI-gps-string
+    {
+      // a=extmap:2 urn:ietf:params:rtp-hdrext:toffset
+      // a=extmap:1/recvonly URI-gps-string
+      // a=extmap:3 urn:ietf:params:rtp-hdrext:encrypt urn:ietf:params:rtp-hdrext:smpte-tc 25@600/24
       push: 'ext',
-      reg: /^extmap:(\d+)(?:\/(\w+))? (\S*)(?: (\S*))?/,
-      names: ['value', 'direction', 'uri', 'config'],
+      reg: /^extmap:(\d+)(?:\/(\w+))?(?: (urn:ietf:params:rtp-hdrext:encrypt))? (\S*)(?: (\S*))?/,
+      names: ['value', 'direction', 'encrypt-uri', 'uri', 'config'],
       format: function (o) {
-        return 'extmap:%d' + (o.direction ? '/%s' : '%v') + ' %s' + (o.config ? ' %s' : '');
+        return (
+          'extmap:%d' +
+          (o.direction ? '/%s' : '%v') +
+          (o['encrypt-uri'] ? ' %s' : '%v') +
+          ' %s' +
+          (o.config ? ' %s' : '')
+        );
       }
     },
-    { //a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR|2^20|1:32
+    {
+      // a=extmap-allow-mixed
+      name: 'extmapAllowMixed',
+      reg: /^(extmap-allow-mixed)/
+    },
+    {
+      // a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR|2^20|1:32
       push: 'crypto',
       reg: /^crypto:(\d*) ([\w_]*) (\S*)(?: (\S*))?/,
       names: ['id', 'suite', 'config', 'sessionConfig'],
       format: function (o) {
-        return (o.sessionConfig != null) ?
-          'crypto:%d %s %s %s':
-          'crypto:%d %s %s';
+        return (o.sessionConfig != null)
+          ? 'crypto:%d %s %s %s'
+          : 'crypto:%d %s %s';
       }
     },
-    { //a=setup:actpass
+    {
+      // a=setup:actpass
       name: 'setup',
       reg: /^setup:(\w*)/,
       format: 'setup:%s'
     },
-    { //a=mid:1
+    {
+      // a=connection:new
+      name: 'connectionType',
+      reg: /^connection:(new|existing)/,
+      format: 'connection:%s'
+    },
+    {
+      // a=mid:1
       name: 'mid',
       reg: /^mid:([^\s]*)/,
       format: 'mid:%s'
     },
-    { //a=msid:0c8b064d-d807-43b4-b434-f92a889d8587 98178685-d409-46e0-8e16-7ef0db0db64a
+    {
+      // a=msid:0c8b064d-d807-43b4-b434-f92a889d8587 98178685-d409-46e0-8e16-7ef0db0db64a
       name: 'msid',
       reg: /^msid:(.*)/,
       format: 'msid:%s'
     },
-    { //a=ptime:20
+    {
+      // a=ptime:20
       name: 'ptime',
-      reg: /^ptime:(\d*)/,
+      reg: /^ptime:(\d*(?:\.\d*)*)/,
       format: 'ptime:%d'
     },
-    { //a=maxptime:60
+    {
+      // a=maxptime:60
       name: 'maxptime',
-      reg: /^maxptime:(\d*)/,
+      reg: /^maxptime:(\d*(?:\.\d*)*)/,
       format: 'maxptime:%d'
     },
-    { //a=sendrecv
+    {
+      // a=sendrecv
       name: 'direction',
       reg: /^(sendrecv|recvonly|sendonly|inactive)/
     },
-    { //a=ice-lite
+    {
+      // a=ice-lite
       name: 'icelite',
       reg: /^(ice-lite)/
     },
-    { //a=ice-ufrag:F7gI
+    {
+      // a=ice-ufrag:F7gI
       name: 'iceUfrag',
       reg: /^ice-ufrag:(\S*)/,
       format: 'ice-ufrag:%s'
     },
-    { //a=ice-pwd:x9cml/YzichV2+XlhiMu8g
+    {
+      // a=ice-pwd:x9cml/YzichV2+XlhiMu8g
       name: 'icePwd',
       reg: /^ice-pwd:(\S*)/,
       format: 'ice-pwd:%s'
     },
-    { //a=fingerprint:SHA-1 00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33
+    {
+      // a=fingerprint:SHA-1 00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33
       name: 'fingerprint',
       reg: /^fingerprint:(\S*) (\S*)/,
       names: ['type', 'hash'],
       format: 'fingerprint:%s %s'
     },
-    { //a=candidate:0 1 UDP 2113667327 203.0.113.1 54400 typ host
-      //a=candidate:1162875081 1 udp 2113937151 192.168.34.75 60017 typ host generation 0 network-id 3 network-cost 10
-      //a=candidate:3289912957 2 udp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 generation 0 network-id 3 network-cost 10
-      //a=candidate:229815620 1 tcp 1518280447 192.168.150.19 60017 typ host tcptype active generation 0 network-id 3 network-cost 10
-      //a=candidate:3289912957 2 tcp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 tcptype passive generation 0 network-id 3 network-cost 10
+    {
+      // a=candidate:0 1 UDP 2113667327 203.0.113.1 54400 typ host
+      // a=candidate:1162875081 1 udp 2113937151 192.168.34.75 60017 typ host generation 0 network-id 3 network-cost 10
+      // a=candidate:3289912957 2 udp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 generation 0 network-id 3 network-cost 10
+      // a=candidate:229815620 1 tcp 1518280447 192.168.150.19 60017 typ host tcptype active generation 0 network-id 3 network-cost 10
+      // a=candidate:3289912957 2 tcp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 tcptype passive generation 0 network-id 3 network-cost 10
       push:'candidates',
       reg: /^candidate:(\S*) (\d*) (\S*) (\d*) (\S*) (\d*) typ (\S*)(?: raddr (\S*) rport (\d*))?(?: tcptype (\S*))?(?: generation (\d*))?(?: network-id (\d*))?(?: network-cost (\d*))?/,
       names: ['foundation', 'component', 'transport', 'priority', 'ip', 'port', 'type', 'raddr', 'rport', 'tcptype', 'generation', 'network-id', 'network-cost'],
@@ -27314,21 +27414,25 @@ var grammar = module.exports = {
         return str;
       }
     },
-    { //a=end-of-candidates (keep after the candidates line for readability)
+    {
+      // a=end-of-candidates (keep after the candidates line for readability)
       name: 'endOfCandidates',
       reg: /^(end-of-candidates)/
     },
-    { //a=remote-candidates:1 203.0.113.1 54400 2 203.0.113.1 54401 ...
+    {
+      // a=remote-candidates:1 203.0.113.1 54400 2 203.0.113.1 54401 ...
       name: 'remoteCandidates',
       reg: /^remote-candidates:(.*)/,
       format: 'remote-candidates:%s'
     },
-    { //a=ice-options:google-ice
+    {
+      // a=ice-options:google-ice
       name: 'iceOptions',
       reg: /^ice-options:(\S*)/,
       format: 'ice-options:%s'
     },
-    { //a=ssrc:2566107569 cname:t9YU8M1UxTF8Y1A1
+    {
+      // a=ssrc:2566107569 cname:t9YU8M1UxTF8Y1A1
       push: 'ssrcs',
       reg: /^ssrc:(\d*) ([\w_-]*)(?::(.*))?/,
       names: ['id', 'attribute', 'value'],
@@ -27343,50 +27447,58 @@ var grammar = module.exports = {
         return str;
       }
     },
-    { //a=ssrc-group:FEC 1 2
-      //a=ssrc-group:FEC-FR 3004364195 1080772241
+    {
+      // a=ssrc-group:FEC 1 2
+      // a=ssrc-group:FEC-FR 3004364195 1080772241
       push: 'ssrcGroups',
       // token-char = %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7E
       reg: /^ssrc-group:([\x21\x23\x24\x25\x26\x27\x2A\x2B\x2D\x2E\w]*) (.*)/,
       names: ['semantics', 'ssrcs'],
       format: 'ssrc-group:%s %s'
     },
-    { //a=msid-semantic: WMS Jvlam5X3SX1OP6pn20zWogvaKJz5Hjf9OnlV
+    {
+      // a=msid-semantic: WMS Jvlam5X3SX1OP6pn20zWogvaKJz5Hjf9OnlV
       name: 'msidSemantic',
       reg: /^msid-semantic:\s?(\w*) (\S*)/,
       names: ['semantic', 'token'],
       format: 'msid-semantic: %s %s' // space after ':' is not accidental
     },
-    { //a=group:BUNDLE audio video
+    {
+      // a=group:BUNDLE audio video
       push: 'groups',
       reg: /^group:(\w*) (.*)/,
       names: ['type', 'mids'],
       format: 'group:%s %s'
     },
-    { //a=rtcp-mux
+    {
+      // a=rtcp-mux
       name: 'rtcpMux',
       reg: /^(rtcp-mux)/
     },
-    { //a=rtcp-rsize
+    {
+      // a=rtcp-rsize
       name: 'rtcpRsize',
       reg: /^(rtcp-rsize)/
     },
-    { //a=sctpmap:5000 webrtc-datachannel 1024
+    {
+      // a=sctpmap:5000 webrtc-datachannel 1024
       name: 'sctpmap',
-      reg: /^sctpmap:([\w_\/]*) (\S*)(?: (\S*))?/,
+      reg: /^sctpmap:([\w_/]*) (\S*)(?: (\S*))?/,
       names: ['sctpmapNumber', 'app', 'maxMessageSize'],
       format: function (o) {
-        return (o.maxMessageSize != null) ?
-          'sctpmap:%s %s %s' :
-          'sctpmap:%s %s';
+        return (o.maxMessageSize != null)
+          ? 'sctpmap:%s %s %s'
+          : 'sctpmap:%s %s';
       }
     },
-    { //a=x-google-flag:conference
+    {
+      // a=x-google-flag:conference
       name: 'xGoogleFlag',
       reg: /^x-google-flag:([^\s]*)/,
       format: 'x-google-flag:%s'
     },
-    { //a=rid:1 send max-width=1280;max-height=720;max-fps=30;depend=0
+    {
+      // a=rid:1 send max-width=1280;max-height=720;max-fps=30;depend=0
       push: 'rids',
       reg: /^rid:([\d\w]+) (\w+)(?: ([\S| ]*))?/,
       names: ['id', 'direction', 'params'],
@@ -27394,16 +27506,17 @@ var grammar = module.exports = {
         return (o.params) ? 'rid:%s %s %s' : 'rid:%s %s';
       }
     },
-    { //a=imageattr:97 send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320] recv [x=330,y=250]
-      //a=imageattr:* send [x=800,y=640] recv *
-      //a=imageattr:100 recv [x=320,y=240]
+    {
+      // a=imageattr:97 send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320] recv [x=330,y=250]
+      // a=imageattr:* send [x=800,y=640] recv *
+      // a=imageattr:100 recv [x=320,y=240]
       push: 'imageattrs',
       reg: new RegExp(
-        //a=imageattr:97
+        // a=imageattr:97
         '^imageattr:(\\d+|\\*)' +
-        //send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320]
+        // send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320]
         '[\\s\\t]+(send|recv)[\\s\\t]+(\\*|\\[\\S+\\](?:[\\s\\t]+\\[\\S+\\])*)' +
-        //recv [x=330,y=250]
+        // recv [x=330,y=250]
         '(?:[\\s\\t]+(recv|send)[\\s\\t]+(\\*|\\[\\S+\\](?:[\\s\\t]+\\[\\S+\\])*))?'
       ),
       names: ['pt', 'dir1', 'attrs1', 'dir2', 'attrs2'],
@@ -27411,17 +27524,18 @@ var grammar = module.exports = {
         return 'imageattr:%s %s %s' + (o.dir2 ? ' %s %s' : '');
       }
     },
-    { //a=simulcast:send 1,2,3;~4,~5 recv 6;~7,~8
-      //a=simulcast:recv 1;4,5 send 6;7
+    {
+      // a=simulcast:send 1,2,3;~4,~5 recv 6;~7,~8
+      // a=simulcast:recv 1;4,5 send 6;7
       name: 'simulcast',
       reg: new RegExp(
-        //a=simulcast:
+        // a=simulcast:
         '^simulcast:' +
-        //send 1,2,3;~4,~5
+        // send 1,2,3;~4,~5
         '(send|recv) ([a-zA-Z0-9\\-_~;,]+)' +
-        //space + recv 6;~7,~8
+        // space + recv 6;~7,~8
         '(?:\\s?(send|recv) ([a-zA-Z0-9\\-_~;,]+))?' +
-        //end
+        // end
         '$'
       ),
       names: ['dir1', 'list1', 'dir2', 'list2'],
@@ -27429,34 +27543,38 @@ var grammar = module.exports = {
         return 'simulcast:%s %s' + (o.dir2 ? ' %s %s' : '');
       }
     },
-    { //Old simulcast draft 03 (implemented by Firefox)
-      //  https://tools.ietf.org/html/draft-ietf-mmusic-sdp-simulcast-03
-      //a=simulcast: recv pt=97;98 send pt=97
-      //a=simulcast: send rid=5;6;7 paused=6,7
+    {
+      // old simulcast draft 03 (implemented by Firefox)
+      //   https://tools.ietf.org/html/draft-ietf-mmusic-sdp-simulcast-03
+      // a=simulcast: recv pt=97;98 send pt=97
+      // a=simulcast: send rid=5;6;7 paused=6,7
       name: 'simulcast_03',
       reg: /^simulcast:[\s\t]+([\S+\s\t]+)$/,
       names: ['value'],
       format: 'simulcast: %s'
     },
     {
-      //a=framerate:25
-      //a=framerate:29.97
+      // a=framerate:25
+      // a=framerate:29.97
       name: 'framerate',
       reg: /^framerate:(\d+(?:$|\.\d+))/,
       format: 'framerate:%s'
     },
-    { // RFC4570
-      //a=source-filter: incl IN IP4 239.5.2.31 10.1.15.5
+    {
+      // RFC4570
+      // a=source-filter: incl IN IP4 239.5.2.31 10.1.15.5
       name: 'sourceFilter',
       reg: /^source-filter: *(excl|incl) (\S*) (IP4|IP6|\*) (\S*) (.*)/,
       names: ['filterMode', 'netType', 'addressTypes', 'destAddress', 'srcList'],
       format: 'source-filter: %s %s %s %s %s'
     },
-    { //a=bundle-only
+    {
+      // a=bundle-only
       name: 'bundleOnly',
       reg: /^(bundle-only)/
     },
-    { //a=label:1
+    {
+      // a=label:1
       name: 'label',
       reg: /^label:(.+)/,
       format: 'label:%s'
@@ -27464,18 +27582,82 @@ var grammar = module.exports = {
     {
       // RFC version 26 for SCTP over DTLS
       // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-5
-      name:'sctpPort',
+      name: 'sctpPort',
       reg: /^sctp-port:(\d+)$/,
       format: 'sctp-port:%s'
     },
     {
       // RFC version 26 for SCTP over DTLS
       // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-6
-      name:'maxMessageSize',
+      name: 'maxMessageSize',
       reg: /^max-message-size:(\d+)$/,
       format: 'max-message-size:%s'
     },
-    { // any a= that we don't understand is kepts verbatim on media.invalid
+    {
+      // RFC7273
+      // a=ts-refclk:ptp=IEEE1588-2008:39-A7-94-FF-FE-07-CB-D0:37
+      push:'tsRefClocks',
+      reg: /^ts-refclk:([^\s=]*)(?:=(\S*))?/,
+      names: ['clksrc', 'clksrcExt'],
+      format: function (o) {
+        return 'ts-refclk:%s' + (o.clksrcExt != null ? '=%s' : '');
+      }
+    },
+    {
+      // RFC7273
+      // a=mediaclk:direct=963214424
+      name:'mediaClk',
+      reg: /^mediaclk:(?:id=(\S*))? *([^\s=]*)(?:=(\S*))?(?: *rate=(\d+)\/(\d+))?/,
+      names: ['id', 'mediaClockName', 'mediaClockValue', 'rateNumerator', 'rateDenominator'],
+      format: function (o) {
+        var str = 'mediaclk:';
+        str += (o.id != null ? 'id=%s %s' : '%v%s');
+        str += (o.mediaClockValue != null ? '=%s' : '');
+        str += (o.rateNumerator != null ? ' rate=%s' : '');
+        str += (o.rateDenominator != null ? '/%s' : '');
+        return str;
+      }
+    },
+    {
+      // a=keywds:keywords
+      name: 'keywords',
+      reg: /^keywds:(.+)$/,
+      format: 'keywds:%s'
+    },
+    {
+      // a=content:main
+      name: 'content',
+      reg: /^content:(.+)/,
+      format: 'content:%s'
+    },
+    // BFCP https://tools.ietf.org/html/rfc4583
+    {
+      // a=floorctrl:c-s
+      name: 'bfcpFloorCtrl',
+      reg: /^floorctrl:(c-only|s-only|c-s)/,
+      format: 'floorctrl:%s'
+    },
+    {
+      // a=confid:1
+      name: 'bfcpConfId',
+      reg: /^confid:(\d+)/,
+      format: 'confid:%s'
+    },
+    {
+      // a=userid:1
+      name: 'bfcpUserId',
+      reg: /^userid:(\d+)/,
+      format: 'userid:%s'
+    },
+    {
+      // a=floorid:1
+      name: 'bfcpFloorId',
+      reg: /^floorid:(.+) (?:m-stream|mstrm):(.+)/,
+      names: ['id', 'mStream'],
+      format: 'floorid:%s mstrm:%s'
+    },
+    {
+      // any a= that we don't understand is kept verbatim on media.invalid
       push: 'invalid',
       names: ['value']
     }
@@ -27501,8 +27683,8 @@ var writer = require('./writer');
 
 exports.write = writer;
 exports.parse = parser.parse;
-exports.parseFmtpConfig = parser.parseFmtpConfig;
 exports.parseParams = parser.parseParams;
+exports.parseFmtpConfig = parser.parseFmtpConfig; // Alias of parseParams().
 exports.parsePayloads = parser.parsePayloads;
 exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 exports.parseImageAttributes = parser.parseImageAttributes;
@@ -27585,14 +27767,14 @@ var paramReducer = function (acc, expr) {
 };
 
 exports.parseParams = function (str) {
-  return str.split(/\;\s?/).reduce(paramReducer, {});
+  return str.split(/;\s?/).reduce(paramReducer, {});
 };
 
 // For backward compatibility - alias will be removed in 3.0.0
 exports.parseFmtpConfig = exports.parseParams;
 
 exports.parsePayloads = function (str) {
-  return str.split(' ').map(Number);
+  return str.toString().split(' ').map(Number);
 };
 
 exports.parseRemoteCandidates = function (str) {
