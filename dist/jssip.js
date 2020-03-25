@@ -17120,7 +17120,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var rtcOfferConstraints = options.rtcOfferConstraints || null;
       this._rtcOfferConstraints = rtcOfferConstraints;
       this._rtcAnswerConstraints = options.rtcAnswerConstraints || null;
-      this._data = options.data || this._data; // Check target.
+      this._data = options.data || this._data; // Check Authorization: Bearer
+
+      if (this._ua.configuration.auth && extraHeaders.filter(function (extraHeader) {
+        return extraHeader.startsWith('Authorization: Bearer');
+      }).length == 0) {
+        extraHeaders.push("Authorization: Bearer ".concat(this._ua.configuration.auth));
+      } // Check target.
+
 
       if (target === undefined) {
         throw new TypeError('Not enough arguments');
@@ -20723,7 +20730,9 @@ module.exports = /*#__PURE__*/function () {
 
     this._contact += ';+sip.ice'; // Custom headers for REGISTER and un-REGISTER.
 
-    this._extraHeaders = []; // Custom Contact header params for REGISTER and un-REGISTER.
+    this._extraHeaders = []; // Add  Authorization: Bearer  if auth token ware supply in configuration
+
+    if (ua.configuration.auth) this._extraHeaders.push("Authorization: Bearer ".concat(ua.configuration.auth)); // Custom Contact header params for REGISTER and un-REGISTER.
 
     this._extraContactParams = '';
 
