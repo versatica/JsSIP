@@ -128,9 +128,9 @@ var checks = {
         return _authorization_user;
       }
     },
-    auth: function auth(_auth) {
-      if (typeof _auth === 'string') {
-        return _auth;
+    authorization_jwt: function authorization_jwt(_authorization_jwt) {
+      if (typeof _authorization_jwt === 'string') {
+        return _authorization_jwt;
       }
     },
     user_agent: function user_agent(_user_agent) {
@@ -21120,10 +21120,10 @@ module.exports = /*#__PURE__*/function () {
 
         default:
           this.clientTransaction = new Transactions.NonInviteClientTransaction(this._ua, this._ua.transport, this._request, eventHandlers);
-      } // Check if auth token is set in the configuration and no other Authorization header is set before
+      } // If authorization JWT is present, use it.
 
 
-      if (this._ua._configuration.auth && !this._request.headers.Authorization) {
+      if (this._ua._configuration.authorization_jwt) {
         this._request.headers.Authorization = ["Bearer ".concat(this._ua._configuration.auth)];
       }
 
