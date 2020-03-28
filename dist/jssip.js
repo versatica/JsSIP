@@ -21124,7 +21124,7 @@ module.exports = /*#__PURE__*/function () {
 
 
       if (this._ua._configuration.authorization_jwt) {
-        this._request.headers.Authorization = ["Bearer ".concat(this._ua._configuration.auth)];
+        this._request.headers.Authorization = ["Bearer ".concat(this._ua._configuration.authorization_jwt)];
       }
 
       this.clientTransaction.send();
