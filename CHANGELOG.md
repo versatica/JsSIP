@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.4.0 (released in 2020-03-29)
+---------------------------------------
+
+* Add `authorization_jwt` configuration parameter (#610). Credits to @voicenter.
+
+
 Version 3.3.11 (released in 2019-10-24)
 ---------------------------------------
 
