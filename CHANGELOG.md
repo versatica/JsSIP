@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.4.1 (released in 2020-03-30)
+---------------------------------------
+
+* RequestSender: fix Authorization header addition for jwt use.
+
+
 Version 3.4.0 (released in 2020-03-29)
 ---------------------------------------
 
