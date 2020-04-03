@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.4.2 (released in 2020-04-03)
+---------------------------------------
+
+* RTCSession: disable remote hold state when receiving an INVITE without SDP (#613). Credits to @RobyMcAndrew.
+
+
 Version 3.4.1 (released in 2020-03-30)
 ---------------------------------------
 
