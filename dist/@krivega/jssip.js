@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.4.2
+ * JsSIP v3.4.2-alpha.1
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -54,6 +54,7 @@ exports.settings = {
   sockets: null,
   connection_recovery_max_interval: JsSIP_C.CONNECTION_RECOVERY_MAX_INTERVAL,
   connection_recovery_min_interval: JsSIP_C.CONNECTION_RECOVERY_MIN_INTERVAL,
+  sdp_semantics: 'plan-b',
 
   /*
    * Host address.
@@ -157,6 +158,11 @@ var checks = {
         if (value > 0) {
           return value;
         }
+      }
+    },
+    sdp_semantics: function sdp_semantics(_sdp_semantics) {
+      if (typeof _sdp_semantics === 'string') {
+        return _sdp_semantics;
       }
     },
     contact_uri: function contact_uri(_contact_uri) {
@@ -17046,7 +17052,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
     _this._referSubscribers = {}; // Custom session empty object for high level use.
 
-    _this._data = {}; // Presentetion MediaStream 
+    _this._data = {}; // Presentetion MediaStream
 
     _this._presentationStream = null;
     return _this;
@@ -18593,7 +18599,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this15 = this;
 
       this._connection = new RTCPeerConnection(Object.assign({}, pcConfig, {
-        sdpSemantics: 'plan-b'
+        sdpSemantics: this._ua.configuration.sdp_semantics
       }), rtcConstraints);
 
       this._connection.addEventListener('iceconnectionstatechange', function () {
@@ -27870,7 +27876,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.4.2",
+  "version": "3.4.2-alpha.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
