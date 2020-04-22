@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.4.3 (released in 2020-04-22)
+---------------------------------------
+
+* Transactions: destroy transaction in Timer I after terminating. Thanks Juha Heinanen for reporting the issue.
+
 Version 3.4.2 (released in 2020-04-03)
 ---------------------------------------
 
