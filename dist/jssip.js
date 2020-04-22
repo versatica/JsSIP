@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.4.2
+ * JsSIP v3.4.3
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -22755,6 +22755,7 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
     key: "timer_I",
     value: function timer_I() {
       this.stateChanged(C.STATUS_TERMINATED);
+      this.ua.destroyTransaction(this);
     } // RFC 6026 7.1.
 
   }, {
@@ -27590,7 +27591,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.4.2",
+  "version": "3.4.3",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
