@@ -22892,6 +22892,7 @@ var InviteServerTransaction = /*#__PURE__*/function (_EventEmitter5) {
     key: "timer_I",
     value: function timer_I() {
       this.stateChanged(C.STATUS_TERMINATED);
+      this.ua.destroyTransaction(this);
     } // RFC 6026 7.1.
 
   }, {
