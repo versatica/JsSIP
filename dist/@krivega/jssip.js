@@ -18389,6 +18389,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         var header = mode ? 'LETMESTARTPRESENTATION' : 'STOPPRESENTATION';
 
+        if (mode) {
+          _this13.emit('presentation:start', stream);
+        } else {
+          _this13.emit('presentation:end', stream);
+        }
+
         _this13.sendRequest(JsSIP_C.INFO, {
           extraHeaders: ["X-WEBRTC-SHARE-STATE: ".concat(header)],
           body: '',
@@ -27893,7 +27899,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
