@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.4.4 (released in 2020-05-08)
+---------------------------------------
+
+* Clone optional objects (#625). Credits to @acharlop.
+* RTCSession: fix, allow initial INVITE no SDP/offer (#624). Credits to @mgoodenUK.
+
 Version 3.4.3 (released in 2020-04-22)
 ---------------------------------------
 

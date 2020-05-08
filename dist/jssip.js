@@ -581,7 +581,7 @@ module.exports = /*#__PURE__*/function () {
 
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var body = options.body || null;
 
       var request = this._createRequest(method, extraHeaders, body); // Increase the local CSeq on authentication.
@@ -16175,7 +16175,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var contentType = options.contentType || 'text/plain'; // Set event handlers.
 
       for (var event in eventHandlers) {
@@ -17106,16 +17106,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var initCallback = arguments.length > 2 ? arguments[2] : undefined;
       debug('connect()');
       var originalTarget = target;
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var mediaConstraints = options.mediaConstraints || {
+      var mediaConstraints = Utils.cloneObject(options.mediaConstraints, {
         audio: true,
         video: true
-      };
+      });
       var mediaStream = options.mediaStream || null;
-      var pcConfig = options.pcConfig || {
+      var pcConfig = Utils.cloneObject(options.pcConfig, {
         iceServers: []
-      };
+      });
       var rtcConstraints = options.rtcConstraints || null;
       var rtcOfferConstraints = options.rtcOfferConstraints || null;
       this._rtcOfferConstraints = rtcOfferConstraints;
@@ -17304,13 +17304,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       debug('answer()');
       var request = this._request;
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var mediaConstraints = options.mediaConstraints || {};
+      var mediaConstraints = Utils.cloneObject(options.mediaConstraints);
       var mediaStream = options.mediaStream || null;
-      var pcConfig = options.pcConfig || {
+      var pcConfig = Utils.cloneObject(options.pcConfig, {
         iceServers: []
-      };
+      });
       var rtcConstraints = options.rtcConstraints || null;
       var rtcAnswerConstraints = options.rtcAnswerConstraints || null;
+      var rtcOfferConstraints = options.rtcOfferConstraints || {};
       var tracks;
       var peerHasAudioLine = false;
       var peerHasVideoLine = false;
@@ -17435,12 +17436,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       } // Don't ask for audio if the incoming offer has no audio section.
 
 
-      if (!mediaStream && !peerHasAudioLine) {
+      if (!mediaStream && !peerHasAudioLine && !rtcOfferConstraints.offerToReceiveAudio) {
         mediaConstraints.audio = false;
       } // Don't ask for video if the incoming offer has no video section.
 
 
-      if (!mediaStream && !peerHasVideoLine) {
+      if (!mediaStream && !peerHasVideoLine && !rtcOfferConstraints.offerToReceiveVideo) {
         mediaConstraints.video = false;
       } // Create a new RTCPeerConnection instance.
       // TODO: This may throw an error, should react.
@@ -19350,7 +19351,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       debug('sendReinvite()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var rtcOfferConstraints = options.rtcOfferConstraints || this._rtcOfferConstraints || null;
       var succeeded = false;
       extraHeaders.push("Contact: ".concat(this._contact));
@@ -19470,7 +19471,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       debug('sendUpdate()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var rtcOfferConstraints = options.rtcOfferConstraints || this._rtcOfferConstraints || null;
       var sdpOffer = options.sdpOffer || false;
       var succeeded = false;
@@ -20178,7 +20179,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      this.eventHandlers = options.eventHandlers || {}; // Check tone type.
+      this.eventHandlers = Utils.cloneObject(options.eventHandlers); // Check tone type.
 
       if (typeof tone === 'string') {
         tone = tone.toUpperCase();
@@ -20562,7 +20563,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       debug('sendRefer()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {}; // Set event handlers.
+      var eventHandlers = Utils.cloneObject(options.eventHandlers); // Set event handlers.
 
       for (var event in eventHandlers) {
         if (Object.prototype.hasOwnProperty.call(eventHandlers, event)) {
@@ -25117,6 +25118,11 @@ exports.closeMediaStream = function (stream) {
 
 exports.cloneArray = function (array) {
   return array && array.slice() || [];
+};
+
+exports.cloneObject = function (obj) {
+  var fallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  return obj && Object.assign({}, obj) || fallback;
 };
 },{"./Constants":2,"./Grammar":7,"./URI":25}],27:[function(require,module,exports){
 "use strict";
