@@ -17785,7 +17785,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (tone === ',') {
           timeout = 2000;
         } else {
-          if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO || transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
+          if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO && transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
             throw new TypeError("invalid transportType: ".concat(transportType));
           } // Send DTMF according to transport config.
 
