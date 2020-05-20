@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.4.3
+ * JsSIP v3.4.6
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -11,7 +11,7 @@
 
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -362,6 +362,11 @@ module.exports = {
   REFER: 'REFER',
   UPDATE: 'UPDATE',
   SUBSCRIBE: 'SUBSCRIBE',
+  // DTMF transport methods.
+  DTMF_TRANSPORT: {
+    INFO: 'INFO',
+    RFC2833: 'RFC2833'
+  },
 
   /* SIP Response Reasons
    * DOC: https://www.iana.org/assignments/sip-parameters
@@ -594,7 +599,7 @@ module.exports = /*#__PURE__*/function () {
 
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var body = options.body || null;
 
       var request = this._createRequest(method, extraHeaders, body); // Increase the local CSeq on authentication.
@@ -1089,13 +1094,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
 
@@ -16115,7 +16120,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -16124,10 +16133,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -16188,7 +16193,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var contentType = options.contentType || 'text/plain'; // Set event handlers.
 
       for (var event in eventHandlers) {
@@ -16549,7 +16554,7 @@ module.exports = /*#__PURE__*/function () {
 
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -16883,7 +16888,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -16893,7 +16898,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -16902,10 +16911,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 /* globals RTCPeerConnection: false, RTCSessionDescription: false */
 var EventEmitter = require('events').EventEmitter;
@@ -17121,16 +17126,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var initCallback = arguments.length > 2 ? arguments[2] : undefined;
       debug('connect()');
       var originalTarget = target;
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var mediaConstraints = options.mediaConstraints || {
+      var mediaConstraints = Utils.cloneObject(options.mediaConstraints, {
         audio: true,
         video: true
-      };
+      });
       var mediaStream = options.mediaStream || null;
-      var pcConfig = options.pcConfig || {
+      var pcConfig = Utils.cloneObject(options.pcConfig, {
         iceServers: []
-      };
+      });
       var rtcConstraints = options.rtcConstraints || null;
       var rtcOfferConstraints = options.rtcOfferConstraints || null;
       this._rtcOfferConstraints = rtcOfferConstraints;
@@ -17319,13 +17324,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       debug('answer()');
       var request = this._request;
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var mediaConstraints = options.mediaConstraints || {};
+      var mediaConstraints = Utils.cloneObject(options.mediaConstraints);
       var mediaStream = options.mediaStream || null;
-      var pcConfig = options.pcConfig || {
+      var pcConfig = Utils.cloneObject(options.pcConfig, {
         iceServers: []
-      };
+      });
       var rtcConstraints = options.rtcConstraints || null;
       var rtcAnswerConstraints = options.rtcAnswerConstraints || null;
+      var rtcOfferConstraints = Utils.cloneObject(options.rtcOfferConstraints);
       var tracks;
       var peerHasAudioLine = false;
       var peerHasVideoLine = false;
@@ -17450,12 +17456,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       } // Don't ask for audio if the incoming offer has no audio section.
 
 
-      if (!mediaStream && !peerHasAudioLine) {
+      if (!mediaStream && !peerHasAudioLine && !rtcOfferConstraints.offerToReceiveAudio) {
         mediaConstraints.audio = false;
       } // Don't ask for video if the incoming offer has no video section.
 
 
-      if (!mediaStream && !peerHasVideoLine) {
+      if (!mediaStream && !peerHasVideoLine && !rtcOfferConstraints.offerToReceiveVideo) {
         mediaConstraints.video = false;
       } // Create a new RTCPeerConnection instance.
       // TODO: This may throw an error, should react.
@@ -17716,6 +17722,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var position = 0;
       var duration = options.duration || null;
       var interToneGap = options.interToneGap || null;
+      var transportType = options.transportType || JsSIP_C.DTMF_TRANSPORT.INFO;
 
       if (tones === undefined) {
         throw new TypeError('Not enough arguments');
@@ -17791,14 +17798,37 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (tone === ',') {
           timeout = 2000;
         } else {
-          var dtmf = new RTCSession_DTMF(this);
-          options.eventHandlers = {
-            onFailed: function onFailed() {
-              _this5._tones = null;
-            }
-          };
-          dtmf.send(tone, options);
-          timeout = duration + interToneGap;
+          if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO && transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
+            throw new TypeError("invalid transportType: ".concat(transportType));
+          } // Send DTMF according to transport config.
+
+
+          switch (transportType) {
+            case JsSIP_C.DTMF_TRANSPORT.RFC2833:
+              {
+                // Send DTMF in current audio RTP stream.
+                var sender = this._getDTMFRTPSender();
+
+                if (sender) {
+                  sender.insertDTMF(tone, duration, interToneGap);
+                }
+
+                break;
+              }
+
+            case JsSIP_C.DTMF_TRANSPORT.INFO:
+              {
+                // Send DTMF via SIP INFO messages.
+                var dtmf = new RTCSession_DTMF(this);
+                options.eventHandlers = {
+                  onFailed: function onFailed() {
+                    _this5._tones = null;
+                  }
+                };
+                dtmf.send(tone, options);
+                timeout = duration + interToneGap;
+              }
+          }
         } // Set timeout for the next tone.
 
 
@@ -19338,6 +19368,24 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       });
     }
     /**
+     * Get DTMF RTCRtpSender.
+     */
+
+  }, {
+    key: "_getDTMFRTPSender",
+    value: function _getDTMFRTPSender() {
+      var sender = this._connection.getSenders().find(function (rtpSender) {
+        return rtpSender.track && rtpSender.track.kind === 'audio';
+      });
+
+      if (!(sender && sender.dtmf)) {
+        debugerror('sendDTMF() | no local audio track to send DTMF with');
+        return;
+      }
+
+      return sender.dtmf;
+    }
+    /**
      * Reception of Response for Initial INVITE
      */
 
@@ -19540,7 +19588,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       debug('sendReinvite()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var rtcOfferConstraints = options.rtcOfferConstraints || this._rtcOfferConstraints || null;
       var succeeded = false;
       extraHeaders.push("Contact: ".concat(this._contact));
@@ -19670,7 +19718,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       debug('sendUpdate()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {};
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
       var rtcOfferConstraints = options.rtcOfferConstraints || this._rtcOfferConstraints || null;
       var sdpOffer = options.sdpOffer || false;
       var succeeded = false;
@@ -20337,7 +20385,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -20346,10 +20398,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -20409,7 +20457,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      this.eventHandlers = options.eventHandlers || {}; // Check tone type.
+      this.eventHandlers = Utils.cloneObject(options.eventHandlers); // Check tone type.
 
       if (typeof tone === 'string') {
         tone = tone.toUpperCase();
@@ -20540,7 +20588,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -20549,10 +20601,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -20745,7 +20793,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -20754,10 +20806,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -20793,7 +20841,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       debug('sendRefer()');
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
-      var eventHandlers = options.eventHandlers || {}; // Set event handlers.
+      var eventHandlers = Utils.cloneObject(options.eventHandlers); // Set event handlers.
 
       for (var event in eventHandlers) {
         if (Object.prototype.hasOwnProperty.call(eventHandlers, event)) {
@@ -21455,7 +21503,11 @@ module.exports = /*#__PURE__*/function () {
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -21465,13 +21517,9 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -22412,7 +22460,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -22421,10 +22473,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -23566,7 +23614,11 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -23575,10 +23627,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -24594,7 +24642,7 @@ function onTransportData(data) {
 
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -24858,7 +24906,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -25379,6 +25427,11 @@ exports.closeMediaStream = function (stream) {
 exports.cloneArray = function (array) {
   return array && array.slice() || [];
 };
+
+exports.cloneObject = function (obj) {
+  var fallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  return obj && Object.assign({}, obj) || fallback;
+};
 },{"./Constants":2,"./Grammar":7,"./URI":25}],27:[function(require,module,exports){
 "use strict";
 
@@ -25562,7 +25615,7 @@ module.exports = /*#__PURE__*/function () {
 
 function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -27226,7 +27279,8 @@ var grammar = module.exports = {
     name: 'version',
     reg: /^(\d*)$/
   }],
-  o: [{ //o=- 20518 0 IN IP4 203.0.113.1
+  o: [{
+    // o=- 20518 0 IN IP4 203.0.113.1
     // NB: sessionId will be a String in most cases because it is huge
     name: 'origin',
     reg: /^(\S*) (\d*) (\d*) (\S*) IP(\d) (\S*)/,
@@ -27239,158 +27293,199 @@ var grammar = module.exports = {
   u: [{ name: 'uri' }],
   e: [{ name: 'email' }],
   p: [{ name: 'phone' }],
-  z: [{ name: 'timezones' }], // TODO: this one can actually be parsed properly..
+  z: [{ name: 'timezones' }], // TODO: this one can actually be parsed properly...
   r: [{ name: 'repeats' }],   // TODO: this one can also be parsed properly
-  //k: [{}], // outdated thing ignored
-  t: [{ //t=0 0
+  // k: [{}], // outdated thing ignored
+  t: [{
+    // t=0 0
     name: 'timing',
     reg: /^(\d*) (\d*)/,
     names: ['start', 'stop'],
     format: '%d %d'
   }],
-  c: [{ //c=IN IP4 10.47.197.26
+  c: [{
+    // c=IN IP4 10.47.197.26
     name: 'connection',
     reg: /^IN IP(\d) (\S*)/,
     names: ['version', 'ip'],
     format: 'IN IP%d %s'
   }],
-  b: [{ //b=AS:4000
+  b: [{
+    // b=AS:4000
     push: 'bandwidth',
     reg: /^(TIAS|AS|CT|RR|RS):(\d*)/,
     names: ['type', 'limit'],
     format: '%s:%s'
   }],
-  m: [{ //m=video 51744 RTP/AVP 126 97 98 34 31
+  m: [{
+    // m=video 51744 RTP/AVP 126 97 98 34 31
     // NB: special - pushes to session
     // TODO: rtp/fmtp should be filtered by the payloads found here?
-    reg: /^(\w*) (\d*) ([\w\/]*)(?: (.*))?/,
+    reg: /^(\w*) (\d*) ([\w/]*)(?: (.*))?/,
     names: ['type', 'port', 'protocol', 'payloads'],
     format: '%s %d %s %s'
   }],
   a: [
-    { //a=rtpmap:110 opus/48000/2
+    {
+      // a=rtpmap:110 opus/48000/2
       push: 'rtp',
-      reg: /^rtpmap:(\d*) ([\w\-\.]*)(?:\s*\/(\d*)(?:\s*\/(\S*))?)?/,
+      reg: /^rtpmap:(\d*) ([\w\-.]*)(?:\s*\/(\d*)(?:\s*\/(\S*))?)?/,
       names: ['payload', 'codec', 'rate', 'encoding'],
       format: function (o) {
-        return (o.encoding) ?
-          'rtpmap:%d %s/%s/%s':
-          o.rate ?
-          'rtpmap:%d %s/%s':
-          'rtpmap:%d %s';
+        return (o.encoding)
+          ? 'rtpmap:%d %s/%s/%s'
+          : o.rate
+            ? 'rtpmap:%d %s/%s'
+            : 'rtpmap:%d %s';
       }
     },
-    { //a=fmtp:108 profile-level-id=24;object=23;bitrate=64000
-      //a=fmtp:111 minptime=10; useinbandfec=1
+    {
+      // a=fmtp:108 profile-level-id=24;object=23;bitrate=64000
+      // a=fmtp:111 minptime=10; useinbandfec=1
       push: 'fmtp',
       reg: /^fmtp:(\d*) ([\S| ]*)/,
       names: ['payload', 'config'],
       format: 'fmtp:%d %s'
     },
-    { //a=control:streamid=0
+    {
+      // a=control:streamid=0
       name: 'control',
       reg: /^control:(.*)/,
       format: 'control:%s'
     },
-    { //a=rtcp:65179 IN IP4 193.84.77.194
+    {
+      // a=rtcp:65179 IN IP4 193.84.77.194
       name: 'rtcp',
       reg: /^rtcp:(\d*)(?: (\S*) IP(\d) (\S*))?/,
       names: ['port', 'netType', 'ipVer', 'address'],
       format: function (o) {
-        return (o.address != null) ?
-          'rtcp:%d %s IP%d %s':
-          'rtcp:%d';
+        return (o.address != null)
+          ? 'rtcp:%d %s IP%d %s'
+          : 'rtcp:%d';
       }
     },
-    { //a=rtcp-fb:98 trr-int 100
+    {
+      // a=rtcp-fb:98 trr-int 100
       push: 'rtcpFbTrrInt',
       reg: /^rtcp-fb:(\*|\d*) trr-int (\d*)/,
       names: ['payload', 'value'],
       format: 'rtcp-fb:%d trr-int %d'
     },
-    { //a=rtcp-fb:98 nack rpsi
+    {
+      // a=rtcp-fb:98 nack rpsi
       push: 'rtcpFb',
       reg: /^rtcp-fb:(\*|\d*) ([\w-_]*)(?: ([\w-_]*))?/,
       names: ['payload', 'type', 'subtype'],
       format: function (o) {
-        return (o.subtype != null) ?
-          'rtcp-fb:%s %s %s':
-          'rtcp-fb:%s %s';
+        return (o.subtype != null)
+          ? 'rtcp-fb:%s %s %s'
+          : 'rtcp-fb:%s %s';
       }
     },
-    { //a=extmap:2 urn:ietf:params:rtp-hdrext:toffset
-      //a=extmap:1/recvonly URI-gps-string
+    {
+      // a=extmap:2 urn:ietf:params:rtp-hdrext:toffset
+      // a=extmap:1/recvonly URI-gps-string
+      // a=extmap:3 urn:ietf:params:rtp-hdrext:encrypt urn:ietf:params:rtp-hdrext:smpte-tc 25@600/24
       push: 'ext',
-      reg: /^extmap:(\d+)(?:\/(\w+))? (\S*)(?: (\S*))?/,
-      names: ['value', 'direction', 'uri', 'config'],
+      reg: /^extmap:(\d+)(?:\/(\w+))?(?: (urn:ietf:params:rtp-hdrext:encrypt))? (\S*)(?: (\S*))?/,
+      names: ['value', 'direction', 'encrypt-uri', 'uri', 'config'],
       format: function (o) {
-        return 'extmap:%d' + (o.direction ? '/%s' : '%v') + ' %s' + (o.config ? ' %s' : '');
+        return (
+          'extmap:%d' +
+          (o.direction ? '/%s' : '%v') +
+          (o['encrypt-uri'] ? ' %s' : '%v') +
+          ' %s' +
+          (o.config ? ' %s' : '')
+        );
       }
     },
-    { //a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR|2^20|1:32
+    {
+      // a=extmap-allow-mixed
+      name: 'extmapAllowMixed',
+      reg: /^(extmap-allow-mixed)/
+    },
+    {
+      // a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR|2^20|1:32
       push: 'crypto',
       reg: /^crypto:(\d*) ([\w_]*) (\S*)(?: (\S*))?/,
       names: ['id', 'suite', 'config', 'sessionConfig'],
       format: function (o) {
-        return (o.sessionConfig != null) ?
-          'crypto:%d %s %s %s':
-          'crypto:%d %s %s';
+        return (o.sessionConfig != null)
+          ? 'crypto:%d %s %s %s'
+          : 'crypto:%d %s %s';
       }
     },
-    { //a=setup:actpass
+    {
+      // a=setup:actpass
       name: 'setup',
       reg: /^setup:(\w*)/,
       format: 'setup:%s'
     },
-    { //a=mid:1
+    {
+      // a=connection:new
+      name: 'connectionType',
+      reg: /^connection:(new|existing)/,
+      format: 'connection:%s'
+    },
+    {
+      // a=mid:1
       name: 'mid',
       reg: /^mid:([^\s]*)/,
       format: 'mid:%s'
     },
-    { //a=msid:0c8b064d-d807-43b4-b434-f92a889d8587 98178685-d409-46e0-8e16-7ef0db0db64a
+    {
+      // a=msid:0c8b064d-d807-43b4-b434-f92a889d8587 98178685-d409-46e0-8e16-7ef0db0db64a
       name: 'msid',
       reg: /^msid:(.*)/,
       format: 'msid:%s'
     },
-    { //a=ptime:20
+    {
+      // a=ptime:20
       name: 'ptime',
-      reg: /^ptime:(\d*)/,
+      reg: /^ptime:(\d*(?:\.\d*)*)/,
       format: 'ptime:%d'
     },
-    { //a=maxptime:60
+    {
+      // a=maxptime:60
       name: 'maxptime',
-      reg: /^maxptime:(\d*)/,
+      reg: /^maxptime:(\d*(?:\.\d*)*)/,
       format: 'maxptime:%d'
     },
-    { //a=sendrecv
+    {
+      // a=sendrecv
       name: 'direction',
       reg: /^(sendrecv|recvonly|sendonly|inactive)/
     },
-    { //a=ice-lite
+    {
+      // a=ice-lite
       name: 'icelite',
       reg: /^(ice-lite)/
     },
-    { //a=ice-ufrag:F7gI
+    {
+      // a=ice-ufrag:F7gI
       name: 'iceUfrag',
       reg: /^ice-ufrag:(\S*)/,
       format: 'ice-ufrag:%s'
     },
-    { //a=ice-pwd:x9cml/YzichV2+XlhiMu8g
+    {
+      // a=ice-pwd:x9cml/YzichV2+XlhiMu8g
       name: 'icePwd',
       reg: /^ice-pwd:(\S*)/,
       format: 'ice-pwd:%s'
     },
-    { //a=fingerprint:SHA-1 00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33
+    {
+      // a=fingerprint:SHA-1 00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33
       name: 'fingerprint',
       reg: /^fingerprint:(\S*) (\S*)/,
       names: ['type', 'hash'],
       format: 'fingerprint:%s %s'
     },
-    { //a=candidate:0 1 UDP 2113667327 203.0.113.1 54400 typ host
-      //a=candidate:1162875081 1 udp 2113937151 192.168.34.75 60017 typ host generation 0 network-id 3 network-cost 10
-      //a=candidate:3289912957 2 udp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 generation 0 network-id 3 network-cost 10
-      //a=candidate:229815620 1 tcp 1518280447 192.168.150.19 60017 typ host tcptype active generation 0 network-id 3 network-cost 10
-      //a=candidate:3289912957 2 tcp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 tcptype passive generation 0 network-id 3 network-cost 10
+    {
+      // a=candidate:0 1 UDP 2113667327 203.0.113.1 54400 typ host
+      // a=candidate:1162875081 1 udp 2113937151 192.168.34.75 60017 typ host generation 0 network-id 3 network-cost 10
+      // a=candidate:3289912957 2 udp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 generation 0 network-id 3 network-cost 10
+      // a=candidate:229815620 1 tcp 1518280447 192.168.150.19 60017 typ host tcptype active generation 0 network-id 3 network-cost 10
+      // a=candidate:3289912957 2 tcp 1845501695 193.84.77.194 60017 typ srflx raddr 192.168.34.75 rport 60017 tcptype passive generation 0 network-id 3 network-cost 10
       push:'candidates',
       reg: /^candidate:(\S*) (\d*) (\S*) (\d*) (\S*) (\d*) typ (\S*)(?: raddr (\S*) rport (\d*))?(?: tcptype (\S*))?(?: generation (\d*))?(?: network-id (\d*))?(?: network-cost (\d*))?/,
       names: ['foundation', 'component', 'transport', 'priority', 'ip', 'port', 'type', 'raddr', 'rport', 'tcptype', 'generation', 'network-id', 'network-cost'],
@@ -27411,21 +27506,25 @@ var grammar = module.exports = {
         return str;
       }
     },
-    { //a=end-of-candidates (keep after the candidates line for readability)
+    {
+      // a=end-of-candidates (keep after the candidates line for readability)
       name: 'endOfCandidates',
       reg: /^(end-of-candidates)/
     },
-    { //a=remote-candidates:1 203.0.113.1 54400 2 203.0.113.1 54401 ...
+    {
+      // a=remote-candidates:1 203.0.113.1 54400 2 203.0.113.1 54401 ...
       name: 'remoteCandidates',
       reg: /^remote-candidates:(.*)/,
       format: 'remote-candidates:%s'
     },
-    { //a=ice-options:google-ice
+    {
+      // a=ice-options:google-ice
       name: 'iceOptions',
       reg: /^ice-options:(\S*)/,
       format: 'ice-options:%s'
     },
-    { //a=ssrc:2566107569 cname:t9YU8M1UxTF8Y1A1
+    {
+      // a=ssrc:2566107569 cname:t9YU8M1UxTF8Y1A1
       push: 'ssrcs',
       reg: /^ssrc:(\d*) ([\w_-]*)(?::(.*))?/,
       names: ['id', 'attribute', 'value'],
@@ -27440,50 +27539,58 @@ var grammar = module.exports = {
         return str;
       }
     },
-    { //a=ssrc-group:FEC 1 2
-      //a=ssrc-group:FEC-FR 3004364195 1080772241
+    {
+      // a=ssrc-group:FEC 1 2
+      // a=ssrc-group:FEC-FR 3004364195 1080772241
       push: 'ssrcGroups',
       // token-char = %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7E
       reg: /^ssrc-group:([\x21\x23\x24\x25\x26\x27\x2A\x2B\x2D\x2E\w]*) (.*)/,
       names: ['semantics', 'ssrcs'],
       format: 'ssrc-group:%s %s'
     },
-    { //a=msid-semantic: WMS Jvlam5X3SX1OP6pn20zWogvaKJz5Hjf9OnlV
+    {
+      // a=msid-semantic: WMS Jvlam5X3SX1OP6pn20zWogvaKJz5Hjf9OnlV
       name: 'msidSemantic',
       reg: /^msid-semantic:\s?(\w*) (\S*)/,
       names: ['semantic', 'token'],
       format: 'msid-semantic: %s %s' // space after ':' is not accidental
     },
-    { //a=group:BUNDLE audio video
+    {
+      // a=group:BUNDLE audio video
       push: 'groups',
       reg: /^group:(\w*) (.*)/,
       names: ['type', 'mids'],
       format: 'group:%s %s'
     },
-    { //a=rtcp-mux
+    {
+      // a=rtcp-mux
       name: 'rtcpMux',
       reg: /^(rtcp-mux)/
     },
-    { //a=rtcp-rsize
+    {
+      // a=rtcp-rsize
       name: 'rtcpRsize',
       reg: /^(rtcp-rsize)/
     },
-    { //a=sctpmap:5000 webrtc-datachannel 1024
+    {
+      // a=sctpmap:5000 webrtc-datachannel 1024
       name: 'sctpmap',
-      reg: /^sctpmap:([\w_\/]*) (\S*)(?: (\S*))?/,
+      reg: /^sctpmap:([\w_/]*) (\S*)(?: (\S*))?/,
       names: ['sctpmapNumber', 'app', 'maxMessageSize'],
       format: function (o) {
-        return (o.maxMessageSize != null) ?
-          'sctpmap:%s %s %s' :
-          'sctpmap:%s %s';
+        return (o.maxMessageSize != null)
+          ? 'sctpmap:%s %s %s'
+          : 'sctpmap:%s %s';
       }
     },
-    { //a=x-google-flag:conference
+    {
+      // a=x-google-flag:conference
       name: 'xGoogleFlag',
       reg: /^x-google-flag:([^\s]*)/,
       format: 'x-google-flag:%s'
     },
-    { //a=rid:1 send max-width=1280;max-height=720;max-fps=30;depend=0
+    {
+      // a=rid:1 send max-width=1280;max-height=720;max-fps=30;depend=0
       push: 'rids',
       reg: /^rid:([\d\w]+) (\w+)(?: ([\S| ]*))?/,
       names: ['id', 'direction', 'params'],
@@ -27491,16 +27598,17 @@ var grammar = module.exports = {
         return (o.params) ? 'rid:%s %s %s' : 'rid:%s %s';
       }
     },
-    { //a=imageattr:97 send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320] recv [x=330,y=250]
-      //a=imageattr:* send [x=800,y=640] recv *
-      //a=imageattr:100 recv [x=320,y=240]
+    {
+      // a=imageattr:97 send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320] recv [x=330,y=250]
+      // a=imageattr:* send [x=800,y=640] recv *
+      // a=imageattr:100 recv [x=320,y=240]
       push: 'imageattrs',
       reg: new RegExp(
-        //a=imageattr:97
+        // a=imageattr:97
         '^imageattr:(\\d+|\\*)' +
-        //send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320]
+        // send [x=800,y=640,sar=1.1,q=0.6] [x=480,y=320]
         '[\\s\\t]+(send|recv)[\\s\\t]+(\\*|\\[\\S+\\](?:[\\s\\t]+\\[\\S+\\])*)' +
-        //recv [x=330,y=250]
+        // recv [x=330,y=250]
         '(?:[\\s\\t]+(recv|send)[\\s\\t]+(\\*|\\[\\S+\\](?:[\\s\\t]+\\[\\S+\\])*))?'
       ),
       names: ['pt', 'dir1', 'attrs1', 'dir2', 'attrs2'],
@@ -27508,17 +27616,18 @@ var grammar = module.exports = {
         return 'imageattr:%s %s %s' + (o.dir2 ? ' %s %s' : '');
       }
     },
-    { //a=simulcast:send 1,2,3;~4,~5 recv 6;~7,~8
-      //a=simulcast:recv 1;4,5 send 6;7
+    {
+      // a=simulcast:send 1,2,3;~4,~5 recv 6;~7,~8
+      // a=simulcast:recv 1;4,5 send 6;7
       name: 'simulcast',
       reg: new RegExp(
-        //a=simulcast:
+        // a=simulcast:
         '^simulcast:' +
-        //send 1,2,3;~4,~5
+        // send 1,2,3;~4,~5
         '(send|recv) ([a-zA-Z0-9\\-_~;,]+)' +
-        //space + recv 6;~7,~8
+        // space + recv 6;~7,~8
         '(?:\\s?(send|recv) ([a-zA-Z0-9\\-_~;,]+))?' +
-        //end
+        // end
         '$'
       ),
       names: ['dir1', 'list1', 'dir2', 'list2'],
@@ -27526,30 +27635,125 @@ var grammar = module.exports = {
         return 'simulcast:%s %s' + (o.dir2 ? ' %s %s' : '');
       }
     },
-    { //Old simulcast draft 03 (implemented by Firefox)
-      //  https://tools.ietf.org/html/draft-ietf-mmusic-sdp-simulcast-03
-      //a=simulcast: recv pt=97;98 send pt=97
-      //a=simulcast: send rid=5;6;7 paused=6,7
+    {
+      // old simulcast draft 03 (implemented by Firefox)
+      //   https://tools.ietf.org/html/draft-ietf-mmusic-sdp-simulcast-03
+      // a=simulcast: recv pt=97;98 send pt=97
+      // a=simulcast: send rid=5;6;7 paused=6,7
       name: 'simulcast_03',
       reg: /^simulcast:[\s\t]+([\S+\s\t]+)$/,
       names: ['value'],
       format: 'simulcast: %s'
     },
     {
-      //a=framerate:25
-      //a=framerate:29.97
+      // a=framerate:25
+      // a=framerate:29.97
       name: 'framerate',
       reg: /^framerate:(\d+(?:$|\.\d+))/,
       format: 'framerate:%s'
     },
-    { // RFC4570
-      //a=source-filter: incl IN IP4 239.5.2.31 10.1.15.5
+    {
+      // RFC4570
+      // a=source-filter: incl IN IP4 239.5.2.31 10.1.15.5
       name: 'sourceFilter',
       reg: /^source-filter: *(excl|incl) (\S*) (IP4|IP6|\*) (\S*) (.*)/,
       names: ['filterMode', 'netType', 'addressTypes', 'destAddress', 'srcList'],
       format: 'source-filter: %s %s %s %s %s'
     },
+<<<<<<< HEAD
     { // any a= that we don't understand is kepts verbatim on media.invalid
+=======
+    {
+      // a=bundle-only
+      name: 'bundleOnly',
+      reg: /^(bundle-only)/
+    },
+    {
+      // a=label:1
+      name: 'label',
+      reg: /^label:(.+)/,
+      format: 'label:%s'
+    },
+    {
+      // RFC version 26 for SCTP over DTLS
+      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-5
+      name: 'sctpPort',
+      reg: /^sctp-port:(\d+)$/,
+      format: 'sctp-port:%s'
+    },
+    {
+      // RFC version 26 for SCTP over DTLS
+      // https://tools.ietf.org/html/draft-ietf-mmusic-sctp-sdp-26#section-6
+      name: 'maxMessageSize',
+      reg: /^max-message-size:(\d+)$/,
+      format: 'max-message-size:%s'
+    },
+    {
+      // RFC7273
+      // a=ts-refclk:ptp=IEEE1588-2008:39-A7-94-FF-FE-07-CB-D0:37
+      push:'tsRefClocks',
+      reg: /^ts-refclk:([^\s=]*)(?:=(\S*))?/,
+      names: ['clksrc', 'clksrcExt'],
+      format: function (o) {
+        return 'ts-refclk:%s' + (o.clksrcExt != null ? '=%s' : '');
+      }
+    },
+    {
+      // RFC7273
+      // a=mediaclk:direct=963214424
+      name:'mediaClk',
+      reg: /^mediaclk:(?:id=(\S*))? *([^\s=]*)(?:=(\S*))?(?: *rate=(\d+)\/(\d+))?/,
+      names: ['id', 'mediaClockName', 'mediaClockValue', 'rateNumerator', 'rateDenominator'],
+      format: function (o) {
+        var str = 'mediaclk:';
+        str += (o.id != null ? 'id=%s %s' : '%v%s');
+        str += (o.mediaClockValue != null ? '=%s' : '');
+        str += (o.rateNumerator != null ? ' rate=%s' : '');
+        str += (o.rateDenominator != null ? '/%s' : '');
+        return str;
+      }
+    },
+    {
+      // a=keywds:keywords
+      name: 'keywords',
+      reg: /^keywds:(.+)$/,
+      format: 'keywds:%s'
+    },
+    {
+      // a=content:main
+      name: 'content',
+      reg: /^content:(.+)/,
+      format: 'content:%s'
+    },
+    // BFCP https://tools.ietf.org/html/rfc4583
+    {
+      // a=floorctrl:c-s
+      name: 'bfcpFloorCtrl',
+      reg: /^floorctrl:(c-only|s-only|c-s)/,
+      format: 'floorctrl:%s'
+    },
+    {
+      // a=confid:1
+      name: 'bfcpConfId',
+      reg: /^confid:(\d+)/,
+      format: 'confid:%s'
+    },
+    {
+      // a=userid:1
+      name: 'bfcpUserId',
+      reg: /^userid:(\d+)/,
+      format: 'userid:%s'
+    },
+    {
+      // a=floorid:1
+      name: 'bfcpFloorId',
+      reg: /^floorid:(.+) (?:m-stream|mstrm):(.+)/,
+      names: ['id', 'mStream'],
+      format: 'floorid:%s mstrm:%s'
+    },
+    {
+      // any a= that we don't understand is kept verbatim on media.invalid
+>>>>>>> master-upstream
       push: 'invalid',
       names: ['value']
     }
@@ -27575,8 +27779,8 @@ var writer = require('./writer');
 
 exports.write = writer;
 exports.parse = parser.parse;
-exports.parseFmtpConfig = parser.parseFmtpConfig;
 exports.parseParams = parser.parseParams;
+exports.parseFmtpConfig = parser.parseFmtpConfig; // Alias of parseParams().
 exports.parsePayloads = parser.parsePayloads;
 exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 exports.parseImageAttributes = parser.parseImageAttributes;
@@ -27659,14 +27863,14 @@ var paramReducer = function (acc, expr) {
 };
 
 exports.parseParams = function (str) {
-  return str.split(/\;\s?/).reduce(paramReducer, {});
+  return str.split(/;\s?/).reduce(paramReducer, {});
 };
 
 // For backward compatibility - alias will be removed in 3.0.0
 exports.parseFmtpConfig = exports.parseParams;
 
 exports.parsePayloads = function (str) {
-  return str.split(' ').map(Number);
+  return str.toString().split(' ').map(Number);
 };
 
 exports.parseRemoteCandidates = function (str) {
@@ -27829,7 +28033,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.4.3",
+  "version": "3.4.6",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27854,21 +28058,21 @@ module.exports={
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "events": "^3.0.0",
-    "sdp-transform": "^2.7.0"
+    "events": "^3.1.0",
+    "sdp-transform": "^2.14.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.3",
-    "@babel/preset-env": "^7.4.3",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
     "ansi-colors": "^3.2.4",
-    "browserify": "^16.2.3",
+    "browserify": "^16.5.1",
     "eslint": "^5.16.0",
     "fancy-log": "^1.3.3",
-    "gulp": "^4.0.0",
+    "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^5.0.0",
-    "gulp-expect-file": "^1.0.1",
-    "gulp-header": "^2.0.7",
+    "gulp-expect-file": "^1.0.2",
+    "gulp-header": "^2.0.9",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",
