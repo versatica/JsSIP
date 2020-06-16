@@ -6,7 +6,7 @@ export * as Utils from './Utils'
 export {UA} from './UA'
 export {URI} from './URI'
 export {NameAddrHeader} from './NameAddrHeader'
-export {WebSocketInterface} from './WebSocketInterface'
+export {WebSocketInterface, Socket} from './WebSocketInterface'
 export * as Grammar from './Grammar'
 
 export const debug: Debug
