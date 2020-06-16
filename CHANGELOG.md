@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.5.1 (released in 2020-06-16)
+---------------------------------------
+
+* Export Socket interface (#637).
+
 Version 3.5.0 (released in 2020-06-01)
 ---------------------------------------
 
