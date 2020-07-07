@@ -203,8 +203,8 @@ module.exports = {
 
   'parse Via' : function(test)
   {
-    const data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;Param1=Foo;paRAM2;param3=Bar';
-    const via = JsSIP.Grammar.parse(data, 'Via');
+    let data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;Param1=Foo;paRAM2;param3=Bar';
+    let via = JsSIP.Grammar.parse(data, 'Via');
 
     test.strictEqual(via.protocol, 'SIP');
     test.strictEqual(via.transport, 'UDP');
@@ -212,6 +212,30 @@ module.exports = {
     test.strictEqual(via.host_type, 'IPv6');
     test.strictEqual(via.port, 6060);
     test.strictEqual(via.branch, '1234');
+    test.deepEqual(via.params, { param1: 'Foo', param2: undefined, param3: 'Bar' });
+
+    data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;rport=1111;Param1=Foo;paRAM2;param3=Bar';
+    via = JsSIP.Grammar.parse(data, 'Via');
+
+    test.strictEqual(via.protocol, 'SIP');
+    test.strictEqual(via.transport, 'UDP');
+    test.strictEqual(via.host, '[1:ab::FF]');
+    test.strictEqual(via.host_type, 'IPv6');
+    test.strictEqual(via.port, 6060);
+    test.strictEqual(via.branch, '1234');
+    test.strictEqual(via.rport, 1111);
+    test.deepEqual(via.params, { param1: 'Foo', param2: undefined, param3: 'Bar' });
+
+    data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;rport;Param1=Foo;paRAM2;param3=Bar';
+    via = JsSIP.Grammar.parse(data, 'Via');
+
+    test.strictEqual(via.protocol, 'SIP');
+    test.strictEqual(via.transport, 'UDP');
+    test.strictEqual(via.host, '[1:ab::FF]');
+    test.strictEqual(via.host_type, 'IPv6');
+    test.strictEqual(via.port, 6060);
+    test.strictEqual(via.branch, '1234');
+    test.strictEqual(via.rport, undefined);
     test.deepEqual(via.params, { param1: 'Foo', param2: undefined, param3: 'Bar' });
 
     test.done();
