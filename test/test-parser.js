@@ -203,7 +203,7 @@ module.exports = {
 
   'parse Via' : function(test)
   {
-    const data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;Param1=Foo;paRAM2;param3=Bar';
+    const data = 'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;rport=12345;Param1=Foo;paRAM2;param3=Bar';
     const via = JsSIP.Grammar.parse(data, 'Via');
 
     test.strictEqual(via.protocol, 'SIP');
@@ -212,6 +212,7 @@ module.exports = {
     test.strictEqual(via.host_type, 'IPv6');
     test.strictEqual(via.port, 6060);
     test.strictEqual(via.branch, '1234');
+    test.strictEqual(via.rport, 12345);
     test.deepEqual(via.params, { param1: 'Foo', param2: undefined, param3: 'Bar' });
 
     test.done();
