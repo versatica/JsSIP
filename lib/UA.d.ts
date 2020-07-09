@@ -9,6 +9,11 @@ import {Registrator} from './Registrator'
 import {URI} from './URI'
 import {causes} from './Constants'
 
+export interface Sockets {
+  socket: Socket,
+  weight: number
+}
+
 export interface UnRegisterOptions {
   all?: boolean;
 }
@@ -20,7 +25,7 @@ export interface CallOptions extends AnswerOptions {
 
 export interface UAConfiguration {
   // mandatory parameters
-  sockets: Socket | Socket[];
+  sockets: Socket | Socket[] | Sockets;
   uri: string;
   // optional parameters
   authorization_user?: string;
