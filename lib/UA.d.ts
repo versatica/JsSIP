@@ -18,9 +18,14 @@ export interface CallOptions extends AnswerOptions {
   anonymous?: boolean;
 }
 
+export interface Sockets {
+  socket: Socket;
+  weight: number
+}
+
 export interface UAConfiguration {
   // mandatory parameters
-  sockets: Socket | Socket[];
+  sockets: Socket | Socket[] | Sockets;
   uri: string;
   // optional parameters
   authorization_user?: string;
