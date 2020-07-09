@@ -1,8 +1,7 @@
-/// <reference types="node" />
-import {EventEmitter} from 'events'
+import {EventEmitter, Listener as AnyListener} from 'events'
 
 import {DisconnectEvent, Socket} from './WebSocketInterface'
-import {AnswerOptions, AnyListener, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
+import {AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {Message, SendMessageOptions} from './Message'
 import {Registrator} from './Registrator'

@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import {EventEmitter} from 'events'
+import {EventEmitter, Listener as AnyListener} from 'events'
 
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {NameAddrHeader} from './NameAddrHeader'
@@ -169,7 +168,6 @@ export interface OutgoingEvent {
 }
 
 // listener
-export type AnyListener = (...args: any[]) => void;
 export type PeerConnectionListener = (event: PeerConnectionEvent) => void;
 export type ConnectingListener = (event: ConnectingEvent) => void;
 export type SendingListener = (event: SendingEvent) => void;
