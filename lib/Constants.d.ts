@@ -2,7 +2,7 @@ export const USER_AGENT: string
 export const SIP = 'sip'
 export const SIPS = 'sips'
 
-export enum causes {
+export declare enum causes {
   CONNECTION_ERROR = 'Connection Error',
   REQUEST_TIMEOUT = 'Request Timeout',
   SIP_FAILURE_CODE = 'SIP Failure Code',
@@ -51,7 +51,7 @@ export const REFER = 'REFER'
 export const UPDATE = 'UPDATE'
 export const SUBSCRIBE = 'SUBSCRIBE'
 
-export enum DTMF_TRANSPORT {
+export declare enum DTMF_TRANSPORT {
   INFO = 'INFO',
   RFC2833 = 'RFC2833',
 }
