@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+Version 3.5.2 (released in 2020-07-07)
+---------------------------------------
+
+* Fix Via 'port' parser (#642).
+
+Version 3.5.1 (released in 2020-06-16)
+---------------------------------------
+
+* Export Socket interface (#637).
+
+Version 3.5.0 (released in 2020-06-01)
+---------------------------------------
+
+* Typescript typings (#627).
+
 Version 3.4.4 (released in 2020-05-08)
 ---------------------------------------
 

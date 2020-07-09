@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.4.6
+ * JsSIP v3.5.3
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -1427,6 +1427,7 @@ module.exports = function () {
         "via_received": parse_via_received,
         "via_branch": parse_via_branch,
         "response_port": parse_response_port,
+        "rport": parse_rport,
         "sent_protocol": parse_sent_protocol,
         "protocol_name": parse_protocol_name,
         "transport": parse_transport,
@@ -14698,10 +14699,9 @@ module.exports = function () {
       }
 
       function parse_response_port() {
-        var result0, result1, result2, result3;
-        var pos0, pos1, pos2;
+        var result0, result1, result2;
+        var pos0, pos1;
         pos0 = pos;
-        pos1 = pos;
 
         if (input.substr(pos, 5).toLowerCase() === "rport") {
           result0 = input.substr(pos, 5);
@@ -14715,33 +14715,77 @@ module.exports = function () {
         }
 
         if (result0 !== null) {
-          pos2 = pos;
+          pos1 = pos;
           result1 = parse_EQUAL();
 
           if (result1 !== null) {
-            result2 = [];
-            result3 = parse_DIGIT();
-
-            while (result3 !== null) {
-              result2.push(result3);
-              result3 = parse_DIGIT();
-            }
+            result2 = parse_rport();
 
             if (result2 !== null) {
               result1 = [result1, result2];
             } else {
               result1 = null;
-              pos = pos2;
+              pos = pos1;
             }
           } else {
             result1 = null;
-            pos = pos2;
+            pos = pos1;
           }
 
           result1 = result1 !== null ? result1 : "";
 
           if (result1 !== null) {
             result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos0;
+          }
+        } else {
+          result0 = null;
+          pos = pos0;
+        }
+
+        return result0;
+      }
+
+      function parse_rport() {
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1;
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_DIGIT();
+        result0 = result0 !== null ? result0 : "";
+
+        if (result0 !== null) {
+          result1 = parse_DIGIT();
+          result1 = result1 !== null ? result1 : "";
+
+          if (result1 !== null) {
+            result2 = parse_DIGIT();
+            result2 = result2 !== null ? result2 : "";
+
+            if (result2 !== null) {
+              result3 = parse_DIGIT();
+              result3 = result3 !== null ? result3 : "";
+
+              if (result3 !== null) {
+                result4 = parse_DIGIT();
+                result4 = result4 !== null ? result4 : "";
+
+                if (result4 !== null) {
+                  result0 = [result0, result1, result2, result3, result4];
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
           } else {
             result0 = null;
             pos = pos1;
@@ -14752,9 +14796,9 @@ module.exports = function () {
         }
 
         if (result0 !== null) {
-          result0 = function (offset) {
-            if (typeof response_port !== 'undefined') data.rport = response_port.join('');
-          }(pos0);
+          result0 = function (offset, rport) {
+            data.rport = parseInt(rport.join(''));
+          }(pos0, result0);
         }
 
         if (result0 === null) {
@@ -17217,7 +17261,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       debug('init_incoming()');
       var expires;
-      var contentType = request.getHeader('Content-Type'); // Check body and content type.
+      var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined; // Check body and content type.
 
       if (request.body && contentType !== 'application/sdp') {
         request.reply(415);
@@ -18244,7 +18288,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
           case JsSIP_C.INFO:
             if (this._status === C.STATUS_1XX_RECEIVED || this._status === C.STATUS_WAITING_FOR_ANSWER || this._status === C.STATUS_ANSWERED || this._status === C.STATUS_WAITING_FOR_ACK || this._status === C.STATUS_CONFIRMED) {
-              var contentType = request.getHeader('content-type');
+              var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined;
 
               if (contentType && contentType.match(/^application\/dtmf-relay/i)) {
                 new RTCSession_DTMF(this).init_incoming(request);
@@ -18555,7 +18599,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         });
       }).then(function () {
         // Resolve right away if 'pc.iceGatheringState' is 'complete'.
-        if (connection.iceGatheringState === 'complete') {
+        if (connection.iceGatheringState === 'complete' && (!constraints || !constraints.iceRestart)) {
           _this13._rtcReady = true;
           var e = {
             originator: 'local',
@@ -18678,7 +18722,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this14 = this;
 
       debug('receiveReinvite()');
-      var contentType = request.getHeader('Content-Type');
+      var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined;
       var data = {
         request: request,
         callback: undefined,
@@ -18784,7 +18828,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this16 = this;
 
       debug('receiveUpdate()');
-      var contentType = request.getHeader('Content-Type');
+      var contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined;
       var data = {
         request: request,
         callback: undefined,
@@ -19470,7 +19514,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (!response.body) {
           onFailed.call(this);
           return;
-        } else if (response.getHeader('Content-Type') !== 'application/sdp') {
+        } else if (!response.hasHeader('Content-Type') || response.getHeader('Content-Type').toLowerCase() !== 'application/sdp') {
           onFailed.call(this);
           return;
         }
@@ -19618,7 +19662,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           if (!response.body) {
             onFailed.call(this);
             return;
-          } else if (response.getHeader('Content-Type') !== 'application/sdp') {
+          } else if (!response.hasHeader('Content-Type') || response.getHeader('Content-Type').toLowerCase() !== 'application/sdp') {
             onFailed.call(this);
             return;
           }
@@ -20463,7 +20507,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this._direction = 'incoming';
       this.request = request;
       request.reply(200);
-      this._contentType = request.getHeader('content-type');
+      this._contentType = request.hasHeader('Content-Type') ? request.getHeader('Content-Type').toLowerCase() : undefined;
       this._body = request.body;
 
       this._session.newInfo({
@@ -27768,12 +27812,13 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.4.6",
+  "version": "3.5.3",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
     "Iñaki Baz Castillo <ibc@aliax.net> (https://github.com/ibc)"
   ],
+  "types": "lib/JsSIP.d.ts",
   "main": "lib-es5/JsSIP.js",
   "keywords": [
     "sip",
@@ -27792,6 +27837,8 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/node": "^14.0.6",
     "debug": "^4.1.1",
     "events": "^3.1.0",
     "sdp-transform": "^2.14.0"
