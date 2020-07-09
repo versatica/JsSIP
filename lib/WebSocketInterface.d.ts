@@ -5,6 +5,11 @@ export interface DisconnectEvent {
   reason?: string;
 }
 
+export interface WeightedSocket  {
+  socket: Socket;
+  weight: number
+}
+
 export class Socket {
   get via_transport(): string;
   set via_transport(value: string);

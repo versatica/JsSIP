@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import {EventEmitter} from 'events'
 
-import {DisconnectEvent, Socket} from './WebSocketInterface'
+import {DisconnectEvent, Socket, WeightedSocket} from './WebSocketInterface'
 import {AnswerOptions, AnyListener, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {Message, SendMessageOptions} from './Message'
@@ -20,7 +20,7 @@ export interface CallOptions extends AnswerOptions {
 
 export interface UAConfiguration {
   // mandatory parameters
-  sockets: Socket | Socket[];
+  sockets: Socket | Socket[] | WeightedSocket[] ;
   uri: string;
   // optional parameters
   authorization_user?: string;
