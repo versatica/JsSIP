@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+Version 3.5.4 (released in 2020-07-24)
+---------------------------------------
+
+* Fix request cseq upon 491 response (#653). Credits to @mattdimeo.
+* UA: Allow to change authorization_user (#652). Credits to @jose-lopes.
+
+Version 3.5.3 (released in 2020-07-09)
+---------------------------------------
+
+* RTCSession: force gather candidates when iceRestart is true (#641). Credits to @jose-lopes.
+* Fix crash if the request does not have Content-Type header (#650). Credits to @hxl-dy
+
 Version 3.5.2 (released in 2020-07-07)
 ---------------------------------------
 
