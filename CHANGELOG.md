@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.5.5 (released in 2020-07-29)
+---------------------------------------
+
+* JsSIP.d.ts: import and export in two steps. #651. Credits to @ashlanderDesign.
+
 Version 3.5.4 (released in 2020-07-24)
 ---------------------------------------
 
