@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.5.6
+ * JsSIP v3.5.7
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -20945,7 +20945,7 @@ module.exports = /*#__PURE__*/function () {
 
                 expires = Number(expires);
                 if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES;
-                var timeout = expires > 30 ? expires * 1000 - 10000 : expires * 1000 - 5000; // Re-Register or emit an event before the expiration interval has elapsed.
+                var timeout = expires > 64 ? expires * 1000 / 2 + Math.floor((expires / 2 - 32) * 1000 * Math.random()) : expires * 1000 - 5000; // Re-Register or emit an event before the expiration interval has elapsed.
                 // For that, decrease the expires value. ie: 3 seconds.
 
                 _this._registrationTimer = setTimeout(function () {
@@ -27822,7 +27822,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.5.6",
+  "version": "3.5.7",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
