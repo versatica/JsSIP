@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.4
+ * JsSIP v3.7.5
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -18183,7 +18183,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this11 = this;
 
       this._connection.getSenders().filter(function (sender) {
-        stream.getTracks().includes(sender.track);
+        return stream.getTracks().includes(sender.track);
       }).forEach(function (sender) {
         _this11._connection.removeTrack(sender);
       });
@@ -18478,18 +18478,24 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }, {
     key: "presentation",
-    value: function presentation(mode, stream) {
+    value: function presentation(isStart, stream) {
       var _this14 = this;
 
       debug('presentation()');
       return new Promise(function (resolve, reject) {
+        var rejectWithError = function rejectWithError(error) {
+          _this14.emit('presentation:failed', error);
+
+          reject(new Error(error));
+        };
+
         if (!stream) {
-          reject(new Error('Wrong mediaStream'));
+          rejectWithError(new Error('Wrong mediaStream'));
         }
 
-        var header = mode ? 'LETMESTARTPRESENTATION' : 'STOPPRESENTATION';
+        var header = isStart ? 'LETMESTARTPRESENTATION' : 'STOPPRESENTATION';
 
-        if (mode) {
+        if (isStart) {
           _this14.emit('presentation:start', stream);
         } else {
           _this14.emit('presentation:end', stream);
@@ -18501,7 +18507,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           eventHandlers: {
             onSuccessResponse: function onSuccessResponse(response) {
               if (response.reason_phrase === 'OK') {
-                if (mode) {
+                if (isStart) {
                   _this14._addPresentationStream(stream);
 
                   _this14._addMediaStream(stream, 'getVideoTracks');
@@ -18518,9 +18524,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
                         _this14._removeMediaStream(stream);
 
-                        _this14.emit('presentation:failed', stream);
-
-                        reject(new Error('Fail reInvite'));
+                        rejectWithError(new Error('Fail reInvite'));
                       }
                     }
                   });
@@ -18534,39 +18538,29 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                   resolve(stream);
                 }
               } else {
-                _this14.emit('presentation:failed', stream);
-
-                reject(new Error('Not allowed'));
+                rejectWithError(new Error('Not allowed'));
               }
             },
             onErrorResponse: function onErrorResponse() {
-              _this14.emit('presentation:failed', stream);
-
-              reject(new Error('Error response'));
+              rejectWithError(new Error('Error response'));
             },
             onTransportError: function onTransportError() {
-              _this14.onTransportError(); // Do nothing because session ends.
+              _this14.onTransportError(); // Do nothing because session ends. 
 
 
-              _this14.emit('presentation:failed', stream);
-
-              reject(new Error('Transport response'));
+              rejectWithError(new Error('Transport response'));
             },
             onRequestTimeout: function onRequestTimeout() {
-              _this14.onRequestTimeout(); // Do nothing because session ends.
+              _this14.onRequestTimeout(); // Do nothing because session ends. 
 
 
-              _this14.emit('presentation:failed', stream);
-
-              reject(new Error('Request timeout'));
+              rejectWithError(new Error('Request timeout'));
             },
             onDialogError: function onDialogError() {
               _this14.onDialogError(); // Do nothing because session ends.
 
 
-              _this14.emit('presentation:failed', stream);
-
-              reject(new Error('Dialog error'));
+              rejectWithError(new Error('Dialog error'));
             }
           }
         });
@@ -28037,7 +28031,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.4",
+  "version": "3.7.5",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
