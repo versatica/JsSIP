@@ -1,13 +1,16 @@
 import {Debug} from 'debug'
 
-export * as C from './Constants'
-export * as Exceptions from './Exceptions'
-export * as Utils from './Utils'
+import * as C from './Constants'
+import * as Exceptions from './Exceptions'
+import * as Grammar from './Grammar'
+import * as Utils from './Utils'
+
+export { C, Exceptions, Grammar, Utils };
+
 export {UA} from './UA'
 export {URI} from './URI'
 export {NameAddrHeader} from './NameAddrHeader'
 export {WebSocketInterface, Socket, WeightedSocket} from './WebSocketInterface'
-export * as Grammar from './Grammar'
 
 export const debug: Debug
 export const name: string

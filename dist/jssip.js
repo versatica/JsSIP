@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.5.3
+ * JsSIP v3.5.7
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -839,7 +839,7 @@ module.exports = /*#__PURE__*/function () {
             this._eventHandlers.onErrorResponse(response);
           }
         } else {
-          this._request.cseq.value = this._dialog.local_seqnum += 1;
+          this._request.cseq = this._dialog.local_seqnum += 1;
           this._reattemptTimer = setTimeout(function () {
             // TODO: look at dialog state instead.
             if (_this2._dialog.owner.status !== RTCSession.C.STATUS_TERMINATED) {
@@ -20944,7 +20944,8 @@ module.exports = /*#__PURE__*/function () {
                 }
 
                 expires = Number(expires);
-                if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES; // Re-Register or emit an event before the expiration interval has elapsed.
+                if (expires < MIN_REGISTER_EXPIRES) expires = MIN_REGISTER_EXPIRES;
+                var timeout = expires > 64 ? expires * 1000 / 2 + Math.floor((expires / 2 - 32) * 1000 * Math.random()) : expires * 1000 - 5000; // Re-Register or emit an event before the expiration interval has elapsed.
                 // For that, decrease the expires value. ie: 3 seconds.
 
                 _this._registrationTimer = setTimeout(function () {
@@ -20956,7 +20957,7 @@ module.exports = /*#__PURE__*/function () {
                   } else {
                     _this._ua.emit('registrationExpiring');
                   }
-                }, expires * 1000 - 5000); // Save gruu values.
+                }, timeout); // Save gruu values.
 
                 if (contact.hasParam('temp-gruu')) {
                   _this._ua.contact.temp_gruu = contact.getParam('temp-gruu').replace(/"/g, '');
@@ -23768,6 +23769,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "get",
     value: function get(parameter) {
       switch (parameter) {
+        case 'authorization_user':
+          return this._configuration.authorization_user;
+
         case 'realm':
           return this._configuration.realm;
 
@@ -23788,6 +23792,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "set",
     value: function set(parameter, value) {
       switch (parameter) {
+        case 'authorization_user':
+          {
+            this._configuration.authorization_user = String(value);
+            break;
+          }
+
         case 'password':
           {
             this._configuration.password = String(value);
@@ -24245,7 +24255,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       }; // Seal the configuration.
 
-      var writable_parameters = ['password', 'realm', 'ha1', 'display_name', 'register'];
+      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'display_name', 'register'];
 
       for (var parameter in this._configuration) {
         if (Object.prototype.hasOwnProperty.call(this._configuration, parameter)) {
@@ -27812,7 +27822,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.5.3",
+  "version": "3.5.7",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
