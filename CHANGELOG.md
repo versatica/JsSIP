@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+Version 3.5.8 (released in 2020-10-14)
+---------------------------------------
+
+* RTCSession: handle incoming BYE in WAITING_FOR_ANSWER state. #665. Credits to @karstenluedtke.
+
+Version 3.5.7 (released in 2020-08-14)
+---------------------------------------
+
+* Registrator: improve expires maths. Credits to Roman Shpount.
+
+Version 3.5.6 (released in 2020-08-13)
+---------------------------------------
+
+* Registrator: improve expires maths. Credits to Roman Shpount.
+
 Version 3.5.5 (released in 2020-07-29)
 ---------------------------------------
 
