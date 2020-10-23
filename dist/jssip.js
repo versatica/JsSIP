@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.5.8
+ * JsSIP v3.5.9
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -19330,8 +19330,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
             this._status = C.STATUS_1XX_RECEIVED;
 
-            this._progress('remote', response);
-
             if (!response.body) {
               break;
             }
@@ -19349,6 +19347,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             });
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
               return _this22._connection.setRemoteDescription(answer);
+            }).then(function () {
+              return _this22._progress('remote', response);
             })["catch"](function (error) {
               debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -27822,7 +27822,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.5.8",
+  "version": "3.5.9",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

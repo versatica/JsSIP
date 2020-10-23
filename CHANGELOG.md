@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.5.9 (released in 2020-10-23)
+---------------------------------------
+
+* RTCSession: Fix, fire progress after setRemoteDescription. Credits to @wangduanduan.
+
 Version 3.5.8 (released in 2020-10-14)
 ---------------------------------------
 
