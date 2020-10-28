@@ -18954,7 +18954,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
           _this17.emit('peerconnection:setremotedescriptionfailed', error);
 
-          throw new Error('peerconnection.setRemoteDescription() failed');
+          throw error;
         });
       }).then(function () {
         if (_this17._status === C.STATUS_TERMINATED) {
@@ -18976,10 +18976,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function () {
+        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function (error) {
           request.reply(500);
-          throw new Error('_createLocalDescription() failed');
+          debugerror('emit "peerconnection:createtelocaldescriptionfailed" [error:%o]', error);
+          throw error;
         });
+      })["catch"](function (error) {
+        debugerror('_processInDialogSdpOffer() failed [error: %o]', error);
       });
       return this._connectionPromiseQueue;
     }
