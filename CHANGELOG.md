@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 3.5.10 (released in 2020-10-28)
+---------------------------------------
+
+* RTCSession: Fix, in dialog request processing error does not take the seesion into a failed state. Thanks @stefang42 for reportig.
+
 Version 3.5.9 (released in 2020-10-23)
 ---------------------------------------
 
