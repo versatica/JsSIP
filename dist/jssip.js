@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.5.10
+ * JsSIP v3.5.11
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -19334,6 +19334,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             this._status = C.STATUS_1XX_RECEIVED;
 
             if (!response.body) {
+              this._progress('remote', response);
+
               break;
             }
 
@@ -27825,7 +27827,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.5.10",
+  "version": "3.5.11",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

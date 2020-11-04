@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.5.11 (released in 2020-11-04)
+---------------------------------------
+
+* RTCsession: Fix, missing progress event for empty provisional responses. Credits to @stefang42.
+
+
 Version 3.5.10 (released in 2020-10-28)
 ---------------------------------------
 
