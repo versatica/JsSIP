@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.5.11
+ * JsSIP v3.6.0
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -45,6 +45,7 @@ exports.settings = {
   // Session parameters.
   session_timers: true,
   session_timers_refresh_method: JsSIP_C.UPDATE,
+  session_timers_force_refresher: false,
   no_answer_timeout: 60,
   // Registration parameters.
   register: true,
@@ -200,6 +201,11 @@ var checks = {
         if (method === JsSIP_C.INVITE || method === JsSIP_C.UPDATE) {
           return method;
         }
+      }
+    },
+    session_timers_force_refresher: function session_timers_force_refresher(_session_timers_force_refresher) {
+      if (typeof _session_timers_force_refresher === 'boolean') {
+        return _session_timers_force_refresher;
       }
     },
     password: function password(_password) {
@@ -17233,7 +17239,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       extraHeaders.push('Content-Type: application/sdp');
 
       if (this._sessionTimers.enabled) {
-        extraHeaders.push("Session-Expires: ".concat(this._sessionTimers.defaultExpires));
+        extraHeaders.push("Session-Expires: ".concat(this._sessionTimers.defaultExpires).concat(this._ua.configuration.session_timers_force_refresher ? ';refresher=uac' : ''));
       }
 
       this._request = new SIPMessage.InitialOutgoingInviteRequest(target, this._ua, requestParams, extraHeaders);
@@ -27827,7 +27833,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.5.11",
+  "version": "3.6.0",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [

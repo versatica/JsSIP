@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.6.0 (released in 2020-16-04)
+---------------------------------------
+
+* UA configuration option 'session_timers_force_refresher' (#671). Credits to @kkozlik.
+
+
 Version 3.5.11 (released in 2020-11-04)
 ---------------------------------------
 
