@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.6.1 (released in 2020-20-04)
+---------------------------------------
+
+* RTCSession: Properly use RTCDtmf sender enqueue (#674). Thanks @ikq for reportig and testing.
+
+
 Version 3.6.0 (released in 2020-16-04)
 ---------------------------------------
 

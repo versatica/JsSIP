@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.6.0
+ * JsSIP v3.6.1
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -17768,6 +17768,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
         throw new Exceptions.InvalidStateError(this._status);
+      } // Check Transport type.
+
+
+      if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO && transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
+        throw new TypeError("invalid transportType: ".concat(transportType));
       } // Convert to string.
 
 
@@ -17806,6 +17811,21 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         interToneGap = RTCSession_DTMF.C.MIN_INTER_TONE_GAP;
       } else {
         interToneGap = Math.abs(interToneGap);
+      } // RFC2833. Let RTCDTMFSender enqueue the DTMFs.
+
+
+      if (transportType === JsSIP_C.DTMF_TRANSPORT.RFC2833) {
+        // Send DTMF in current audio RTP stream.
+        var sender = this._getDTMFRTPSender();
+
+        if (sender) {
+          // Add remaining buffered tones.
+          tones = sender.toneBuffer + tones; // Insert tones.
+
+          sender.insertDTMF(tones, duration, interToneGap);
+        }
+
+        return;
       }
 
       if (this._tones) {
@@ -17835,37 +17855,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (tone === ',') {
           timeout = 2000;
         } else {
-          if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO && transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
-            throw new TypeError("invalid transportType: ".concat(transportType));
-          } // Send DTMF according to transport config.
-
-
-          switch (transportType) {
-            case JsSIP_C.DTMF_TRANSPORT.RFC2833:
-              {
-                // Send DTMF in current audio RTP stream.
-                var sender = this._getDTMFRTPSender();
-
-                if (sender) {
-                  sender.insertDTMF(tone, duration, interToneGap);
-                }
-
-                break;
-              }
-
-            case JsSIP_C.DTMF_TRANSPORT.INFO:
-              {
-                // Send DTMF via SIP INFO messages.
-                var dtmf = new RTCSession_DTMF(this);
-                options.eventHandlers = {
-                  onFailed: function onFailed() {
-                    _this5._tones = null;
-                  }
-                };
-                dtmf.send(tone, options);
-                timeout = duration + interToneGap;
-              }
-          }
+          // Send DTMF via SIP INFO messages.
+          var dtmf = new RTCSession_DTMF(this);
+          options.eventHandlers = {
+            onFailed: function onFailed() {
+              _this5._tones = null;
+            }
+          };
+          dtmf.send(tone, options);
+          timeout = duration + interToneGap;
         } // Set timeout for the next tone.
 
 
@@ -27833,7 +27831,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
