@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.6
+ * JsSIP v3.8.0
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -19156,11 +19156,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-<<<<<<< HEAD:dist/@krivega/jssip.js
-        return _this21._createLocalDescription('answer', _this21._rtcAnswerConstraints)["catch"](function () {
-=======
-        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function (error) {
->>>>>>> master-upstream:dist/jssip.js
+        return _this21._createLocalDescription('answer', _this21._rtcAnswerConstraints)["catch"](function (error) {
           request.reply(500);
           debugerror('emit "peerconnection:createtelocaldescriptionfailed" [error:%o]', error);
           throw error;
@@ -19533,13 +19529,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
               sdp: e.sdp
             });
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
-<<<<<<< HEAD:dist/@krivega/jssip.js
               return _this26._connection.setRemoteDescription(answer);
-=======
-              return _this22._connection.setRemoteDescription(answer);
             }).then(function () {
-              return _this22._progress('remote', response);
->>>>>>> master-upstream:dist/jssip.js
+              return _this26._progress('remote', response);
             })["catch"](function (error) {
               debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -28048,11 +28040,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-<<<<<<< HEAD:dist/@krivega/jssip.js
-  "version": "3.7.6",
-=======
-  "version": "3.6.1",
->>>>>>> master-upstream:dist/jssip.js
+  "version": "3.8.0",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
