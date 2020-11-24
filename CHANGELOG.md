@@ -1,6 +1,34 @@
 CHANGELOG
 =========
 
+Version 3.6.1 (released in 2020-20-04)
+---------------------------------------
+
+* RTCSession: Properly use RTCDtmf sender enqueue (#674). Thanks @ikq for reportig and testing.
+
+
+Version 3.6.0 (released in 2020-16-04)
+---------------------------------------
+
+* UA configuration option 'session_timers_force_refresher' (#671). Credits to @kkozlik.
+
+
+Version 3.5.11 (released in 2020-11-04)
+---------------------------------------
+
+* RTCsession: Fix, missing progress event for empty provisional responses. Credits to @stefang42.
+
+
+Version 3.5.10 (released in 2020-10-28)
+---------------------------------------
+
+* RTCSession: Fix, in dialog request processing error does not take the seesion into a failed state. Thanks @stefang42 for reportig.
+
+Version 3.5.9 (released in 2020-10-23)
+---------------------------------------
+
+* RTCSession: Fix, fire progress after setRemoteDescription. Credits to @wangduanduan.
+
 Version 3.5.8 (released in 2020-10-14)
 ---------------------------------------
 

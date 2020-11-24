@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.5.8
+ * JsSIP v3.6.1
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -45,6 +45,7 @@ exports.settings = {
   // Session parameters.
   session_timers: true,
   session_timers_refresh_method: JsSIP_C.UPDATE,
+  session_timers_force_refresher: false,
   no_answer_timeout: 60,
   // Registration parameters.
   register: true,
@@ -200,6 +201,11 @@ var checks = {
         if (method === JsSIP_C.INVITE || method === JsSIP_C.UPDATE) {
           return method;
         }
+      }
+    },
+    session_timers_force_refresher: function session_timers_force_refresher(_session_timers_force_refresher) {
+      if (typeof _session_timers_force_refresher === 'boolean') {
+        return _session_timers_force_refresher;
       }
     },
     password: function password(_password) {
@@ -17233,7 +17239,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       extraHeaders.push('Content-Type: application/sdp');
 
       if (this._sessionTimers.enabled) {
-        extraHeaders.push("Session-Expires: ".concat(this._sessionTimers.defaultExpires));
+        extraHeaders.push("Session-Expires: ".concat(this._sessionTimers.defaultExpires).concat(this._ua.configuration.session_timers_force_refresher ? ';refresher=uac' : ''));
       }
 
       this._request = new SIPMessage.InitialOutgoingInviteRequest(target, this._ua, requestParams, extraHeaders);
@@ -17762,6 +17768,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
         throw new Exceptions.InvalidStateError(this._status);
+      } // Check Transport type.
+
+
+      if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO && transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
+        throw new TypeError("invalid transportType: ".concat(transportType));
       } // Convert to string.
 
 
@@ -17800,6 +17811,21 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         interToneGap = RTCSession_DTMF.C.MIN_INTER_TONE_GAP;
       } else {
         interToneGap = Math.abs(interToneGap);
+      } // RFC2833. Let RTCDTMFSender enqueue the DTMFs.
+
+
+      if (transportType === JsSIP_C.DTMF_TRANSPORT.RFC2833) {
+        // Send DTMF in current audio RTP stream.
+        var sender = this._getDTMFRTPSender();
+
+        if (sender) {
+          // Add remaining buffered tones.
+          tones = sender.toneBuffer + tones; // Insert tones.
+
+          sender.insertDTMF(tones, duration, interToneGap);
+        }
+
+        return;
       }
 
       if (this._tones) {
@@ -17829,37 +17855,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (tone === ',') {
           timeout = 2000;
         } else {
-          if (transportType !== JsSIP_C.DTMF_TRANSPORT.INFO && transportType !== JsSIP_C.DTMF_TRANSPORT.RFC2833) {
-            throw new TypeError("invalid transportType: ".concat(transportType));
-          } // Send DTMF according to transport config.
-
-
-          switch (transportType) {
-            case JsSIP_C.DTMF_TRANSPORT.RFC2833:
-              {
-                // Send DTMF in current audio RTP stream.
-                var sender = this._getDTMFRTPSender();
-
-                if (sender) {
-                  sender.insertDTMF(tone, duration, interToneGap);
-                }
-
-                break;
-              }
-
-            case JsSIP_C.DTMF_TRANSPORT.INFO:
-              {
-                // Send DTMF via SIP INFO messages.
-                var dtmf = new RTCSession_DTMF(this);
-                options.eventHandlers = {
-                  onFailed: function onFailed() {
-                    _this5._tones = null;
-                  }
-                };
-                dtmf.send(tone, options);
-                timeout = duration + interToneGap;
-              }
-          }
+          // Send DTMF via SIP INFO messages.
+          var dtmf = new RTCSession_DTMF(this);
+          options.eventHandlers = {
+            onFailed: function onFailed() {
+              _this5._tones = null;
+            }
+          };
+          dtmf.send(tone, options);
+          timeout = duration + interToneGap;
         } // Set timeout for the next tone.
 
 
@@ -18954,7 +18958,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
           _this17.emit('peerconnection:setremotedescriptionfailed', error);
 
-          throw new Error('peerconnection.setRemoteDescription() failed');
+          throw error;
         });
       }).then(function () {
         if (_this17._status === C.STATUS_TERMINATED) {
@@ -18976,10 +18980,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           throw new Error('terminated');
         }
 
-        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function () {
+        return _this17._createLocalDescription('answer', _this17._rtcAnswerConstraints)["catch"](function (error) {
           request.reply(500);
-          throw new Error('_createLocalDescription() failed');
+          debugerror('emit "peerconnection:createtelocaldescriptionfailed" [error:%o]', error);
+          throw error;
         });
+      })["catch"](function (error) {
+        debugerror('_processInDialogSdpOffer() failed [error: %o]', error);
       });
       return this._connectionPromiseQueue;
     }
@@ -19330,9 +19337,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
             this._status = C.STATUS_1XX_RECEIVED;
 
-            this._progress('remote', response);
-
             if (!response.body) {
+              this._progress('remote', response);
+
               break;
             }
 
@@ -19349,6 +19356,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             });
             this._connectionPromiseQueue = this._connectionPromiseQueue.then(function () {
               return _this22._connection.setRemoteDescription(answer);
+            }).then(function () {
+              return _this22._progress('remote', response);
             })["catch"](function (error) {
               debugerror('emit "peerconnection:setremotedescriptionfailed" [error:%o]', error);
 
@@ -27822,7 +27831,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.5.8",
+  "version": "3.6.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
