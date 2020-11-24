@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.8.0
+ * JsSIP v3.8.1
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -18515,32 +18515,32 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                   _this14._addPresentationStream(stream);
 
                   _this14._addMediaStream(stream, 'getVideoTracks');
-
-                  _this14._sendReinvite({
-                    eventHandlers: {
-                      succeeded: function succeeded() {
-                        _this14.emit('presentation:started', stream);
-
-                        resolve(stream);
-                      },
-                      failed: function failed() {
-                        _this14._removePresentationStream();
-
-                        _this14._removeMediaStream(stream);
-
-                        rejectWithError(new Error('Fail reInvite'));
-                      }
-                    }
-                  });
                 } else {
                   _this14._removePresentationStream();
 
                   _this14._removeMediaStream(stream);
-
-                  _this14.emit('presentation:ended', stream);
-
-                  resolve(stream);
                 }
+
+                _this14._sendReinvite({
+                  eventHandlers: {
+                    succeeded: function succeeded() {
+                      if (isStart) {
+                        _this14.emit('presentation:started', stream);
+                      } else {
+                        _this14.emit('presentation:ended', stream);
+                      }
+
+                      resolve(stream);
+                    },
+                    failed: function failed() {
+                      _this14._removePresentationStream();
+
+                      _this14._removeMediaStream(stream);
+
+                      rejectWithError(new Error('Fail reInvite'));
+                    }
+                  }
+                });
               } else {
                 rejectWithError(new Error('Not allowed'));
               }
@@ -28040,7 +28040,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
