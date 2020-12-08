@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.8.1
+ * JsSIP v3.9.0
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -18485,6 +18485,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function presentation(isStart, stream) {
       var _this14 = this;
 
+      var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+          _ref2$isNeedReinvite = _ref2.isNeedReinvite,
+          isNeedReinvite = _ref2$isNeedReinvite === void 0 ? true : _ref2$isNeedReinvite;
+
       debug('presentation()');
       return new Promise(function (resolve, reject) {
         var rejectWithError = function rejectWithError(error) {
@@ -18505,6 +18509,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           _this14.emit('presentation:end', stream);
         }
 
+        var resolveSuccess = function resolveSuccess() {
+          if (isStart) {
+            _this14.emit('presentation:started', stream);
+          } else {
+            _this14.emit('presentation:ended', stream);
+          }
+
+          resolve(stream);
+        };
+
         _this14.sendRequest(JsSIP_C.INFO, {
           extraHeaders: ["X-WEBRTC-SHARE-STATE: ".concat(header)],
           body: '',
@@ -18521,26 +18535,22 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                   _this14._removeMediaStream(stream);
                 }
 
-                _this14._sendReinvite({
-                  eventHandlers: {
-                    succeeded: function succeeded() {
-                      if (isStart) {
-                        _this14.emit('presentation:started', stream);
-                      } else {
-                        _this14.emit('presentation:ended', stream);
+                if (isNeedReinvite) {
+                  _this14._sendReinvite({
+                    eventHandlers: {
+                      succeeded: resolveSuccess,
+                      failed: function failed() {
+                        _this14._removePresentationStream();
+
+                        _this14._removeMediaStream(stream);
+
+                        rejectWithError(new Error('Fail reInvite'));
                       }
-
-                      resolve(stream);
-                    },
-                    failed: function failed() {
-                      _this14._removePresentationStream();
-
-                      _this14._removeMediaStream(stream);
-
-                      rejectWithError(new Error('Fail reInvite'));
                     }
-                  }
-                });
+                  });
+                } else {
+                  resolveSuccess();
+                }
               } else {
                 rejectWithError(new Error('Not allowed'));
               }
@@ -19213,17 +19223,17 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
 
         var session = new RTCSession(this._ua);
-        session.on('progress', function (_ref2) {
-          var response = _ref2.response;
-          notifier.notify(response.status_code, response.reason_phrase);
-        });
-        session.on('accepted', function (_ref3) {
+        session.on('progress', function (_ref3) {
           var response = _ref3.response;
           notifier.notify(response.status_code, response.reason_phrase);
         });
-        session.on('_failed', function (_ref4) {
-          var message = _ref4.message,
-              cause = _ref4.cause;
+        session.on('accepted', function (_ref4) {
+          var response = _ref4.response;
+          notifier.notify(response.status_code, response.reason_phrase);
+        });
+        session.on('_failed', function (_ref5) {
+          var message = _ref5.message,
+              cause = _ref5.cause;
 
           if (message) {
             notifier.notify(message.status_code, message.reason_phrase);
@@ -20144,8 +20154,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _toggleMuteAudio(mute) {
       var _this32 = this;
 
-      this._forEachSenders(function (_ref5) {
-        var track = _ref5.track;
+      this._forEachSenders(function (_ref6) {
+        var track = _ref6.track;
 
         if (track && track.kind === 'audio' && !_this32._isPresentationStreamTrack(track)) {
           track.enabled = !mute;
@@ -20157,8 +20167,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _toggleMuteVideo(mute) {
       var _this33 = this;
 
-      this._forEachSenders(function (_ref6) {
-        var track = _ref6.track;
+      this._forEachSenders(function (_ref7) {
+        var track = _ref7.track;
 
         if (track && track.kind === 'video' && !_this33._isPresentationStreamTrack(track)) {
           track.enabled = !mute;
@@ -20279,9 +20289,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }, {
     key: "_onmute",
-    value: function _onmute(_ref7) {
-      var audio = _ref7.audio,
-          video = _ref7.video;
+    value: function _onmute(_ref8) {
+      var audio = _ref8.audio,
+          video = _ref8.video;
       debug('session onmute');
 
       this._setLocalMediaStatus();
@@ -20294,9 +20304,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }, {
     key: "_onunmute",
-    value: function _onunmute(_ref8) {
-      var audio = _ref8.audio,
-          video = _ref8.video;
+    value: function _onunmute(_ref9) {
+      var audio = _ref9.audio,
+          video = _ref9.video;
       debug('session onunmute');
 
       this._setLocalMediaStatus();
@@ -28040,7 +28050,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.8.1",
+  "version": "3.9.0",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
