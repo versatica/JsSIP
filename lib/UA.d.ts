@@ -32,6 +32,7 @@ export interface UAConfiguration {
   no_answer_timeout?: number;
   session_timers?: boolean;
   session_timers_refresh_method?: string;
+  session_timers_force_refresher?: boolean;
   password?: string;
   realm?: string;
   ha1?: string;
