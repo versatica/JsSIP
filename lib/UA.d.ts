@@ -23,6 +23,7 @@ export interface UAConfiguration {
   sockets: Socket | Socket[] | WeightedSocket[] ;
   uri: string;
   // optional parameters
+  authorization_jwt?: string;
   authorization_user?: string;
   connection_recovery_max_interval?: number;
   connection_recovery_min_interval?: number;
