@@ -16,6 +16,8 @@ export interface UnRegisterOptions {
 export interface CallOptions extends AnswerOptions {
   eventHandlers?: Partial<RTCSessionEventMap>;
   anonymous?: boolean;
+  from_uri?: string;
+  from_display_name?: string;
 }
 
 export interface UAConfiguration {
