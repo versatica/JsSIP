@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@types/debug": "^4.1.5",
-    "@types/node": "^14.0.6",
+    "@types/events": "^3.0.0",
     "debug": "^4.1.1",
     "events": "^3.1.0",
     "sdp-transform": "^2.14.0"
