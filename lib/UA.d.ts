@@ -23,6 +23,7 @@ export interface UAConfiguration {
   sockets: Socket | Socket[] | WeightedSocket[] ;
   uri: string;
   // optional parameters
+  authorization_jwt?: string;
   authorization_user?: string;
   connection_recovery_max_interval?: number;
   connection_recovery_min_interval?: number;
@@ -32,6 +33,7 @@ export interface UAConfiguration {
   no_answer_timeout?: number;
   session_timers?: boolean;
   session_timers_refresh_method?: string;
+  session_timers_force_refresher?: boolean;
   password?: string;
   realm?: string;
   ha1?: string;
