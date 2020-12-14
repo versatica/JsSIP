@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+Version 3.6.2 (released in 2020-14-12)
+---------------------------------------
+
+* Add missing typescript definitions. Thanks @fabrykowski.
+
+
 Version 3.6.1 (released in 2020-20-04)
 ---------------------------------------
 
