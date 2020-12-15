@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.6.2
+ * JsSIP v3.6.3
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -34,6 +34,7 @@ exports.settings = {
   password: null,
   realm: null,
   ha1: null,
+  authorization_jwt: null,
   // SIP account.
   display_name: null,
   uri: null,
@@ -23787,6 +23788,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         case 'ha1':
           return this._configuration.ha1;
 
+        case 'authorization_jwt':
+          return this._configuration.authorization_jwt;
+
         default:
           debugerror('get() | cannot get "%s" parameter in runtime', parameter);
           return undefined;
@@ -23824,6 +23828,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             this._configuration.ha1 = String(value); // Delete the plain SIP password.
 
             this._configuration.password = null;
+            break;
+          }
+
+        case 'authorization_jwt':
+          {
+            this._configuration.authorization_jwt = String(value);
             break;
           }
 
@@ -24264,7 +24274,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       }; // Seal the configuration.
 
-      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'display_name', 'register'];
+      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'authorization_jwt', 'display_name', 'register'];
 
       for (var parameter in this._configuration) {
         if (Object.prototype.hasOwnProperty.call(this._configuration, parameter)) {
@@ -24295,6 +24305,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
             case 'password':
             case 'ha1':
+            case 'authorization_jwt':
               debug("- ".concat(_parameter, ": NOT SHOWN"));
               break;
 
@@ -26197,12 +26208,21 @@ function functionBindPolyfill(context) {
  * This is the web browser implementation of `debug()`.
  */
 
-exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.storage = localstorage();
+exports.destroy = (() => {
+	let warned = false;
+
+	return () => {
+		if (!warned) {
+			warned = true;
+			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		}
+	};
+})();
 
 /**
  * Colors.
@@ -26363,18 +26383,14 @@ function formatArgs(args) {
 }
 
 /**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
+ * Invokes `console.debug()` when available.
+ * No-op when `console.debug` is not a "function".
+ * If `console.debug` is not available, falls back
+ * to `console.log`.
  *
  * @api public
  */
-function log(...args) {
-	// This hackery is required for IE8/9, where
-	// the `console.log` function doesn't have 'apply'
-	return typeof console === 'object' &&
-		console.log &&
-		console.log(...args);
-}
+exports.log = console.debug || console.log || (() => {});
 
 /**
  * Save `namespaces`.
@@ -26472,15 +26488,11 @@ function setup(env) {
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
 	createDebug.humanize = require('ms');
+	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
 		createDebug[key] = env[key];
 	});
-
-	/**
-	* Active `debug` instances.
-	*/
-	createDebug.instances = [];
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -26523,6 +26535,7 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
+		let enableOverride = null;
 
 		function debug(...args) {
 			// Disabled?
@@ -26552,7 +26565,7 @@ function setup(env) {
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
 				if (match === '%%') {
-					return match;
+					return '%';
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
@@ -26575,31 +26588,26 @@ function setup(env) {
 		}
 
 		debug.namespace = namespace;
-		debug.enabled = createDebug.enabled(namespace);
 		debug.useColors = createDebug.useColors();
-		debug.color = selectColor(namespace);
-		debug.destroy = destroy;
+		debug.color = createDebug.selectColor(namespace);
 		debug.extend = extend;
-		// Debug.formatArgs = formatArgs;
-		// debug.rawLog = rawLog;
+		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
 
-		// env-specific initialization logic for debug instances
+		Object.defineProperty(debug, 'enabled', {
+			enumerable: true,
+			configurable: false,
+			get: () => enableOverride === null ? createDebug.enabled(namespace) : enableOverride,
+			set: v => {
+				enableOverride = v;
+			}
+		});
+
+		// Env-specific initialization logic for debug instances
 		if (typeof createDebug.init === 'function') {
 			createDebug.init(debug);
 		}
 
-		createDebug.instances.push(debug);
-
 		return debug;
-	}
-
-	function destroy() {
-		const index = createDebug.instances.indexOf(this);
-		if (index !== -1) {
-			createDebug.instances.splice(index, 1);
-			return true;
-		}
-		return false;
 	}
 
 	function extend(namespace, delimiter) {
@@ -26638,11 +26646,6 @@ function setup(env) {
 			} else {
 				createDebug.names.push(new RegExp('^' + namespaces + '$'));
 			}
-		}
-
-		for (i = 0; i < createDebug.instances.length; i++) {
-			const instance = createDebug.instances[i];
-			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
 
@@ -26716,6 +26719,14 @@ function setup(env) {
 			return val.stack || val.message;
 		}
 		return val;
+	}
+
+	/**
+	* XXX DO NOT USE. This is a temporary stub function.
+	* XXX It WILL be removed in the next major release.
+	*/
+	function destroy() {
+		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
 	}
 
 	createDebug.enable(createDebug.load());
@@ -27171,7 +27182,7 @@ var grammar = module.exports = {
       push: 'rtcpFbTrrInt',
       reg: /^rtcp-fb:(\*|\d*) trr-int (\d*)/,
       names: ['payload', 'value'],
-      format: 'rtcp-fb:%d trr-int %d'
+      format: 'rtcp-fb:%s trr-int %d'
     },
     {
       // a=rtcp-fb:98 nack rpsi
@@ -27831,7 +27842,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27857,14 +27868,14 @@ module.exports={
   },
   "dependencies": {
     "@types/debug": "^4.1.5",
-    "@types/node": "^14.0.6",
-    "debug": "^4.1.1",
-    "events": "^3.1.0",
-    "sdp-transform": "^2.14.0"
+    "@types/node": "^14.14.13",
+    "debug": "^4.3.1",
+    "events": "^3.2.0",
+    "sdp-transform": "^2.14.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
     "ansi-colors": "^3.2.4",
     "browserify": "^16.5.1",
     "eslint": "^5.16.0",
