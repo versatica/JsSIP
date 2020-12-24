@@ -67,7 +67,7 @@ module.exports =
 			beforeBlockComment: true,
 			beforeLineComment: false
 		}],
-		'max-len': [ 2, 90,
+		'max-len': [ 2, 120,
 		{
 			tabWidth: 2,
 			comments: 110,

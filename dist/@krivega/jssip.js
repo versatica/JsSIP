@@ -18168,16 +18168,35 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function replaceMediaStream(stream) {
       var _this9 = this;
 
+      var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+          _ref2$deleteExisting = _ref2.deleteExisting,
+          deleteExisting = _ref2$deleteExisting === void 0 ? true : _ref2$deleteExisting,
+          _ref2$addMissing = _ref2.addMissing,
+          addMissing = _ref2$addMissing === void 0 ? true : _ref2$addMissing;
+
       debug('replaceMediaStream()');
+      var isChangedCountSenders = false;
       stream.getTracks().forEach(function (track) {
         var sender = _this9._getSenderByTrack(track);
 
         if (sender) {
           sender.replaceTrack(track);
-        } else {
+        } else if (addMissing) {
           _this9._connection.addTrack(track, stream);
+
+          isChangedCountSenders = true;
         }
       });
+
+      if (deleteExisting) {
+        isChangedCountSenders = this._removeMediaStream(this._localMediaStream) || isChangedCountSenders;
+      }
+
+      this._localMediaStream = stream;
+
+      if (isChangedCountSenders) {
+        this.renegotiate();
+      }
     }
   }, {
     key: "_addMediaStream",
@@ -18194,11 +18213,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _removeMediaStream(stream) {
       var _this11 = this;
 
-      this._connection.getSenders().filter(function (sender) {
+      var sendersBySteam = this._connection.getSenders().filter(function (sender) {
         return stream.getTracks().includes(sender.track);
-      }).forEach(function (sender) {
+      });
+
+      var isChangedConnection = sendersBySteam.length > 0;
+      sendersBySteam.forEach(function (sender) {
         _this11._connection.removeTrack(sender);
       });
+      return isChangedConnection;
     }
     /**
      * Refer
@@ -18493,9 +18516,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function presentation(isStart, stream) {
       var _this14 = this;
 
-      var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-          _ref2$isNeedReinvite = _ref2.isNeedReinvite,
-          isNeedReinvite = _ref2$isNeedReinvite === void 0 ? true : _ref2$isNeedReinvite;
+      var _ref3 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+          _ref3$isNeedReinvite = _ref3.isNeedReinvite,
+          isNeedReinvite = _ref3$isNeedReinvite === void 0 ? true : _ref3$isNeedReinvite;
 
       debug('presentation()');
       return new Promise(function (resolve, reject) {
@@ -19231,17 +19254,17 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
 
         var session = new RTCSession(this._ua);
-        session.on('progress', function (_ref3) {
-          var response = _ref3.response;
-          notifier.notify(response.status_code, response.reason_phrase);
-        });
-        session.on('accepted', function (_ref4) {
+        session.on('progress', function (_ref4) {
           var response = _ref4.response;
           notifier.notify(response.status_code, response.reason_phrase);
         });
-        session.on('_failed', function (_ref5) {
-          var message = _ref5.message,
-              cause = _ref5.cause;
+        session.on('accepted', function (_ref5) {
+          var response = _ref5.response;
+          notifier.notify(response.status_code, response.reason_phrase);
+        });
+        session.on('_failed', function (_ref6) {
+          var message = _ref6.message,
+              cause = _ref6.cause;
 
           if (message) {
             notifier.notify(message.status_code, message.reason_phrase);
@@ -20162,8 +20185,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _toggleMuteAudio(mute) {
       var _this32 = this;
 
-      this._forEachSenders(function (_ref6) {
-        var track = _ref6.track;
+      this._forEachSenders(function (_ref7) {
+        var track = _ref7.track;
 
         if (track && track.kind === 'audio' && !_this32._isPresentationStreamTrack(track)) {
           track.enabled = !mute;
@@ -20175,8 +20198,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function _toggleMuteVideo(mute) {
       var _this33 = this;
 
-      this._forEachSenders(function (_ref7) {
-        var track = _ref7.track;
+      this._forEachSenders(function (_ref8) {
+        var track = _ref8.track;
 
         if (track && track.kind === 'video' && !_this33._isPresentationStreamTrack(track)) {
           track.enabled = !mute;
@@ -20297,9 +20320,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }, {
     key: "_onmute",
-    value: function _onmute(_ref8) {
-      var audio = _ref8.audio,
-          video = _ref8.video;
+    value: function _onmute(_ref9) {
+      var audio = _ref9.audio,
+          video = _ref9.video;
       debug('session onmute');
 
       this._setLocalMediaStatus();
@@ -20312,9 +20335,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }, {
     key: "_onunmute",
-    value: function _onunmute(_ref9) {
-      var audio = _ref9.audio,
-          video = _ref9.video;
+    value: function _onunmute(_ref10) {
+      var audio = _ref10.audio,
+          video = _ref10.video;
       debug('session onunmute');
 
       this._setLocalMediaStatus();
