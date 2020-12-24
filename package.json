@@ -28,14 +28,14 @@
   },
   "dependencies": {
     "@types/debug": "^4.1.5",
-    "@types/node": "^14.0.6",
-    "debug": "^4.1.1",
-    "events": "^3.1.0",
-    "sdp-transform": "^2.13.0"
+    "@types/node": "^14.14.13",
+    "debug": "^4.3.1",
+    "events": "^3.2.0",
+    "sdp-transform": "^2.14.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
     "ansi-colors": "^4.1.1",
     "browserify": "^16.5.1",
     "eslint": "^6.8.0",
