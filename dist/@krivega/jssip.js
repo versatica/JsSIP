@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.1
+ * JsSIP v3.10.2
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -16971,7 +16971,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 var EventEmitter = require('events').EventEmitter;
 
-var sequentPromises = require('sequent-promises');
+var sequentPromises = require('sequent-promises')["default"];
 
 var sdp_transform = require('sdp-transform');
 
@@ -28063,7 +28063,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.1",
+  "version": "3.10.2",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
