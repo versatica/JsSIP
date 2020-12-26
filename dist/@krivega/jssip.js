@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.0
+ * JsSIP v3.10.1
  * the Javascript SIP library
  * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -489,7 +489,7 @@ module.exports = {
   CONNECTION_RECOVERY_MAX_INTERVAL: 30,
   CONNECTION_RECOVERY_MIN_INTERVAL: 2
 };
-},{"../package.json":38}],3:[function(require,module,exports){
+},{"../package.json":39}],3:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16166,7 +16166,7 @@ module.exports = {
   }
 
 };
-},{"../package.json":38,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":10,"./UA":24,"./URI":25,"./Utils":26,"./WebSocketInterface":27,"debug":29}],9:[function(require,module,exports){
+},{"../package.json":39,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":10,"./UA":24,"./URI":25,"./Utils":26,"./WebSocketInterface":27,"debug":29}],9:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -16970,6 +16970,8 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var EventEmitter = require('events').EventEmitter;
+
+var sequentPromises = require('sequent-promises');
 
 var sdp_transform = require('sdp-transform');
 
@@ -18107,54 +18109,60 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var done = arguments.length > 1 ? arguments[1] : undefined;
       var fail = arguments.length > 2 ? arguments[2] : undefined;
-      debug('renegotiate()');
-      var rtcOfferConstraints = options.rtcOfferConstraints || null;
+      return new Promise(function (resolve, reject) {
+        debug('renegotiate()');
+        var rtcOfferConstraints = options.rtcOfferConstraints || null;
 
-      if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
-        return false;
-      }
-
-      if (!this._isReadyToReOffer()) {
-        return false;
-      }
-
-      var eventHandlers = {
-        succeeded: function succeeded() {
-          if (done) {
-            done();
-          }
-        },
-        failed: function failed() {
-          _this8.terminate({
-            cause: JsSIP_C.causes.WEBRTC_ERROR,
-            status_code: 500,
-            reason_phrase: 'Media Renegotiation Failed'
-          });
-
-          if (fail) {
-            fail();
-          }
+        if (_this8._status !== C.STATUS_WAITING_FOR_ACK && _this8._status !== C.STATUS_CONFIRMED) {
+          resolve(false);
+          return false;
         }
-      };
 
-      this._setLocalMediaStatus();
+        if (!_this8._isReadyToReOffer()) {
+          resolve(false);
+          return false;
+        }
 
-      if (options.useUpdate) {
-        this._sendUpdate({
-          sdpOffer: true,
-          eventHandlers: eventHandlers,
-          rtcOfferConstraints: rtcOfferConstraints,
-          extraHeaders: options.extraHeaders
-        });
-      } else {
-        this._sendReinvite({
-          eventHandlers: eventHandlers,
-          rtcOfferConstraints: rtcOfferConstraints,
-          extraHeaders: options.extraHeaders
-        });
-      }
+        var eventHandlers = {
+          succeeded: function succeeded() {
+            if (done) {
+              done();
+            }
 
-      return true;
+            resolve(true);
+          },
+          failed: function failed() {
+            _this8.terminate({
+              cause: JsSIP_C.causes.WEBRTC_ERROR,
+              status_code: 500,
+              reason_phrase: 'Media Renegotiation Failed'
+            });
+
+            if (fail) {
+              fail();
+            }
+
+            reject();
+          }
+        };
+
+        _this8._setLocalMediaStatus();
+
+        if (options.useUpdate) {
+          _this8._sendUpdate({
+            sdpOffer: true,
+            eventHandlers: eventHandlers,
+            rtcOfferConstraints: rtcOfferConstraints,
+            extraHeaders: options.extraHeaders
+          });
+        } else {
+          _this8._sendReinvite({
+            eventHandlers: eventHandlers,
+            rtcOfferConstraints: rtcOfferConstraints,
+            extraHeaders: options.extraHeaders
+          });
+        }
+      });
     }
   }, {
     key: "_getSenderByTrack",
@@ -18176,27 +18184,34 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       debug('replaceMediaStream()');
       var isChangedCountSenders = false;
-      stream.getTracks().forEach(function (track) {
-        var sender = _this9._getSenderByTrack(track);
+      var sequentReplaceTracks = stream.getTracks().map(function (track) {
+        return function () {
+          var sender = _this9._getSenderByTrack(track);
 
-        if (sender) {
-          sender.replaceTrack(track);
-        } else if (addMissing) {
-          _this9._connection.addTrack(track, stream);
+          if (sender) {
+            return sender.replaceTrack(track);
+          }
 
-          isChangedCountSenders = true;
+          if (addMissing) {
+            _this9._connection.addTrack(track, stream);
+
+            isChangedCountSenders = true;
+          }
+
+          return Promise.resolve();
+        };
+      });
+      return sequentPromises(sequentReplaceTracks).then(function () {
+        if (deleteExisting) {
+          isChangedCountSenders = _this9._removeMediaStream(_this9._localMediaStream) || isChangedCountSenders;
+        }
+
+        _this9._localMediaStream = stream;
+
+        if (isChangedCountSenders) {
+          return _this9.renegotiate();
         }
       });
-
-      if (deleteExisting) {
-        isChangedCountSenders = this._removeMediaStream(this._localMediaStream) || isChangedCountSenders;
-      }
-
-      this._localMediaStream = stream;
-
-      if (isChangedCountSenders) {
-        this.renegotiate();
-      }
     }
   }, {
     key: "_addMediaStream",
@@ -20416,7 +20431,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return RTCSession;
 }(EventEmitter);
-},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./RTCSession/DTMF":13,"./RTCSession/Info":14,"./RTCSession/ReferNotifier":15,"./RTCSession/ReferSubscriber":16,"./RequestSender":18,"./SIPMessage":19,"./Timers":21,"./Transactions":22,"./URI":25,"./Utils":26,"debug":29,"events":31,"sdp-transform":35}],13:[function(require,module,exports){
+},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./RTCSession/DTMF":13,"./RTCSession/Info":14,"./RTCSession/ReferNotifier":15,"./RTCSession/ReferSubscriber":16,"./RequestSender":18,"./SIPMessage":19,"./Timers":21,"./Transactions":22,"./URI":25,"./Utils":26,"debug":29,"events":31,"sdp-transform":35,"sequent-promises":38}],13:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -28041,11 +28056,14 @@ module.exports = function (session, opts) {
 };
 
 },{"./grammar":34}],38:[function(require,module,exports){
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0});const s=()=>!0;exports.default=(r,e=s)=>r.reduce(((s,r)=>s.then((({success:s,errors:t,results:o})=>{let u;return u=e(r)?r():Promise.reject((s=>{const r=new Error("Promise was not running");return r.basePromise=s,r.id="ERROR_NOT_RUNNING",r.name="Not running",r})(r)),u.then((r=>({errors:t,success:[...s,r],results:[...o,r],isSuccessful:!0,isError:!1}))).catch((r=>({success:s,errors:[...t,r],results:[...o,r],isSuccessful:!1,isError:!0})))}))),Promise.resolve({success:[],errors:[],results:[]})),exports.isNotRunningError=({id:s})=>"ERROR_NOT_RUNNING"===s;
+
+},{}],39:[function(require,module,exports){
 module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.0",
+  "version": "3.10.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -28074,7 +28092,8 @@ module.exports={
     "@types/node": "^14.14.16",
     "debug": "^4.3.1",
     "events": "^3.2.0",
-    "sdp-transform": "^2.14.1"
+    "sdp-transform": "^2.14.1",
+    "sequent-promises": "^0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
