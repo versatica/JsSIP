@@ -31,7 +31,8 @@
     "@types/node": "^14.14.16",
     "debug": "^4.3.1",
     "events": "^3.2.0",
-    "sdp-transform": "^2.14.1"
+    "sdp-transform": "^2.14.1",
+    "sequent-promises": "^0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
