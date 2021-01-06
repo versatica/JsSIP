@@ -1,7 +1,13 @@
 ## What you need to build JsSIP
 
-You just need to have [Node.js](https://nodejs.org/) and [Git](https://git-scm.com/).
+This document details the steps for building JsSIP on your local machine. This
+will involve installing dependencies.
 
+You can run JsSIP via a [docker] container, where the dependencies for JsSIP are
+isolated to within that container. Details of how to do this are detailed
+[here](building-docker.md)
+
+You just need to have [Node.js](https://nodejs.org/) and [Git](https://git-scm.com/).
 
 ### Node.js
 
@@ -63,3 +69,4 @@ $ gulp devel
 $ gulp dist
 ```
 
+[docker]: https://www.docker.com/
