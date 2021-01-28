@@ -1,6 +1,24 @@
 CHANGELOG
 =========
 
+Version 3.7.1 (released in 2021-01-28)
+---------------------------------------
+
+* RTCSession: close media stream even if session is in terminated (#683). Credits to @kkozlik.
+
+
+Version 3.7.0 (released in 2020-17-12)
+---------------------------------------
+
+* Enable custom From-Header for outbound calls (#677). Thanks @fabrykowski.
+
+
+Version 3.6.3 (released in 2020-15-12)
+---------------------------------------
+
+* Make authorization_jwt writable (#676). Thanks @fabrykowski.
+
+
 Version 3.6.2 (released in 2020-14-12)
 ---------------------------------------
 
