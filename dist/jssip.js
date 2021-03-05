@@ -1,7 +1,7 @@
 /*
- * JsSIP v3.6.3
+ * JsSIP v3.7.1
  * the Javascript SIP library
- * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -17234,6 +17234,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         requestParams.from_uri = new URI('sip', 'anonymous', 'anonymous.invalid');
         extraHeaders.push("P-Preferred-Identity: ".concat(this._ua.configuration.uri.toString()));
         extraHeaders.push('Privacy: id');
+      } else if (options.fromUserName) {
+        requestParams.from_uri = new URI('sip', options.fromUserName, this._ua.configuration.uri.host);
+        extraHeaders.push("P-Preferred-Identity: ".concat(this._ua.configuration.uri.toString()));
+      }
+
+      if (options.fromDisplayName) {
+        requestParams.from_display_name = options.fromDisplayName;
       }
 
       extraHeaders.push("Contact: ".concat(this._contact));
@@ -18426,7 +18433,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_close",
     value: function _close() {
-      debug('close()');
+      debug('close()'); // Close local MediaStream if it was not given by the user.
+
+      if (this._localMediaStream && this._localMediaStreamLocallyGenerated) {
+        debug('close() | closing local MediaStream');
+        Utils.closeMediaStream(this._localMediaStream);
+      }
 
       if (this._status === C.STATUS_TERMINATED) {
         return;
@@ -18440,12 +18452,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         } catch (error) {
           debugerror('close() | error closing the RTCPeerConnection: %o', error);
         }
-      } // Close local MediaStream if it was not given by the user.
-
-
-      if (this._localMediaStream && this._localMediaStreamLocallyGenerated) {
-        debug('close() | closing local MediaStream');
-        Utils.closeMediaStream(this._localMediaStream);
       } // Terminate signaling.
       // Clear SIP timers.
 
@@ -26208,21 +26214,12 @@ function functionBindPolyfill(context) {
  * This is the web browser implementation of `debug()`.
  */
 
+exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.storage = localstorage();
-exports.destroy = (() => {
-	let warned = false;
-
-	return () => {
-		if (!warned) {
-			warned = true;
-			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
-		}
-	};
-})();
 
 /**
  * Colors.
@@ -26383,14 +26380,18 @@ function formatArgs(args) {
 }
 
 /**
- * Invokes `console.debug()` when available.
- * No-op when `console.debug` is not a "function".
- * If `console.debug` is not available, falls back
- * to `console.log`.
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
  *
  * @api public
  */
-exports.log = console.debug || console.log || (() => {});
+function log(...args) {
+	// This hackery is required for IE8/9, where
+	// the `console.log` function doesn't have 'apply'
+	return typeof console === 'object' &&
+		console.log &&
+		console.log(...args);
+}
 
 /**
  * Save `namespaces`.
@@ -26488,11 +26489,15 @@ function setup(env) {
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
 	createDebug.humanize = require('ms');
-	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
 		createDebug[key] = env[key];
 	});
+
+	/**
+	* Active `debug` instances.
+	*/
+	createDebug.instances = [];
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -26535,7 +26540,6 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
-		let enableOverride = null;
 
 		function debug(...args) {
 			// Disabled?
@@ -26565,7 +26569,7 @@ function setup(env) {
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
 				if (match === '%%') {
-					return '%';
+					return match;
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
@@ -26588,26 +26592,31 @@ function setup(env) {
 		}
 
 		debug.namespace = namespace;
+		debug.enabled = createDebug.enabled(namespace);
 		debug.useColors = createDebug.useColors();
-		debug.color = createDebug.selectColor(namespace);
+		debug.color = selectColor(namespace);
+		debug.destroy = destroy;
 		debug.extend = extend;
-		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
+		// Debug.formatArgs = formatArgs;
+		// debug.rawLog = rawLog;
 
-		Object.defineProperty(debug, 'enabled', {
-			enumerable: true,
-			configurable: false,
-			get: () => enableOverride === null ? createDebug.enabled(namespace) : enableOverride,
-			set: v => {
-				enableOverride = v;
-			}
-		});
-
-		// Env-specific initialization logic for debug instances
+		// env-specific initialization logic for debug instances
 		if (typeof createDebug.init === 'function') {
 			createDebug.init(debug);
 		}
 
+		createDebug.instances.push(debug);
+
 		return debug;
+	}
+
+	function destroy() {
+		const index = createDebug.instances.indexOf(this);
+		if (index !== -1) {
+			createDebug.instances.splice(index, 1);
+			return true;
+		}
+		return false;
 	}
 
 	function extend(namespace, delimiter) {
@@ -26646,6 +26655,11 @@ function setup(env) {
 			} else {
 				createDebug.names.push(new RegExp('^' + namespaces + '$'));
 			}
+		}
+
+		for (i = 0; i < createDebug.instances.length; i++) {
+			const instance = createDebug.instances[i];
+			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
 
@@ -26719,14 +26733,6 @@ function setup(env) {
 			return val.stack || val.message;
 		}
 		return val;
-	}
-
-	/**
-	* XXX DO NOT USE. This is a temporary stub function.
-	* XXX It WILL be removed in the next major release.
-	*/
-	function destroy() {
-		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
 	}
 
 	createDebug.enable(createDebug.load());
@@ -27182,7 +27188,7 @@ var grammar = module.exports = {
       push: 'rtcpFbTrrInt',
       reg: /^rtcp-fb:(\*|\d*) trr-int (\d*)/,
       names: ['payload', 'value'],
-      format: 'rtcp-fb:%s trr-int %d'
+      format: 'rtcp-fb:%d trr-int %d'
     },
     {
       // a=rtcp-fb:98 nack rpsi
@@ -27842,7 +27848,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.6.3",
+  "version": "3.7.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
