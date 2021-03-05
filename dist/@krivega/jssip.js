@@ -1,7 +1,7 @@
 /*
  * JsSIP v3.10.2
  * the Javascript SIP library
- * Copyright: 2012-2020 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
+ * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -16969,6 +16969,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+/* globals RTCPeerConnection: false, RTCSessionDescription: false */
 var EventEmitter = require('events').EventEmitter;
 
 var sequentPromises = require('sequent-promises')["default"];
@@ -18655,7 +18656,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_close",
     value: function _close() {
-      debug('close()');
+      debug('close()'); // Close local MediaStream if it was not given by the user.
+
+      if (this._localMediaStream && this._localMediaStreamLocallyGenerated) {
+        debug('close() | closing local MediaStream');
+        Utils.closeMediaStream(this._localMediaStream);
+      }
 
       if (this._status === C.STATUS_TERMINATED) {
         return;
@@ -18669,12 +18675,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         } catch (error) {
           debugerror('close() | error closing the RTCPeerConnection: %o', error);
         }
-      } // Close local MediaStream if it was not given by the user.
-
-
-      if (this._localMediaStream && this._localMediaStreamLocallyGenerated) {
-        debug('close() | closing local MediaStream');
-        Utils.closeMediaStream(this._localMediaStream);
       } // Terminate signaling.
       // Clear SIP timers.
 
