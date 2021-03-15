@@ -23163,6 +23163,7 @@ module.exports = /*#__PURE__*/function () {
     this.recover_attempts = 0;
     this.recovery_timer = null;
     this.close_requested = false;
+    this.textDecoder = new TextDecoder('utf8');
 
     if (typeof sockets === 'undefined') {
       throw new TypeError('Invalid argument.' + ' undefined \'sockets\' argument');
@@ -23406,7 +23407,7 @@ module.exports = /*#__PURE__*/function () {
       } // Binary message.
       else if (typeof data !== 'string') {
           try {
-            data = String.fromCharCode.apply(null, new Uint8Array(data));
+            data = this.textDecoder.decode(data);
           } catch (evt) {
             debug('received binary message failed to be converted into string,' + ' message discarded');
             return;
