@@ -219,6 +219,13 @@ export interface RTCSessionEventMap {
   'peerconnection:setremotedescriptionfailed': AnyListener;
 }
 
+// hooks
+export type BeforeSendRequest = (method: string, options?: {body?: string, extraHeaders?: string[], eventHandlers?: any}) => void;
+
+export interface RTCSessionHookMap {
+  'beforeSendRequest': BeforeSendRequest;
+}
+
 declare enum SessionStatus {
   STATUS_NULL = 0,
   STATUS_INVITE_SENT = 1,
@@ -295,4 +302,6 @@ export class RTCSession extends EventEmitter {
   resetLocalMedia(): void;
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
+
+  addHook<T extends keyof RTCSessionHookMap>(type: T, hook: RTCSessionHookMap[T]): this;
 }
