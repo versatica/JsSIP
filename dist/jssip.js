@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.3
+ * JsSIP v3.7.4
  * the Javascript SIP library
  * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -23103,7 +23103,6 @@ module.exports = {
   checkTransaction: checkTransaction
 };
 },{"./Constants":2,"./SIPMessage":19,"./Timers":21,"debug":30,"events":29}],23:[function(require,module,exports){
-(function (global){(function (){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -23166,7 +23165,11 @@ module.exports = /*#__PURE__*/function () {
     this.close_requested = false; // It seems that TextDecoder is not available in some versions of React-Native.
     // See https://github.com/versatica/JsSIP/issues/695
 
-    if (global.TextDecoder) this.textDecoder = new TextDecoder('utf8');
+    try {
+      this.textDecoder = new TextDecoder('utf8');
+    } catch (error) {
+      debugerror("cannot use TextDecoder: ".concat(error));
+    }
 
     if (typeof sockets === 'undefined') {
       throw new TypeError('Invalid argument.' + ' undefined \'sockets\' argument');
@@ -23431,7 +23434,6 @@ module.exports = /*#__PURE__*/function () {
 
   return Transport;
 }();
-}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./Constants":2,"./Socket":20,"debug":30}],24:[function(require,module,exports){
 "use strict";
 
@@ -27843,7 +27845,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
