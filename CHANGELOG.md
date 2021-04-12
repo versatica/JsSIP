@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.7.5
+
+
+* WebSocketInterface: Fix values of UA.disconnected event (#701). Credits to @kkozlik.
+
+
 ### 3.7.2
 
 
