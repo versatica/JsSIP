@@ -87,6 +87,29 @@ module.exports = {
     test.done();
   },
 
+  'parse invalid NameAddr with non UTF-8 characters' : function(test)
+  {
+    const buffer = Buffer.from([ 0xC0 ]);
+    const data = `"${buffer.toString()}"` +
+          '<sip:foo@bar.com>';
+
+    const name = JsSIP.NameAddrHeader.parse(data);
+
+    // Parsed data.
+    test.ok(name instanceof(JsSIP.NameAddrHeader));
+    test.strictEqual(name.display_name, buffer.toString());
+
+    const uri = name.uri;
+
+    test.ok(uri instanceof(JsSIP.URI));
+    test.strictEqual(uri.scheme, 'sip');
+    test.strictEqual(uri.user, 'foo');
+    test.strictEqual(uri.host, 'bar.com');
+    test.strictEqual(uri.port, undefined);
+
+    test.done();
+  },
+
   'parse NameAddr with token display_name' : function(test)
   {
     const data = 'Foo    Foo Bar\tBaz<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';

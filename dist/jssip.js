@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.1
+ * JsSIP v3.7.5
  * the Javascript SIP library
  * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -23168,7 +23168,14 @@ module.exports = /*#__PURE__*/function () {
     this.recovery_options = recovery_options;
     this.recover_attempts = 0;
     this.recovery_timer = null;
-    this.close_requested = false;
+    this.close_requested = false; // It seems that TextDecoder is not available in some versions of React-Native.
+    // See https://github.com/versatica/JsSIP/issues/695
+
+    try {
+      this.textDecoder = new TextDecoder('utf8');
+    } catch (error) {
+      debugerror("cannot use TextDecoder: ".concat(error));
+    }
 
     if (typeof sockets === 'undefined') {
       throw new TypeError('Invalid argument.' + ' undefined \'sockets\' argument');
@@ -23397,7 +23404,7 @@ module.exports = /*#__PURE__*/function () {
       } // Binary message.
       else if (typeof data !== 'string') {
           try {
-            data = String.fromCharCode.apply(null, new Uint8Array(data));
+            if (this.textDecoder) data = this.textDecoder.decode(data);else data = String.fromCharCode.apply(null, new Uint8Array(data));
           } catch (evt) {
             debug('received binary message failed to be converted into string,' + ' message discarded');
             return;
@@ -25387,13 +25394,7 @@ module.exports = /*#__PURE__*/function () {
         debug('WebSocket abrupt disconnection');
       }
 
-      var data = {
-        socket: this,
-        error: !wasClean,
-        code: code,
-        reason: reason
-      };
-      this.ondisconnect(data);
+      this.ondisconnect(!wasClean, code, reason);
     }
   }, {
     key: "_onMessage",
@@ -25405,7 +25406,7 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "_onError",
     value: function _onError(e) {
-      debugerror("WebSocket ".concat(this._url, " error: ").concat(e));
+      debugerror("WebSocket ".concat(this._url, " error: "), e);
     }
   }, {
     key: "via_transport",
@@ -27848,7 +27849,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.1",
+  "version": "3.7.5",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -27874,14 +27875,14 @@ module.exports={
   },
   "dependencies": {
     "@types/debug": "^4.1.5",
-    "@types/node": "^14.14.13",
+    "@types/node": "^14.14.34",
     "debug": "^4.3.1",
-    "events": "^3.2.0",
+    "events": "^3.3.0",
     "sdp-transform": "^2.14.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/preset-env": "^7.12.10",
+    "@babel/core": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
     "ansi-colors": "^3.2.4",
     "browserify": "^16.5.1",
     "eslint": "^5.16.0",
