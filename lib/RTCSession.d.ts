@@ -190,6 +190,8 @@ export type UpdateListener = ReInviteListener;
 export type ReferListener = (event: ReferEvent) => void;
 export type SDPListener = (event: SDPEvent) => void;
 export type IceCandidateListener = (event: IceCandidateEvent) => void;
+export type MediaStreamListener = (mediaStream: MediaStream) => void;
+export type ErrorListener = (error: Error) => void;
 
 export interface RTCSessionEventMap {
   'peerconnection': PeerConnectionListener;
@@ -217,6 +219,11 @@ export interface RTCSessionEventMap {
   'peerconnection:createanswerfailed': AnyListener;
   'peerconnection:setlocaldescriptionfailed': AnyListener;
   'peerconnection:setremotedescriptionfailed': AnyListener;
+  'presentation:start': MediaStreamListener;
+  'presentation:started': MediaStreamListener;
+  'presentation:end': MediaStreamListener;
+  'presentation:ended': MediaStreamListener;
+  'presentation:failed': ErrorListener; 
 }
 
 declare enum SessionStatus {
@@ -280,7 +287,7 @@ export class RTCSession extends EventEmitter {
 
   unhold(options?: HoldOptions, done?: VoidFunction): boolean;
 
-  renegotiate(options?: RenegotiateOptions, done?: VoidFunction): boolean;
+  renegotiate(options?: RenegotiateOptions, done?: VoidFunction): Promise<boolean>;
 
   isOnHold(): OnHoldResult;
 
@@ -295,4 +302,8 @@ export class RTCSession extends EventEmitter {
   resetLocalMedia(): void;
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
+
+  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; }): Promise<void>;
+
+  presentation(isStart: boolean, stream: MediaStream, options: { isNeedReinvite: boolean; }): Promise<MediaStream>;
 }
