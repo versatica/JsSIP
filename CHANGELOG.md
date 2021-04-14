@@ -1,523 +1,535 @@
 CHANGELOG
 =========
 
-Version 3.7.1 (released in 2021-01-28)
----------------------------------------
+### 3.7.5
+
+
+* WebSocketInterface: Fix values of UA.disconnected event (#701). Credits to @kkozlik.
+
+
+### 3.7.2
+
+
+* Support 2 bytes long UTF-8 chars in the SDP (#693). Credits to santa.lajos@gmail.com.
+
+
+### 3.7.1
+
 
 * RTCSession: close media stream even if session is in terminated (#683). Credits to @kkozlik.
 
 
-Version 3.7.0 (released in 2020-17-12)
----------------------------------------
+### 3.7.0
+
 
 * Enable custom From-Header for outbound calls (#677). Thanks @fabrykowski.
 
 
-Version 3.6.3 (released in 2020-15-12)
----------------------------------------
+### 3.6.3
+
 
 * Make authorization_jwt writable (#676). Thanks @fabrykowski.
 
 
-Version 3.6.2 (released in 2020-14-12)
----------------------------------------
+### 3.6.2
+
 
 * Add missing typescript definitions. Thanks @fabrykowski.
 
 
-Version 3.6.1 (released in 2020-20-04)
----------------------------------------
+### 3.6.1
+
 
 * RTCSession: Properly use RTCDtmf sender enqueue (#674). Thanks @ikq for reportig and testing.
 
 
-Version 3.6.0 (released in 2020-16-04)
----------------------------------------
+### 3.6.0
+
 
 * UA configuration option 'session_timers_force_refresher' (#671). Credits to @kkozlik.
 
 
-Version 3.5.11 (released in 2020-11-04)
----------------------------------------
+### 3.5.11
+
 
 * RTCsession: Fix, missing progress event for empty provisional responses. Credits to @stefang42.
 
 
-Version 3.5.10 (released in 2020-10-28)
----------------------------------------
+### 3.5.10
+
 
 * RTCSession: Fix, in dialog request processing error does not take the seesion into a failed state. Thanks @stefang42 for reportig.
 
-Version 3.5.9 (released in 2020-10-23)
----------------------------------------
+### 3.5.9
+
 
 * RTCSession: Fix, fire progress after setRemoteDescription. Credits to @wangduanduan.
 
-Version 3.5.8 (released in 2020-10-14)
----------------------------------------
+### 3.5.8
+
 
 * RTCSession: handle incoming BYE in WAITING_FOR_ANSWER state. #665. Credits to @karstenluedtke.
 
-Version 3.5.7 (released in 2020-08-14)
----------------------------------------
+### 3.5.7
+
 
 * Registrator: improve expires maths. Credits to Roman Shpount.
 
-Version 3.5.6 (released in 2020-08-13)
----------------------------------------
+### 3.5.6
+
 
 * Registrator: improve expires maths. Credits to Roman Shpount.
 
-Version 3.5.5 (released in 2020-07-29)
----------------------------------------
+### 3.5.5
+
 
 * JsSIP.d.ts: import and export in two steps. #651. Credits to @ashlanderDesign.
 
-Version 3.5.4 (released in 2020-07-24)
----------------------------------------
+### 3.5.4
+
 
 * Fix request cseq upon 491 response (#653). Credits to @mattdimeo.
 * UA: Allow to change authorization_user (#652). Credits to @jose-lopes.
 
-Version 3.5.3 (released in 2020-07-09)
----------------------------------------
+### 3.5.3
+
 
 * RTCSession: force gather candidates when iceRestart is true (#641). Credits to @jose-lopes.
 * Fix crash if the request does not have Content-Type header (#650). Credits to @hxl-dy
 
-Version 3.5.2 (released in 2020-07-07)
----------------------------------------
+### 3.5.2
+
 
 * Fix Via 'port' parser (#642).
 
-Version 3.5.1 (released in 2020-06-16)
----------------------------------------
+### 3.5.1
+
 
 * Export Socket interface (#637).
 
-Version 3.5.0 (released in 2020-06-01)
----------------------------------------
+### 3.5.0
+
 
 * Typescript typings (#627).
 
-Version 3.4.4 (released in 2020-05-08)
----------------------------------------
+### 3.4.4
+
 
 * Clone optional objects (#625). Credits to @acharlop.
 * RTCSession: fix, allow initial INVITE no SDP/offer (#624). Credits to @mgoodenUK.
 
-Version 3.4.3 (released in 2020-04-22)
----------------------------------------
+### 3.4.3
+
 
 * Transactions: destroy transaction in Timer I after terminating. Thanks Juha Heinanen for reporting the issue.
 
-Version 3.4.2 (released in 2020-04-03)
----------------------------------------
+### 3.4.2
+
 
 * RTCSession: disable remote hold state when receiving an INVITE without SDP (#613). Credits to @RobyMcAndrew.
 
 
-Version 3.4.1 (released in 2020-03-30)
----------------------------------------
+### 3.4.1
+
 
 * RequestSender: fix Authorization header addition for jwt use.
 
 
-Version 3.4.0 (released in 2020-03-29)
----------------------------------------
+### 3.4.0
+
 
 * Add `authorization_jwt` configuration parameter (#610). Credits to @voicenter.
 
 
-Version 3.3.11 (released in 2019-10-24)
----------------------------------------
+### 3.3.11
+
 
 * RTCSession: don't relay on 'icecandidate' event with null candidate (#598). Thanks @skanizaj.
 
 
-Version 3.3.10 (released in 2019-10-16)
----------------------------------------
+### 3.3.10
+
 
 * RTCSession: honor BYE while in WAITING_FOR_ACK state (#597). Thanks @Egorikhin.
 
 
-Version 3.3.9 (released in 2019-09-24)
----------------------------------------
+### 3.3.9
+
 
 * Added NOTIFY to allowed methods (#593). Credits to @ikq.
 
 
-Version 3.3.8 (released in 2019-09-24)
----------------------------------------
+### 3.3.8
+
 
 * Move connection recovery defaults to Constants (#593). Credits to @KraftyKraft.
 
 
-Version 3.3.7 (released in 2019-08-12)
----------------------------------------
+### 3.3.7
+
 
 * Add referred-by header to refer messages (#572). Credits to @swysor.
 
 
-Version 3.3.6 (released in 2019-04-12)
----------------------------------------
+### 3.3.6
+
 
 * Fix NameAddrHeader `display_name` handling (#573). Credits to @nicketson.
 
 
-Version 3.3.5 (released in 2019-02-26)
----------------------------------------
+### 3.3.5
+
 
 * Add `.babelrc` into `.npmignore` (related to #489).
 * Update deps.
 
 
-Version 3.3.4 (released in 2019-01-15)
----------------------------------------
+### 3.3.4
+
 
 * Add debugging logs in DigestAuthentication.js (related to #561).
 * Update deps.
 
 
-Version 3.3.3 (released in 2019-01-02)
----------------------------------------
+### 3.3.3
+
 
 * Registrator: Don't check Contact header if final response is not 2XX (#558). Thanks @ikq for reporting.
 * Update deps.
 
 
-Version 3.3.2 (released in 2018-12-19)
----------------------------------------
+### 3.3.2
+
 
 * Registrator. Support multiple entries in the same Contact header field (#544).
 
 
-Version 3.3.1 (released in 2018-12-19)
----------------------------------------
+### 3.3.1
+
 
 * RTCSession: fire 'sdp' event on renegotiation (#543).
 
 
-Version 3.3.0 (released in 2018-12-19)
----------------------------------------
+### 3.3.0
+
 
 * UA: new 'sipEvent' event for out of dialog NOTIFY requests.
 
 
-Version 3.2.17 (released in 2018-12-18)
----------------------------------------
+### 3.2.17
+
 
 * InviteClientTransaction: Add full route set to ACK and CANCEL requests. Thanks @nicketson.
 * RTCSession: switch to tracks from deprecated stream API. Thanks @nicketson.
 
 
-Version 3.2.16 (released in 2018-11-28)
----------------------------------------
+### 3.2.16
+
 
 * Fix typos thanks to the [LGTM](https://lgtm.com/projects/g/versatica/JsSIP/alerts/?mode=list) project.
 * Update deps.
 
 
-Version 3.2.15 (released in 2018-10-11)
---------------------------------------
+### 3.2.15
+
 
 * Remove `webrtc-adapter` dependency. It's up to the application developer whether to include it into his application or not.
 * Update dependencies.
 
 
-Version 3.2.14 (released in 2018-09-27)
---------------------------------------
+### 3.2.14
+
 
 * Revert previous release. Requires a mayor version upgrade for such a cosmetic change.
 
 
-Version 3.2.13 (released in 2018-09-27)
---------------------------------------
+### 3.2.13
+
 
 * Close #521, #534. RTCSession: Fix 'connection' event order on outgoing calls.
 
 
-Version 3.2.12 (released in 2018-09-17)
---------------------------------------
+### 3.2.12
+
 
 * Update deps.
 * Add missing `error` in 'getusermediafailed' event (thanks @jonastelzio).
 
 
-Version 3.2.11 (released in 2018-06-03)
---------------------------------------
+### 3.2.11
+
 
 * Close #519. Parser: Do not overwrite unknwon header fields. Thanks @rprinz08.
 
 
-Version 3.2.10 (released in 2018-04-24)
---------------------------------------
+### 3.2.10
+
 
 * Include the NPM **events** dependency for those who don't use **browserify** but **webpack**.
 
 
-Version 3.2.9 (released in 2018-04-20)
---------------------------------------
+### 3.2.9
+
 
 * RTCSession: Add Contact header to REFER request. Thanks Julien Royer for reporting.
 
 
-Version 3.2.8 (released in 2018-04-05)
---------------------------------------
+### 3.2.8
+
 
 * Fix #511. Add missing payload on 'UA:disconnected' event.
 
 
-Version 3.2.7 (released in 2018-03-23)
---------------------------------------
+### 3.2.7
+
 
 * Fix regression (#509): ua.call() not working if stream is given.
 
 
-Version 3.2.6 (released in 2018-03-22)
---------------------------------------
+### 3.2.6
+
 
 * RTCSession: custom local description trigger support
 
 
-Version 3.2.5 (released in 2018-03-06)
---------------------------------------
+### 3.2.5
+
 
 * RTCSession: prefer promises over callbacks for readability.
 
 
-Version 3.2.4 (released in 2018-01-19)
---------------------------------------
+### 3.2.4
+
 
 * Config: #494. Switch Socket check order. Thanks 'Igor Kolosov'.
 
 
-Version 3.2.3 (released in 2018-01-15)
---------------------------------------
+### 3.2.3
+
 
 * RTCSession: Fix #492. Add missing log line for RTCPeerConnection error.
 
 
-Version 3.2.2 (released in 2018-01-15)
---------------------------------------
+### 3.2.2
+
 
 * Remove wrong NPM dependencies.
 
 
-Version 3.2.1 (released in 2018-01-15)
---------------------------------------
+### 3.2.1
+
 
 * Fix parsing of NOTIFY bodies during a REFER transaction (fixes #493).
 
 
-Version 3.2.0 (released in 2018-01-15)
---------------------------------------
+### 3.2.0
+
 
 * Config: new configuration parameter 'user_agent'
 * RTCSession/Info: Fix. Call session.sendRequest() with the correct parameters
 * Config: Fix #491. Implement all documented flavours of 'sockets' parameter
 
 
-Version 3.1.4 (released in 2017-12-18)
---------------------------------------
+### 3.1.4
+
 
 * Fix #482 and cleanup Registrator.js
 
 
-Version 3.1.3 (released in 2017-11-28)
---------------------------------------
+### 3.1.3
+
 
 * Produce ES5 tree and expose it as main in package.json (related to #472)
 * Fix #481. ReferSubscriber: properly access RTCSession non-public attributes
 
 
-Version 3.1.2 (released in 2017-11-21)
---------------------------------------
+### 3.1.2
+
 
 * RTCSession: emit 'sdp' event before creating offer/answer
 
 
-Version 3.1.1 (released in 2017-11-11)
---------------------------------------
+### 3.1.1
+
 
 * DigestAuthentication: fix 'auth-int' qop authentication
 * DigestAuthentication: add tests
 
 
-Version 3.1.0 (released in 2017-11-10)
---------------------------------------
+### 3.1.0
+
 
 * New UA configuration parameter 'session_timers_refresh_method'. Thanks @michelepra
 
 
-Version 3.0.28 (released in 2017-11-9)
---------------------------------------
+### 3.0.28
+
 
 * Fix improper call to userMediaSucceeded. Thanks @iclems
 
 
-Version 3.0.27 (released in 2017-11-9)
---------------------------------------
+### 3.0.27
+
 
 * Registrator: add missing getter. Thanks Martin Ekblom.
 
 
-Version 3.0.26 (released in 2017-11-8)
---------------------------------------
+### 3.0.26
+
 
 * Fix #473. Typo. Thanks @ikq.
 
 
-Version 3.0.25 (released in 2017-11-6)
---------------------------------------
+### 3.0.25
+
 
 * Use promise chaining to prevent PeerConnection state race conditions. Thanks @davies147
 
 
-Version 3.0.24 (released in 2017-11-5)
---------------------------------------
+### 3.0.24
+
 
 * Fix #421. Fire RTCSession 'peerconnection' event as soon as its created
 
 
-Version 3.0.23 (released in 2017-10-31)
---------------------------------------
+### 3.0.23
+
 
 * Fix typo. Thanks @michelepra.
 
 
-Version 3.0.22 (released in 2017-10-27)
---------------------------------------
+### 3.0.22
+
 
 * Tests: enable test-UA-no-WebRTC tests.
 * WebSocketInterface: uppercase the via_transport attribute.
 * Fix #469. new method InitialOutgoingInviteRequest::clone().
 
 
-Version 3.0.21 (released in 2017-10-26)
---------------------------------------
+### 3.0.21
+
 
 * WebSocketInterface: Add 'via_transport' setter.
 
 
-Version 3.0.20 (released in 2017-10-24)
---------------------------------------
+### 3.0.20
+
 
 * Fix typo on ES6 transpiling.
 
 
-Version 3.0.19 (released in 2017-10-21)
---------------------------------------
+### 3.0.19
+
 
 * ES6 transpiling. Modernize full JsSIP code.
 
 
-Version 3.0.18 (released in 2017-10-13)
---------------------------------------
+### 3.0.18
+
 
 * Dialog: ACK to initial INVITE could have lower CSeq than current remote_cseq.
 
 
-Version 3.0.17 (released in 2017-10-12)
---------------------------------------
+### 3.0.17
+
 
 * RTCSession: process INFO in early state.
 
 
-Version 3.0.16 (released in 2017-10-12)
---------------------------------------
+### 3.0.16
+
 
 * Fix #457. Properly retrieve ReferSubscriber. Thanks @btaens.
 
 
-Version 3.0.15 (released in 2017-08-31)
---------------------------------------
+### 3.0.15
+
 
 * Fix #457. Support NOTIFY requests to REFER subscriptions without Event id parameter.
 
 
-Version 3.0.14 (released in 2017-08-31)
---------------------------------------
+### 3.0.14
+
 
 * Update dependencies.
 
 
-Version 3.0.13 (released in 2017-06-10)
---------------------------------------
+### 3.0.13
+
 
 * `Registrator`: Don't send a Register request if another is on progress. Thanks to Paul Grebenc.
 
 
-Version 3.0.12 (released in 2017-05-23)
---------------------------------------
+### 3.0.12
+
 
 * `UA`: Add `registrationExpiring` event (#442). Credits to @danjenkins.
 
 
-Version 3.0.11 (released in 2017-05-21)
---------------------------------------
+### 3.0.11
+
 
 * `RTCSession`: Emit "peerconnection" also for incoming calls.
 
 
-Version 3.0.10 (released in 2017-05-17)
---------------------------------------
+### 3.0.10
+
 
 * Emit SDP before new `RTCSessionDescription`. Thanks to @StarLeafRob.
 
 
-Version 3.0.8 (released in 2017-05-03)
---------------------------------------
+### 3.0.8
+
 
 * Generic SIP INFO support.
 
 
-Version 3.0.7 (released in 2017-03-24)
---------------------------------------
+### 3.0.7
+
 
 * Fix #431. Fix UA's `disconnect` event by properly providing an object with all the documente fields (thanks @nicketson for reporting it).
 
 
-Version 3.0.6 (released in 2017-03-22)
---------------------------------------
+### 3.0.6
+
 
 * Fix #428. Don't use `pranswer` for early media. Instead create an `answer` and do a workaround when the 200 arrives.
 
 
-Version 3.0.5 (released in 2017-03-21)
---------------------------------------
+### 3.0.5
+
 
 * Update deps.
 * Add more debug logs into `RTCSession` class.
 
 
-Version 3.0.4 (released in 2017-03-13)
---------------------------------------
+### 3.0.4
+
 
 * Update deps.
 * If ICE fails, terminate the session with status code 408.
 
 
-Version 3.0.3 (released in 2017-02-22)
---------------------------------------
+### 3.0.3
+
 
 * Fix #426. Properly emit DTMF events.
 
 
-Version 3.0.2 (released in 2017-02-17)
---------------------------------------
+### 3.0.2
+
 
 * Fix #418. Incorrect socket status on failure.
 
 
-Version 3.0.1 (released in 2017-01-19)
---------------------------------------
+### 3.0.1
+
 
 * Close #419. Allow sending the DTMF 'R' key. Used to report a hook flash.
 
 
-Version 3.0.0 (released in 2016-11-19)
---------------------------------------
+### 3.0.0
+
 
 * Remove `rtcninja` dependency. Instead use `webrtc-adapter`.
 * `RTCSession:`: Remove `RTCPeerConnection` event wrappers. The app can access them via `session.connection`.
@@ -527,44 +539,44 @@ Version 3.0.0 (released in 2016-11-19)
 * `UA`: Allow immediate restart
 
 
-Version 2.0.6 (released in 2016-09-30)
---------------------------------------
+### 2.0.6
+
 
 * Improve library logs.
 
 
-Version 2.0.5 (released in 2016-09-28)
---------------------------------------
+### 2.0.5
+
 
 * Update dependencies.
 
 
-Version 2.0.4 (released in 2016-09-15)
---------------------------------------
+### 2.0.4
+
 
 * Fix #400. Corrupt NPM packege.
 
 
-Version 2.0.3 (released in 2016-08-23)
---------------------------------------
+### 2.0.3
+
 
 * Fix #385. No CANCEL request sent for authenticated requests.
 
 
-Version 2.0.2 (released in 2016-06-17)
---------------------------------------
+### 2.0.2
+
 
 * Fix `gulp-header` dependency version.
 
 
-Version 2.0.1 (released in 2016-06-09)
---------------------------------------
+### 2.0.1
+
 
 * Export `JsSIP.WebSocketInterface`.
 
 
-Version 2.0.0 (released in 2016-06-07)
---------------------------------------
+### 2.0.0
+
 
 * New 'contact_uri' configuration parameter.
 * Remove Node websocket dependency.
@@ -574,354 +586,354 @@ Version 2.0.0 (released in 2016-06-07)
 * Socket interface. Make JsSIP socket agnostic.
 
 
-Version 1.0.1 (released in 2016-05-17)
----------------------------------------
+### 1.0.1
+
 
 * Update dependencies.
 
 
-Version 1.0.0 (released in 2016-05-11)
----------------------------------------
+### 1.0.0
+
 
 * `RTCSession`: new event on('sdp') to allow SDP modifications.
 
 
-Version 0.7.23 (released in 2016-04-12)
----------------------------------------
+### 0.7.23
+
 
 * `RTCSession`: Allow multiple calls to `refer()` at the same time.
 
 
-Version 0.7.22 (released in 2016-04-06)
----------------------------------------
+### 0.7.22
+
 
 * `UA`: `set()` allows changing user's display name.
 * Ignore SDP answer in received ACK retransmissions (fix [367](https://github.com/versatica/JsSIP/issues/367)).
 
 
-Version 0.7.21 (released in 2016-04-05)
----------------------------------------
+### 0.7.21
+
 
 * `RTCSession`: Also emit `peerconnection` event for incoming INVITE without SDP.
 
 
-Version 0.7.20 (released in 2016-04-05)
----------------------------------------
+### 0.7.20
+
 
 * `RTCSession/ReferSubscriber`: Fix typo that breaks exposed API.
 
 
-Version 0.7.19 (released in 2016-04-05)
----------------------------------------
+### 0.7.19
+
 
 * `RTCSession`: Make `refer()` method to return the corresponding instance of `ReferSubscriber` so the app can set and manage as many events as desired on it.
 
 
-Version 0.7.18 (released in 2016-03-23)
----------------------------------------
+### 0.7.18
+
 
 * Add INFO method to allowed methods list
 * Add SIP Code 424 RFC 6442
 
 
-Version 0.7.17 (released in 2016-02-25)
----------------------------------------
+### 0.7.17
+
 
 * Apply changes of 0.7.16 also to browserified files under `dist/` folder.
 
 
-Version 0.7.16 (released in 2016-02-24)
----------------------------------------
+### 0.7.16
+
 
 * Fix [337](https://github.com/versatica/JsSIP/issues/337). Consistenly indicate registration status through events.
 
 
-Version 0.7.15 (released in 2016-02-24)
----------------------------------------
+### 0.7.15
+
 
 * Emit UA 'connected' event before sending REGISTER on transport connection
 * Fix [355](https://github.com/versatica/JsSIP/pull/355 ). call to non existent `parsed.error` function. Thanks Stéphane Alnet @shimaore
 
 
-Version 0.7.14 (released in 2016-02-17)
----------------------------------------
+### 0.7.14
+
 
 * Fix sips URI scheme parsing rule.
 
 
-Version 0.7.13 (released in 2016-02-10)
----------------------------------------
+### 0.7.13
+
 
 * Fix. Don't lowercase URI parameter values. Thanks to Alexandr Dubovikov @adubovikov
 
 
-Version 0.7.12 (released in 2016-02-05)
----------------------------------------
+### 0.7.12
+
 
 * Accept new `UA` configuration parameters `ha1` and `realm` to avoid plain SIP password handling ([issue 353](https://github.com/versatica/JsSIP/issues/353)).
 * New `UA.set()` and `UA.get()` methods to set and retrieve computed configuration parameters in runtime.
 
 
-Version 0.7.11 (released in 2015-12-17)
----------------------------------------
+### 0.7.11
+
 
 * Fix typo ("iceconnetionstatechange" => "iceconnectionstatechange"). Thanks to Vertika Srivastava.
 
 
-Version 0.7.10 (released in 2015-12-01)
----------------------------------------
+### 0.7.10
+
 
 * Make `gulp` run on Node 4.0.X and 5.0.X.
 
 
-Version 0.7.9 (released in 2015-10-16)
----------------------------------------
+### 0.7.9
+
 
 * `UA`: Add `set(parameter, value)` method to change a configuration setting in runtime (currently just "password" is implemented).
 
 
-Version 0.7.8 (released in 2015-10-13)
----------------------------------------
+### 0.7.8
+
 
 * `RTCSession`: Add `resetLocalMedia()` method to reset the session local MediaStream by enabling both its audio and video tracks (unless the remote peer is on hold).
 
 
-Version 0.7.7 (released in 2015-10-05)
----------------------------------------
+### 0.7.7
+
 
 * `RTCSession`: Add "sending" event to outgoing, a good chance for the app to mangle the INVITE or its SDP offer.
 
 
-Version 0.7.6 (released in 2015-09-29)
----------------------------------------
+### 0.7.6
+
 
 * Update dependencies.
 * Improve gulpfile.js.
 
 
-Version 0.7.5 (released in 2015-09-15)
----------------------------------------
+### 0.7.5
+
 
 * Don't ask for `getUserMedia` in `RTCSession.answer()` if no `mediaConstraints` are provided.
 
 
-Version 0.7.4 (released in 2015-08-10)
----------------------------------------
+### 0.7.4
+
 
 * Allow rejecting an in-dialog INVITE or UPDATE message.
 
 
-Version 0.7.3 (released in 2015-07-29)
----------------------------------------
+### 0.7.3
+
 
 * FIX properly restart UA if start() is called while closing.
 
 
-Version 0.7.2 (released in 2015-07-27)
----------------------------------------
+### 0.7.2
+
 
 * Update dependencies.
 
 
-Version 0.7.1 (released in 2015-07-27)
----------------------------------------
+### 0.7.1
+
 
 * Update dependencies.
 
 
-Version 0.7.0 (released in 2015-07-23)
----------------------------------------
+### 0.7.0
+
 
 * Add REFER support.
 
 
-Version 0.6.33 (released in 2015-06-17)
----------------------------------------
+### 0.6.33
+
 
 * Don't keep URI params&headers in the registrar server URI.
 * `RTCSession` emits `peerconnection` for outgoing calls once the `RTCPeerConnection` is created and before the SDP offer is generated (good chance to create a `RTCDataChannel` without requiring renegotiation).
 
 
-Version 0.6.32 (released in 2015-06-16)
----------------------------------------
+### 0.6.32
+
 
 * Add callback to `update` and `reinvite` events.
 
 
-Version 0.6.31 (released in 2015-06-16)
----------------------------------------
+### 0.6.31
+
 
 * Added a parser for Reason header.
 
 
-Version 0.6.30 (released in 2015-06-09)
----------------------------------------
+### 0.6.30
+
 
 * Fix array iteration in `URI#toString()` to avoid Array prototype mangling by devil libraries such as Ember.
 
 
-Version 0.6.29 (released in 2015-06-06)
----------------------------------------
+### 0.6.29
+
 
 * Auto-register on transport connection before emitting the event.
 
 
-Version 0.6.28 (released in 2015-06-02)
----------------------------------------
+### 0.6.28
+
 
 * Update "rtcninja" dependencie.
 
 
-Version 0.6.27 (released in 2015-06-02)
----------------------------------------
+### 0.6.27
+
 
 * Don't terminate SIP dialog if processing of 183 with SDP fails.
 * Update dependencies.
 
 
-Version 0.6.26 (released in 2015-04-17)
----------------------------------------
+### 0.6.26
+
 
 * Update "rtcninja" dependency.
 
 
-Version 0.6.25 (released in 2015-04-16)
----------------------------------------
+### 0.6.25
+
 
 * Update "rtcninja" dependency.
 
 
-Version 0.6.24 (released in 2015-04-14)
----------------------------------------
+### 0.6.24
+
 
 * RTCSession: Fix Invite Server transaction destruction.
 
 
-Version 0.6.23 (released in 2015-04-14)
----------------------------------------
+### 0.6.23
+
 
 * RTCSession: Handle session timers before emitting "accepted".
 * Fix issue with latest version of browserify.
 
 
-Version 0.6.22 (released in 2015-04-13)
----------------------------------------
+### 0.6.22
+
 
 * Fix double "disconnected" event in some cases.
 
 
-Version 0.6.21 (released in 2015-03-11)
----------------------------------------
+### 0.6.21
+
 
 * Don't iterate arrays with (for...in) to avoid problems with evil JS libraries that add stuff into the Array prototype.
 
 
-Version 0.6.20 (released in 2015-03-09)
----------------------------------------
+### 0.6.20
+
 
 * Be more flexible receiving DTMF INFO bodies.
 
 
-Version 0.6.19 (released in 2015-03-05)
----------------------------------------
+### 0.6.19
+
 
 * Update dependencies.
  
 
-Version 0.6.18 (released in 2015-02-09)
---------------------------------------
+### 0.6.18
+
 
 * Terminate the call with a proper BYE/CANCEL/408/500 if request timeout, transport error or dialog error happens.
 * Fix "rtcninja" dependency problem.
 
 
-Version 0.6.17 (released in 2015-02-02)
---------------------------------------
+### 0.6.17
+
 
 * `RTCSession`: Improve `isReadyToReOffer()`.
 
 
-Version 0.6.16 (released in 2015-02-02)
---------------------------------------
+### 0.6.16
+
 
 * `RTCSession`: Avoid calling hold()/unhold/renegotiate() if an outgoing renegotiation is not yet finished (return false).
 * `RTCSession`: Add `options` and `done` arguments to hold()/unhold/renegotiate().
 * `RTCSession`: New public method `isReadyToReOffer()`.
 
 
-Version 0.6.15 (released in 2015-01-31)
---------------------------------------
+### 0.6.15
+
 
 * `RTCSession:` Emit `iceconnetionstatechange` event.
 * Update "rtcninja" dependency to 0.4.0.
 
 
-Version 0.6.14 (released in 2015-01-29)
---------------------------------------
+### 0.6.14
+
 
 * `RTCSession:` Include initially given `rtcOfferConstraints` in `sendReinvite()` and `sendUpdate()`.
 
 
-Version 0.6.13 (released in 2015-01-29)
---------------------------------------
+### 0.6.13
+
 
 * Properly keep mute local audio/video if remote is on hold, and keep it even if we re-offer. Also fix SDP direction attributes in re-offers according to current local and remote "hold" status.
 
 
-Version 0.6.12 (released in 2015-01-28)
---------------------------------------
-
-* Update "rtcninja" dependency to 0.3.3 (fix "RTCOfferOptions").
+### 0.6.12
 
 
-Version 0.6.11 (released in 2015-01-27)
---------------------------------------
+* Update "rtcninja" dependency to 0.3.3.
+
+
+### 0.6.11
+
 
 * Fix "Session-Expires" default value to 90 seconds.
 
 
-Version 0.6.10 (released in 2015-01-27)
---------------------------------------
-
-* Update "rtcninja" dependency to 0.3.2 (get the `rtcninja.canRenegotiate` attribute).
+### 0.6.10
 
 
-Version 0.6.9 (released in 2015-01-27)
---------------------------------------
+* Update "rtcninja" dependency to 0.3.2.
+
+
+### 0.6.9
+
 
 * Don't reply 405 "Method Not Supported" to re-INVITE even if the UA's "newRTCSession" event is not set.
 * `RTCSession`: Allow extraHeaders in `renegotiate()`.
 
 
-Version 0.6.8 (released in 2015-01-26)
---------------------------------------
+### 0.6.8
+
 
 * `RTCSession`: Don't ask for `getUserMedia()` in outgoing calls if `mediaConstraints` is `{audio:false, video:false}`. It is user's responsability to, in that case, provide `offerToReceiveAudio/Video` in `rtcOfferConstraints`.
 
 
-Version 0.6.7 (released in 2015-01-26)
---------------------------------------
+### 0.6.7
+
 
 * ' UA.call()': Return the `RTCSession` instance.
 * ' UA.sendMessage()': Return the `Message` instance.
 
 
-Version 0.6.6 (released in 2015-01-24)
---------------------------------------
+### 0.6.6
+
 
 * `RTCSession`: Don't process SDPs in retranmissions of 200 OK during reINVITE/UDATE.
 * `RTCSession`: Emit 'reinvite' when a reINVITE is received.
 * `RTCSession`: Emit 'update' when an UPDATE is received.
 
 
-Version 0.6.5 (released in 2015-01-20)
---------------------------------------
+### 0.6.5
+
 
 * `RTCSession`: Don't override `this.data` on `answer()` (unless `options.data` is given).
 
 
-Version 0.6.4 (released in 2015-01-19)
---------------------------------------
+### 0.6.4
+
 
 * `RTCSession#connect()`: Add `rtcAnswerContraints` options for later incoming reINVITE or UPDATE with SDP offer.
 * `RTCSession#answer()`: Add `rtcOfferConstraints` options for later incoming reINVITE without SDP offer.
@@ -929,26 +941,26 @@ Version 0.6.4 (released in 2015-01-19)
 * `RTCSession#answer()`: Remove audio or video from the given `getUserMedia` mediaConstraints if the incoming SDP has no audio/video sections.
 
 
-Version 0.6.3 (released in 2015-01-17)
---------------------------------------
+### 0.6.3
+
 
 * Bug fix. Properly cancel when only '100 trying' has been received.
 
 
-Version 0.6.2 (released in 2015-01-16)
---------------------------------------
+### 0.6.2
+
 
 * Bug fix: Do not set "Content-Type: application/sdp" in body-less UPDATE requests.
 
 
-Version 0.6.1 (released in 2015-01-16)
---------------------------------------
+### 0.6.1
+
 
 * Support for [Session Timers](https://tools.ietf.org/html/rfc4028).
 
 
-Version 0.6.0 (released in 2015-01-13)
---------------------------------------
+### 0.6.0
+
 
 * [debug](https://github.com/visionmedia/debug) module.
 * [rtcninja](https://github.com/ibc/rtcninja.js) module.
@@ -957,31 +969,31 @@ Version 0.6.0 (released in 2015-01-13)
 * New API options for `UA#call()` and `RTCSession#answer()`.
 
 
-Version 0.5.0 (released in 2014-11-03)
---------------------------------------
+### 0.5.0
+
 
 * JsSIP runs in Node!
 * The internal design of JsSIP has also been modified, becoming a real Node project in which the "browser version" (`jssip-0.5.0.js` or `jssip-0.5.0.min.js`) is generated with [browserify](http://browserify.org). This also means that the browser version can be loaded with AMD or CommonJS loaders.
 
-Version 0.4.3 (released in 2014-10-29)
---------------------------------------
+### 0.4.3
+
 
 * [(3b1ee11)](https://github.com/versatica/JsSIP/commit/3b1ee11) Fix references to 'this'.
 
 
-Version 0.4.2 (released in 2014-10-24)
---------------------------------------
+### 0.4.2
+
 
 * [(ca7702e)](https://github.com/versatica/JsSIP/commit/ca7702e) Fix #257. RTCMediaHandler: fire onIceCompleted() on next tick to avoid events race conditions in Firefox 33.
 
-Version 0.4.1 (released in 2014-10-21)
---------------------------------------
+### 0.4.1
+
 
 * This version is included into the [Bower](https://bower.io/) registry which means `$ bower install jssip`.
 
 
-Version 0.4.0 (released in 2014-10-21)
---------------------------------------
+### 0.4.0
+
 
 * (https://jssip.net/documentation/0.4.x/api/session) Hold/Unhold implementation
 * (https://jssip.net/documentation/0.4.x/api/session) Mute/Unmute implementation
@@ -1019,7 +1031,7 @@ Version 0.4.0 (released in 2014-10-21)
 * [(9ca4bc9)](https://github.com/versatica/JsSIP/commit/9ca4bc9) Fix #89. Do not send a To tag in '100 Trying' responses
 
 
-Version 0.3.0 (released in 2013-03-18)
+### 0.3.0
 -------------------------------
 
 * [(fea1326)](https://github.com/versatica/JsSIP/commit/fea1326) Don't validate configuration.password against SIP URI password BNF grammar (fix #74).
@@ -1062,7 +1074,7 @@ Version 0.3.0 (released in 2013-03-18)
 * [(a370c78)](https://github.com/versatica/JsSIP/commit/a370c78) Fix 'maddr' and 'method' URI parameters handling
 * [(537d2f2)](https://github.com/versatica/JsSIP/commit/537d2f2) Give some love to "console.log|warn|info" messages missing the JsSIP class/module prefix.
 * [(8cb6963)](https://github.com/versatica/JsSIP/commit/8cb6963) In case null, emptry string, undefined or NaN is passed as parameter value then its default value is applied. Also print to console the processed value of all the parameters after validating them.
-* [(f306d3c)](https://github.com/versatica/JsSIP/commit/f306d3c) hack_ip_in_contact now generates a IP in the range of Test-Net as stated in RFC 5735 (192.0.2.0/24).
+* [(f306d3c)](https://github.com/versatica/JsSIP/commit/f306d3c) hack_ip_in_contact now generates a IP in the range of Test-Net as stated in RFC 5735.
 * [(528d989)](https://github.com/versatica/JsSIP/commit/528d989) Add DTMF feature
 * [(777a48f)](https://github.com/versatica/JsSIP/commit/777a48f) Change API methods to make use of generic 'options' argument
 * [(3a6971d)](https://github.com/versatica/JsSIP/commit/3a6971d) Fix #26. Fire 'unregistered' event correctly.
@@ -1098,8 +1110,8 @@ Version 0.3.0 (released in 2013-03-18)
 * [(d5f3432)](https://github.com/versatica/JsSIP/commit/d5f3432) Fixed the message header split when a parsing error occurs. Parsing error log enhanced.
 
 
-Version 0.2.1 (released in 2012-11-15)
--------------------------------
+### 0.2.1
+
 
 * [(24e32c0)](https://github.com/versatica/JsSIP/commit/24e32c0d16ff5fcefd2319fc445a59d6fc2bcb59) UA configuration `password` parameter is now optional.
 * [(ffe7af6)](https://github.com/versatica/JsSIP/commit/ffe7af6276915695af9fd00db281af51fec2714f) Bug fix: UA configuration `display_name` parameter.
@@ -1112,15 +1124,15 @@ Version 0.2.1 (released in 2012-11-15)
 * [(0c91285)](https://github.com/versatica/JsSIP/commit/0c91285) Fixed failure causes in 'registrationFailed' UA event.
 
 
-Version 0.2.0 (released in 2012-11-01)
---------------------------------------
+### 0.2.0
+
 
 * First stable release with full website and documentation.
 * Refactored sessions, message and events API.
 
 
-Version 0.1.0 (released in 2012-09-27)
---------------------------------------
+### 0.1.0
+
 
 * First release. No documentation.
 

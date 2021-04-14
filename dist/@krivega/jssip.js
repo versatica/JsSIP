@@ -23436,7 +23436,14 @@ module.exports = /*#__PURE__*/function () {
     this.recovery_options = recovery_options;
     this.recover_attempts = 0;
     this.recovery_timer = null;
-    this.close_requested = false;
+    this.close_requested = false; // It seems that TextDecoder is not available in some versions of React-Native.
+    // See https://github.com/versatica/JsSIP/issues/695
+
+    try {
+      this.textDecoder = new TextDecoder('utf8');
+    } catch (error) {
+      debugerror("cannot use TextDecoder: ".concat(error));
+    }
 
     if (typeof sockets === 'undefined') {
       throw new TypeError('Invalid argument.' + ' undefined \'sockets\' argument');
@@ -23680,7 +23687,7 @@ module.exports = /*#__PURE__*/function () {
       } // Binary message.
       else if (typeof data !== 'string') {
           try {
-            data = String.fromCharCode.apply(null, new Uint8Array(data));
+            if (this.textDecoder) data = this.textDecoder.decode(data);else data = String.fromCharCode.apply(null, new Uint8Array(data));
           } catch (evt) {
             debug('received binary message failed to be converted into string,' + ' message discarded');
             return;
@@ -25700,13 +25707,7 @@ module.exports = /*#__PURE__*/function () {
         debug('WebSocket abrupt disconnection');
       }
 
-      var data = {
-        socket: this,
-        error: !wasClean,
-        code: code,
-        reason: reason
-      };
-      this.ondisconnect(data);
+      this.ondisconnect(!wasClean, code, reason);
     }
   }, {
     key: "_onMessage",
@@ -25718,7 +25719,7 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "_onError",
     value: function _onError(e) {
-      debugerror("WebSocket ".concat(this._url, " error: ").concat(e));
+      debugerror("WebSocket ".concat(this._url, " error: "), e);
     }
   }]);
 
@@ -28175,8 +28176,9 @@ module.exports={
   "scripts": {
     "lint": "gulp lint",
     "test": "gulp test",
-    "prepublishOnly": "gulp"
+    "prepublishOnly": "gulp babel"
   }
 }
+
 },{}]},{},[8])(8)
 });
