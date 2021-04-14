@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.4
+ * JsSIP v3.11.0
  * the Javascript SIP library
  * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -62,10 +62,7 @@ exports.settings = {
    * Host address.
    * Value to be set in Via sent_by and host part of Contact FQDN.
   */
-  via_host: "".concat(Utils.createRandomToken(12), ".invalid"),
-  // Request reception
-  content_type_share_state_regexp: null,
-  content_type_enter_room_regexp: null
+  via_host: "".concat(Utils.createRandomToken(12), ".invalid")
 }; // Configuration checks.
 
 var checks = {
@@ -259,16 +256,6 @@ var checks = {
     use_preloaded_route: function use_preloaded_route(_use_preloaded_route) {
       if (typeof _use_preloaded_route === 'boolean') {
         return _use_preloaded_route;
-      }
-    },
-    content_type_share_state_regexp: function content_type_share_state_regexp(_content_type_share_state_regexp) {
-      if (_content_type_share_state_regexp instanceof RegExp) {
-        return _content_type_share_state_regexp;
-      }
-    },
-    content_type_enter_room_regexp: function content_type_enter_room_regexp(_content_type_enter_room_regexp) {
-      if (_content_type_enter_room_regexp instanceof RegExp) {
-        return _content_type_enter_room_regexp;
       }
     }
   }
@@ -24121,13 +24108,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             break;
           }
 
-        case 'content_type_share_state_regexp':
-        case 'content_type_enter_room_regexp':
-          {
-            this._configuration[parameter] = value;
-            break;
-          }
-
         case 'ha1':
           {
             this._configuration.ha1 = String(value); // Delete the plain SIP password.
@@ -24264,24 +24244,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "registrationFailed",
     value: function registrationFailed(data) {
       this.emit('registrationFailed', data);
-    }
-    /**
-     * Share state
-     */
-
-  }, {
-    key: "shareState",
-    value: function shareState(data) {
-      this.emit('shareState', data);
-    }
-    /**
-     * Share state
-     */
-
-  }, {
-    key: "enterRoom",
-    value: function enterRoom(data) {
-      this.emit('enterRoom', data);
     } // =========================
     // ReceiveRequest.
     // =========================
@@ -24348,16 +24310,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (!request.to_tag && this.listeners('newRTCSession').length === 0) {
           request.reply(405);
           return;
-        }
-      } else if (method === JsSIP_C.INFO) {
-        var contentType = request.getHeader('content-type');
-
-        if (contentType && this._configuration.content_type_share_state_regexp && contentType.match(this._configuration.content_type_share_state_regexp)) {
-          this.emit('shareState', request.getHeader('x-webrtc-share-state'));
-          request.reply(200, 'OK');
-        } else if (contentType && this._configuration.content_type_enter_room_regexp && contentType.match(this._configuration.content_type_enter_room_regexp)) {
-          this.emit('enterRoom', request.getHeader('x-webrtc-enter-room'));
-          request.reply(200, 'OK');
         }
       }
 
@@ -24603,7 +24555,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       }; // Seal the configuration.
 
-      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'authorization_jwt', 'display_name', 'register', 'content_type_share_state_regexp', 'content_type_enter_room_regexp'];
+      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'authorization_jwt', 'display_name', 'register'];
 
       for (var parameter in this._configuration) {
         if (Object.prototype.hasOwnProperty.call(this._configuration, parameter)) {
@@ -28121,7 +28073,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.4",
+  "version": "3.11.0",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
@@ -28179,6 +28131,5 @@ module.exports={
     "prepublishOnly": "gulp babel"
   }
 }
-
 },{}]},{},[8])(8)
 });
