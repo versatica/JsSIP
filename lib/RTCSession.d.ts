@@ -305,5 +305,7 @@ export class RTCSession extends EventEmitter {
 
   replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; }): Promise<void>;
 
-  presentation(isStart: boolean, stream: MediaStream, options: { isNeedReinvite: boolean; }): Promise<MediaStream>;
+  startPresentation(stream: MediaStream, extraHeaders: string[], isNeedReinvite?: boolean): Promise<MediaStream>;
+
+  stopPresentation(stream: MediaStream, extraHeaders: string[]): Promise<MediaStream>;
 }
