@@ -39,7 +39,6 @@ export interface AnswerOptions extends ExtraHeaders {
   mediaConstraints?: MediaConstraints;
   mediaStream?: MediaStream;
   pcConfig?: RTCConfiguration;
-  rtcConstraints?: object;
   rtcAnswerConstraints?: RTCOfferOptions;
   rtcOfferConstraints?: RTCOfferOptions;
   sessionTimersExpires?: number;
