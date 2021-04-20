@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.12.0
+ * JsSIP v3.12.1
  * the Javascript SIP library
  * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -17084,7 +17084,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this._referSubscribers = {}; // Custom session empty object for high level use.
 
     _this._data = {};
-    _this._presentationSenders = new WeakSet();
+    _this._presentationSenders = new Set();
     return _this;
   }
   /**
@@ -18830,6 +18830,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       this._ua.destroyRTCSession(this);
+
+      this._presentationSenders.clear();
     }
     /**
      * Private API.
@@ -28109,7 +28111,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.12.0",
+  "version": "3.12.1",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
