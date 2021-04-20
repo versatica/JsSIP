@@ -145,6 +145,8 @@ declare enum UAStatus {
 export class UA extends EventEmitter {
   static get C(): typeof UAStatus;
 
+  configuration: UAConfiguration;
+
   constructor(configuration: UAConfiguration);
 
   get C(): typeof UAStatus;
