@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.12.1
+ * JsSIP v3.12.2
  * the Javascript SIP library
  * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -18202,7 +18202,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "_getSenderByKindTrack",
     value: function _getSenderByKindTrack(track) {
       return this._connection.getSenders().find(function (sender) {
-        return sender.track.kind == track.kind;
+        return sender.track && sender.track.kind == track.kind;
       });
     }
   }, {
@@ -18270,7 +18270,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this11 = this;
 
       var sendersBySteam = this._connection.getSenders().filter(function (sender) {
-        return stream.getTracks().includes(sender.track);
+        return sender.track && stream.getTracks().includes(sender.track);
       });
 
       var isChangedConnection = sendersBySteam.length > 0;
@@ -18595,7 +18595,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var _this16 = this;
 
       this._forEachSenders(function (sender) {
-        if (_this16._hasPresentationSender(sender)) {
+        if (sender.track && _this16._hasPresentationSender(sender)) {
           sender.track.stop();
         }
       });
@@ -28111,7 +28111,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.12.1",
+  "version": "3.12.2",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
