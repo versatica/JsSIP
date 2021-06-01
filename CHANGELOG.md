@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.7.6
+
+
+* Registrator: Enhance Contact matching in Register 2XX reponse. Credits to @stefang42.
+
+
 ### 3.7.5
 
 

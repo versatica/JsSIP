@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.5
+ * JsSIP v3.7.6
  * the Javascript SIP library
  * Copyright: 2012-2021 José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)
  * Homepage: https://jssip.net
@@ -20907,8 +20907,8 @@ module.exports = /*#__PURE__*/function () {
   function Registrator(ua, transport) {
     _classCallCheck(this, Registrator);
 
-    var reg_id = 1; // Force reg_id to 1.
-
+    // Force reg_id to 1.
+    this._reg_id = 1;
     this._ua = ua;
     this._transport = transport;
     this._registrar = ua.configuration.registrar_server;
@@ -20929,12 +20929,11 @@ module.exports = /*#__PURE__*/function () {
 
     this._extraHeaders = []; // Custom Contact header params for REGISTER and un-REGISTER.
 
-    this._extraContactParams = '';
+    this._extraContactParams = ''; // Contents of the sip.instance Contact header parameter.
 
-    if (reg_id) {
-      this._contact += ";reg-id=".concat(reg_id);
-      this._contact += ";+sip.instance=\"<urn:uuid:".concat(this._ua.configuration.instance_id, ">\"");
-    }
+    this._sipInstance = "\"<urn:uuid:".concat(this._ua.configuration.instance_id, ">\"");
+    this._contact += ";reg-id=".concat(this._reg_id);
+    this._contact += ";+sip.instance=".concat(this._sipInstance);
   }
 
   _createClass(Registrator, [{
@@ -21033,10 +21032,17 @@ module.exports = /*#__PURE__*/function () {
                 var contacts = response.headers['Contact'].reduce(function (a, b) {
                   return a.concat(b.parsed);
                 }, []); // Get the Contact pointing to us and update the expires value accordingly.
+                // Try to find a matching Contact using sip.instance and reg-id.
 
                 var contact = contacts.find(function (element) {
-                  return element.uri.user === _this._ua.contact.uri.user;
-                });
+                  return _this._sipInstance === element.getParam('+sip.instance') && _this._reg_id === parseInt(element.getParam('reg-id'));
+                }); // If no match was found using the sip.instance try comparing the URIs.
+
+                if (!contact) {
+                  contact = contacts.find(function (element) {
+                    return element.uri.user === _this._ua.contact.uri.user;
+                  });
+                }
 
                 if (!contact) {
                   debug('no Contact header pointing to us, response ignored');
@@ -27934,7 +27940,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.5",
+  "version": "3.7.6",
   "homepage": "https://jssip.net",
   "author": "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
   "contributors": [
