@@ -1,4 +1,4 @@
-import {Debug} from 'debug'
+export {Logger} from './Logger'
 
 import * as C from './Constants'
 import * as Exceptions from './Exceptions'
@@ -12,6 +12,12 @@ export {URI} from './URI'
 export {NameAddrHeader} from './NameAddrHeader'
 export {WebSocketInterface, Socket, WeightedSocket} from './WebSocketInterface'
 
-export const debug: Debug
 export const name: string
 export const version: string
+/**
+ * @deprecated debug should not be used, use Logger instead
+ */
+export const debug: {
+    enable: (...namespaces?:string)=> void
+    disable: ()=> void
+}

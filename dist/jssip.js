@@ -16116,10 +16116,10 @@ var Grammar = require('./Grammar');
 
 var WebSocketInterface = require('./WebSocketInterface');
 
-var JsSIPDebug = require('./JsSIPDebug');
+var Logger = require('./Logger');
 
-var debug = JsSIPDebug('JsSIP');
-debug('version %s', pkg.version);
+var logger = new Logger('JsSIP');
+logger.debug('version %s', pkg.version);
 /**
  * Expose the JsSIP module.
  */
@@ -16133,8 +16133,16 @@ module.exports = {
   NameAddrHeader: NameAddrHeader,
   WebSocketInterface: WebSocketInterface,
   Grammar: Grammar,
-  // Expose the debug module.
-  debug: JsSIPDebug,
+  // Expose the Logger module (for its static methods)
+  Logger: Logger,
+
+  /**
+   * @deprecated debug should not be used, use Logger instead
+   */
+  debug: {
+    enable: Logger.enable,
+    disable: Logger.disable
+  },
 
   get name() {
     return pkg.title;
@@ -16145,7 +16153,7 @@ module.exports = {
   }
 
 };
-},{"../package.json":39,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":11,"./UA":25,"./URI":26,"./Utils":27,"./WebSocketInterface":28,"debug":31}],9:[function(require,module,exports){
+},{"../package.json":39,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Logger":9,"./NameAddrHeader":11,"./UA":25,"./URI":26,"./Utils":27,"./WebSocketInterface":28}],9:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16157,8 +16165,18 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var debug = require('debug');
 
 var APP_NAME = 'JsSIP';
+/* eslint-disable no-console */
+
+var defaultDebugLog = console.info.bind(console);
+var defaultWarnLog = console.warn.bind(console);
+var defaultErrorLog = console.error.bind(console);
+/* eslint-enable no-console */
 
 module.exports = /*#__PURE__*/function () {
+  /**
+   * 
+   * @param {string} prefix namespace prefix
+   */
   function Logger(prefix) {
     _classCallCheck(this, Logger);
 
@@ -16171,13 +16189,18 @@ module.exports = /*#__PURE__*/function () {
       this._warn = debug["default"]("".concat(APP_NAME, ":WARN"));
       this._error = debug["default"]("".concat(APP_NAME, ":ERROR"));
     }
-    /* eslint-disable no-console */
 
+    this._debug.log = function () {
+      return defaultDebugLog.apply(void 0, arguments);
+    };
 
-    this._debug.log = console.info.bind(console);
-    this._warn.log = console.warn.bind(console);
-    this._error.log = console.error.bind(console);
-    /* eslint-enable no-console */
+    this._warn.log = function () {
+      return defaultWarnLog.apply(void 0, arguments);
+    };
+
+    this._error.log = function () {
+      return defaultErrorLog.apply(void 0, arguments);
+    };
   }
 
   _createClass(Logger, [{
@@ -16194,6 +16217,55 @@ module.exports = /*#__PURE__*/function () {
     key: "error",
     get: function get() {
       return this._error;
+    }
+  }], [{
+    key: "setDefaultDebugLog",
+    value:
+    /**
+     * Static setter for debug logger
+     * @param {(...any:[]) => void} loggerFn 
+     */
+    function setDefaultDebugLog(loggerFn) {
+      defaultDebugLog = loggerFn;
+    }
+    /**
+     * Static setter for warn logger
+     * @param {(...any:[]) => void} loggerFn 
+     */
+
+  }, {
+    key: "setDefaultWarnLog",
+    value: function setDefaultWarnLog(loggerFn) {
+      defaultWarnLog = loggerFn;
+    }
+    /**
+     * Static setter for error logger
+     * @param {(...any:[]) => void} loggerFn 
+     */
+
+  }, {
+    key: "setDefaultErrorLog",
+    value: function setDefaultErrorLog(loggerFn) {
+      defaultErrorLog = loggerFn;
+    }
+    /**
+     * Enable debug for namespaces (no namespace = all)
+     * @param {string} [namespaces] optional
+     */
+
+  }, {
+    key: "enable",
+    value: function enable(namespaces) {
+      debug.enable(namespaces);
+    }
+    /**
+     * Disable debug
+     */
+
+  }, {
+    key: "disable",
+    value: function disable() {
+      debug.disable();
     }
   }]);
 
@@ -26250,7 +26322,7 @@ function functionBindPolyfill(context) {
 }
 
 },{}],31:[function(require,module,exports){
-(function (process){
+(function (process){(function (){
 /* eslint-env browser */
 
 /**
@@ -26521,7 +26593,7 @@ formatters.j = function (v) {
 	}
 };
 
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"./common":32,"_process":34}],32:[function(require,module,exports){
 
 /**
