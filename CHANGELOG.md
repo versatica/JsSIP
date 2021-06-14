@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+### 3.7.8
+
+
+* Use a proper Logger class (fix from previous release)
+
+
+### 3.7.7
+
+
+* Use a proper Logger class.
+
+
 ### 3.7.6
 
 
