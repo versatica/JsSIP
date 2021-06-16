@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.8
+ * JsSIP v3.7.9
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -17827,7 +17827,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       } // Check Session Status.
 
 
-      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
+      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._status);
       } // Check Transport type.
 
@@ -17937,7 +17937,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       logger.debug('sendInfo()'); // Check Session Status.
 
-      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK) {
+      if (this._status !== C.STATUS_CONFIRMED && this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._status);
       }
 
@@ -27900,7 +27900,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.8",
+  "version": "3.7.9",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

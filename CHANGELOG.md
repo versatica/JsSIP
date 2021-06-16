@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.7.9
+
+
+* RTCSession: allow sending DTMFs if 1XX was received. Credits to @BlindChickens.
+
+
 ### 3.7.8
 
 
