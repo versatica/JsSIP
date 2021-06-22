@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.10
+ * JsSIP v3.7.11
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -20743,7 +20743,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       extraHeaders.push(referTo); // Referred-By header field (if not already present).
 
       if (!extraHeaders.some(function (header) {
-        return header.startsWith('Referred-By:');
+        return header.toLowerCase().startsWith('referred-by:');
       })) {
         var referredBy = "Referred-By: <".concat(this._session._ua._configuration.uri._scheme, ":").concat(this._session._ua._configuration.uri._user, "@").concat(this._session._ua._configuration.uri._host, ">");
         extraHeaders.push(referredBy);
@@ -27905,7 +27905,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.10",
+  "version": "3.7.11",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
