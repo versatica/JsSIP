@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.7.10
+
+
+* RTCSession: allow overriding the Referred-By header on REFER. Credits to @@jp1987.
+
+
 ### 3.7.9
 
 

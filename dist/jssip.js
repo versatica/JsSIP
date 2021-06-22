@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.9
+ * JsSIP v3.7.10
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -20740,10 +20740,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       var referTo = "Refer-To: <".concat(target).concat(replaces ? "?Replaces=".concat(replaces) : '', ">");
-      extraHeaders.push(referTo); // Referred-By header field.
+      extraHeaders.push(referTo); // Referred-By header field (if not already present).
 
-      var referredBy = "Referred-By: <".concat(this._session._ua._configuration.uri._scheme, ":").concat(this._session._ua._configuration.uri._user, "@").concat(this._session._ua._configuration.uri._host, ">");
-      extraHeaders.push(referredBy);
+      if (!extraHeaders.some(function (header) {
+        return header.startsWith('Referred-By:');
+      })) {
+        var referredBy = "Referred-By: <".concat(this._session._ua._configuration.uri._scheme, ":").concat(this._session._ua._configuration.uri._user, "@").concat(this._session._ua._configuration.uri._host, ">");
+        extraHeaders.push(referredBy);
+      }
+
       extraHeaders.push("Contact: ".concat(this._session.contact));
 
       var request = this._session.sendRequest(JsSIP_C.REFER, {
@@ -27900,7 +27905,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.9",
+  "version": "3.7.10",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
