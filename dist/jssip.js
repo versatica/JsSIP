@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.7.11
+ * JsSIP v3.8.0
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -294,7 +294,7 @@ exports.load = function (dst, src) {
     }
   }
 };
-},{"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Socket":21,"./URI":26,"./Utils":27}],2:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Socket":22,"./URI":27,"./Utils":28}],2:[function(require,module,exports){
 "use strict";
 
 var pkg = require('../package.json');
@@ -470,7 +470,7 @@ module.exports = {
   CONNECTION_RECOVERY_MAX_INTERVAL: 30,
   CONNECTION_RECOVERY_MIN_INTERVAL: 2
 };
-},{"../package.json":39}],3:[function(require,module,exports){
+},{"../package.json":40}],3:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -749,7 +749,7 @@ module.exports = /*#__PURE__*/function () {
 
   return Dialog;
 }();
-},{"./Constants":2,"./Dialog/RequestSender":4,"./Logger":9,"./SIPMessage":20,"./Transactions":23,"./Utils":27}],4:[function(require,module,exports){
+},{"./Constants":2,"./Dialog/RequestSender":4,"./Logger":9,"./SIPMessage":21,"./Transactions":24,"./Utils":28}],4:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -872,7 +872,7 @@ module.exports = /*#__PURE__*/function () {
 
   return DialogRequestSender;
 }();
-},{"../Constants":2,"../RTCSession":13,"../RequestSender":19,"../Transactions":23}],5:[function(require,module,exports){
+},{"../Constants":2,"../RTCSession":14,"../RequestSender":20,"../Transactions":24}],5:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1080,7 +1080,7 @@ module.exports = /*#__PURE__*/function () {
 
   return DigestAuthentication;
 }();
-},{"./Logger":9,"./Utils":27}],6:[function(require,module,exports){
+},{"./Logger":9,"./Utils":28}],6:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -16097,7 +16097,7 @@ module.exports = function () {
   result.SyntaxError.prototype = Error.prototype;
   return result;
 }();
-},{"./NameAddrHeader":11,"./URI":26}],8:[function(require,module,exports){
+},{"./NameAddrHeader":11,"./URI":27}],8:[function(require,module,exports){
 "use strict";
 
 var pkg = require('../package.json');
@@ -16146,7 +16146,7 @@ module.exports = {
   }
 
 };
-},{"../package.json":39,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":11,"./UA":25,"./URI":26,"./Utils":27,"./WebSocketInterface":28,"debug":31}],9:[function(require,module,exports){
+},{"../package.json":40,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":11,"./UA":26,"./URI":27,"./Utils":28,"./WebSocketInterface":29,"debug":32}],9:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16200,7 +16200,7 @@ module.exports = /*#__PURE__*/function () {
 
   return Logger;
 }();
-},{"debug":31}],10:[function(require,module,exports){
+},{"debug":32}],10:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -16508,7 +16508,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return Message;
 }(EventEmitter);
-},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":19,"./SIPMessage":20,"./Utils":27,"events":30}],11:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":31}],11:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16642,7 +16642,315 @@ module.exports = /*#__PURE__*/function () {
 
   return NameAddrHeader;
 }();
-},{"./Grammar":7,"./URI":26}],12:[function(require,module,exports){
+},{"./Grammar":7,"./URI":27}],12:[function(require,module,exports){
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var EventEmitter = require('events').EventEmitter;
+
+var Logger = require('./Logger');
+
+var JsSIP_C = require('./Constants');
+
+var SIPMessage = require('./SIPMessage');
+
+var Utils = require('./Utils');
+
+var RequestSender = require('./RequestSender');
+
+var Exceptions = require('./Exceptions');
+
+var logger = new Logger('Options');
+
+module.exports = /*#__PURE__*/function (_EventEmitter) {
+  _inherits(Options, _EventEmitter);
+
+  var _super = _createSuper(Options);
+
+  function Options(ua) {
+    var _this;
+
+    _classCallCheck(this, Options);
+
+    _this = _super.call(this);
+    _this._ua = ua;
+    _this._request = null;
+    _this._closed = false;
+    _this._direction = null;
+    _this._local_identity = null;
+    _this._remote_identity = null; // Whether an incoming message has been replied.
+
+    _this._is_replied = false; // Custom message empty object for high level use.
+
+    _this._data = {};
+    return _this;
+  }
+
+  _createClass(Options, [{
+    key: "send",
+    value: function send(target, body) {
+      var _this2 = this;
+
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var originalTarget = target;
+
+      if (target === undefined) {
+        throw new TypeError('A target is required for OPTIONS');
+      } // Check target validity.
+
+
+      target = this._ua.normalizeTarget(target);
+
+      if (!target) {
+        throw new TypeError("Invalid target: ".concat(originalTarget));
+      } // Get call options.
+
+
+      var extraHeaders = Utils.cloneArray(options.extraHeaders);
+      var eventHandlers = Utils.cloneObject(options.eventHandlers);
+      var contentType = options.contentType || 'application/sdp'; // Set event handlers.
+
+      for (var event in eventHandlers) {
+        if (Object.prototype.hasOwnProperty.call(eventHandlers, event)) {
+          this.on(event, eventHandlers[event]);
+        }
+      }
+
+      extraHeaders.push("Content-Type: ".concat(contentType));
+      this._request = new SIPMessage.OutgoingRequest(JsSIP_C.OPTIONS, target, this._ua, null, extraHeaders);
+
+      if (body) {
+        this._request.body = body;
+      }
+
+      var request_sender = new RequestSender(this._ua, this._request, {
+        onRequestTimeout: function onRequestTimeout() {
+          _this2._onRequestTimeout();
+        },
+        onTransportError: function onTransportError() {
+          _this2._onTransportError();
+        },
+        onReceiveResponse: function onReceiveResponse(response) {
+          _this2._receiveResponse(response);
+        }
+      });
+
+      this._newOptions('local', this._request);
+
+      request_sender.send();
+    }
+  }, {
+    key: "init_incoming",
+    value: function init_incoming(request) {
+      this._request = request;
+
+      this._newOptions('remote', request); // Reply with a 200 OK if the user didn't reply.
+
+
+      if (!this._is_replied) {
+        this._is_replied = true;
+        request.reply(200);
+      }
+
+      this._close();
+    }
+    /**
+     * Accept the incoming Options
+     * Only valid for incoming Options
+     */
+
+  }, {
+    key: "accept",
+    value: function accept() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var extraHeaders = Utils.cloneArray(options.extraHeaders);
+      var body = options.body;
+
+      if (this._direction !== 'incoming') {
+        throw new Exceptions.NotSupportedError('"accept" not supported for outgoing Options');
+      }
+
+      if (this._is_replied) {
+        throw new Error('incoming Options already replied');
+      }
+
+      this._is_replied = true;
+
+      this._request.reply(200, null, extraHeaders, body);
+    }
+    /**
+     * Reject the incoming Options
+     * Only valid for incoming Options
+     */
+
+  }, {
+    key: "reject",
+    value: function reject() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var status_code = options.status_code || 480;
+      var reason_phrase = options.reason_phrase;
+      var extraHeaders = Utils.cloneArray(options.extraHeaders);
+      var body = options.body;
+
+      if (this._direction !== 'incoming') {
+        throw new Exceptions.NotSupportedError('"reject" not supported for outgoing Options');
+      }
+
+      if (this._is_replied) {
+        throw new Error('incoming Options already replied');
+      }
+
+      if (status_code < 300 || status_code >= 700) {
+        throw new TypeError("Invalid status_code: ".concat(status_code));
+      }
+
+      this._is_replied = true;
+
+      this._request.reply(status_code, reason_phrase, extraHeaders, body);
+    }
+  }, {
+    key: "_receiveResponse",
+    value: function _receiveResponse(response) {
+      if (this._closed) {
+        return;
+      }
+
+      switch (true) {
+        case /^1[0-9]{2}$/.test(response.status_code):
+          // Ignore provisional responses.
+          break;
+
+        case /^2[0-9]{2}$/.test(response.status_code):
+          this._succeeded('remote', response);
+
+          break;
+
+        default:
+          {
+            var cause = Utils.sipErrorCause(response.status_code);
+
+            this._failed('remote', response, cause);
+
+            break;
+          }
+      }
+    }
+  }, {
+    key: "_onRequestTimeout",
+    value: function _onRequestTimeout() {
+      if (this._closed) {
+        return;
+      }
+
+      this._failed('system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
+    }
+  }, {
+    key: "_onTransportError",
+    value: function _onTransportError() {
+      if (this._closed) {
+        return;
+      }
+
+      this._failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
+    }
+  }, {
+    key: "_close",
+    value: function _close() {
+      this._closed = true;
+
+      this._ua.destroyMessage(this);
+    }
+    /**
+     * Internal Callbacks
+     */
+
+  }, {
+    key: "_newOptions",
+    value: function _newOptions(originator, request) {
+      if (originator === 'remote') {
+        this._direction = 'incoming';
+        this._local_identity = request.to;
+        this._remote_identity = request.from;
+      } else if (originator === 'local') {
+        this._direction = 'outgoing';
+        this._local_identity = request.from;
+        this._remote_identity = request.to;
+      }
+
+      this._ua.newOptions(this, {
+        originator: originator,
+        message: this,
+        request: request
+      });
+    }
+  }, {
+    key: "_failed",
+    value: function _failed(originator, response, cause) {
+      logger.debug('OPTIONS failed');
+
+      this._close();
+
+      logger.debug('emit "failed"');
+      this.emit('failed', {
+        originator: originator,
+        response: response || null,
+        cause: cause
+      });
+    }
+  }, {
+    key: "_succeeded",
+    value: function _succeeded(originator, response) {
+      logger.debug('OPTIONS succeeded');
+
+      this._close();
+
+      logger.debug('emit "succeeded"');
+      this.emit('succeeded', {
+        originator: originator,
+        response: response
+      });
+    }
+  }, {
+    key: "direction",
+    get: function get() {
+      return this._direction;
+    }
+  }, {
+    key: "local_identity",
+    get: function get() {
+      return this._local_identity;
+    }
+  }, {
+    key: "remote_identity",
+    get: function get() {
+      return this._remote_identity;
+    }
+  }]);
+
+  return Options;
+}(EventEmitter);
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":31}],13:[function(require,module,exports){
 "use strict";
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -16974,7 +17282,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
     return true;
   }
 }
-},{"./Grammar":7,"./Logger":9,"./SIPMessage":20}],13:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9,"./SIPMessage":21}],14:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -20256,7 +20564,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return RTCSession;
 }(EventEmitter);
-},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Logger":9,"./RTCSession/DTMF":14,"./RTCSession/Info":15,"./RTCSession/ReferNotifier":16,"./RTCSession/ReferSubscriber":17,"./RequestSender":19,"./SIPMessage":20,"./Timers":22,"./Transactions":23,"./URI":26,"./Utils":27,"events":30,"sdp-transform":36}],14:[function(require,module,exports){
+},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Logger":9,"./RTCSession/DTMF":15,"./RTCSession/Info":16,"./RTCSession/ReferNotifier":17,"./RTCSession/ReferSubscriber":18,"./RequestSender":20,"./SIPMessage":21,"./Timers":23,"./Transactions":24,"./URI":27,"./Utils":28,"events":31,"sdp-transform":37}],15:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -20457,7 +20765,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
 module.exports.C = C;
-},{"../Constants":2,"../Exceptions":6,"../Logger":9,"../Utils":27,"events":30}],15:[function(require,module,exports){
+},{"../Constants":2,"../Exceptions":6,"../Logger":9,"../Utils":28,"events":31}],16:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -20593,7 +20901,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return Info;
 }(EventEmitter);
-},{"../Constants":2,"../Exceptions":6,"../Utils":27,"events":30}],16:[function(require,module,exports){
+},{"../Constants":2,"../Exceptions":6,"../Utils":28,"events":31}],17:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -20659,7 +20967,7 @@ module.exports = /*#__PURE__*/function () {
 
   return ReferNotifier;
 }();
-},{"../Constants":2,"../Logger":9}],17:[function(require,module,exports){
+},{"../Constants":2,"../Logger":9}],18:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -20848,7 +21156,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return ReferSubscriber;
 }(EventEmitter);
-},{"../Constants":2,"../Grammar":7,"../Logger":9,"../Utils":27,"events":30}],18:[function(require,module,exports){
+},{"../Constants":2,"../Grammar":7,"../Logger":9,"../Utils":28,"events":31}],19:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21215,7 +21523,7 @@ module.exports = /*#__PURE__*/function () {
 
   return Registrator;
 }();
-},{"./Constants":2,"./Logger":9,"./RequestSender":19,"./SIPMessage":20,"./Utils":27}],19:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28}],20:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21391,7 +21699,7 @@ module.exports = /*#__PURE__*/function () {
 
   return RequestSender;
 }();
-},{"./Constants":2,"./DigestAuthentication":5,"./Logger":9,"./Transactions":23}],20:[function(require,module,exports){
+},{"./Constants":2,"./DigestAuthentication":5,"./Logger":9,"./Transactions":24}],21:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -22247,7 +22555,7 @@ module.exports = {
   IncomingRequest: IncomingRequest,
   IncomingResponse: IncomingResponse
 };
-},{"./Constants":2,"./Grammar":7,"./Logger":9,"./NameAddrHeader":11,"./Utils":27,"sdp-transform":36}],21:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./Logger":9,"./NameAddrHeader":11,"./Utils":28,"sdp-transform":37}],22:[function(require,module,exports){
 "use strict";
 
 var Logger = require('./Logger');
@@ -22321,7 +22629,7 @@ exports.isSocket = function (socket) {
 
   return true;
 };
-},{"./Grammar":7,"./Logger":9,"./Utils":27}],22:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9,"./Utils":28}],23:[function(require,module,exports){
 "use strict";
 
 var T1 = 500,
@@ -22343,7 +22651,7 @@ module.exports = {
   PROVISIONAL_RESPONSE_INTERVAL: 60000 // See RFC 3261 Section 13.3.1.1
 
 };
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -23169,7 +23477,7 @@ module.exports = {
   InviteServerTransaction: InviteServerTransaction,
   checkTransaction: checkTransaction
 };
-},{"./Constants":2,"./Logger":9,"./SIPMessage":20,"./Timers":22,"events":30}],24:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./SIPMessage":21,"./Timers":23,"events":31}],25:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -23499,7 +23807,7 @@ module.exports = /*#__PURE__*/function () {
 
   return Transport;
 }();
-},{"./Constants":2,"./Logger":9,"./Socket":21}],25:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./Socket":22}],26:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -23535,6 +23843,8 @@ var Registrator = require('./Registrator');
 var RTCSession = require('./RTCSession');
 
 var Message = require('./Message');
+
+var Options = require('./Options');
 
 var Transactions = require('./Transactions');
 
@@ -23598,7 +23908,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     };
     _this._configuration = Object.assign({}, config.settings);
     _this._dynConfiguration = {};
-    _this._dialogs = {}; // User actions outside any session/dialog (MESSAGE).
+    _this._dialogs = {}; // User actions outside any session/dialog (MESSAGE/OPTIONS).
 
     _this._applicants = {};
     _this._sessions = {};
@@ -23757,6 +24067,25 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function sendMessage(target, body, options) {
       logger.debug('sendMessage()');
       var message = new Message(this);
+      message.send(target, body, options);
+      return message;
+    }
+    /**
+     * Send a SIP OPTIONS.
+     *
+     * -param {String} target
+     * -param {String} [body]
+     * -param {Object} [options]
+     *
+     * -throws {TypeError}
+     *
+     */
+
+  }, {
+    key: "sendOptions",
+    value: function sendOptions(target, body, options) {
+      logger.debug('sendOptions()');
+      var message = new Options(this);
       message.send(target, body, options);
       return message;
     }
@@ -23976,6 +24305,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this.emit('newMessage', data);
     }
     /**
+     *  new Options
+     */
+
+  }, {
+    key: "newOptions",
+    value: function newOptions(message, data) {
+      this._applicants[message] = message;
+      this.emit('newOptions', data);
+    }
+    /**
      *  Message destroyed.
      */
 
@@ -24081,15 +24420,22 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
 
       if (method === JsSIP_C.OPTIONS) {
-        request.reply(200);
+        if (this.listeners('newOptions').length === 0) {
+          request.reply(200);
+          return;
+        }
+
+        var message = new Options(this);
+        message.init_incoming(request);
       } else if (method === JsSIP_C.MESSAGE) {
         if (this.listeners('newMessage').length === 0) {
           request.reply(405);
           return;
         }
 
-        var message = new Message(this);
-        message.init_incoming(request);
+        var _message = new Message(this);
+
+        _message.init_incoming(request);
       } else if (method === JsSIP_C.INVITE) {
         // Initial INVITE.
         if (!request.to_tag && this.listeners('newRTCSession').length === 0) {
@@ -24520,7 +24866,7 @@ function onTransportData(data) {
     }
   }
 }
-},{"./Config":1,"./Constants":2,"./Exceptions":6,"./Logger":9,"./Message":10,"./Parser":12,"./RTCSession":13,"./Registrator":18,"./SIPMessage":20,"./Transactions":23,"./Transport":24,"./URI":26,"./Utils":27,"./sanityCheck":29,"events":30}],26:[function(require,module,exports){
+},{"./Config":1,"./Constants":2,"./Exceptions":6,"./Logger":9,"./Message":10,"./Options":12,"./Parser":13,"./RTCSession":14,"./Registrator":19,"./SIPMessage":21,"./Transactions":24,"./Transport":25,"./URI":27,"./Utils":28,"./sanityCheck":30,"events":31}],27:[function(require,module,exports){
 "use strict";
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -24782,7 +25128,7 @@ module.exports = /*#__PURE__*/function () {
 
   return URI;
 }();
-},{"./Constants":2,"./Grammar":7,"./Utils":27}],27:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./Utils":28}],28:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -25315,7 +25661,7 @@ exports.cloneObject = function (obj) {
   var fallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   return obj && Object.assign({}, obj) || fallback;
 };
-},{"./Constants":2,"./Grammar":7,"./URI":26}],28:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./URI":27}],29:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -25485,7 +25831,7 @@ module.exports = /*#__PURE__*/function () {
 
   return WebSocketInterface;
 }();
-},{"./Grammar":7,"./Logger":9}],29:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9}],30:[function(require,module,exports){
 "use strict";
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -25738,7 +26084,7 @@ function reply(status_code) {
   response += '\r\n';
   transport.send(response);
 }
-},{"./Constants":2,"./Logger":9,"./SIPMessage":20,"./Utils":27}],30:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./SIPMessage":21,"./Utils":28}],31:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26263,7 +26609,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function (process){
 /* eslint-env browser */
 
@@ -26531,7 +26877,7 @@ formatters.j = function (v) {
 };
 
 }).call(this,require('_process'))
-},{"./common":32,"_process":34}],32:[function(require,module,exports){
+},{"./common":33,"_process":35}],33:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -26799,7 +27145,7 @@ function setup(env) {
 
 module.exports = setup;
 
-},{"ms":33}],33:[function(require,module,exports){
+},{"ms":34}],34:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -26963,7 +27309,7 @@ function plural(ms, msAbs, n, name) {
   return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -27149,7 +27495,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
     name: 'version',
@@ -27645,7 +27991,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 });
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 
@@ -27658,7 +28004,7 @@ exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 exports.parseImageAttributes = parser.parseImageAttributes;
 exports.parseSimulcastStreamList = parser.parseSimulcastStreamList;
 
-},{"./parser":37,"./writer":38}],37:[function(require,module,exports){
+},{"./parser":38,"./writer":39}],38:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -27784,7 +28130,7 @@ exports.parseSimulcastStreamList = function (str) {
   });
 };
 
-},{"./grammar":35}],38:[function(require,module,exports){
+},{"./grammar":36}],39:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -27900,12 +28246,12 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":35}],39:[function(require,module,exports){
+},{"./grammar":36}],40:[function(require,module,exports){
 module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.7.11",
+  "version": "3.8.0",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

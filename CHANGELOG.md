@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.8.0
+
+
+* Add support for sending and responding to SIP OPTIONS. Credits to @simonlindberg.
+
+
 ### 3.7.11
 
 
