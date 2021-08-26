@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.12.2
+ * JsSIP v3.12.3
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -22925,9 +22925,9 @@ exports.isSocket = function (socket) {
 },{"./Grammar":7,"./Logger":9,"./Utils":28}],23:[function(require,module,exports){
 "use strict";
 
-var T1 = 500,
-    T2 = 4000,
-    T4 = 5000;
+var T1 = 4000,
+    T2 = 6000,
+    T4 = 8000;
 module.exports = {
   T1: T1,
   T2: T2,
@@ -28513,7 +28513,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.12.2",
+  "version": "3.12.3",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
