@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.12.3
+ * JsSIP v3.12.4
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -9,7 +9,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.JsSIP = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -545,22 +545,22 @@ module.exports = /*#__PURE__*/function () {
       this._ack_seqnum = this._remote_seqnum;
     } // RFC 3261 12.1.2.
     else if (type === 'UAC') {
-        this._id = {
-          call_id: message.call_id,
-          local_tag: message.from_tag,
-          remote_tag: message.to_tag,
-          toString: function toString() {
-            return this.call_id + this.local_tag + this.remote_tag;
-          }
-        };
-        this._state = state;
-        this._local_seqnum = message.cseq;
-        this._local_uri = message.parseHeader('from').uri;
-        this._remote_uri = message.parseHeader('to').uri;
-        this._remote_target = contact.uri;
-        this._route_set = message.getHeaders('record-route').reverse();
-        this._ack_seqnum = null;
-      }
+      this._id = {
+        call_id: message.call_id,
+        local_tag: message.from_tag,
+        remote_tag: message.to_tag,
+        toString: function toString() {
+          return this.call_id + this.local_tag + this.remote_tag;
+        }
+      };
+      this._state = state;
+      this._local_seqnum = message.cseq;
+      this._local_uri = message.parseHeader('from').uri;
+      this._remote_uri = message.parseHeader('to').uri;
+      this._remote_target = contact.uri;
+      this._route_set = message.getHeaders('record-route').reverse();
+      this._ack_seqnum = null;
+    }
 
     this._ua.newDialog(this);
 
@@ -651,8 +651,8 @@ module.exports = /*#__PURE__*/function () {
         this._ack_seqnum = null;
       } // INVITE received. Set this._ack_seqnum.
       else if (request.method === JsSIP_C.INVITE) {
-          this._ack_seqnum = request.cseq;
-        }
+        this._ack_seqnum = request.cseq;
+      }
 
       this._owner.receiveRequest(request);
     } // RFC 3261 12.2.1.1.
@@ -934,9 +934,7 @@ module.exports = /*#__PURE__*/function () {
 
   }, {
     key: "authenticate",
-    value: function authenticate(_ref, challenge)
-    /* test interface */
-    {
+    value: function authenticate(_ref, challenge) {
       var method = _ref.method,
           ruri = _ref.ruri,
           body = _ref.body;
@@ -1016,8 +1014,8 @@ module.exports = /*#__PURE__*/function () {
         this._ha1 = Utils.calculateMD5("".concat(this._credentials.username, ":").concat(this._realm, ":").concat(this._credentials.password));
       } // Otherwise reuse the stored ha1.
       else {
-          this._ha1 = this._credentials.ha1;
-        }
+        this._ha1 = this._credentials.ha1;
+      }
 
       var a2;
       var ha2;
@@ -1095,7 +1093,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -16221,7 +16219,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -16661,7 +16659,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -16955,7 +16953,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 },{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":33}],13:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -17013,9 +17011,9 @@ exports.parseMessage = function (data, ua) {
       break;
     } // Data.indexOf returned -1 due to a malformed message.
     else if (headerEnd === -1) {
-        logger.warn('parseMessage() | malformed message');
-        return;
-      }
+      logger.warn('parseMessage() | malformed message');
+      return;
+    }
 
     parsed = parseHeader(message, data, headerStart, headerEnd);
 
@@ -17289,7 +17287,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -17307,7 +17305,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -17936,23 +17934,23 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           return mediaStream;
         } // Audio and/or video requested, prompt getUserMedia.
         else if (mediaConstraints.audio || mediaConstraints.video) {
-            _this3._localMediaStreamLocallyGenerated = true;
-            return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
-              if (_this3._status === C.STATUS_TERMINATED) {
-                throw new Error('terminated');
-              }
+          _this3._localMediaStreamLocallyGenerated = true;
+          return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
+            if (_this3._status === C.STATUS_TERMINATED) {
+              throw new Error('terminated');
+            }
 
-              request.reply(480);
+            request.reply(480);
 
-              _this3._failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
+            _this3._failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
 
-              logger.warn('emit "getusermediafailed" [error:%o]', error);
+            logger.warn('emit "getusermediafailed" [error:%o]', error);
 
-              _this3.emit('getusermediafailed', error);
+            _this3.emit('getusermediafailed', error);
 
-              throw new Error('getUserMedia() failed');
-            });
-          }
+            throw new Error('getUserMedia() failed');
+          });
+        }
       }) // Attach MediaStream to RTCPeerconnection.
       .then(function (stream) {
         if (_this3._status === C.STATUS_TERMINATED) {
@@ -19207,7 +19205,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_setInvite2xxTimer",
     value: function _setInvite2xxTimer(request, body) {
-      var timeout = Timers.T1;
+      var firstTimeout = Timers.T1Udp;
+      var timeout = firstTimeout;
 
       function invite2xxRetransmission() {
         if (this._status !== C.STATUS_WAITING_FOR_ACK) {
@@ -19216,18 +19215,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
         request.reply(200, null, ["Contact: ".concat(this._contact)], body);
 
-        if (timeout < Timers.T2) {
+        if (timeout < Timers.T2Udp) {
           timeout = timeout * 2;
 
-          if (timeout > Timers.T2) {
-            timeout = Timers.T2;
+          if (timeout > Timers.T2Udp) {
+            timeout = Timers.T2Udp;
           }
         }
 
         this._timers.invite2xxTimer = setTimeout(invite2xxRetransmission.bind(this), timeout);
       }
 
-      this._timers.invite2xxTimer = setTimeout(invite2xxRetransmission.bind(this), timeout);
+      this._timers.invite2xxTimer = setTimeout(invite2xxRetransmission.bind(this), firstTimeout);
     }
     /**
      * RFC3261 14.2
@@ -19405,30 +19404,30 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       } // Confirmed Dialog.
       else {
-          this._from_tag = message.from_tag;
-          this._to_tag = message.to_tag; // In case the dialog is in _early_ state, update it.
+        this._from_tag = message.from_tag;
+        this._to_tag = message.to_tag; // In case the dialog is in _early_ state, update it.
 
-          if (early_dialog) {
-            early_dialog.update(message, type);
-            this._dialog = early_dialog;
-            delete this._earlyDialogs[id];
-            return true;
-          } // Otherwise, create a _confirmed_ dialog.
+        if (early_dialog) {
+          early_dialog.update(message, type);
+          this._dialog = early_dialog;
+          delete this._earlyDialogs[id];
+          return true;
+        } // Otherwise, create a _confirmed_ dialog.
 
 
-          var dialog = new Dialog(this, message, type);
+        var dialog = new Dialog(this, message, type);
 
-          if (dialog.error) {
-            logger.debug(dialog.error);
+        if (dialog.error) {
+          logger.debug(dialog.error);
 
-            this._failed('remote', message, JsSIP_C.causes.INTERNAL_ERROR);
+          this._failed('remote', message, JsSIP_C.causes.INTERNAL_ERROR);
 
-            return false;
-          } else {
-            this._dialog = dialog;
-            return true;
-          }
+          return false;
+        } else {
+          this._dialog = dialog;
+          return true;
         }
+      }
     }
     /**
      * In dialog INVITE Reception
@@ -19637,9 +19636,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             hold = true;
           } // If at least one of the streams is active don't emit 'hold'.
           else {
-              hold = false;
-              break;
-            }
+            hold = false;
+            break;
+          }
         }
       } catch (err) {
         _iterator4.e(err);
@@ -19901,21 +19900,21 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           return mediaStream;
         } // Request for user media access.
         else if (mediaConstraints.audio || mediaConstraints.video) {
-            _this29._localMediaStreamLocallyGenerated = true;
-            return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
-              if (_this29._status === C.STATUS_TERMINATED) {
-                throw new Error('terminated');
-              }
+          _this29._localMediaStreamLocallyGenerated = true;
+          return navigator.mediaDevices.getUserMedia(mediaConstraints)["catch"](function (error) {
+            if (_this29._status === C.STATUS_TERMINATED) {
+              throw new Error('terminated');
+            }
 
-              _this29._failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
+            _this29._failed('local', null, JsSIP_C.causes.USER_DENIED_MEDIA_ACCESS);
 
-              logger.warn('emit "getusermediafailed" [error:%o]', error);
+            logger.warn('emit "getusermediafailed" [error:%o]', error);
 
-              _this29.emit('getusermediafailed', error);
+            _this29.emit('getusermediafailed', error);
 
-              throw error;
-            });
-          }
+            throw error;
+          });
+        }
       }).then(function (stream) {
         if (_this29._status === C.STATUS_TERMINATED) {
           throw new Error('terminated');
@@ -19996,17 +19995,17 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           return;
         } // If not, send an ACK  and terminate.
         else {
-            var dialog = new Dialog(this, response, 'UAC');
+          var dialog = new Dialog(this, response, 'UAC');
 
-            if (dialog.error !== undefined) {
-              logger.debug(dialog.error);
-              return;
-            }
-
-            this.sendRequest(JsSIP_C.ACK);
-            this.sendRequest(JsSIP_C.BYE);
+          if (dialog.error !== undefined) {
+            logger.debug(dialog.error);
             return;
           }
+
+          this.sendRequest(JsSIP_C.ACK);
+          this.sendRequest(JsSIP_C.BYE);
+          return;
+        }
       } // Proceed to cancellation if the user requested.
 
 
@@ -20348,8 +20347,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           });
         } // No SDP answer.
         else if (eventHandlers.succeeded) {
-            eventHandlers.succeeded(response);
-          }
+          eventHandlers.succeeded(response);
+        }
       };
 
       if (sdpOffer) {
@@ -20397,30 +20396,30 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         });
       } // No SDP.
       else {
-          this.sendRequest(JsSIP_C.UPDATE, {
-            extraHeaders: extraHeaders,
-            eventHandlers: {
-              onSuccessResponse: function onSuccessResponse(response) {
-                onSucceeded.call(_this32, response);
-              },
-              onErrorResponse: function onErrorResponse(response) {
-                onFailed.call(_this32, response);
-              },
-              onTransportError: function onTransportError() {
-                _this32.onTransportError(); // Do nothing because session ends.
+        this.sendRequest(JsSIP_C.UPDATE, {
+          extraHeaders: extraHeaders,
+          eventHandlers: {
+            onSuccessResponse: function onSuccessResponse(response) {
+              onSucceeded.call(_this32, response);
+            },
+            onErrorResponse: function onErrorResponse(response) {
+              onFailed.call(_this32, response);
+            },
+            onTransportError: function onTransportError() {
+              _this32.onTransportError(); // Do nothing because session ends.
 
-              },
-              onRequestTimeout: function onRequestTimeout() {
-                _this32.onRequestTimeout(); // Do nothing because session ends.
+            },
+            onRequestTimeout: function onRequestTimeout() {
+              _this32.onRequestTimeout(); // Do nothing because session ends.
 
-              },
-              onDialogError: function onDialogError() {
-                _this32.onDialogError(); // Do nothing because session ends.
+            },
+            onDialogError: function onDialogError() {
+              _this32.onDialogError(); // Do nothing because session ends.
 
-              }
             }
-          });
-        }
+          }
+        });
+      }
     }
   }, {
     key: "_acceptAndTerminate",
@@ -20486,55 +20485,55 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       } // Local and remote hold.
       else if (this._localHold && this._remoteHold) {
-          logger.debug('mangleOffer() | both on hold, mangling offer');
+        logger.debug('mangleOffer() | both on hold, mangling offer');
 
-          var _iterator6 = _createForOfIteratorHelper(sdp.media),
-              _step6;
+        var _iterator6 = _createForOfIteratorHelper(sdp.media),
+            _step6;
 
-          try {
-            for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-              var _m = _step6.value;
+        try {
+          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+            var _m = _step6.value;
 
-              if (holdMediaTypes.indexOf(_m.type) === -1) {
-                continue;
-              }
-
-              _m.direction = 'inactive';
+            if (holdMediaTypes.indexOf(_m.type) === -1) {
+              continue;
             }
-          } catch (err) {
-            _iterator6.e(err);
-          } finally {
-            _iterator6.f();
+
+            _m.direction = 'inactive';
           }
-        } // Remote hold.
-        else if (this._remoteHold) {
-            logger.debug('mangleOffer() | remote on hold, mangling offer');
+        } catch (err) {
+          _iterator6.e(err);
+        } finally {
+          _iterator6.f();
+        }
+      } // Remote hold.
+      else if (this._remoteHold) {
+        logger.debug('mangleOffer() | remote on hold, mangling offer');
 
-            var _iterator7 = _createForOfIteratorHelper(sdp.media),
-                _step7;
+        var _iterator7 = _createForOfIteratorHelper(sdp.media),
+            _step7;
 
-            try {
-              for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-                var _m2 = _step7.value;
+        try {
+          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+            var _m2 = _step7.value;
 
-                if (holdMediaTypes.indexOf(_m2.type) === -1) {
-                  continue;
-                }
+            if (holdMediaTypes.indexOf(_m2.type) === -1) {
+              continue;
+            }
 
-                if (!_m2.direction) {
-                  _m2.direction = 'recvonly';
-                } else if (_m2.direction === 'sendrecv') {
-                  _m2.direction = 'recvonly';
-                } else if (_m2.direction === 'recvonly') {
-                  _m2.direction = 'inactive';
-                }
-              }
-            } catch (err) {
-              _iterator7.e(err);
-            } finally {
-              _iterator7.f();
+            if (!_m2.direction) {
+              _m2.direction = 'recvonly';
+            } else if (_m2.direction === 'sendrecv') {
+              _m2.direction = 'recvonly';
+            } else if (_m2.direction === 'recvonly') {
+              _m2.direction = 'inactive';
             }
           }
+        } catch (err) {
+          _iterator7.e(err);
+        } finally {
+          _iterator7.f();
+        }
+      }
 
       return sdp_transform.write(sdp);
     }
@@ -20640,20 +20639,20 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }, expires * 500); // Half the given interval (as the RFC states).
       } // I'm not the refresher.
       else {
-          this._sessionTimers.timer = setTimeout(function () {
-            if (_this33._status === C.STATUS_TERMINATED) {
-              return;
-            }
+        this._sessionTimers.timer = setTimeout(function () {
+          if (_this33._status === C.STATUS_TERMINATED) {
+            return;
+          }
 
-            logger.warn('runSessionTimer() | timer expired, terminating the session');
+          logger.warn('runSessionTimer() | timer expired, terminating the session');
 
-            _this33.terminate({
-              cause: JsSIP_C.causes.REQUEST_TIMEOUT,
-              status_code: 408,
-              reason_phrase: 'Session Timer Expired'
-            });
-          }, expires * 1100);
-        }
+          _this33.terminate({
+            cause: JsSIP_C.causes.REQUEST_TIMEOUT,
+            status_code: 408,
+            reason_phrase: 'Session Timer Expired'
+          });
+        }, expires * 1100);
+      }
     }
   }, {
     key: "_forEachSenders",
@@ -20874,7 +20873,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -21075,7 +21074,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -21277,7 +21276,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -22003,7 +22002,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -22011,7 +22010,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -22925,12 +22924,13 @@ exports.isSocket = function (socket) {
 },{"./Grammar":7,"./Logger":9,"./Utils":28}],23:[function(require,module,exports){
 "use strict";
 
-var T1 = 4000,
-    T2 = 6000,
-    T4 = 8000;
+var T1Udp = 30000;
+var T2Udp = T1Udp * 3;
+var T1 = 500;
+var T4 = 5000;
 module.exports = {
-  T1: T1,
-  T2: T2,
+  T1Udp: T1Udp,
+  T2Udp: T2Udp,
   T4: T4,
   TIMER_B: 64 * T1,
   TIMER_D: 0 * T1,
@@ -22961,7 +22961,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -23718,8 +23718,8 @@ function checkTransaction(_ref, request) {
         }
       } // ACK to 2XX Response.
       else {
-          return false;
-        }
+        return false;
+      }
 
       break;
 
@@ -24060,12 +24060,12 @@ module.exports = /*#__PURE__*/function () {
         return;
       } // Update socket status.
       else {
-          this.sockets.forEach(function (socket) {
-            if (this.socket === socket.socket) {
-              socket.status = C.SOCKET_STATUS_ERROR;
-            }
-          }, this);
-        }
+        this.sockets.forEach(function (socket) {
+          if (this.socket === socket.socket) {
+            socket.status = C.SOCKET_STATUS_ERROR;
+          }
+        }, this);
+      }
 
       this._reconnect(error);
     }
@@ -24078,18 +24078,18 @@ module.exports = /*#__PURE__*/function () {
         return;
       } // Binary message.
       else if (typeof data !== 'string') {
-          try {
-            if (this.textDecoder) data = this.textDecoder.decode(data);else data = String.fromCharCode.apply(null, new Uint8Array(data));
-          } catch (evt) {
-            logger.debug('received binary message failed to be converted into string,' + ' message discarded');
-            return;
-          }
+        try {
+          if (this.textDecoder) data = this.textDecoder.decode(data);else data = String.fromCharCode.apply(null, new Uint8Array(data));
+        } catch (evt) {
+          logger.debug('received binary message failed to be converted into string,' + ' message discarded');
+          return;
+        }
 
-          logger.debug("received binary message:\n\n".concat(data, "\n"));
-        } // Text message.
-        else {
-            logger.debug("received text message:\n\n".concat(data, "\n"));
-          }
+        logger.debug("received binary message:\n\n".concat(data, "\n"));
+      } // Text message.
+      else {
+        logger.debug("received text message:\n\n".concat(data, "\n"));
+      }
 
       this.ondata({
         transport: this,
@@ -24117,7 +24117,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
@@ -24826,29 +24826,29 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       } // In-dialog request.
       else {
-          dialog = this._findDialog(request.call_id, request.from_tag, request.to_tag);
+        dialog = this._findDialog(request.call_id, request.from_tag, request.to_tag);
 
-          if (dialog) {
-            dialog.receiveRequest(request);
-          } else if (method === JsSIP_C.NOTIFY) {
-            session = this._findSession(request);
+        if (dialog) {
+          dialog.receiveRequest(request);
+        } else if (method === JsSIP_C.NOTIFY) {
+          session = this._findSession(request);
 
-            if (session) {
-              session.receiveRequest(request);
-            } else {
-              logger.debug('received NOTIFY request for a non existent subscription');
-              request.reply(481, 'Subscription does not exist');
-            }
+          if (session) {
+            session.receiveRequest(request);
+          } else {
+            logger.debug('received NOTIFY request for a non existent subscription');
+            request.reply(481, 'Subscription does not exist');
           }
-          /* RFC3261 12.2.2
-           * Request with to tag, but no matching dialog found.
-           * Exception: ACK for an Invite request for which a dialog has not
-           * been created.
-           */
-          else if (method !== JsSIP_C.ACK) {
-              request.reply(481);
-            }
         }
+        /* RFC3261 12.2.2
+         * Request with to tag, but no matching dialog found.
+         * Exception: ACK for an Invite request for which a dialog has not
+         * been created.
+         */
+        else if (method !== JsSIP_C.ACK) {
+          request.reply(481);
+        }
+      }
     } // =================
     // Utils.
     // =================
@@ -24966,10 +24966,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         this._configuration.via_host = this._configuration.contact_uri.host;
       } // Contact URI.
       else {
-          this._configuration.contact_uri = new URI('sip', Utils.createRandomToken(8), this._configuration.via_host, null, {
-            transport: 'ws'
-          });
-        }
+        this._configuration.contact_uri = new URI('sip', Utils.createRandomToken(8), this._configuration.via_host, null, {
+          transport: 'ws'
+        });
+      }
 
       this._contact = {
         pub_gruu: null,
@@ -25156,7 +25156,7 @@ function onTransportData(data) {
 },{"./Config":1,"./Constants":2,"./Exceptions":6,"./Logger":9,"./Message":10,"./Options":12,"./Parser":13,"./RTCSession":14,"./Registrator":19,"./SIPMessage":21,"./Transactions":24,"./Transport":25,"./URI":27,"./Utils":28,"./sanityCheck":30,"events":33}],27:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -25418,7 +25418,7 @@ module.exports = /*#__PURE__*/function () {
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -26119,7 +26119,7 @@ module.exports = /*#__PURE__*/function () {
 },{"./Grammar":7,"./Logger":9}],30:[function(require,module,exports){
 "use strict";
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -26272,36 +26272,36 @@ function rfc3261_8_2_2_2() {
       return false;
     } // Otherwise check whether it is a merged request.
     else {
-        for (var transaction in ua._transactions.ist) {
-          if (Object.prototype.hasOwnProperty.call(ua._transactions.ist, transaction)) {
-            tr = ua._transactions.ist[transaction];
+      for (var transaction in ua._transactions.ist) {
+        if (Object.prototype.hasOwnProperty.call(ua._transactions.ist, transaction)) {
+          tr = ua._transactions.ist[transaction];
 
-            if (tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-              reply(482);
-              return false;
-            }
+          if (tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
+            reply(482);
+            return false;
           }
         }
       }
+    }
   } // Non INVITE request.
   // If the branch matches the key of any NIST then assume it is a retransmission
   // and ignore the request.
   // TODO: we should reply the last response.
   else if (ua._transactions.nist[message.via_branch]) {
-      return false;
-    } // Otherwise check whether it is a merged request.
-    else {
-        for (var _transaction in ua._transactions.nist) {
-          if (Object.prototype.hasOwnProperty.call(ua._transactions.nist, _transaction)) {
-            tr = ua._transactions.nist[_transaction];
+    return false;
+  } // Otherwise check whether it is a merged request.
+  else {
+    for (var _transaction in ua._transactions.nist) {
+      if (Object.prototype.hasOwnProperty.call(ua._transactions.nist, _transaction)) {
+        tr = ua._transactions.nist[_transaction];
 
-            if (tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-              reply(482);
-              return false;
-            }
-          }
+        if (tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
+          reply(482);
+          return false;
         }
       }
+    }
+  }
 } // Sanity Check functions for responses.
 
 
@@ -26705,6 +26705,8 @@ function setup(env) {
 	function createDebug(namespace) {
 		let prevTime;
 		let enableOverride = null;
+		let namespacesCache;
+		let enabledCache;
 
 		function debug(...args) {
 			// Disabled?
@@ -26765,7 +26767,17 @@ function setup(env) {
 		Object.defineProperty(debug, 'enabled', {
 			enumerable: true,
 			configurable: false,
-			get: () => enableOverride === null ? createDebug.enabled(namespace) : enableOverride,
+			get: () => {
+				if (enableOverride !== null) {
+					return enableOverride;
+				}
+				if (namespacesCache !== createDebug.namespaces) {
+					namespacesCache = createDebug.namespaces;
+					enabledCache = createDebug.enabled(namespace);
+				}
+
+				return enabledCache;
+			},
 			set: v => {
 				enableOverride = v;
 			}
@@ -26794,6 +26806,7 @@ function setup(env) {
 	*/
 	function enable(namespaces) {
 		createDebug.save(namespaces);
+		createDebug.namespaces = namespaces;
 
 		createDebug.names = [];
 		createDebug.skips = [];
@@ -28506,14 +28519,15 @@ module.exports = function (session, opts) {
 };
 
 },{"./grammar":36}],40:[function(require,module,exports){
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0});const s=()=>!0;exports.default=(r,e=s)=>r.reduce(((s,r)=>s.then((({success:s,errors:t,results:o})=>{let u;return u=e(r)?r():Promise.reject((s=>{const r=new Error("Promise was not running");return r.basePromise=s,r.id="ERROR_NOT_RUNNING",r.name="Not running",r})(r)),u.then((r=>({errors:t,success:[...s,r],results:[...o,r],isSuccessful:!0,isError:!1}))).catch((r=>({success:s,errors:[...t,r],results:[...o,r],isSuccessful:!1,isError:!0})))}))),Promise.resolve({success:[],errors:[],results:[]})),exports.isNotRunningError=({id:s})=>"ERROR_NOT_RUNNING"===s;
+!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?s(exports):"function"==typeof define&&define.amd?define(["exports"],s):s((e="undefined"!=typeof globalThis?globalThis:e||self).sipConnector={})}(this,(function(e){"use strict";const s="ERROR_NOT_RUNNING";e.default=(e,r)=>e.reduce(((e,o)=>e.then((({success:e,errors:n,results:t})=>{let i;return i=!r||r(o)?o():Promise.reject((e=>{const r=new Error("Promise was not running");return r.basePromise=e,r.id=s,r.name="Not running",r})(o)),i.then((s=>({errors:n,success:[...e,s],results:[...t,s],isSuccessful:!0,isError:!1}))).catch((s=>({success:e,errors:[...n,s],results:[...t,s],isSuccessful:!1,isError:!0})))}))),Promise.resolve({success:[],errors:[],results:[],isSuccessful:!1,isError:!1})),e.isNotRunningError=e=>e&&e.id===s,Object.defineProperty(e,"__esModule",{value:!0})}));
+
 
 },{}],41:[function(require,module,exports){
 module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.12.3",
+  "version": "3.12.4",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -28538,29 +28552,29 @@ module.exports={
     "url": "https://github.com/Krivega/JsSIP/issues"
   },
   "dependencies": {
-    "@types/debug": "^4.1.5",
-    "@types/node": "^14.14.41",
-    "debug": "^4.3.1",
+    "@types/debug": "^4.1.7",
+    "@types/node": "^16.7.2",
+    "debug": "^4.3.2",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1",
-    "sequent-promises": "^0.1.2"
+    "sequent-promises": "^0.1.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.15",
-    "@babel/preset-env": "^7.13.15",
+    "@babel/core": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
     "ansi-colors": "^4.1.1",
     "browserify": "^17.0.0",
-    "eslint": "^7.24.0",
+    "eslint": "^7.32.0",
     "fancy-log": "^1.3.3",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^6.0.0",
-    "gulp-expect-file": "^1.0.2",
+    "gulp-expect-file": "^2.0.0",
     "gulp-header": "^2.0.9",
     "gulp-nodeunit-runner": "^0.2.2",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^2.0.0",
-    "gulp-uglify-es": "^2.0.0",
+    "gulp-uglify-es": "^3.0.0",
     "pegjs": "^0.10.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
