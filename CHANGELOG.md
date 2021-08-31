@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.8.1
+
+
+* RTCSession: allow SDP renegotiation before ICE gathering is completed. Credits to @markusatm.
+
+
 ### 3.8.0
 
 
