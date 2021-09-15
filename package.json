@@ -56,6 +56,7 @@
   "scripts": {
     "lint": "gulp lint",
     "test": "gulp test",
-    "prepublishOnly": "gulp babel"
+    "prepublishOnly": "gulp babel",
+    "prepare": "gulp babel"
   }
 }
