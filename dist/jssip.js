@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.8.1
+ * JsSIP v3.8.2
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -20300,6 +20300,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             return;
           }
 
+          if (!_this27._isReadyToReOffer()) {
+            return;
+          }
+
           logger.debug('runSessionTimer() | sending session refresh request');
 
           if (_this27._sessionTimers.refreshMethod === JsSIP_C.UPDATE) {
@@ -28264,7 +28268,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

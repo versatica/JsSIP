@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+### 3.8.2
+
+
+* RTCSession: Fix for overlapping invites while refreshing session (PR #734). Credits to @makstheimba.
+
+
+
 ### 3.8.1
 
 
