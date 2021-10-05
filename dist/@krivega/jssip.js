@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.12.4
+ * JsSIP v3.12.6
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -28544,7 +28544,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.12.4",
+  "version": "3.12.6",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
