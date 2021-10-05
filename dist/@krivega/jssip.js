@@ -17408,7 +17408,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     _this._localMediaStream = null;
     _this._localMediaStreamLocallyGenerated = false; // Flag to indicate PeerConnection ready for new actions.
 
-    _this._rtcReady = true; // SIP Timers.
+    _this._rtcReady = true; // Flag to indicate ICE candidate gathering is finished even if iceGatheringState is not yet 'complete'.
+
+    _this._iceReady = false; // SIP Timers.
 
     _this._timers = {
       ackTimer: null,
@@ -19316,7 +19318,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         });
       }).then(function () {
         // Resolve right away if 'pc.iceGatheringState' is 'complete'.
-        if (connection.iceGatheringState === 'complete' && (!constraints || !constraints.iceRestart)) {
+
+        /**
+         * Resolve right away if:
+         * - 'connection.iceGatheringState' is 'complete' and no 'iceRestart' constraint is set.
+         * - 'connection.iceGatheringState' is 'gathering' and 'iceReady' is true.
+         */
+        var iceRestart = constraints && constraints.iceRestart;
+
+        if (connection.iceGatheringState === 'complete' && !iceRestart || connection.iceGatheringState === 'gathering' && _this22._iceReady) {
           _this22._rtcReady = true;
           var e = {
             originator: 'local',
@@ -19335,12 +19345,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           var finished = false;
           var iceCandidateListener;
           var iceGatheringStateListener;
+          _this22._iceReady = false;
 
           var ready = function ready() {
             connection.removeEventListener('icecandidate', iceCandidateListener);
             connection.removeEventListener('icegatheringstatechange', iceGatheringStateListener);
             finished = true;
-            _this22._rtcReady = true;
+            _this22._rtcReady = true; // connection.iceGatheringState will still indicate 'gathering' and thus be blocking.
+
+            _this22._iceReady = true;
             var e = {
               originator: 'local',
               type: type,
@@ -20626,6 +20639,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._sessionTimers.refresher) {
         this._sessionTimers.timer = setTimeout(function () {
           if (_this33._status === C.STATUS_TERMINATED) {
+            return;
+          }
+
+          if (!_this33._isReadyToReOffer()) {
             return;
           }
 
