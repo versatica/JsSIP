@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+### 3.8.2
+
+
+* RTCSession: Fix for overlapping invites while refreshing session (PR #734). Credits to @makstheimba.
+
+
+
+### 3.8.1
+
+
+* RTCSession: allow SDP renegotiation before ICE gathering is completed. Credits to @markusatm.
+
+
 ### 3.8.0
 
 
