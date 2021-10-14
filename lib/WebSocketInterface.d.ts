@@ -1,10 +1,3 @@
-export interface DisconnectEvent {
-  socket: Socket;
-  error: boolean;
-  code?: number;
-  reason?: string;
-}
-
 export interface WeightedSocket  {
   socket: Socket;
   weight: number
@@ -30,7 +23,7 @@ export class Socket {
 
   onconnect(): void;
 
-  ondisconnect(event: DisconnectEvent): void;
+  ondisconnect(withError: boolean, code?: number, reason?: string): void;
 
   ondata<T>(event: T): void;
 }
