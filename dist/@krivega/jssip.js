@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.12.6
+ * JsSIP v3.13.0
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -19034,8 +19034,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         };
 
         var isNeedReplaceTracks = _this18._ua.configuration.sdp_semantics === 'unified-plan';
+        var sendInfoPromise = Promise.resolve();
 
-        _this18._sendInfoInner(extraHeaders).then(function () {
+        if (extraHeaders && extraHeaders.length > 0) {
+          sendInfoPromise = _this18._sendInfoInner(extraHeaders);
+        }
+
+        sendInfoPromise.then(function () {
           if (isNeedReplaceTracks) {
             _this18._addOrReplacePresentationMediaStream(stream);
           } else {
@@ -19093,8 +19098,13 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         };
 
         var isNeedReplaceTracks = _this19._ua.configuration.sdp_semantics === 'unified-plan';
+        var sendInfoPromise = Promise.resolve();
 
-        _this19._sendInfoInner(extraHeaders).then(function () {
+        if (extraHeaders && extraHeaders.length > 0) {
+          sendInfoPromise = _this19._sendInfoInner(extraHeaders);
+        }
+
+        sendInfoPromise.then(function () {
           if (isNeedReplaceTracks) {
             _this19._stopPresentationTracks();
           } else {
@@ -28544,7 +28554,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.12.6",
+  "version": "3.13.0",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
