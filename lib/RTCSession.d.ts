@@ -280,7 +280,7 @@ export class RTCSession extends EventEmitter {
 
   sendDTMF(tones: string | number, options?: DTFMOptions): void;
 
-  sendInfo(contentType: string, body?: string, options?: ExtraHeaders): void;
+  sendInfo(contentType: string, body?: string, options?: ExtraHeaders): Promise<void>;
 
   hold(options?: HoldOptions, done?: VoidFunction): boolean;
 
@@ -304,7 +304,7 @@ export class RTCSession extends EventEmitter {
 
   replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; }): Promise<void>;
 
-  startPresentation(stream: MediaStream, extraHeaders?: string[], isNeedReinvite?: boolean): Promise<MediaStream>;
+  startPresentation(stream: MediaStream, isNeedReinvite?: boolean): Promise<MediaStream>;
 
-  stopPresentation(stream: MediaStream, extraHeaders?: string[]): Promise<MediaStream>;
+  stopPresentation(stream: MediaStream): Promise<MediaStream>;
 }
