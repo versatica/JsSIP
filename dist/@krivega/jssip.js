@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.14.0
+ * JsSIP v3.14.1
  * the Javascript SIP library
  * Copyright: 2012-2021 
  * Homepage: https://jssip.net
@@ -342,7 +342,7 @@ module.exports = {
   SIP_ERROR_CAUSES: {
     REDIRECTED: [300, 301, 302, 305, 380],
     BUSY: [486, 600],
-    REJECTED: [403, 603],
+    REJECTED: [403, 487, 603],
     NOT_FOUND: [404, 604],
     UNAVAILABLE: [480, 410, 408, 430],
     ADDRESS_INCOMPLETE: [484, 424],
@@ -28515,7 +28515,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.14.0",
+  "version": "3.14.1",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
