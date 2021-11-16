@@ -26,6 +26,8 @@ export interface MessageEventMap {
 export interface SendMessageOptions extends ExtraHeaders {
   contentType?: string;
   eventHandlers?: Partial<MessageEventMap>;
+  fromUserName?: string;
+  fromDisplayName?: string;
 }
 
 export class Message extends EventEmitter {
