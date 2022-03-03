@@ -16523,11 +16523,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return Message;
 }(EventEmitter);
-<<<<<<< HEAD:dist/@krivega/jssip.js
-},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":33}],11:[function(require,module,exports){
-=======
-},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./URI":27,"./Utils":28,"events":31}],11:[function(require,module,exports){
->>>>>>> master-upstream:dist/jssip.js
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./URI":27,"./Utils":28,"events":33}],11:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -28532,11 +28528,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-<<<<<<< HEAD:dist/@krivega/jssip.js
   "version": "3.14.1",
-=======
-  "version": "3.9.0",
->>>>>>> master-upstream:dist/jssip.js
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -28566,7 +28558,7 @@ module.exports={
     "debug": "^4.3.2",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1",
-    "sequent-promises": "^0.1.3"
+    "sequent-promises": "^0.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
