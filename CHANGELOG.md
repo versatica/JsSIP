@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.9.0
+
+
+* Enable custom From-Header for outbound Message (#753). Thanks @gebsl.
+
+
 ### 3.8.2
 
 

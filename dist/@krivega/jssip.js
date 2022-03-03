@@ -1,7 +1,7 @@
 /*
  * JsSIP v3.14.1
  * the Javascript SIP library
- * Copyright: 2012-2021 
+ * Copyright: 2012-2022 
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -16241,6 +16241,8 @@ var RequestSender = require('./RequestSender');
 
 var Exceptions = require('./Exceptions');
 
+var URI = require('./URI');
+
 var logger = new Logger('Message');
 
 module.exports = /*#__PURE__*/function (_EventEmitter) {
@@ -16304,7 +16306,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var eventHandlers = Utils.cloneObject(options.eventHandlers);
-      var contentType = options.contentType || 'text/plain'; // Set event handlers.
+      var contentType = options.contentType || 'text/plain';
+      var requestParams = {};
+
+      if (options.fromUserName) {
+        requestParams.from_uri = new URI('sip', options.fromUserName, this._ua.configuration.uri.host);
+        extraHeaders.push("P-Preferred-Identity: ".concat(this._ua.configuration.uri.toString()));
+      }
+
+      if (options.fromDisplayName) {
+        requestParams.from_display_name = options.fromDisplayName;
+      } // Set event handlers.
+
 
       for (var event in eventHandlers) {
         if (Object.prototype.hasOwnProperty.call(eventHandlers, event)) {
@@ -16313,7 +16326,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       extraHeaders.push("Content-Type: ".concat(contentType));
-      this._request = new SIPMessage.OutgoingRequest(JsSIP_C.MESSAGE, target, this._ua, null, extraHeaders);
+      this._request = new SIPMessage.OutgoingRequest(JsSIP_C.MESSAGE, target, this._ua, requestParams, extraHeaders);
 
       if (body) {
         this._request.body = body;
@@ -16510,7 +16523,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return Message;
 }(EventEmitter);
+<<<<<<< HEAD:dist/@krivega/jssip.js
 },{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":33}],11:[function(require,module,exports){
+=======
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./URI":27,"./Utils":28,"events":31}],11:[function(require,module,exports){
+>>>>>>> master-upstream:dist/jssip.js
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -28515,7 +28532,11 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
+<<<<<<< HEAD:dist/@krivega/jssip.js
   "version": "3.14.1",
+=======
+  "version": "3.9.0",
+>>>>>>> master-upstream:dist/jssip.js
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
