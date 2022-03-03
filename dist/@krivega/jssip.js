@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.14.1
+ * JsSIP v3.14.2
  * the Javascript SIP library
  * Copyright: 2012-2022 
  * Homepage: https://jssip.net
@@ -19304,9 +19304,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           var finished = false;
           var iceCandidateListener;
           var iceGatheringStateListener;
+          var myCandidateTimeout;
           _this21._iceReady = false;
 
           var ready = function ready() {
+            clearTimeout(myCandidateTimeout);
             connection.removeEventListener('icecandidate', iceCandidateListener);
             connection.removeEventListener('icegatheringstatechange', iceGatheringStateListener);
             finished = true;
@@ -19333,6 +19335,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                 candidate: candidate,
                 ready: ready
               });
+
+              clearTimeout(myCandidateTimeout); // 2 seconds timeout after the last icecandidate received!
+
+              myCandidateTimeout = setTimeout(ready, 2000);
             } else if (!finished) {
               ready();
             }
@@ -28528,7 +28534,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.14.1",
+  "version": "3.14.2",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
