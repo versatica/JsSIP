@@ -1,5 +1,3 @@
-import {Grammar} from './Grammar'
-
 export type URIScheme = 'sip' | string;
 
 export type Parameters = Record<string, string | null>;
@@ -40,5 +38,5 @@ export class URI {
 
   toAor(): string;
 
-  static parse(uri: string): Grammar | undefined;
+  static parse(uri: string): string | undefined;
 }

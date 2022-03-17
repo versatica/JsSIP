@@ -34,3 +34,7 @@ export function closeMediaStream(stream?: MediaStream): void;
 export function cloneArray<T = unknown>(arr: T[]): T[];
 
 export function cloneObject<T>(obj: T, fallback?: T): T;
+
+export function parseUri(uri: string): string | undefined;
+
+export function parseNameAddrHeader(nameAddrHeader: string): string | undefined;

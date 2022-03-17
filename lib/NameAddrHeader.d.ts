@@ -1,6 +1,4 @@
 import {Parameters, URI} from './URI'
-import {Grammar} from './Grammar'
-
 export class NameAddrHeader {
   get display_name(): string;
   set display_name(value: string);
@@ -23,5 +21,5 @@ export class NameAddrHeader {
 
   toString(): string;
 
-  static parse(uri: string): Grammar | undefined;
+  static parse(uri: string): string | undefined;
 }

@@ -16530,16 +16530,14 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
-var URI = require('./URI');
-
-var Grammar = require('./Grammar');
+var Utils = require('./Utils');
 
 module.exports = /*#__PURE__*/function () {
   function NameAddrHeader(uri, display_name, parameters) {
     _classCallCheck(this, NameAddrHeader);
 
     // Checks.
-    if (!uri || !(uri instanceof URI)) {
+    if (!Utils.isValidURI(uri)) {
       throw new TypeError('missing or invalid "uri" parameter');
     } // Initialize parameters.
 
@@ -16641,19 +16639,13 @@ module.exports = /*#__PURE__*/function () {
      * it is an invalid NameAddrHeader.
      */
     function parse(name_addr_header) {
-      name_addr_header = Grammar.parse(name_addr_header, 'Name_Addr_Header');
-
-      if (name_addr_header !== -1) {
-        return name_addr_header;
-      } else {
-        return undefined;
-      }
+      return Utils.parseNameAddrHeader(name_addr_header);
     }
   }]);
 
   return NameAddrHeader;
 }();
-},{"./Grammar":7,"./URI":27}],12:[function(require,module,exports){
+},{"./Utils":28}],12:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -25309,7 +25301,7 @@ exports.normalizeTarget = function (target, domain) {
 
     var uri;
 
-    if (uri = URI.parse(target)) {
+    if (uri = parseUri(target)) {
       return uri;
     } else {
       return;
@@ -25681,7 +25673,7 @@ exports.cloneObject = function (obj) {
 */
 
 
-exports.parseUri = function (uri) {
+var parseUri = function parseUri(uri) {
   uri = Grammar.parse(uri, 'SIP_URI');
 
   if (uri !== -1) {
@@ -25689,6 +25681,22 @@ exports.parseUri = function (uri) {
   } else {
     return undefined;
   }
+};
+
+exports.parseUri = parseUri;
+
+exports.parseNameAddrHeader = function (name_addr_header) {
+  name_addr_header = Grammar.parse(name_addr_header, 'Name_Addr_Header');
+
+  if (name_addr_header !== -1) {
+    return name_addr_header;
+  } else {
+    return undefined;
+  }
+};
+
+exports.isValidURI = function (instance) {
+  return instance && instance instanceof URI;
 };
 },{"./Constants":2,"./Grammar":7,"./URI":27}],29:[function(require,module,exports){
 "use strict";
