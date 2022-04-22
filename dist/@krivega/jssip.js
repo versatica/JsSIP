@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.14.2
+ * JsSIP v3.15.0
  * the Javascript SIP library
  * Copyright: 2012-2022 
  * Homepage: https://jssip.net
@@ -21164,17 +21164,23 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             onTransportError: function onTransportError() {
               rejectWithError(new Error('Transport response'));
 
-              _this2._session.onTransportError();
+              if (!options.noTerminateWhenError) {
+                _this2._session.onTransportError();
+              }
             },
             onRequestTimeout: function onRequestTimeout() {
               rejectWithError(new Error('Request timeout'));
 
-              _this2._session.onRequestTimeout();
+              if (!options.noTerminateWhenError) {
+                _this2._session.onRequestTimeout();
+              }
             },
             onDialogError: function onDialogError() {
               rejectWithError(new Error('Dialog error'));
 
-              _this2._session.onDialogError();
+              if (!options.noTerminateWhenError) {
+                _this2._session.onDialogError();
+              }
             }
           },
           body: body
@@ -28534,7 +28540,7 @@ module.exports={
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.14.2",
+  "version": "3.15.0",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -28560,7 +28566,7 @@ module.exports={
   },
   "dependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^16.7.2",
+    "@types/node": "^17.0.25",
     "debug": "^4.3.2",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1",
@@ -28589,7 +28595,7 @@ module.exports={
   "scripts": {
     "lint": "gulp lint",
     "test": "gulp test",
-    "prepublishOnly": "gulp babel"
+    "prepublishOnly": "gulp && gulp babel"
   }
 }
 },{}]},{},[8])(8)
