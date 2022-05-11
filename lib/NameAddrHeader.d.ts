@@ -1,7 +1,7 @@
 import {Parameters, URI} from './URI'
 import {Grammar} from './Grammar'
 
-export class NameAddrHeader {
+export default class NameAddrHeader {
   get display_name(): string;
   set display_name(value: string);
 

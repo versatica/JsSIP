@@ -30,7 +30,7 @@ export interface SendMessageOptions extends ExtraHeaders {
   fromDisplayName?: string;
 }
 
-export class Message extends EventEmitter {
+export default class Message extends EventEmitter {
   get direction(): SessionDirection;
 
   get local_identity(): NameAddrHeader;

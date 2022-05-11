@@ -142,7 +142,7 @@ declare enum UAStatus {
   NETWORK_ERROR = 2
 }
 
-export class UA extends EventEmitter {
+export default class UA extends EventEmitter {
   static get C(): typeof UAStatus;
 
   configuration: UAConfiguration;

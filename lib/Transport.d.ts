@@ -5,6 +5,6 @@ export interface RecoveryOptions {
   max_interval: number;
 }
 
-export class Transport extends Socket {
+export default class Transport extends Socket {
   constructor(sockets: Socket | Socket[], recovery_options?: RecoveryOptions)
 }
