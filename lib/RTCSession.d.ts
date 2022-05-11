@@ -302,7 +302,7 @@ export class RTCSession extends EventEmitter {
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 
-  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; }): Promise<void>;
+  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; forceRenegotiation: boolean; }): Promise<void>;
 
   startPresentation(stream: MediaStream, isNeedReinvite?: boolean): Promise<MediaStream>;
 
