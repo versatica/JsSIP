@@ -2,7 +2,7 @@
   "name": "@krivega/jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.17.0",
+  "version": "3.17.1",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@types/debug": "^4.1.7",
-    "@types/node": "^17.0.32",
+    "@types/node": "^17.0.34",
     "debug": "^4.3.4",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1",
