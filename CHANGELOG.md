@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.9.1
+
+
+* Fix RTCSession 'confirmed' event type description (#770). Thanks @stefang42.
+
+
 ### 3.9.0
 
 
