@@ -42,6 +42,8 @@ export interface AnswerOptions extends ExtraHeaders {
   rtcAnswerConstraints?: RTCOfferOptions;
   rtcOfferConstraints?: RTCOfferOptions;
   sessionTimersExpires?: number;
+  videoMode?: 'sendrecv'|'sendonly'|'recvonly';
+  audioMode?: 'sendrecv'|'sendonly'|'recvonly';
 }
 
 export interface RejectOptions extends ExtraHeaders {
