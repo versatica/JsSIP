@@ -1,6 +1,6 @@
 {
   "name": "@krivega/jssip",
-  "version": "3.19.1",
+  "version": "3.20.0",
   "description": "the Javascript SIP library",
   "keywords": [
     "sip",
