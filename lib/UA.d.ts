@@ -20,6 +20,7 @@ export interface CallOptions extends AnswerOptions {
   fromDisplayName?: string;
   videoMode?: 'sendrecv'|'sendonly'|'recvonly';
   audioMode?: 'sendrecv'|'sendonly'|'recvonly';
+  degradationPreference?: 'maintain-framerate'|'maintain-resolution'|'balanced';
 }
 
 export interface UAConfiguration {

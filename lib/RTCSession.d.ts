@@ -35,6 +35,8 @@ export interface ExtraHeaders {
   extraHeaders?: string[];
 }
 
+
+type TDegradationPreference = 'maintain-framerate'|'maintain-resolution'|'balanced';
 export interface AnswerOptions extends ExtraHeaders {
   mediaConstraints?: MediaConstraints;
   mediaStream?: MediaStream;
@@ -44,6 +46,7 @@ export interface AnswerOptions extends ExtraHeaders {
   sessionTimersExpires?: number;
   videoMode?: 'sendrecv'|'sendonly'|'recvonly';
   audioMode?: 'sendrecv'|'sendonly'|'recvonly';
+  degradationPreference?: TDegradationPreference;
 }
 
 export interface RejectOptions extends ExtraHeaders {
@@ -316,9 +319,9 @@ export default class RTCSession extends EventEmitter {
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 
-  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; forceRenegotiation: boolean; }): Promise<void>;
+  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; forceRenegotiation: boolean; degradationPreference?: TDegradationPreference; }): Promise<void>;
 
-  startPresentation(stream: MediaStream, isNeedReinvite?: boolean): Promise<MediaStream>;
+  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, degradationPreference?: TDegradationPreference ): Promise<MediaStream>;
 
   stopPresentation(stream: MediaStream): Promise<MediaStream>;
 }
