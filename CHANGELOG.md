@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### NEXT RELEASE
+
+* Transport: Handle keep alive request from server (#791).
+
+
 ### 3.10.0
 
 * Fix typescript typings (#648).
