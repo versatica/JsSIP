@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### NEXT RELEASE
+
+
+* Fix typescript typings (#648).
+
+
 ### 3.9.4
 
 
