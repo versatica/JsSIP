@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.9.3
+
+
+* UA: Add TS types for 'newOptions' event (closes #777).
+
+
 ### 3.9.2
 
 

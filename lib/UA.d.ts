@@ -90,6 +90,16 @@ export interface OutgoingMessageEvent {
   request: OutgoingRequest;
 }
 
+export interface IncomingOptionsEvent {
+  originator: Originator.REMOTE;
+  request: IncomingRequest;
+}
+
+export interface OutgoingOptionsEvent {
+  originator: Originator.LOCAL;
+  request: OutgoingRequest;
+}
+
 export type UAConnectingListener = (event: UAConnectingEvent) => void;
 export type ConnectedListener = (event: ConnectedEvent) => void;
 export type DisconnectedListener = (event: DisconnectEvent) => void;
@@ -102,6 +112,9 @@ export type RTCSessionListener = IncomingRTCSessionListener | OutgoingRTCSession
 export type IncomingMessageListener = (event: IncomingMessageEvent) => void;
 export type OutgoingMessageListener = (event: OutgoingMessageEvent) => void;
 export type MessageListener = IncomingMessageListener | OutgoingMessageListener;
+export type IncomingOptionsListener = (event: IncomingOptionsEvent) => void;
+export type OutgoingOptionsListener = (event: OutgoingOptionsEvent) => void;
+export type OptionsListener = IncomingOptionsListener | OutgoingOptionsListener;
 export type SipEventListener = <T = any>(event: { event: T; request: IncomingRequest; }) => void
 
 export interface UAEventMap {
@@ -115,6 +128,7 @@ export interface UAEventMap {
   newRTCSession: RTCSessionListener;
   newMessage: MessageListener;
   sipEvent: SipEventListener;
+  newOptions: OptionsListener;
 }
 
 export interface UAContactOptions {
