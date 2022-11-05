@@ -1,7 +1,7 @@
 /*
- * JsSIP v3.8.2
+ * JsSIP v3.9.4
  * the Javascript SIP library
- * Copyright: 2012-2021 
+ * Copyright: 2012-2022 
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -495,7 +495,8 @@ var logger = new Logger('Dialog');
 var C = {
   // Dialog states.
   STATUS_EARLY: 1,
-  STATUS_CONFIRMED: 2
+  STATUS_CONFIRMED: 2,
+  STATUS_TERMINATED: 3
 }; // RFC 3261 12.1.
 
 module.exports = /*#__PURE__*/function () {
@@ -570,6 +571,11 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(Dialog, [{
+    key: "isTerminated",
+    value: function isTerminated() {
+      return this._status === C.STATUS_TERMINATED;
+    }
+  }, {
     key: "update",
     value: function update(message, type) {
       this._state = C.STATUS_CONFIRMED;
@@ -586,6 +592,8 @@ module.exports = /*#__PURE__*/function () {
       logger.debug("dialog ".concat(this._id.toString(), " deleted"));
 
       this._ua.destroyDialog(this);
+
+      this._state = C.STATUS_TERMINATED;
     }
   }, {
     key: "sendRequest",
@@ -762,8 +770,6 @@ var JsSIP_C = require('../Constants');
 
 var Transactions = require('../Transactions');
 
-var RTCSession = require('../RTCSession');
-
 var RequestSender = require('../RequestSender'); // Default event handlers.
 
 
@@ -849,11 +855,10 @@ module.exports = /*#__PURE__*/function () {
         } else {
           this._request.cseq = this._dialog.local_seqnum += 1;
           this._reattemptTimer = setTimeout(function () {
-            // TODO: look at dialog state instead.
-            if (_this2._dialog.owner.status !== RTCSession.C.STATUS_TERMINATED) {
+            if (!_this2._dialog.isTerminated()) {
               _this2._reattempt = true;
 
-              _this2._request_sender.send();
+              _this2.send();
             }
           }, 1000);
         }
@@ -872,7 +877,7 @@ module.exports = /*#__PURE__*/function () {
 
   return DialogRequestSender;
 }();
-},{"../Constants":2,"../RTCSession":14,"../RequestSender":20,"../Transactions":24}],5:[function(require,module,exports){
+},{"../Constants":2,"../RequestSender":20,"../Transactions":24}],5:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16239,6 +16244,8 @@ var RequestSender = require('./RequestSender');
 
 var Exceptions = require('./Exceptions');
 
+var URI = require('./URI');
+
 var logger = new Logger('Message');
 
 module.exports = /*#__PURE__*/function (_EventEmitter) {
@@ -16287,7 +16294,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
       var eventHandlers = Utils.cloneObject(options.eventHandlers);
-      var contentType = options.contentType || 'text/plain'; // Set event handlers.
+      var contentType = options.contentType || 'text/plain';
+      var requestParams = {};
+
+      if (options.fromUserName) {
+        requestParams.from_uri = new URI('sip', options.fromUserName, this._ua.configuration.uri.host);
+        extraHeaders.push("P-Preferred-Identity: ".concat(this._ua.configuration.uri.toString()));
+      }
+
+      if (options.fromDisplayName) {
+        requestParams.from_display_name = options.fromDisplayName;
+      } // Set event handlers.
+
 
       for (var event in eventHandlers) {
         if (Object.prototype.hasOwnProperty.call(eventHandlers, event)) {
@@ -16296,7 +16314,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       }
 
       extraHeaders.push("Content-Type: ".concat(contentType));
-      this._request = new SIPMessage.OutgoingRequest(JsSIP_C.MESSAGE, target, this._ua, null, extraHeaders);
+      this._request = new SIPMessage.OutgoingRequest(JsSIP_C.MESSAGE, target, this._ua, requestParams, extraHeaders);
 
       if (body) {
         this._request.body = body;
@@ -16508,7 +16526,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
 
   return Message;
 }(EventEmitter);
-},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":31}],11:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./URI":27,"./Utils":28,"events":31}],11:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21108,7 +21126,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         return;
       }
 
-      var status_line = Grammar.parse(request.body.trim(), 'Status_Line');
+      var status_line = Grammar.parse(request.body.trim().split('\r\n', 1)[0], 'Status_Line');
 
       if (status_line === -1) {
         logger.debug("receiveNotify() | error parsing NOTIFY body: \"".concat(request.body, "\""));
@@ -25475,7 +25493,6 @@ exports.calculateMD5 = function (string) {
   }
 
   function utf8Encode(str) {
-    str = str.replace(/\r\n/g, '\n');
     var utftext = '';
 
     for (var n = 0; n < str.length; n++) {
@@ -28268,7 +28285,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.8.2",
+  "version": "3.9.4",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -28293,15 +28310,15 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "@types/debug": "^4.1.5",
-    "@types/node": "^14.14.34",
+    "@types/debug": "^4.1.7",
+    "@types/node": "^18.11.7",
     "debug": "^4.3.1",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.10",
-    "@babel/preset-env": "^7.13.10",
+    "@babel/core": "^7.19.6",
+    "@babel/preset-env": "^7.19.4",
     "ansi-colors": "^3.2.4",
     "browserify": "^16.5.1",
     "eslint": "^5.16.0",
@@ -28320,9 +28337,10 @@ module.exports={
     "vinyl-source-stream": "^2.0.0"
   },
   "scripts": {
-    "lint": "gulp lint",
-    "test": "gulp test",
-    "prepublishOnly": "gulp babel"
+    "lint": "node npm-scripts.js lint",
+    "test": "node npm-scripts.js test",
+    "prepublish": "node npm-scripts.js prepublish",
+    "release": "node npm-scripts.js release"
   }
 }
 
