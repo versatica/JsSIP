@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.9.3
+ * JsSIP v3.9.4
  * the Javascript SIP library
  * Copyright: 2012-2022 
  * Homepage: https://jssip.net
@@ -495,7 +495,8 @@ var logger = new Logger('Dialog');
 var C = {
   // Dialog states.
   STATUS_EARLY: 1,
-  STATUS_CONFIRMED: 2
+  STATUS_CONFIRMED: 2,
+  STATUS_TERMINATED: 3
 }; // RFC 3261 12.1.
 
 module.exports = /*#__PURE__*/function () {
@@ -570,6 +571,11 @@ module.exports = /*#__PURE__*/function () {
   }
 
   _createClass(Dialog, [{
+    key: "isTerminated",
+    value: function isTerminated() {
+      return this._status === C.STATUS_TERMINATED;
+    }
+  }, {
     key: "update",
     value: function update(message, type) {
       this._state = C.STATUS_CONFIRMED;
@@ -586,6 +592,8 @@ module.exports = /*#__PURE__*/function () {
       logger.debug("dialog ".concat(this._id.toString(), " deleted"));
 
       this._ua.destroyDialog(this);
+
+      this._state = C.STATUS_TERMINATED;
     }
   }, {
     key: "sendRequest",
@@ -762,8 +770,6 @@ var JsSIP_C = require('../Constants');
 
 var Transactions = require('../Transactions');
 
-var RTCSession = require('../RTCSession');
-
 var RequestSender = require('../RequestSender'); // Default event handlers.
 
 
@@ -849,8 +855,7 @@ module.exports = /*#__PURE__*/function () {
         } else {
           this._request.cseq = this._dialog.local_seqnum += 1;
           this._reattemptTimer = setTimeout(function () {
-            // TODO: look at dialog state instead.
-            if (_this2._dialog.owner.status !== RTCSession.C.STATUS_TERMINATED) {
+            if (!_this2._dialog.isTerminated()) {
               _this2._reattempt = true;
 
               _this2.send();
@@ -872,7 +877,7 @@ module.exports = /*#__PURE__*/function () {
 
   return DialogRequestSender;
 }();
-},{"../Constants":2,"../RTCSession":14,"../RequestSender":20,"../Transactions":24}],5:[function(require,module,exports){
+},{"../Constants":2,"../RequestSender":20,"../Transactions":24}],5:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21121,7 +21126,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         return;
       }
 
-      var status_line = Grammar.parse(request.body.trim(), 'Status_Line');
+      var status_line = Grammar.parse(request.body.trim().split('\r\n', 1)[0], 'Status_Line');
 
       if (status_line === -1) {
         logger.debug("receiveNotify() | error parsing NOTIFY body: \"".concat(request.body, "\""));
@@ -25488,7 +25493,6 @@ exports.calculateMD5 = function (string) {
   }
 
   function utf8Encode(str) {
-    str = str.replace(/\r\n/g, '\n');
     var utftext = '';
 
     for (var n = 0; n < str.length; n++) {
@@ -28281,7 +28285,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.9.3",
+  "version": "3.9.4",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
