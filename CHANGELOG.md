@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### NEXT
+
+
+* Dialog/RequestSender: Avoid circular dependency (#788).
+
+
 ### 3.9.3
 
 
