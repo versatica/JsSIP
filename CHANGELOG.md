@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+### 3.9.2
+
+
+* Dialog/RequestSender: Fix reference to undefined method (#787).
+
+
 ### 3.9.1
 
 

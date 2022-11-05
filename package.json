@@ -2,7 +2,7 @@
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.9.1",
+  "version": "3.9.2",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -54,8 +54,9 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "scripts": {
-    "lint": "gulp lint",
-    "test": "gulp test",
-    "prepublishOnly": "gulp babel"
+    "lint": "node npm-scripts.js lint",
+    "test": "node npm-scripts.js test",
+    "prepublish": "node npm-scripts.js prepublish",
+    "release": "node npm-scripts.js release"
   }
 }
