@@ -27,8 +27,8 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
+    "@types/events": "^3.0.0",
     "@types/debug": "^4.1.7",
-    "@types/node": "^18.11.7",
     "debug": "^4.3.1",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1"

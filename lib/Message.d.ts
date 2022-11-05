@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import {EventEmitter} from 'events'
 
 import {ExtraHeaders, Originator, OutgoingListener, SessionDirection, TerminateOptions} from './RTCSession'

@@ -1,8 +1,7 @@
-/// <reference types="node" />
-import {EventEmitter} from 'events'
+import {EventEmitter, Listener} from 'events'
 
 import {DisconnectEvent, Socket, WeightedSocket} from './WebSocketInterface'
-import {AnswerOptions, AnyListener, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
+import {AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {Message, SendMessageOptions} from './Message'
 import {Registrator} from './Registrator'
@@ -124,7 +123,7 @@ export interface UAEventMap {
   registered: RegisteredListener;
   unregistered: UnRegisteredListener;
   registrationFailed: RegistrationFailedListener;
-  registrationExpiring: AnyListener;
+  registrationExpiring: Listener;
   newRTCSession: RTCSessionListener;
   newMessage: MessageListener;
   sipEvent: SipEventListener;
