@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### NEXT RELEASE
+
+* TS: fix socket/transport types (#790).
+
+
 ### 3.10.0
 
 * Fix typescript typings (#648).
