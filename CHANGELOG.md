@@ -1,9 +1,10 @@
 CHANGELOG
 =========
 
-### NEXT RELEASE
+### 3.10.0
 
 * Fix typescript typings (#648).
+* New UA config param 'extra_headers' (#774).
 
 
 ### 3.9.4
