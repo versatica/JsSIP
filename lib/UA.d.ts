@@ -43,6 +43,7 @@ export interface UAConfiguration {
   registrar_server?: string;
   use_preloaded_route?: boolean;
   user_agent?: string;
+  extra_headers?: string[];
 }
 
 export interface IncomingRTCSessionEvent {
