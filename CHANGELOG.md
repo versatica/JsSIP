@@ -5,7 +5,8 @@ CHANGELOG
 
 
 * Dialog/RequestSender: Avoid circular dependency (#788).
-* Fixed REFER NOTIFY parsing in accordance to RFC 3515 section 2.4.5 (#767)
+* Fixed REFER NOTIFY parsing in accordance to RFC 3515 section 2.4.5 (#767).
+* MD5: Do not strip new line (#789).
 
 
 ### 3.9.3
