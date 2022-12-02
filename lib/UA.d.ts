@@ -40,7 +40,7 @@ export interface UAConfiguration {
   ha1?: string;
   register?: boolean;
   register_expires?: number;
-  register_from_tag?: string;
+  register_from_tag_trail?: string | function() : string;
   registrar_server?: string;
   use_preloaded_route?: boolean;
   user_agent?: string;
