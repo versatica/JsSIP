@@ -25,17 +25,12 @@ export declare enum Originator {
 }
 
 // options
-export interface MediaConstraints {
-  audio?: boolean;
-  video?: boolean;
-}
-
 export interface ExtraHeaders {
   extraHeaders?: string[];
 }
 
 export interface AnswerOptions extends ExtraHeaders {
-  mediaConstraints?: MediaConstraints;
+  mediaConstraints?: MediaStreamConstraints;
   mediaStream?: MediaStream;
   pcConfig?: RTCConfiguration;
   rtcConstraints?: object;
