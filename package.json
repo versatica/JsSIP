@@ -1,7 +1,7 @@
 {
   "name": "@krivega/jssip",
   "title": "JsSIP",
-  "version": "3.20.1",
+  "version": "3.21.0",
   "description": "the Javascript SIP library",
   "types": "lib/JsSIP.d.ts",
   "main": "lib-es5/JsSIP.js",
@@ -17,14 +17,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Krivega/JsSIP.git"
-  },
-  "license": "MIT",
-  "main": "lib-es5/JsSIP.js",
-  "types": "lib/JsSIP.d.ts",
-  "scripts": {
-    "lint": "gulp lint",
-    "prepublishOnly": "gulp babel",
-    "test": "gulp test"
   },
   "dependencies": {
     "@types/events": "^3.0.0",
