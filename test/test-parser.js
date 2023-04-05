@@ -411,5 +411,16 @@ module.exports = {
     test.strictEqual(parsed.from_tag, 'kun98clbf7');
 
     test.done();
+  },
+
+  'parse Status Line' : function(test)
+  {
+    const data = 'SIP/2.0 420 Bad Extension';
+    let parsed;
+
+    test.ok((parsed = JsSIP.Grammar.parse(data, 'Status_Line')) !== -1);
+    test.strictEqual(parsed.status_code, 420);
+
+    test.done();
   }
 };
