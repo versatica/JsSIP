@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import {EventEmitter} from 'events'
+import {EventEmitter, Listener} from 'events'
 
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {NameAddrHeader} from './NameAddrHeader'
@@ -14,12 +13,12 @@ interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
   getRemoteStreams(): MediaStream[];
 }
 
-export enum SessionDirection {
+export declare enum SessionDirection {
   INCOMING = 'incoming',
   OUTGOING = 'outgoing',
 }
 
-export enum Originator {
+export declare enum Originator {
   LOCAL = 'local',
   REMOTE = 'remote',
   SYSTEM = 'system',
@@ -182,7 +181,6 @@ export interface IncomingAckEvent {
 }
 
 // listener
-export type AnyListener = (...args: any[]) => void;
 export type PeerConnectionListener = (event: PeerConnectionEvent) => void;
 export type ConnectingListener = (event: ConnectingEvent) => void;
 export type SendingListener = (event: SendingEvent) => void;
@@ -230,11 +228,11 @@ export interface RTCSessionEventMap {
   'replaces': ReferListener;
   'sdp': SDPListener;
   'icecandidate': IceCandidateListener;
-  'getusermediafailed': AnyListener;
-  'peerconnection:createofferfailed': AnyListener;
-  'peerconnection:createanswerfailed': AnyListener;
-  'peerconnection:setlocaldescriptionfailed': AnyListener;
-  'peerconnection:setremotedescriptionfailed': AnyListener;
+  'getusermediafailed': Listener;
+  'peerconnection:createofferfailed': Listener;
+  'peerconnection:createanswerfailed': Listener;
+  'peerconnection:setlocaldescriptionfailed': Listener;
+  'peerconnection:setremotedescriptionfailed': Listener;
   'presentation:start': MediaStreamListener;
   'presentation:started': MediaStreamListener;
   'presentation:end': MediaStreamListener;

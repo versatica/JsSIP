@@ -1,4 +1,4 @@
-import {Socket} from './WebSocketInterface'
+import {Socket} from './Socket'
 
 export interface RecoveryOptions {
   min_interval: number;
