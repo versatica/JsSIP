@@ -176,6 +176,11 @@ export interface IncomingAckEvent {
   ack: IncomingRequest;
 }
 
+export interface SipEvent {
+  event: string;
+  request: IncomingRequest;
+}
+
 // listener
 export type PeerConnectionListener = (event: PeerConnectionEvent) => void;
 export type ConnectingListener = (event: ConnectingEvent) => void;
@@ -200,6 +205,7 @@ export type UpdateListener = ReInviteListener;
 export type ReferListener = (event: ReferEvent) => void;
 export type SDPListener = (event: SDPEvent) => void;
 export type IceCandidateListener = (event: IceCandidateEvent) => void;
+export type SipEventListener = (event: SipEvent) => void;
 
 export interface RTCSessionEventMap {
   'peerconnection': PeerConnectionListener;
@@ -227,6 +233,7 @@ export interface RTCSessionEventMap {
   'peerconnection:createanswerfailed': Listener;
   'peerconnection:setlocaldescriptionfailed': Listener;
   'peerconnection:setremotedescriptionfailed': Listener;
+  'sipEvent': SipEventListener
 }
 
 declare enum SessionStatus {
