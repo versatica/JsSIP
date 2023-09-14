@@ -233,7 +233,7 @@ export interface RTCSessionEventMap {
   'peerconnection:createanswerfailed': Listener;
   'peerconnection:setlocaldescriptionfailed': Listener;
   'peerconnection:setremotedescriptionfailed': Listener;
-  'sipEvent': SipEventListener
+  'sipEvent': SipEventListener;
 }
 
 declare enum SessionStatus {
