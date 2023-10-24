@@ -1,5 +1,5 @@
-import {URI} from './URI'
-import {causes} from './Constants'
+import { causes } from './Constants'
+import URI from './URI'
 
 export function str_utf8_length(str: string): number;
 

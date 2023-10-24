@@ -1,9 +1,9 @@
-import {EventEmitter} from 'events'
+import { EventEmitter } from 'events';
 
-import {ExtraHeaders, Originator, OutgoingListener, SessionDirection, TerminateOptions} from './RTCSession'
-import {IncomingResponse} from './SIPMessage'
-import {NameAddrHeader} from './NameAddrHeader'
-import {causes} from './Constants';
+import { causes } from './Constants';
+import NameAddrHeader from './NameAddrHeader';
+import { ExtraHeaders, Originator, OutgoingListener, SessionDirection, TerminateOptions } from './RTCSession';
+import { IncomingResponse } from './SIPMessage';
 
 export interface AcceptOptions extends ExtraHeaders {
   body?: string;

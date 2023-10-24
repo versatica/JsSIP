@@ -1,9 +1,12 @@
-import {EventEmitter, Listener} from 'events'
+import { EventEmitter, } from 'events'
 
-import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
-import {NameAddrHeader} from './NameAddrHeader'
-import {URI} from './URI'
-import {causes, DTMF_TRANSPORT} from './Constants'
+import { DTMF_TRANSPORT, causes } from './Constants'
+import NameAddrHeader from './NameAddrHeader'
+import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
+import URI from './URI'
+
+
+type Listener = Function;
 
 interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
   /**

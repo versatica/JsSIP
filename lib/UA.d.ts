@@ -1,12 +1,14 @@
-import { EventEmitter, Listener } from 'events'
+import { EventEmitter } from 'events'
 
 import { causes } from './Constants'
-import { Message, SendMessageOptions } from './Message'
-import { AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions } from './RTCSession'
+import Message, { SendMessageOptions } from './Message'
+import RTCSession, { AnswerOptions, Originator, RTCSessionEventMap, TerminateOptions } from './RTCSession'
 import { Registrator } from './Registrator'
 import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
 import { Socket, WeightedSocket } from './Socket'
-import { URI } from './URI'
+import URI from './URI'
+
+type Listener = Function;
 
 export interface UnRegisterOptions {
   all?: boolean;

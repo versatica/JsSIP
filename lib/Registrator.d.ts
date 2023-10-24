@@ -1,5 +1,5 @@
-import {UA} from './UA'
-import {Transport} from './Transport'
+import Transport from './Transport';
+import UA from './UA';
 
 export type ExtraContactParams = Record<string, string | number | boolean>;
 

@@ -1,5 +1,5 @@
-import {Parameters, URI} from './URI'
-import {Grammar} from './Grammar'
+import { Grammar } from './Grammar'
+import URI, { Parameters, } from './URI'
 
 export default class NameAddrHeader {
   get display_name(): string;

@@ -1,4 +1,4 @@
-import {Grammar} from './Grammar'
+import { Grammar } from './Grammar';
 
 export type URIScheme = 'sip' | string;
 

@@ -1,5 +1,5 @@
-import {NameAddrHeader} from './NameAddrHeader'
-import {URI} from './URI'
+import NameAddrHeader from './NameAddrHeader'
+import URI from './URI'
 
 declare class IncomingMessage {
   method: string
