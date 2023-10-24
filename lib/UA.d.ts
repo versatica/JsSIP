@@ -1,12 +1,12 @@
-import {EventEmitter, Listener} from 'events'
+import { EventEmitter, Listener } from 'events'
 
-import {Socket, WeightedSocket} from './Socket'
-import {AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
-import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
-import {Message, SendMessageOptions} from './Message'
-import {Registrator} from './Registrator'
-import {URI} from './URI'
-import {causes} from './Constants'
+import { causes } from './Constants'
+import { Message, SendMessageOptions } from './Message'
+import { AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions } from './RTCSession'
+import { Registrator } from './Registrator'
+import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
+import { Socket, WeightedSocket } from './Socket'
+import { URI } from './URI'
 
 export interface UnRegisterOptions {
   all?: boolean;

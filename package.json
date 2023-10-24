@@ -19,17 +19,17 @@
     "url": "https://github.com/Krivega/JsSIP.git"
   },
   "dependencies": {
-    "@types/events": "^3.0.0",
-    "@types/node": "^17.0.33",
-    "@types/debug": "^4.1.7",
-    "debug": "^4.3.1",
+    "@types/debug": "^4.1.10",
+    "@types/events": "^3.0.2",
+    "@types/node": "^20.8.8",
+    "debug": "^4.3.4",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1",
     "sequent-promises": "^0.1.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.6",
-    "@babel/preset-env": "^7.19.4",
+    "@babel/core": "^7.23.2",
+    "@babel/preset-env": "^7.23.2",
     "ansi-colors": "^4.1.1",
     "browserify": "^17.0.0",
     "eslint": "^7.32.0",
