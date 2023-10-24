@@ -1,12 +1,11 @@
 import { EventEmitter, } from 'events'
-
 import { DTMF_TRANSPORT, causes } from './Constants'
 import NameAddrHeader from './NameAddrHeader'
 import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
 import URI from './URI'
+import type { Listener } from './core'
 
-
-type Listener = Function;
+ 
 
 interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
   /**

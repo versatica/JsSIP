@@ -7,8 +7,8 @@ import { Registrator } from './Registrator'
 import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
 import { Socket, WeightedSocket } from './Socket'
 import URI from './URI'
+import type { Listener } from './core'
 
-type Listener = Function;
 
 export interface UnRegisterOptions {
   all?: boolean;
@@ -66,7 +66,7 @@ export interface OutgoingRTCSessionEvent {
 
 export type RTCSessionEvent = IncomingRTCSessionEvent | OutgoingRTCSessionEvent;
 
-export interface ConnectingEvent {
+export interface ConnectingEventUA {
   socket: Socket;
   attempts: number
 }
@@ -113,7 +113,7 @@ export interface OutgoingOptionsEvent {
   request: OutgoingRequest;
 }
 
-export type ConnectingListener = (event: ConnectingEvent) => void;
+export type ConnectingListenerUA = (event: ConnectingEventUA) => void;
 export type ConnectedListener = (event: ConnectedEvent) => void;
 export type DisconnectedListener = (event: DisconnectEvent) => void;
 export type RegisteredListener = (event: RegisteredEvent) => void;
@@ -131,7 +131,7 @@ export type OptionsListener = IncomingOptionsListener | OutgoingOptionsListener;
 export type SipEventListener = <T = any>(event: { event: T; request: IncomingRequest; }) => void
 
 export interface UAEventMap {
-  connecting: ConnectingListener;
+  connecting: ConnectingListenerUA;
   connected: ConnectedListener;
   disconnected: DisconnectedListener;
   registered: RegisteredListener;
