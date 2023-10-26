@@ -1,4 +1,4 @@
-import {EventEmitter, Listener} from 'events'
+import {EventEmitter} from 'events'
 
 import {Socket, WeightedSocket} from './Socket'
 import {AnswerOptions, Originator, RTCSession, RTCSessionEventMap, TerminateOptions} from './RTCSession'
@@ -113,6 +113,7 @@ export type DisconnectedListener = (event: DisconnectEvent) => void;
 export type RegisteredListener = (event: RegisteredEvent) => void;
 export type UnRegisteredListener = (event: UnRegisteredEvent) => void;
 export type RegistrationFailedListener = UnRegisteredListener;
+export type RegistrationExpiringListener = () => void;
 export type IncomingRTCSessionListener = (event: IncomingRTCSessionEvent) => void;
 export type OutgoingRTCSessionListener = (event: OutgoingRTCSessionEvent) => void;
 export type RTCSessionListener = IncomingRTCSessionListener | OutgoingRTCSessionListener;
@@ -131,7 +132,7 @@ export interface UAEventMap {
   registered: RegisteredListener;
   unregistered: UnRegisteredListener;
   registrationFailed: RegistrationFailedListener;
-  registrationExpiring: Listener;
+  registrationExpiring: RegistrationExpiringListener;
   newRTCSession: RTCSessionListener;
   newMessage: MessageListener;
   sipEvent: SipEventListener;
