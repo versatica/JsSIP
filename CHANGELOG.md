@@ -5,6 +5,7 @@ CHANGELOG
 
 * TS: fix socket/transport types (#790).
 * Transport: Handle keep alive request from server (#791).
+* Prevent repeated ICE finish (#800). Credits to @pschichtel .
 
 
 ### 3.10.0
