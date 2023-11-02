@@ -7,6 +7,7 @@ CHANGELOG
 * Transport: Handle keep alive request from server (#791).
 * Prevent repeated ICE finish (#800). Credits to @pschichtel .
 * Use built-in MediaStreamConstraints type (#809). Credits to @edumt.
+* Add extra_headers as a modificable property (#825). Credits to @cesterlizi.
 
 
 ### 3.10.0
