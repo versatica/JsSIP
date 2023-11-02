@@ -6,6 +6,7 @@ CHANGELOG
 * TS: fix socket/transport types (#790).
 * Transport: Handle keep alive request from server (#791).
 * Prevent repeated ICE finish (#800). Credits to @pschichtel .
+* Use built-in MediaStreamConstraints type (#809). Credits to @edumt.
 
 
 ### 3.10.0
