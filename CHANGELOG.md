@@ -4,6 +4,7 @@ CHANGELOG
 ### NEXT RELEASE
 
 * TS: fix socket/transport types (#790).
+* Transport: Handle keep alive request from server (#791).
 
 
 ### 3.10.0
