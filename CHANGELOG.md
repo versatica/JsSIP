@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### NEXT RELEASE
+
+* New UA config param register_from_tag_trail (#793). Credits to @kkozlik.
+
+
 ### 3.10.1
 
 * TS: fix socket/transport types (#790).
