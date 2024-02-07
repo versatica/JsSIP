@@ -40,7 +40,7 @@ export interface UAConfiguration {
   ha1?: string;
   register?: boolean;
   register_expires?: number;
-  register_from_tag_trail?: string | function() : string;
+  register_from_tag_trail?: string | (() => string);
   registrar_server?: string;
   use_preloaded_route?: boolean;
   user_agent?: string;
@@ -56,7 +56,7 @@ export interface IncomingRTCSessionEvent {
 export interface OutgoingRTCSessionEvent {
   originator: Originator.LOCAL;
   session: RTCSession;
-  request: IncomingRequest;
+  request: OutgoingRequest;
 }
 
 export type RTCSessionEvent = IncomingRTCSessionEvent | OutgoingRTCSessionEvent;
