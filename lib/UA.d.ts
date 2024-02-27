@@ -22,10 +22,9 @@ export interface CallOptions extends AnswerOptions {
   degradationPreference?: 'maintain-framerate'|'maintain-resolution'|'balanced';
 }
 
-export interface UAConfigurationParams {
+  interface UAConfigurationCore {
   // mandatory parameters
   sockets: Socket | Socket[] | WeightedSocket[] ;
-  uri: string;
   // optional parameters
   authorization_jwt?: string;
   authorization_user?: string;
@@ -50,7 +49,13 @@ export interface UAConfigurationParams {
   extra_headers?: string[];
   sdpSemantics?: 'plan-b' | 'unified-plan';
 }
-export interface UAConfiguration extends UAConfigurationParams { 
+
+export interface UAConfigurationParams extends UAConfigurationCore {
+  // mandatory parameters 
+  uri: string; 
+}
+
+export interface UAConfiguration extends UAConfigurationCore { 
   uri: URI;
 }
 
