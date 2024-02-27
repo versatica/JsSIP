@@ -1,7 +1,7 @@
 {
   "name": "@krivega/jssip",
   "title": "JsSIP",
-  "version": "3.23.5",
+  "version": "3.23.6",
   "description": "the Javascript SIP library",
   "types": "lib/JsSIP.d.ts",
   "main": "lib-es5/JsSIP.js",
