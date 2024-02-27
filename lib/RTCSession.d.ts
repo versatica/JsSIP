@@ -1,4 +1,4 @@
-import {EventEmitter, Listener} from 'events'
+import {EventEmitter} from 'events'
 
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {NameAddrHeader} from './NameAddrHeader'
@@ -25,17 +25,12 @@ export declare enum Originator {
 }
 
 // options
-export interface MediaConstraints {
-  audio?: boolean;
-  video?: boolean;
-}
-
 export interface ExtraHeaders {
   extraHeaders?: string[];
 }
 
 export interface AnswerOptions extends ExtraHeaders {
-  mediaConstraints?: MediaConstraints;
+  mediaConstraints?: MediaStreamConstraints;
   mediaStream?: MediaStream;
   pcConfig?: RTCConfiguration;
   rtcConstraints?: object;
@@ -176,7 +171,13 @@ export interface IncomingAckEvent {
   ack: IncomingRequest;
 }
 
+export interface MediaStreamTypes {
+  audio?: boolean;
+  video?: boolean;
+}
+
 // listener
+export type GenericErrorListener = (error: any) => void;
 export type PeerConnectionListener = (event: PeerConnectionEvent) => void;
 export type ConnectingListener = (event: ConnectingEvent) => void;
 export type SendingListener = (event: SendingEvent) => void;
@@ -194,7 +195,7 @@ export type IncomingInfoListener = (event: IncomingInfoEvent) => void;
 export type OutgoingInfoListener = (event: OutgoingInfoEvent) => void;
 export type InfoListener = IncomingInfoListener | OutgoingInfoListener;
 export type HoldListener = (event: HoldEvent) => void;
-export type MuteListener = (event: MediaConstraints) => void;
+export type MuteListener = (event: MediaStreamTypes) => void;
 export type ReInviteListener = (event: ReInviteEvent) => void;
 export type UpdateListener = ReInviteListener;
 export type ReferListener = (event: ReferEvent) => void;
@@ -222,11 +223,11 @@ export interface RTCSessionEventMap {
   'replaces': ReferListener;
   'sdp': SDPListener;
   'icecandidate': IceCandidateListener;
-  'getusermediafailed': Listener;
-  'peerconnection:createofferfailed': Listener;
-  'peerconnection:createanswerfailed': Listener;
-  'peerconnection:setlocaldescriptionfailed': Listener;
-  'peerconnection:setremotedescriptionfailed': Listener;
+  'getusermediafailed': GenericErrorListener;
+  'peerconnection:createofferfailed': GenericErrorListener;
+  'peerconnection:createanswerfailed': GenericErrorListener;
+  'peerconnection:setlocaldescriptionfailed': GenericErrorListener;
+  'peerconnection:setremotedescriptionfailed': GenericErrorListener;
 }
 
 declare enum SessionStatus {
@@ -294,11 +295,11 @@ export class RTCSession extends EventEmitter {
 
   isOnHold(): OnHoldResult;
 
-  mute(options?: MediaConstraints): void;
+  mute(options?: MediaStreamTypes): void;
 
-  unmute(options?: MediaConstraints): void;
+  unmute(options?: MediaStreamTypes): void;
 
-  isMuted(): MediaConstraints;
+  isMuted(): MediaStreamTypes;
 
   refer(target: string | URI, options?: ReferOptions): void;
 

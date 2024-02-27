@@ -1,7 +1,7 @@
 /*
- * JsSIP v3.10.0
+ * JsSIP v3.10.1
  * the Javascript SIP library
- * Copyright: 2012-2022 
+ * Copyright: 2012-2023 
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -19049,6 +19049,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           _this13._iceReady = false;
 
           var ready = function ready() {
+            if (finished) {
+              return;
+            }
+
             connection.removeEventListener('icecandidate', iceCandidateListener);
             connection.removeEventListener('icegatheringstatechange', iceGatheringStateListener);
             finished = true;
@@ -19075,12 +19079,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
                 candidate: candidate,
                 ready: ready
               });
-            } else if (!finished) {
+            } else {
               ready();
             }
           });
           connection.addEventListener('icegatheringstatechange', iceGatheringStateListener = function iceGatheringStateListener() {
-            if (connection.iceGatheringState === 'complete' && !finished) {
+            if (connection.iceGatheringState === 'complete') {
               ready();
             }
           });
@@ -23854,7 +23858,21 @@ module.exports = /*#__PURE__*/function () {
   }, {
     key: "_onData",
     value: function _onData(data) {
-      // CRLF Keep Alive response from server. Ignore it.
+      // CRLF Keep Alive request from server, reply.
+      if (data === '\r\n\r\n') {
+        logger.debug('received message with double-CRLF Keep Alive request');
+
+        try {
+          // Reply with single CRLF.
+          this.socket.send('\r\n');
+        } catch (error) {
+          logger.warn("error sending Keep Alive response: ".concat(error));
+        }
+
+        return;
+      } // CRLF Keep Alive response from server, ignore it.
+
+
       if (data === '\r\n') {
         logger.debug('received message with CRLF Keep Alive response');
         return;
@@ -24332,6 +24350,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             break;
           }
 
+        case 'extra_headers':
+          {
+            this._configuration.extra_headers = value;
+            break;
+          }
+
         default:
           logger.warn('set() | cannot set "%s" parameter in runtime', parameter);
           return false;
@@ -24780,7 +24804,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
       }; // Seal the configuration.
 
-      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'authorization_jwt', 'display_name', 'register'];
+      var writable_parameters = ['authorization_user', 'password', 'realm', 'ha1', 'authorization_jwt', 'display_name', 'register', 'extra_headers'];
 
       for (var parameter in this._configuration) {
         if (Object.prototype.hasOwnProperty.call(this._configuration, parameter)) {
@@ -28340,7 +28364,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.0",
+  "version": "3.10.1",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

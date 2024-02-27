@@ -139,6 +139,7 @@ module.exports =
 		'no-sparse-arrays': 2,
 		'no-this-before-super': 2,
 		'no-throw-literal': 2,
+		'no-trailing-spaces': 2,
 		'no-undef': 2,
 		'no-unexpected-multiline': 2,
 		'no-unmodified-loop-condition': 2,

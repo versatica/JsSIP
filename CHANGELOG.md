@@ -3,7 +3,17 @@ CHANGELOG
 
 ### NEXT RELEASE
 
+* New UA config param register_from_tag_trail (#793). Credits to @kkozlik.
+
+
+### 3.10.1
+
 * TS: fix socket/transport types (#790).
+* Transport: Handle keep alive request from server (#791).
+* Prevent repeated ICE finish (#800). Credits to @pschichtel .
+* Use built-in MediaStreamConstraints type (#809). Credits to @edumt.
+* Add extra_headers as a modificable property (#825). Credits to @cesterlizi.
+* Fix type definitions to not import Listener from events #837. Credits to @jlaine.
 
 
 ### 3.10.0
