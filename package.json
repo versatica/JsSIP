@@ -1,7 +1,7 @@
 {
   "name": "@krivega/jssip",
   "title": "JsSIP",
-  "version": "3.23.3",
+  "version": "3.23.4",
   "description": "the Javascript SIP library",
   "types": "lib/JsSIP.d.ts",
   "main": "lib-es5/JsSIP.js",
@@ -25,7 +25,7 @@
     "debug": "^4.3.4",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.2",
-    "sequent-promises": "^1.0.0"
+    "sequent-promises": "^0.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
