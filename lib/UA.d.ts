@@ -7,8 +7,6 @@ import { Registrator } from './Registrator'
 import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
 import { Socket, WeightedSocket } from './Socket'
 import URI from './URI'
-import type { Listener } from './core'
-
 
 export interface UnRegisterOptions {
   all?: boolean;
@@ -45,6 +43,7 @@ export interface UAConfiguration {
   ha1?: string;
   register?: boolean;
   register_expires?: number;
+  register_from_tag_trail?: string | (() => string);
   registrar_server?: string;
   use_preloaded_route?: boolean;
   user_agent?: string;
@@ -61,7 +60,7 @@ export interface IncomingRTCSessionEvent {
 export interface OutgoingRTCSessionEvent {
   originator: Originator.LOCAL;
   session: RTCSession;
-  request: IncomingRequest;
+  request: OutgoingRequest;
 }
 
 export type RTCSessionEvent = IncomingRTCSessionEvent | OutgoingRTCSessionEvent;
@@ -119,6 +118,7 @@ export type DisconnectedListener = (event: DisconnectEvent) => void;
 export type RegisteredListener = (event: RegisteredEvent) => void;
 export type UnRegisteredListener = (event: UnRegisteredEvent) => void;
 export type RegistrationFailedListener = UnRegisteredListener;
+export type RegistrationExpiringListener = () => void;
 export type IncomingRTCSessionListener = (event: IncomingRTCSessionEvent) => void;
 export type OutgoingRTCSessionListener = (event: OutgoingRTCSessionEvent) => void;
 export type RTCSessionListener = IncomingRTCSessionListener | OutgoingRTCSessionListener;
@@ -137,7 +137,7 @@ export interface UAEventMap {
   registered: RegisteredListener;
   unregistered: UnRegisteredListener;
   registrationFailed: RegistrationFailedListener;
-  registrationExpiring: Listener;
+  registrationExpiring: RegistrationExpiringListener;
   newRTCSession: RTCSessionListener;
   newMessage: MessageListener;
   sipEvent: SipEventListener;
