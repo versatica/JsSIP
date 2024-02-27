@@ -22,7 +22,7 @@ export interface CallOptions extends AnswerOptions {
   degradationPreference?: 'maintain-framerate'|'maintain-resolution'|'balanced';
 }
 
-export interface UAConfiguration {
+export interface UAConfigurationParams {
   // mandatory parameters
   sockets: Socket | Socket[] | WeightedSocket[] ;
   uri: string;
@@ -49,6 +49,9 @@ export interface UAConfiguration {
   user_agent?: string;
   extra_headers?: string[];
   sdpSemantics?: 'plan-b' | 'unified-plan';
+}
+export interface UAConfiguration extends UAConfigurationParams { 
+  uri: URI;
 }
 
 export interface IncomingRTCSessionEvent {
@@ -173,7 +176,7 @@ export default class UA extends EventEmitter {
 
   configuration: UAConfiguration;
 
-  constructor(configuration: UAConfiguration);
+  constructor(configuration: UAConfigurationParams);
 
   get C(): typeof UAStatus;
 
@@ -203,7 +206,7 @@ export default class UA extends EventEmitter {
 
   get<T extends keyof UAConfiguration>(parameter: T): UAConfiguration[T];
 
-  set<T extends keyof UAConfiguration>(parameter: T, value: UAConfiguration[T]): boolean;
+  set<T extends keyof UAConfigurationParams>(parameter: T, value: UAConfigurationParams[T]): boolean;
 
   on<T extends keyof UAEventMap>(type: T, listener: UAEventMap[T]): this;
 }
