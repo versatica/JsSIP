@@ -28,6 +28,11 @@ export interface ExtraHeaders {
   extraHeaders?: string[];
 }
 
+export interface EventHandlers {
+  succeeded?: () => void;
+  failed?: () => void;
+}
+
 
 type TDegradationPreference = 'maintain-framerate'|'maintain-resolution'|'balanced';
 export interface AnswerOptions extends ExtraHeaders {
@@ -47,9 +52,13 @@ export interface RejectOptions extends ExtraHeaders {
   reason_phrase?: string;
 }
 
-export interface TerminateOptions extends RejectOptions {
+export interface TerminateAsyncOptions extends RejectOptions {
   body?: string;
   cause?: causes | string;
+}
+
+export interface TerminateOptions extends TerminateAsyncOptions {
+  eventHandlers?: EventHandlers;
 }
 
 export interface ReferOptions extends ExtraHeaders {
@@ -292,6 +301,8 @@ export default class RTCSession extends EventEmitter {
   answer(options?: AnswerOptions): void;
 
   terminate(options?: TerminateOptions): void;
+
+  terminateAsync(options?: TerminateAsyncOptions): Promise<void>;
 
   sendDTMF(tones: string | number, options?: DTFMOptions): void;
 
