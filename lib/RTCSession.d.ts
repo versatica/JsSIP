@@ -44,7 +44,7 @@ export interface AnswerOptions extends ExtraHeaders {
   sessionTimersExpires?: number;
   videoMode?: 'sendrecv'|'sendonly'|'recvonly';
   audioMode?: 'sendrecv'|'sendonly'|'recvonly';
-  degradationPreference?: TDegradationPreference;
+  onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>;
 }
 
 export interface RejectOptions extends ExtraHeaders {
@@ -328,9 +328,9 @@ export default class RTCSession extends EventEmitter {
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 
-  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; forceRenegotiation: boolean; degradationPreference?: TDegradationPreference; }): Promise<void>;
+  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; forceRenegotiation: boolean; onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>; }): Promise<void>;
 
-  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, degradationPreference?: TDegradationPreference ): Promise<MediaStream>;
+  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>): Promise<MediaStream>;
 
   stopPresentation(stream: MediaStream): Promise<MediaStream>;
 }
