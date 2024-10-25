@@ -35,6 +35,8 @@ export interface EventHandlers {
 
 
 type TDegradationPreference = 'maintain-framerate'|'maintain-resolution'|'balanced';
+type TOnAddedTransceiver = (transceiver: RTCRtpTransceiver, track: MediaStreamTrack, stream: MediaStream) => Promise<void>;
+
 export interface AnswerOptions extends ExtraHeaders {
   mediaConstraints?: MediaStreamConstraints;
   mediaStream?: MediaStream;
@@ -44,7 +46,8 @@ export interface AnswerOptions extends ExtraHeaders {
   sessionTimersExpires?: number;
   videoMode?: 'sendrecv'|'sendonly'|'recvonly';
   audioMode?: 'sendrecv'|'sendonly'|'recvonly';
-  onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>;
+  sendEncodings?: RTCRtpEncodingParameters[];
+  onAddedTransceiver?: TOnAddedTransceiver;
 }
 
 export interface RejectOptions extends ExtraHeaders {
@@ -328,9 +331,9 @@ export default class RTCSession extends EventEmitter {
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 
-  replaceMediaStream(stream: MediaStream, options?: { deleteExisting: boolean; addMissing: boolean; forceRenegotiation: boolean; onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>; }): Promise<void>;
+  replaceMediaStream(stream: MediaStream, options?: { deleteExisting?: boolean; addMissing?: boolean; forceRenegotiation?: boolean; sendEncodings?: RTCRtpEncodingParameters[]; onAddedTransceiver?: TOnAddedTransceiver; }): Promise<void>;
 
-  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>): Promise<MediaStream>;
+  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, options?: { sendEncodings?: RTCRtpEncodingParameters[]; onAddedTransceiver?: TOnAddedTransceiver}): Promise<MediaStream>;
 
   stopPresentation(stream: MediaStream): Promise<MediaStream>;
 }

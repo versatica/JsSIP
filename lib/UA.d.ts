@@ -17,9 +17,6 @@ export interface CallOptions extends AnswerOptions {
   anonymous?: boolean;
   fromUserName?: string;
   fromDisplayName?: string;
-  videoMode?: 'sendrecv'|'sendonly'|'recvonly';
-  audioMode?: 'sendrecv'|'sendonly'|'recvonly';
-  onAddedSender?: (sender: RTCRtpSender, track: MediaStreamTrack, stream: MediaStream) => Promise<void>;
 }
 
   interface UAConfigurationCore {
