@@ -21,10 +21,10 @@
   "dependencies": {
     "@types/debug": "^4.1.12",
     "@types/events": "^3.0.3",
-    "@types/node": "^22.8.0",
+    "@types/node": "^22.10.1",
     "debug": "^4.3.7",
     "events": "^3.3.0",
-    "sdp-transform": "^2.14.2",
+    "sdp-transform": "^2.15.0",
     "sequent-promises": "^0.1.4"
   },
   "devDependencies": {
