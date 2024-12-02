@@ -44,8 +44,8 @@ export interface AnswerOptions extends ExtraHeaders {
   rtcAnswerConstraints?: RTCOfferOptions;
   rtcOfferConstraints?: RTCOfferOptions;
   sessionTimersExpires?: number;
-  videoMode?: 'sendrecv'|'sendonly'|'recvonly';
-  audioMode?: 'sendrecv'|'sendonly'|'recvonly';
+  directionVideo?: RTCRtpTransceiverDirection;
+  directionAudio?: RTCRtpTransceiverDirection;
   sendEncodings?: RTCRtpEncodingParameters[];
   onAddedTransceiver?: TOnAddedTransceiver;
 }
@@ -331,9 +331,9 @@ export default class RTCSession extends EventEmitter {
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 
-  replaceMediaStream(stream: MediaStream, options?: { deleteExisting?: boolean; addMissing?: boolean; forceRenegotiation?: boolean; sendEncodings?: RTCRtpEncodingParameters[]; onAddedTransceiver?: TOnAddedTransceiver; }): Promise<void>;
+  replaceMediaStream(stream: MediaStream, options?: { directionVideo?: RTCRtpTransceiverDirection; directionAudio?: RTCRtpTransceiverDirection; deleteExisting?: boolean; addMissing?: boolean; forceRenegotiation?: boolean; sendEncodings?: RTCRtpEncodingParameters[]; onAddedTransceiver?: TOnAddedTransceiver; }): Promise<void>;
 
-  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, options?: { sendEncodings?: RTCRtpEncodingParameters[]; onAddedTransceiver?: TOnAddedTransceiver}): Promise<MediaStream>;
+  startPresentation(stream: MediaStream, isNeedReinvite?: boolean, options?: { direction?: RTCRtpTransceiverDirection; sendEncodings?: RTCRtpEncodingParameters[]; onAddedTransceiver?: TOnAddedTransceiver}): Promise<MediaStream>;
 
   stopPresentation(stream: MediaStream): Promise<MediaStream>;
 }
