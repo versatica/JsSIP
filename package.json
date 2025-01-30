@@ -9,7 +9,7 @@
     "Iñaki Baz Castillo <ibc@aliax.net> (https://inakibaz.me)"
   ],
   "types": "lib/JsSIP.d.ts",
-  "main": "lib-es5/JsSIP.js",
+  "main": "lib/JsSIP.js",
   "keywords": [
     "sip",
     "websocket",
