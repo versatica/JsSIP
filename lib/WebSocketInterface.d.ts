@@ -1,5 +1,5 @@
-import { Socket } from './Socket';
+import { Socket } from "./Socket";
 
 export class WebSocketInterface extends Socket {
-  constructor(url: string)
+  constructor(url: string, appendedProtocols?: string[]);
 }
