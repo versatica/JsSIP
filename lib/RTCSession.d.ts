@@ -3,6 +3,7 @@ import {EventEmitter} from 'events'
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {NameAddrHeader} from './NameAddrHeader'
 import {URI} from './URI'
+import {UA} from './UA'
 import {causes, DTMF_TRANSPORT} from './Constants'
 
 interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
@@ -244,6 +245,8 @@ declare enum SessionStatus {
 }
 
 export class RTCSession extends EventEmitter {
+  constructor (ua: UA);
+
   static get C(): typeof SessionStatus;
 
   get C(): typeof SessionStatus;
