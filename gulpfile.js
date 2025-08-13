@@ -105,7 +105,8 @@ gulp.task('test', function()
     'test/test-parser.js',
     'test/test-properties.js',
     'test/test-UA-no-WebRTC.js',
-    'test/test-digestAuthentication.js'
+    'test/test-digestAuthentication.js',
+    'test/test-UA-subscriber-notifier.js'
   ];
 
   return gulp.src(src)
