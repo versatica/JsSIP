@@ -309,7 +309,7 @@ export default class RTCSession extends EventEmitter {
 
   sendDTMF(tones: string | number, options?: DTFMOptions): void;
 
-  sendInfo(contentType: string, body?: string, options?: ExtraHeaders): Promise<void>;
+  sendInfo(contentType: string, body?: string, options?: ExtraHeaders & { noTerminateWhenError?: boolean }): Promise<void>;
 
   hold(options?: HoldOptions, done?: VoidFunction): boolean;
 
