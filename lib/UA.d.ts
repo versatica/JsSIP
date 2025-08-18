@@ -2,7 +2,8 @@ import { EventEmitter } from 'events'
 
 import { causes } from './Constants'
 import Message, { SendMessageOptions } from './Message'
-import RTCSession, { AnswerOptions, Originator, RTCSessionEventMap, TerminateOptions } from './RTCSession'
+import Options from './Options'
+import RTCSession, { ConnectOptions, Originator, TerminateOptions } from './RTCSession'
 import { Registrator } from './Registrator'
 import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
 import { Socket, WeightedSocket } from './Socket'
@@ -12,12 +13,7 @@ export interface UnRegisterOptions {
   all?: boolean;
 }
 
-export interface CallOptions extends AnswerOptions {
-  eventHandlers?: Partial<RTCSessionEventMap>;
-  anonymous?: boolean;
-  fromUserName?: string;
-  fromDisplayName?: string;
-}
+export interface CallOptions extends ConnectOptions {}
 
   interface UAConfigurationCore {
   // mandatory parameters
@@ -147,6 +143,8 @@ export interface UAEventMap {
   newMessage: MessageListener;
   sipEvent: SipEventListener;
   newOptions: OptionsListener;
+  newTransaction: (event: { transaction: any }) => void;
+  transactionDestroyed: (event: { transaction: any }) => void;
 }
 
 export interface UAContactOptions {
@@ -186,6 +184,8 @@ export default class UA extends EventEmitter {
 
   get contact(): UAContact;
 
+  get transport(): any;
+
   start(): void;
 
   stop(): void;
@@ -200,11 +200,15 @@ export default class UA extends EventEmitter {
 
   sendMessage(target: string | URI, body: string, options?: SendMessageOptions): Message;
 
+  sendOptions(target: string | URI, body?: string, options?: any): Options;
+
   terminateSessions(options?: TerminateOptions): void;
 
   isRegistered(): boolean;
 
   isConnected(): boolean;
+
+  normalizeTarget(target: string): URI | undefined;
 
   get<T extends keyof UAConfiguration>(parameter: T): UAConfiguration[T];
 
