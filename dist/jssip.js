@@ -598,6 +598,14 @@ module.exports = /*#__PURE__*/function () {
         // RFC 3261 13.2.2.4.
         this._route_set = message.getHeaders('record-route').reverse();
       }
+      var cseq = message.cseq ? parseInt(message.cseq, 10) : null;
+      if (cseq) {
+        if (type === 'UAC') {
+          this._local_seqnum = cseq;
+        } else {
+          this._remote_seqnum = cseq;
+        }
+      }
     }
   }, {
     key: "terminate",
@@ -15728,6 +15736,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendRequest",
     value: function sendRequest(method, options) {
       logger.debug('sendRequest()');
+      if (!this._dialog) {
+        var dialogsArray = Object.values(this._earlyDialogs);
+        if (dialogsArray.length > 0) {
+          return dialogsArray[0].sendRequest(method, options);
+        }
+        logger.warn('No valid early dialog found to send request');
+        return;
+      }
       return this._dialog.sendRequest(method, options);
     }
 
@@ -17565,7 +17581,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this._direction = 'outgoing';
 
       // Check RTCSession Status.
-      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK) {
+      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK && this._session.status !== this._session.C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._session.status);
       }
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
