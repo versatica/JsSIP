@@ -339,6 +339,8 @@ export default class RTCSession extends EventEmitter {
 
   renegotiate(options?: RenegotiateOptions, done?: VoidFunction, fail?: VoidFunction): Promise<boolean>;
 
+  restartIce(options?: RenegotiateOptions, done?: VoidFunction, fail?: VoidFunction): Promise<boolean>;
+  
   isOnHold(): OnHoldResult;
 
   mute(options?: MediaStreamTypes): void;
