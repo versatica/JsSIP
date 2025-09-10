@@ -598,13 +598,11 @@ module.exports = /*#__PURE__*/function () {
         // RFC 3261 13.2.2.4.
         this._route_set = message.getHeaders('record-route').reverse();
       }
-      var cseq = message.cseq ? parseInt(message.cseq, 10) : null;
-      if (cseq) {
-        if (type === 'UAC') {
-          this._local_seqnum = cseq;
-        } else {
-          this._remote_seqnum = cseq;
-        }
+      var cseq = message.cseq;
+      if (type === 'UAC') {
+        this._local_seqnum = cseq;
+      } else {
+        this._remote_seqnum = cseq;
       }
     }
   }, {
@@ -15736,7 +15734,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendRequest",
     value: function sendRequest(method, options) {
       logger.debug('sendRequest()');
-      if (!this._dialog) {
+      if (this._dialog) {
+        return this._dialog.sendRequest(method, options);
+      } else {
         var dialogsArray = Object.values(this._earlyDialogs);
         if (dialogsArray.length > 0) {
           return dialogsArray[0].sendRequest(method, options);
@@ -15744,7 +15744,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         logger.warn('No valid early dialog found to send request');
         return;
       }
-      return this._dialog.sendRequest(method, options);
     }
 
     /**
