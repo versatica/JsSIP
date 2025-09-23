@@ -135,41 +135,41 @@ export interface SendingEvent {
 }
 
 export interface IncomingEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
 }
 
 export interface EndEvent {
-  originator: Originator;
+  originator: `${Originator}`;
   message: IncomingRequest | IncomingResponse;
   cause: string;
 }
 
 export interface IncomingDTMFEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   dtmf: DTMF;
   request: IncomingRequest;
 }
 
 export interface OutgoingDTMFEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
   dtmf: DTMF;
   request: OutgoingRequest;
 }
 
 export interface IncomingInfoEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   info: Info;
   request: IncomingRequest;
 }
 
 export interface OutgoingInfoEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
   info: Info;
   request: OutgoingRequest;
 }
 
 export interface HoldEvent {
-  originator: Originator
+  originator: `${Originator}`
 }
 
 export interface ReInviteEvent {
@@ -185,7 +185,7 @@ export interface ReferEvent {
 }
 
 export interface SDPEvent {
-  originator: Originator;
+  originator: `${Originator}`;
   type: string;
   sdp: string;
 }
@@ -196,16 +196,16 @@ export interface IceCandidateEvent {
 }
 
 export interface OutgoingEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   response: IncomingResponse;
 }
 
 export interface OutgoingAckEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
 }
 
 export interface IncomingAckEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   ack: IncomingRequest;
 }
 

@@ -53,13 +53,13 @@ export interface UAConfiguration extends UAConfigurationCore {
 }
 
 export interface IncomingRTCSessionEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   session: RTCSession;
   request: IncomingRequest;
 }
 
 export interface OutgoingRTCSessionEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
   session: RTCSession;
   request: OutgoingRequest;
 }
@@ -92,24 +92,24 @@ export interface UnRegisteredEvent {
 }
 
 export interface IncomingMessageEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   message: Message;
   request: IncomingRequest;
 }
 
 export interface OutgoingMessageEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
   message: Message;
   request: OutgoingRequest;
 }
 
 export interface IncomingOptionsEvent {
-  originator: Originator.REMOTE;
+  originator: `${Originator.REMOTE}`;
   request: IncomingRequest;
 }
 
 export interface OutgoingOptionsEvent {
-  originator: Originator.LOCAL;
+  originator: `${Originator.LOCAL}`;
   request: OutgoingRequest;
 }
 
