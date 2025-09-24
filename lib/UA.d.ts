@@ -44,6 +44,12 @@ export interface UAConfiguration {
   use_preloaded_route?: boolean;
   user_agent?: string;
   extra_headers?: string[];
+  overrides?: {
+    RTCPeerConnection?: RTCPeerConnection;
+    getUserMedia?: typeof navigator.mediaDevices.getUserMedia;
+    getDisplayMedia?: typeof navigator.mediaDevices.getDisplayMedia;
+    enumerateDevices?: typeof navigator.mediaDevices.enumerateDevices;
+  };
 }
 
 export interface IncomingRTCSessionEvent {
