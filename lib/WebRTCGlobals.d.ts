@@ -1,35 +1,22 @@
-export class WebRTCGlobals {
-  private static _instance: WebRTCGlobals;
-  private _RTCPeerConnection: typeof RTCPeerConnection | null;
-  private _getUserMedia:
-    | ((constraints?: MediaStreamConstraints) => Promise<MediaStream>)
-    | null;
-  private _getDisplayMedia:
-    | ((constraints?: DisplayMediaStreamConstraints) => Promise<MediaStream>)
-    | null;
-  private _enumerateDevices: (() => Promise<MediaDeviceInfo[]>) | null;
+interface WebRTCOverrides {
+  RTCPeerConnection?: typeof RTCPeerConnection;
+  getUserMedia?: (constraints?: MediaStreamConstraints) => Promise<MediaStream>;
+  enumerateDevices?: () => Promise<MediaDeviceInfo[]>;
+}
 
-  constructor();
-
-  static getInstance(): WebRTCGlobals;
-
-  get RTCPeerConnection(): typeof RTCPeerConnection;
-  set RTCPeerConnection(value: typeof RTCPeerConnection);
-
-  get getUserMedia(): (
+declare const WebRTCGlobals: {
+  readonly RTCPeerConnection: typeof RTCPeerConnection;
+  readonly getUserMedia: (
     constraints?: MediaStreamConstraints
   ) => Promise<MediaStream>;
-  set getUserMedia(
-    value: (constraints?: MediaStreamConstraints) => Promise<MediaStream>
-  );
+  readonly enumerateDevices: () => Promise<MediaDeviceInfo[]>;
 
-  get getDisplayMedia(): (
-    constraints?: DisplayMediaStreamConstraints
-  ) => Promise<MediaStream>;
-  set getDisplayMedia(
-    value: (constraints?: DisplayMediaStreamConstraints) => Promise<MediaStream>
-  );
+  /**
+   * Sets WebRTC overrides. Can only be called once.
+   * @param overrides - Object containing WebRTC function overrides
+   * @throws {Error} If overrides have already been set
+   */
+  setOverrides(overrides: WebRTCOverrides): void;
+};
 
-  get enumerateDevices(): () => Promise<MediaDeviceInfo[]>;
-  set enumerateDevices(value: () => Promise<MediaDeviceInfo[]>);
-}
+export = WebRTCGlobals;

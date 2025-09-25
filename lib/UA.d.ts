@@ -47,7 +47,6 @@ export interface UAConfiguration {
   overrides?: {
     RTCPeerConnection?: RTCPeerConnection;
     getUserMedia?: typeof navigator.mediaDevices.getUserMedia;
-    getDisplayMedia?: typeof navigator.mediaDevices.getDisplayMedia;
     enumerateDevices?: typeof navigator.mediaDevices.enumerateDevices;
   };
 }
