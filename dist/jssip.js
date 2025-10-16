@@ -16228,7 +16228,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           // the local CSeq must be synchronized
           // with the value from the 200 OK response to keep the dialog sequence in sync.
           this._dialog._local_seqnum = message.cseq;
-          logger.debug("CSeq synchronized to ".concat(message.cseq, " after 200 OK"));
           delete this._earlyDialogs[id];
           return true;
         }
