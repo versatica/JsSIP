@@ -15728,7 +15728,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendRequest",
     value: function sendRequest(method, options) {
       logger.debug('sendRequest()');
-      return this._dialog.sendRequest(method, options);
+      if (this._dialog) {
+        return this._dialog.sendRequest(method, options);
+      } else {
+        var dialogsArray = Object.values(this._earlyDialogs);
+        if (dialogsArray.length > 0) {
+          return dialogsArray[0].sendRequest(method, options);
+        }
+        logger.warn('No valid early dialog found to send request');
+        return;
+      }
     }
 
     /**
@@ -16215,6 +16224,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (early_dialog) {
           early_dialog.update(message, type);
           this._dialog = early_dialog;
+          // When an early dialog is promoted to a confirmed dialog (e.g., after calling an IVR menu),
+          // the local CSeq must be synchronized
+          // with the value from the 200 OK response to keep the dialog sequence in sync.
+          this._dialog._local_seqnum = message.cseq;
           delete this._earlyDialogs[id];
           return true;
         }
@@ -17565,7 +17578,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this._direction = 'outgoing';
 
       // Check RTCSession Status.
-      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK) {
+      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK && this._session.status !== this._session.C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._session.status);
       }
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
