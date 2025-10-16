@@ -598,12 +598,6 @@ module.exports = /*#__PURE__*/function () {
         // RFC 3261 13.2.2.4.
         this._route_set = message.getHeaders('record-route').reverse();
       }
-      var cseq = message.cseq;
-      if (type === 'UAC') {
-        this._local_seqnum = cseq;
-      } else {
-        this._remote_seqnum = cseq;
-      }
     }
   }, {
     key: "terminate",
@@ -16230,6 +16224,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (early_dialog) {
           early_dialog.update(message, type);
           this._dialog = early_dialog;
+          // When an early dialog is promoted to a confirmed dialog (e.g., after calling an IVR menu),
+          // the local CSeq must be synchronized
+          // with the value from the 200 OK response to keep the dialog sequence in sync.
+          this._dialog._local_seqnum = message.cseq;
+          logger.debug("CSeq synchronized to ".concat(message.cseq, " after 200 OK"));
           delete this._earlyDialogs[id];
           return true;
         }
