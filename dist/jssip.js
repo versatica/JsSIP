@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.5
+ * JsSIP v3.10.6
  * the Javascript SIP library
  * Copyright: 2012-2025 
  * Homepage: https://jssip.net
@@ -15357,7 +15357,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function sendDTMF(tones) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       logger.debug('sendDTMF() | tones: %s', tones);
-      var position = 0;
       var duration = options.duration || null;
       var interToneGap = options.interToneGap || null;
       var transportType = options.transportType || JsSIP_C.DTMF_TRANSPORT.INFO;
@@ -15437,13 +15436,17 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       function _sendDTMF() {
         var _this5 = this;
         var timeout;
-        if (this._status === C.STATUS_TERMINATED || !this._tones || position >= this._tones.length) {
+        if (this._status === C.STATUS_TERMINATED || !this._tones) {
           // Stop sending DTMF.
           this._tones = null;
           return;
         }
-        var tone = this._tones[position];
-        position += 1;
+
+        // Retrieve the next tone.
+        var tone = this._tones[0];
+
+        // Remove the tone from this._tones.
+        this._tones = this._tones.substring(1);
         if (tone === ',') {
           timeout = 2000;
         } else {
@@ -24604,7 +24607,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.5",
+  "version": "3.10.6",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
