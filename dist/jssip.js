@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.4
+ * JsSIP v3.10.5
  * the Javascript SIP library
  * Copyright: 2012-2025 
  * Homepage: https://jssip.net
@@ -209,7 +209,7 @@ var checks = {
     register_expires: function register_expires(_register_expires) {
       if (Utils.isDecimal(_register_expires)) {
         var value = Number(_register_expires);
-        if (value > 0) {
+        if (value >= 0) {
           return value;
         }
       }
@@ -18088,8 +18088,14 @@ module.exports = /*#__PURE__*/function () {
         return;
       }
       var extraHeaders = this._extraHeaders.slice();
-      extraHeaders.push("Contact: ".concat(this._contact, ";expires=").concat(this._expires).concat(this._extraContactParams));
-      extraHeaders.push("Expires: ".concat(this._expires));
+      var contactValue;
+      if (this._expires) {
+        contactValue = "".concat(this._contact, ";expires=").concat(this._expires).concat(this._extraContactParams);
+        extraHeaders.push("Expires: ".concat(this._expires));
+      } else {
+        contactValue = "".concat(this._contact).concat(this._extraContactParams);
+      }
+      extraHeaders.push("Contact: ".concat(contactValue));
       var fromTag = Utils.newTag();
       if (this._ua.configuration.register_from_tag_trail) {
         if (typeof this._ua.configuration.register_from_tag_trail === 'function') {
@@ -24598,7 +24604,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.4",
+  "version": "3.10.5",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
