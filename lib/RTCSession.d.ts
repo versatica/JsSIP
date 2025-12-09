@@ -306,7 +306,5 @@ export class RTCSession extends EventEmitter {
 
   refer(target: string | URI, options?: ReferOptions): void;
 
-  resetLocalMedia(): void;
-
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 }
