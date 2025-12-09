@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.2
+ * JsSIP v3.10.3
  * the Javascript SIP library
  * Copyright: 2012-2025 
  * Homepage: https://jssip.net
@@ -15558,7 +15558,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._localHold === true) {
         return false;
       }
-      if (!this._isReadyToReOffer()) {
+      if (!this.isReadyToReOffer()) {
         return false;
       }
       this._localHold = true;
@@ -15604,7 +15604,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._localHold === false) {
         return false;
       }
-      if (!this._isReadyToReOffer()) {
+      if (!this.isReadyToReOffer()) {
         return false;
       }
       this._localHold = false;
@@ -15648,7 +15648,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
         return false;
       }
-      if (!this._isReadyToReOffer()) {
+      if (!this.isReadyToReOffer()) {
         return false;
       }
       var eventHandlers = {
@@ -15929,22 +15929,22 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      * Check if RTCSession is ready for an outgoing re-INVITE or UPDATE with SDP.
      */
   }, {
-    key: "_isReadyToReOffer",
-    value: function _isReadyToReOffer() {
+    key: "isReadyToReOffer",
+    value: function isReadyToReOffer() {
       if (!this._rtcReady) {
-        logger.debug('_isReadyToReOffer() | internal WebRTC status not ready');
+        logger.debug('isReadyToReOffer() | internal WebRTC status not ready');
         return false;
       }
 
       // No established yet.
       if (!this._dialog) {
-        logger.debug('_isReadyToReOffer() | session not established yet');
+        logger.debug('isReadyToReOffer() | session not established yet');
         return false;
       }
 
       // Another INVITE transaction is in progress.
       if (this._dialog.uac_pending_reply === true || this._dialog.uas_pending_reply === true) {
-        logger.debug('_isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
+        logger.debug('isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
         return false;
       }
       return true;
@@ -17296,7 +17296,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           if (_this25._status === C.STATUS_TERMINATED) {
             return;
           }
-          if (!_this25._isReadyToReOffer()) {
+          if (!_this25.isReadyToReOffer()) {
             return;
           }
           logger.debug('runSessionTimer() | sending session refresh request');
@@ -24598,7 +24598,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.2",
+  "version": "3.10.3",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
