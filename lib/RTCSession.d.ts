@@ -325,7 +325,7 @@ export default class RTCSession extends EventEmitter {
 
   isEnded(): boolean;
 
-  _isReadyToReOffer(): boolean;
+  isReadyToReOffer(): boolean;
 
   connect(target: string | URI, options?: ConnectOptions, initCallback?: (session: RTCSession) => void): void;
 
