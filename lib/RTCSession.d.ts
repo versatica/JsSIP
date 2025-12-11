@@ -78,7 +78,7 @@ export interface OnHoldResult {
   remote: boolean;
 }
 
-export interface DTFMOptions extends ExtraHeaders {
+export interface DTMFOptions extends ExtraHeaders {
   duration?: number;
   interToneGap?: number;
   transportType?: DTMF_TRANSPORT;
@@ -335,7 +335,7 @@ export default class RTCSession extends EventEmitter {
 
   terminateAsync(options?: TerminateAsyncOptions): Promise<void>;
 
-  sendDTMF(tones: string | number, options?: DTFMOptions): void;
+  sendDTMF(tones: string | number, options?: DTMFOptions): void;
 
   sendInfo(contentType: string, body?: string, options?: ExtraHeaders & { noTerminateWhenError?: boolean }): Promise<void>;
 
