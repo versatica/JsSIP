@@ -50,6 +50,7 @@
   "scripts": {
     "lint": "node npm-scripts.js lint",
     "test": "node npm-scripts.js test",
+    "grammar": "gulp grammar",
     "prepublish": "node npm-scripts.js prepublish",
     "release": "node npm-scripts.js release"
   }

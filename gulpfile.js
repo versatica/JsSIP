@@ -121,12 +121,12 @@ gulp.task('grammar', function(cb)
 
   log('grammar: compiling Grammar.pegjs into Grammar.js...');
 
-  exec(`${local_pegjs } ${ Grammar_pegjs } ${ Grammar_js}`,
+  exec(`${local_pegjs} -o ${Grammar_js} ${Grammar_pegjs}`,
     function(error, stdout, stderr)
     {
       if (error)
       {
-        cb(new Error(stderr));
+        return cb(new Error(stderr || error.message || 'Unknown error'));
       }
       log(`grammar: ${ colors.yellow('done')}`);
 
