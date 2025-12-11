@@ -25,7 +25,7 @@
     "debug": "^4.4.3",
     "events": "^3.3.0",
     "sdp-transform": "^2.15.0",
-    "sequent-promises": "^0.1.4"
+    "sequent-promises": "^2.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
