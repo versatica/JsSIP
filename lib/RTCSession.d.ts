@@ -290,6 +290,8 @@ declare enum SessionStatus {
 }
 
 export default class RTCSession extends EventEmitter {
+  _tones: string | null;
+
   constructor (ua: UA);
 
   static get C(): typeof SessionStatus;
