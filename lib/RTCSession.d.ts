@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import { DTMF_TRANSPORT, causes } from './Constants'
 import NameAddrHeader from './NameAddrHeader'
 import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
+import { UA } from './UA'
 import URI from './URI'
 
 // Define VoidFunction type
@@ -289,6 +290,8 @@ declare enum SessionStatus {
 }
 
 export default class RTCSession extends EventEmitter {
+  constructor (ua: UA);
+
   static get C(): typeof SessionStatus;
 
   get C(): typeof SessionStatus;
