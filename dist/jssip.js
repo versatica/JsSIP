@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.7
+ * JsSIP v3.10.8
  * the Javascript SIP library
  * Copyright: 2012-2025 
  * Homepage: https://jssip.net
@@ -15237,7 +15237,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (_this3._status === C.STATUS_TERMINATED) {
           return;
         }
-        logger.warn(error);
+        logger.warn("answer() failed: ".concat(error.message));
+        _this3._failed('system', error.message, JsSIP_C.causes.INTERNAL_ERROR);
       });
     }
 
@@ -24618,7 +24619,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.7",
+  "version": "3.10.8",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
