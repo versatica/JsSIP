@@ -38,6 +38,7 @@ export interface AnswerOptions extends ExtraHeaders {
   rtcAnswerConstraints?: RTCOfferOptions;
   rtcOfferConstraints?: RTCOfferOptions;
   sessionTimersExpires?: number;
+  allowEvents?: string[];
 }
 
 export interface RejectOptions extends ExtraHeaders {
@@ -131,6 +132,12 @@ export interface OutgoingInfoEvent {
   request: OutgoingRequest;
 }
 
+export interface NotifyEvent {
+  originator: Originator.REMOTE;
+  type: string;
+  request: IncomingRequest;
+}
+
 export interface HoldEvent {
   originator: Originator
 }
@@ -195,6 +202,7 @@ export type DTMFListener = IncomingDTMFListener | OutgoingDTMFListener;
 export type IncomingInfoListener = (event: IncomingInfoEvent) => void;
 export type OutgoingInfoListener = (event: OutgoingInfoEvent) => void;
 export type InfoListener = IncomingInfoListener | OutgoingInfoListener;
+export type NotifyListener = (event: NotifyEvent) => void
 export type HoldListener = (event: HoldEvent) => void;
 export type MuteListener = (event: MediaStreamTypes) => void;
 export type ReInviteListener = (event: ReInviteEvent) => void;
@@ -214,6 +222,7 @@ export interface RTCSessionEventMap {
   'failed': EndListener;
   'newDTMF': DTMFListener;
   'newInfo': InfoListener;
+  'newNotify': NotifyListener;
   'hold': HoldListener;
   'unhold': HoldListener;
   'muted': MuteListener;
@@ -257,6 +266,8 @@ export class RTCSession extends EventEmitter {
 
   set data(_data: any);
   get data(): any;
+
+  set allow_events(events: string[]);
 
   get connection(): RTCPeerConnectionDeprecated;
 
