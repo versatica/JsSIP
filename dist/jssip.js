@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.8
+ * JsSIP v3.10.9
  * the Javascript SIP library
  * Copyright: 2012-2025 
  * Homepage: https://jssip.net
@@ -20386,6 +20386,12 @@ module.exports = /*#__PURE__*/function () {
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
@@ -20437,7 +20443,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   function UA(configuration) {
     var _this;
     _classCallCheck(this, UA);
-    logger.debug('new() [configuration:%o]', configuration);
+    // Check configuration argument.
+    if (!configuration) {
+      throw new TypeError('Not enough arguments');
+    }
+
+    // Hide sensitive information.
+    var sensitiveKeys = ['password', 'ha1', 'authorization_jwt'];
+    logger.debug('new() [configuration:%o]', Object.entries(configuration).filter(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 1),
+        key = _ref2[0];
+      return !sensitiveKeys.includes(key);
+    }));
     _this = _callSuper(this, UA);
     _this._cache = {
       credentials: {}
@@ -20463,11 +20480,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     // Custom UA empty object for high level use.
     _this._data = {};
     _this._closeTimer = null;
-
-    // Check configuration argument.
-    if (configuration === undefined) {
-      throw new TypeError('Not enough arguments');
-    }
 
     // Load configuration.
     try {
@@ -21086,10 +21098,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      */
   }, {
     key: "_findSession",
-    value: function _findSession(_ref) {
-      var call_id = _ref.call_id,
-        from_tag = _ref.from_tag,
-        to_tag = _ref.to_tag;
+    value: function _findSession(_ref3) {
+      var call_id = _ref3.call_id,
+        from_tag = _ref3.from_tag,
+        to_tag = _ref3.to_tag;
       var sessionIDa = call_id + from_tag;
       var sessionA = this._sessions[sessionIDa];
       var sessionIDb = call_id + to_tag;
@@ -24619,7 +24631,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.8",
+  "version": "3.10.9",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
