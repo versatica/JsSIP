@@ -1,5 +1,5 @@
 /*
- * JsSIP v3.10.6
+ * JsSIP v3.10.7
  * the Javascript SIP library
  * Copyright: 2012-2025 
  * Homepage: https://jssip.net
@@ -530,7 +530,7 @@ module.exports = /*#__PURE__*/function () {
       this._remote_uri = message.parseHeader('from').uri;
       this._remote_target = contact.uri;
       this._route_set = message.getHeaders('record-route');
-      this._ack_seqnum = this._remote_seqnum;
+      this._ack_seqnum = message.cseq;
     }
     // RFC 3261 12.1.2.
     else if (type === 'UAC') {
@@ -548,7 +548,7 @@ module.exports = /*#__PURE__*/function () {
       this._remote_uri = message.parseHeader('to').uri;
       this._remote_target = contact.uri;
       this._route_set = message.getHeaders('record-route').reverse();
-      this._ack_seqnum = null;
+      this._ack_seqnum = this._local_seqnum;
     }
     this._ua.newDialog(this);
     logger.debug("new ".concat(type, " dialog created with status ").concat(this._state === C.STATUS_EARLY ? 'EARLY' : 'CONFIRMED'));
@@ -653,7 +653,9 @@ module.exports = /*#__PURE__*/function () {
       if (!this._local_seqnum) {
         this._local_seqnum = Math.floor(Math.random() * 10000);
       }
-      var cseq = method === JsSIP_C.CANCEL || method === JsSIP_C.ACK ? this._local_seqnum : this._local_seqnum += 1;
+
+      // CANCEL and ACK must use the same sequence number as the INVITE.
+      var cseq = method === JsSIP_C.CANCEL || method === JsSIP_C.ACK ? this._ack_seqnum : this._local_seqnum += 1;
       var request = new SIPMessage.OutgoingRequest(method, this._remote_target, this._ua, {
         'cseq': cseq,
         'call_id': this._id.call_id,
@@ -15731,7 +15733,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendRequest",
     value: function sendRequest(method, options) {
       logger.debug('sendRequest()');
-      return this._dialog.sendRequest(method, options);
+      if (this._dialog) {
+        return this._dialog.sendRequest(method, options);
+      } else {
+        var dialogsArray = Object.values(this._earlyDialogs);
+        if (dialogsArray.length > 0) {
+          return dialogsArray[0].sendRequest(method, options);
+        }
+        logger.warn('sendRequest() | no valid early dialog found');
+        return;
+      }
     }
 
     /**
@@ -17568,7 +17579,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this._direction = 'outgoing';
 
       // Check RTCSession Status.
-      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK) {
+      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK && this._session.status !== this._session.C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._session.status);
       }
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
@@ -24607,7 +24618,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.6",
+  "version": "3.10.7",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
