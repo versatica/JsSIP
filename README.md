@@ -63,7 +63,8 @@ var eventHandlers = {
 
 var options = {
   'eventHandlers'    : eventHandlers,
-  'mediaConstraints' : { 'audio': true, 'video': true }
+  'mediaConstraints' : { 'audio': true, 'video': true },
+  'callId'           : 'a84b4c76e66710'
 };
 
 var session = ua.call('sip:bob@example.com', options);

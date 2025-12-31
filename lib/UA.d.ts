@@ -17,6 +17,7 @@ export interface CallOptions extends AnswerOptions {
   anonymous?: boolean;
   fromUserName?: string;
   fromDisplayName?: string;
+  callId?: string;
 }
 
 export interface UAConfiguration {
@@ -41,6 +42,7 @@ export interface UAConfiguration {
   register?: boolean;
   register_expires?: number;
   register_from_tag_trail?: string | (() => string);
+  call_id?: string;
   registrar_server?: string;
   use_preloaded_route?: boolean;
   user_agent?: string;
