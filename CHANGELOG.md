@@ -3,6 +3,11 @@ CHANGELOG
 
 ### NEXT RELEASE
 
+### 3.10.10
+
+* Dialog: Fix wrong ACK Cseq for re-INVITE (#943). Credits to @karstenluedtke.
+
+
 ### 3.10.9
 
 * UA: Do not log sensitive information (#941).

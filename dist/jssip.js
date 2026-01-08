@@ -1,7 +1,7 @@
 /*
- * JsSIP v3.10.9
+ * JsSIP v3.10.10
  * the Javascript SIP library
- * Copyright: 2012-2025 
+ * Copyright: 2012-2026 
  * Homepage: https://jssip.net
  * License: MIT
  */
@@ -530,7 +530,8 @@ module.exports = /*#__PURE__*/function () {
       this._remote_uri = message.parseHeader('from').uri;
       this._remote_target = contact.uri;
       this._route_set = message.getHeaders('record-route');
-      this._ack_seqnum = message.cseq;
+      this.incoming_ack_seqnum = message.cseq;
+      this.outgoing_ack_seqnum = null;
     }
     // RFC 3261 12.1.2.
     else if (type === 'UAC') {
@@ -548,7 +549,8 @@ module.exports = /*#__PURE__*/function () {
       this._remote_uri = message.parseHeader('to').uri;
       this._remote_target = contact.uri;
       this._route_set = message.getHeaders('record-route').reverse();
-      this._ack_seqnum = this._local_seqnum;
+      this.incoming_ack_seqnum = null;
+      this.outgoing_ack_seqnum = this._local_seqnum;
     }
     this._ua.newDialog(this);
     logger.debug("new ".concat(type, " dialog created with status ").concat(this._state === C.STATUS_EARLY ? 'EARLY' : 'CONFIRMED'));
@@ -619,6 +621,11 @@ module.exports = /*#__PURE__*/function () {
       // Increase the local CSeq on authentication.
       eventHandlers.onAuthenticated = function () {
         _this._local_seqnum += 1;
+
+        // In case of re-INVITE store outgoing ack_seqnum for its CANCEL or ACK.
+        if (request.method === JsSIP_C.INVITE) {
+          _this._outgoing_ack_seqnum = _this._local_seqnum;
+        }
       };
       var request_sender = new Dialog_RequestSender(this, request, eventHandlers);
       request_sender.send();
@@ -635,12 +642,12 @@ module.exports = /*#__PURE__*/function () {
       }
 
       // ACK received. Cleanup this._ack_seqnum.
-      if (request.method === JsSIP_C.ACK && this._ack_seqnum !== null) {
-        this._ack_seqnum = null;
+      if (request.method === JsSIP_C.ACK && this.incoming_ack_seqnum !== null) {
+        this.incoming_ack_seqnum = null;
       }
       // INVITE received. Set this._ack_seqnum.
       else if (request.method === JsSIP_C.INVITE) {
-        this._ack_seqnum = request.cseq;
+        this.incoming_ack_seqnum = request.cseq;
       }
       this._owner.receiveRequest(request);
     }
@@ -655,7 +662,12 @@ module.exports = /*#__PURE__*/function () {
       }
 
       // CANCEL and ACK must use the same sequence number as the INVITE.
-      var cseq = method === JsSIP_C.CANCEL || method === JsSIP_C.ACK ? this._ack_seqnum : this._local_seqnum += 1;
+      var cseq = method === JsSIP_C.CANCEL || method === JsSIP_C.ACK ? this.outgoing_ack_seqnum : this._local_seqnum += 1;
+
+      // In case of re-INVITE store ack_seqnum for future CANCEL or ACK.
+      if (method === JsSIP_C.INVITE) {
+        this.outgoing_ack_seqnum = cseq;
+      }
       var request = new SIPMessage.OutgoingRequest(method, this._remote_target, this._ua, {
         'cseq': cseq,
         'call_id': this._id.call_id,
@@ -679,7 +691,7 @@ module.exports = /*#__PURE__*/function () {
         if (request.method === JsSIP_C.ACK) {
           // We are not expecting any ACK with lower seqnum than the current one.
           // Or this is not the ACK we are waiting for.
-          if (this._ack_seqnum === null || request.cseq !== this._ack_seqnum) {
+          if (this.incoming_ack_seqnum === null || request.cseq !== this.incoming_ack_seqnum) {
             return false;
           }
         } else {
@@ -24631,7 +24643,7 @@ module.exports={
   "name": "jssip",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "3.10.9",
+  "version": "3.10.10",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
