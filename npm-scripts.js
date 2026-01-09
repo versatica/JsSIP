@@ -26,18 +26,14 @@ switch (task)
   }
 
   case 'test': {
-    executeCmd('jest test/test-classes.js');
-    executeCmd('jest test/test-digestAuthentication.js');
-    executeCmd('gulp test');
-
-    // executeCmd(jest);
+    test();
 
     break;
   }
 
   case 'release': {
     lint();
-    executeCmd('gulp test');
+    test();
     executeCmd(`git commit -am '${version}'`);
     executeCmd(`git tag -a ${version} -m '${version}'`);
     executeCmd('git push origin master && git push origin --tags');
@@ -59,6 +55,18 @@ function lint()
   logInfo('lint()');
 
   executeCmd(`eslint -c eslint.config.js --max-warnings 0 ${ESLINT_PATHS}`);
+}
+
+function test()
+{
+  logInfo('test()');
+
+  executeCmd('jest test/test-classes.js');
+  executeCmd('jest test/test-digestAuthentication.js');
+  executeCmd('jest test/test-normalizeTarget.js');
+  executeCmd('gulp test');
+
+  // executeCmd(jest);
 }
 
 function grammar()
