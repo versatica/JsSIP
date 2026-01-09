@@ -34,9 +34,7 @@
     "sdp-transform": "^2.14.1"
   },
   "devDependencies": {
-    "ansi-colors": "^3.2.4",
     "eslint": "^5.16.0",
-    "fancy-log": "^1.3.3",
     "gulp": "^4.0.2",
     "gulp-expect-file": "^1.0.2",
     "gulp-nodeunit-runner": "^0.2.2",
@@ -45,7 +43,6 @@
   "scripts": {
     "lint": "node npm-scripts.js lint",
     "test": "node npm-scripts.js test",
-    "prepublish": "node npm-scripts.js prepublish",
     "release": "node npm-scripts.js release"
   }
 }

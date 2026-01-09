@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const process = require('process');
 const { execSync } = require('child_process');
 const { version } = require('./package.json');
@@ -11,6 +13,13 @@ console.log(`npm-scripts.js [INFO] running task "${task}"`);
 
 switch (task)
 {
+  case 'grammar':
+  {
+    grammar();
+
+    break;
+  }
+
   case 'lint':
   {
     lint();
@@ -28,7 +37,7 @@ switch (task)
   case 'release':
   {
     lint();
-    executeCmd('gulp');
+    executeCmd('gulp test');
     executeCmd(`git commit -am '${version}'`);
     executeCmd(`git tag -a ${version} -m '${version}'`);
     executeCmd('git push origin master && git push origin --tags');
@@ -53,6 +62,32 @@ function lint()
   executeCmd(
     `eslint --max-warnings 0 ${ESLINT_PATHS}`
   );
+}
+
+function grammar()
+{
+  logInfo('grammar()');
+
+  const local_pegjs = path.resolve('./node_modules/.bin/pegjs');
+  const Grammar_pegjs = path.resolve('lib/Grammar.pegjs');
+  const Grammar_js = path.resolve('lib/Grammar.js');
+
+  logInfo('compiling Grammar.pegjs into Grammar.js...');
+
+  executeCmd(`${local_pegjs } ${ Grammar_pegjs } ${ Grammar_js}`);
+
+  logInfo('grammar compiled');
+
+  // Modify the generated Grammar.js file with custom changes.
+  logInfo('applying custom changes to Grammar.js...');
+
+  const current_grammar = fs.readFileSync('lib/Grammar.js').toString();
+  let modified_grammar = current_grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
+
+  modified_grammar = modified_grammar.replace(/\s+$/mg, '');
+  fs.writeFileSync('lib/Grammar.js', modified_grammar);
+
+  logInfo('grammar done');
 }
 
 function executeCmd(command)
