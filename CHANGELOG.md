@@ -1,9 +1,15 @@
 CHANGELOG
 =========
 
+### 3.11.1
+
+* Move code from 'lib/' to 'src/'.
+
+
 ### 3.11.0
 
 * Do not browserify nor minimize the library. Apps using JsSIP are responsible to do it.
+
 
 ### 3.10.10
 
