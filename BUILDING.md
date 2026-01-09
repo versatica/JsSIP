@@ -35,20 +35,10 @@ Install the Node.js dependencies:
 $ npm install
 ```
 
-Finally, run `gulp dist` (or just `gulp`) to get:
-
-* `dist/jssip.js`: uncompressed version of JsSIP.
-* `dist/jssip.min.js`: compressed version of JsSIP.
-
-```bash
-$ gulp dist
-```
-
-
 ## Test units
 
 ```bash
-$ gulp test
+$ npm run test
 ```
 
 
@@ -56,10 +46,8 @@ $ gulp test
 
 ### Changes in JsSIP Grammar
 
-If you modify `lib/Grammar.pegjs` then you need to recompile it:
+If you modify `src/Grammar.pegjs` then you need to recompile it:
 
 ```bash
-$ gulp devel
-$ gulp dist
+$ node npm-scripts.js grammar
 ```
-

@@ -6,7 +6,7 @@ const { version } = require('./package.json');
 
 const task = process.argv.slice(2).join(' ');
 
-const ESLINT_PATHS = [ 'gulpfile.js', 'lib', 'test' ].join(' ');
+const ESLINT_PATHS = [ 'gulpfile.js', 'src', 'test' ].join(' ');
 
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
@@ -69,8 +69,8 @@ function grammar()
   logInfo('grammar()');
 
   const local_pegjs = path.resolve('./node_modules/.bin/pegjs');
-  const Grammar_pegjs = path.resolve('lib/Grammar.pegjs');
-  const Grammar_js = path.resolve('lib/Grammar.js');
+  const Grammar_pegjs = path.resolve('src/Grammar.pegjs');
+  const Grammar_js = path.resolve('src/Grammar.js');
 
   logInfo('compiling Grammar.pegjs into Grammar.js...');
 
@@ -81,11 +81,11 @@ function grammar()
   // Modify the generated Grammar.js file with custom changes.
   logInfo('applying custom changes to Grammar.js...');
 
-  const current_grammar = fs.readFileSync('lib/Grammar.js').toString();
+  const current_grammar = fs.readFileSync('src/Grammar.js').toString();
   let modified_grammar = current_grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
 
   modified_grammar = modified_grammar.replace(/\s+$/mg, '');
-  fs.writeFileSync('lib/Grammar.js', modified_grammar);
+  fs.writeFileSync('src/Grammar.js', modified_grammar);
 
   logInfo('grammar done');
 }

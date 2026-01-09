@@ -1,5 +1,5 @@
 require('./include/common');
-const DigestAuthentication = require('../lib/DigestAuthentication.js');
+const DigestAuthentication = require('../src/DigestAuthentication.js');
 
 // Results of this tests originally obtained from RFC 2617 and:
 // 'https://pernau.at/kd/sipdigest.php'

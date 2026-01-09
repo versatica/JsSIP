@@ -8,8 +8,8 @@
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
     "Iñaki Baz Castillo <ibc@aliax.net> (https://inakibaz.me)"
   ],
-  "types": "lib/JsSIP.d.ts",
-  "main": "lib/JsSIP.js",
+  "types": "src/JsSIP.d.ts",
+  "main": "src/JsSIP.js",
   "keywords": [
     "sip",
     "websocket",
