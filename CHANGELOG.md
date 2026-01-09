@@ -1,7 +1,9 @@
 CHANGELOG
 =========
 
-### NEXT RELEASE
+### 3.11.0
+
+* Do not browserify nor minimize the library. Apps using JsSIP are responsible to do it.
 
 ### 3.10.10
 

@@ -23,13 +23,6 @@ switch (task)
     break;
   }
 
-  case 'prepublish':
-  {
-    execute('gulp babel');
-
-    break;
-  }
-
   case 'release':
   {
     execute('gulp');
