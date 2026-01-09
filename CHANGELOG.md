@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### NEXT RELEASE
+
+* Modernize eslint.
+
+
 ### 3.11.1
 
 * Move code from 'lib/' to 'src/'.

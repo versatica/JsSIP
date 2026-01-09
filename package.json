@@ -27,14 +27,17 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "@types/events": "^3.0.0",
     "@types/debug": "^4.1.7",
+    "@types/events": "^3.0.0",
     "debug": "^4.3.1",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.1",
+    "globals": "^17.0.0",
     "gulp": "^4.0.2",
     "gulp-expect-file": "^1.0.2",
     "gulp-nodeunit-runner": "^0.2.2",

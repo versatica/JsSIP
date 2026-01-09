@@ -88,9 +88,9 @@ module.exports = class WebSocketInterface
       this._ws.onmessage = this._onMessage.bind(this);
       this._ws.onerror = this._onError.bind(this);
     }
-    catch (e)
+    catch (error)
     {
-      this._onError(e);
+      this._onError(error);
     }
   }
 

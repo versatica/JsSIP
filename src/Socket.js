@@ -59,7 +59,8 @@ exports.isSocket = (socket) =>
       throw new Error('missing or invalid JsSIP.Socket sip_uri property');
     }
   }
-  catch (e)
+  // eslint-disable-next-line no-unused-vars
+  catch (error)
   {
     return false;
   }
@@ -76,7 +77,8 @@ exports.isSocket = (socket) =>
       }
     });
   }
-  catch (e)
+  // eslint-disable-next-line no-unused-vars
+  catch (error)
   {
     return false;
   }

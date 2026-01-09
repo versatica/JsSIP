@@ -94,11 +94,11 @@ module.exports = class UA extends EventEmitter
     {
       this._loadConfig(configuration);
     }
-    catch (e)
+    catch (error)
     {
       this._status = C.STATUS_NOT_READY;
       this._error = C.CONFIGURATION_ERROR;
-      throw e;
+      throw error;
     }
 
     // Initialize registrator.
@@ -330,6 +330,7 @@ module.exports = class UA extends EventEmitter
       {
         logger.debug(`closing session ${session}`);
         try { this._sessions[session].terminate(); }
+        // eslint-disable-next-line no-unused-vars
         catch (error) {}
       }
     }
@@ -339,6 +340,7 @@ module.exports = class UA extends EventEmitter
     {
       if (Object.prototype.hasOwnProperty.call(this._applicants, applicant))
         try { this._applicants[applicant].close(); }
+        // eslint-disable-next-line no-unused-vars
         catch (error) {}
     }
 
@@ -764,8 +766,7 @@ module.exports = class UA extends EventEmitter
        * Exception: ACK for an Invite request for which a dialog has not
        * been created.
        */
-      else
-      if (method !== JsSIP_C.ACK)
+      else if (method !== JsSIP_C.ACK)
       {
         request.reply(481);
       }
@@ -830,14 +831,8 @@ module.exports = class UA extends EventEmitter
   _loadConfig(configuration)
   {
     // Check and load the given configuration.
-    try
-    {
-      config.load(this._configuration, configuration);
-    }
-    catch (e)
-    {
-      throw e;
-    }
+    // This can throw.
+    config.load(this._configuration, configuration);
 
     // Post Configuration Process.
 
@@ -877,9 +872,9 @@ module.exports = class UA extends EventEmitter
       this._transport.ondisconnect = onTransportDisconnect.bind(this);
       this._transport.ondata = onTransportData.bind(this);
     }
-    catch (e)
+    catch (error)
     {
-      logger.warn(e);
+      logger.warn(error);
       throw new Exceptions.ConfigurationError('sockets', this._configuration.sockets);
     }
 

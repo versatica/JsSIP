@@ -13,29 +13,25 @@ console.log(`npm-scripts.js [INFO] running task "${task}"`);
 
 switch (task)
 {
-  case 'grammar':
-  {
+  case 'grammar': {
     grammar();
 
     break;
   }
 
-  case 'lint':
-  {
+  case 'lint': {
     lint();
 
     break;
   }
 
-  case 'test':
-  {
+  case 'test': {
     executeCmd('gulp test');
 
     break;
   }
 
-  case 'release':
-  {
+  case 'release': {
     lint();
     executeCmd('gulp test');
     executeCmd(`git commit -am '${version}'`);
@@ -49,8 +45,7 @@ switch (task)
     break;
   }
 
-  default:
-  {
+  default: {
     throw new TypeError(`unknown task "${task}"`);
   }
 }
@@ -59,9 +54,7 @@ function lint()
 {
   logInfo('lint()');
 
-  executeCmd(
-    `eslint --max-warnings 0 ${ESLINT_PATHS}`
-  );
+  executeCmd(`eslint -c eslint.config.js --max-warnings 0 ${ESLINT_PATHS}`);
 }
 
 function grammar()
@@ -74,7 +67,7 @@ function grammar()
 
   logInfo('compiling Grammar.pegjs into Grammar.js...');
 
-  executeCmd(`${local_pegjs } ${ Grammar_pegjs } ${ Grammar_js}`);
+  executeCmd(`${local_pegjs} ${Grammar_pegjs} ${Grammar_js}`);
 
   logInfo('grammar compiled');
 
@@ -82,9 +75,12 @@ function grammar()
   logInfo('applying custom changes to Grammar.js...');
 
   const current_grammar = fs.readFileSync('src/Grammar.js').toString();
-  let modified_grammar = current_grammar.replace(/throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/, 'new this.SyntaxError($1);\n        return -1;$2}$3return data;');
+  let modified_grammar = current_grammar.replace(
+    /throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/,
+    'new this.SyntaxError($1);\n        return -1;$2}$3return data;'
+  );
 
-  modified_grammar = modified_grammar.replace(/\s+$/mg, '');
+  modified_grammar = modified_grammar.replace(/\s+$/gm, '');
   fs.writeFileSync('src/Grammar.js', modified_grammar);
 
   logInfo('grammar done');
@@ -99,6 +95,7 @@ function executeCmd(command)
   {
     execSync(command, { stdio: [ 'ignore', process.stdout, process.stderr ] });
   }
+  // eslint-disable-next-line no-unused-vars
   catch (error)
   {
     process.exit(1);
@@ -109,11 +106,4 @@ function logInfo(...args)
 {
   // eslint-disable-next-line no-console
   console.log(`npm-scripts.mjs \x1b[36m[INFO] [${task}]\x1b[0m`, ...args);
-}
-
-// eslint-disable-next-line no-unused-vars
-function logWarn(...args)
-{
-  // eslint-disable-next-line no-console
-  console.warn(`npm-scripts.mjs \x1b[33m[WARN] [${task}]\x1b\0m`, ...args);
 }

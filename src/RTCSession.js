@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-redeclare
 /* globals RTCPeerConnection: false, RTCSessionDescription: false */
 
 const EventEmitter = require('events').EventEmitter;
@@ -1524,8 +1525,7 @@ module.exports = class RTCSession extends EventEmitter
                 this.emit('peerconnection:setremotedescriptionfailed', error);
               });
           }
-          else
-          if (!this._is_confirmed)
+          else if (!this._is_confirmed)
           {
             this._confirmed('remote', request);
           }
@@ -3224,8 +3224,7 @@ module.exports = class RTCSession extends EventEmitter
           });
       }
       // No SDP answer.
-      else
-      if (eventHandlers.succeeded)
+      else if (eventHandlers.succeeded)
       {
         eventHandlers.succeeded(response);
       }
