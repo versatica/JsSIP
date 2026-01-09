@@ -8,8 +8,6 @@ const exec = require('child_process').exec;
 const gulp = require('gulp');
 const expect = require('gulp-expect-file');
 const nodeunit = require('gulp-nodeunit-runner');
-const eslint = require('gulp-eslint');
-const plumber = require('gulp-plumber');
 const log = require('fancy-log');
 const colors = require('ansi-colors');
 
@@ -19,16 +17,6 @@ const EXPECT_OPTIONS = {
   errorOnFailure : true,
   checkRealFile  : true
 };
-
-gulp.task('lint', function()
-{
-  const src = [ 'gulpfile.js', '.eslintrc.js', 'lib/**/*.js', 'test/**/*.js' ];
-
-  return gulp.src(src)
-    .pipe(plumber())
-    .pipe(eslint())
-    .pipe(eslint.format());
-});
 
 gulp.task('test', function()
 {
@@ -80,6 +68,6 @@ gulp.task('grammar', function(cb)
 
 gulp.task('devel', gulp.series('grammar'));
 
-gulp.task('dist', gulp.series('lint', 'test'));
+gulp.task('dist', gulp.series('test'));
 
 gulp.task('default', gulp.series('dist'));
