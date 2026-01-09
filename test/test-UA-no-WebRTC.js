@@ -15,13 +15,7 @@ module.exports = {
         /* eslint no-unused-vars: 0*/
         const ua = new JsSIP.UA({ 'lalala': 'lololo' });
       },
-      // Error validation.
-      // NOTE: We should use JsSIP.Exceptions.ConfigurationError, but
-      // babel does not properly create Error subclasses.
-      function(error)
-      {
-        return error.name === 'CONFIGURATION_ERROR';
-      }
+      JsSIP.Exceptions.ConfigurationError
     );
 
     test.done();
