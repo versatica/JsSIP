@@ -17,7 +17,6 @@ gulp.task('test', function()
 {
   const src = [
     'test/test-parser.js',
-    'test/test-properties.js',
     'test/test-UA-no-WebRTC.js'
   ];
 

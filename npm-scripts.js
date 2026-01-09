@@ -64,6 +64,7 @@ function test()
   executeCmd('jest test/test-classes.js');
   executeCmd('jest test/test-digestAuthentication.js');
   executeCmd('jest test/test-normalizeTarget.js');
+  executeCmd('jest test/test-properties.js');
   executeCmd('gulp test');
 
   // executeCmd(jest);

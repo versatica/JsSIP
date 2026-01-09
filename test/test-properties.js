@@ -3,18 +3,12 @@ const JsSIP = require('../');
 const pkg = require('../package.json');
 
 
-module.exports = {
+describe('Properties', () => {
+  test('should have a name property', () => {
+    expect(JsSIP.name).toEqual(pkg.title);
+  });
 
-  'name' : function(test)
-  {
-    test.equal(JsSIP.name, pkg.title);
-    test.done();
-  },
-
-  'version' : function(test)
-  {
-    test.equal(JsSIP.version, pkg.version);
-    test.done();
-  }
-
-};
+  test('should have a version property', () => {
+    expect(JsSIP.version).toEqual(pkg.version);
+  });
+});
