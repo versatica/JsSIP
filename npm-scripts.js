@@ -65,6 +65,8 @@ function test()
   executeCmd('jest test/test-digestAuthentication.js');
   executeCmd('jest test/test-normalizeTarget.js');
   executeCmd('jest test/test-properties.js');
+  executeCmd('jest test/test-UA-no-WebRTC.js');
+
   executeCmd('gulp test');
 
   // executeCmd(jest);

@@ -5,23 +5,15 @@ const testUA = require('./include/testUA');
 const JsSIP = require('../');
 
 
-module.exports = {
+describe('UA No WebRTC', () =>
+{
 
-  'UA wrong configuration' : function(test)
+  test('UA wrong configuration', () =>
   {
-    test.throws(
-      function()
-      {
-        /* eslint no-unused-vars: 0*/
-        const ua = new JsSIP.UA({ 'lalala': 'lololo' });
-      },
-      JsSIP.Exceptions.ConfigurationError
-    );
+    expect(() => new JsSIP.UA({ 'lalala': 'lololo' })).toThrow(JsSIP.Exceptions.ConfigurationError);
+  });
 
-    test.done();
-  },
-
-  'UA no WS connection' : function(test)
+  test('UA no WS connection', () =>
   {
     const config = testUA.UA_CONFIGURATION;
     const wsSocket = new JsSIP.WebSocketInterface(testUA.SOCKET_DESCRIPTION.url);
@@ -30,15 +22,15 @@ module.exports = {
 
     const ua = new JsSIP.UA(config);
 
-    test.ok(ua instanceof(JsSIP.UA));
+    expect(ua instanceof (JsSIP.UA)).toBeTruthy();
 
     ua.start();
 
-    test.strictEqual(ua.contact.toString(), `<sip:${ ua.contact.uri.user }@${ ua.configuration.via_host };transport=ws>`);
-    test.strictEqual(ua.contact.toString({ outbound: false, anonymous: false, foo: true }), `<sip:${ ua.contact.uri.user }@${ ua.configuration.via_host };transport=ws>`);
-    test.strictEqual(ua.contact.toString({ outbound: true }), `<sip:${ ua.contact.uri.user }@${ ua.configuration.via_host };transport=ws;ob>`);
-    test.strictEqual(ua.contact.toString({ anonymous: true }), '<sip:anonymous@anonymous.invalid;transport=ws>');
-    test.strictEqual(ua.contact.toString({ anonymous: true, outbound: true }), '<sip:anonymous@anonymous.invalid;transport=ws;ob>');
+    expect(ua.contact.toString()).toBe(`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws>`);
+    expect(ua.contact.toString({ outbound: false, anonymous: false, foo: true })).toBe(`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws>`);
+    expect(ua.contact.toString({ outbound: true })).toBe(`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws;ob>`);
+    expect(ua.contact.toString({ anonymous: true })).toBe('<sip:anonymous@anonymous.invalid;transport=ws>');
+    expect(ua.contact.toString({ anonymous: true, outbound: true })).toBe('<sip:anonymous@anonymous.invalid;transport=ws;ob>');
 
     for (const parameter in testUA.UA_CONFIGURATION_AFTER_START)
     {
@@ -49,13 +41,15 @@ module.exports = {
         {
           case 'uri':
           case 'registrar_server':
-            test.deepEqual(ua.configuration[parameter].toString(), testUA.UA_CONFIGURATION_AFTER_START[parameter], `testing parameter ${ parameter}`);
+            // eslint-disable-next-line jest/no-conditional-expect
+            expect(ua.configuration[parameter].toString()).toBe(testUA.UA_CONFIGURATION_AFTER_START[parameter], `testing parameter ${parameter}`);
             break;
           case 'sockets':
             console.warn('IGNORE SOCKETS');
             break;
           default:
-            test.deepEqual(ua.configuration[parameter], testUA.UA_CONFIGURATION_AFTER_START[parameter], `testing parameter ${ parameter}`);
+            // eslint-disable-next-line jest/no-conditional-expect
+            expect(ua.configuration[parameter]).toBe(testUA.UA_CONFIGURATION_AFTER_START[parameter], `testing parameter ${parameter}`);
         }
       }
     }
@@ -64,32 +58,27 @@ module.exports = {
     const sockets = transport.sockets;
     const socket = sockets[0].socket;
 
-    test.deepEqual(sockets.length, ua.transport.sockets.length, 'testing transport sockets number');
-    test.deepEqual(sockets[0].weight, ua.transport.sockets[0].weight, 'testing sockets weight');
-    test.deepEqual(socket.via_transport, ua.transport.via_transport, 'testing transport via_transport');
-    test.deepEqual(socket.sip_uri, ua.transport.sip_uri, 'testing transport sip_uri');
-    test.deepEqual(socket.url, ua.transport.url, 'testing transport url');
+    expect(sockets.length).toEqual(ua.transport.sockets.length);
+    expect(sockets[0].weight).toEqual(ua.transport.sockets[0].weight);
+    expect(socket.via_transport).toEqual(ua.transport.via_transport);
+    expect(socket.sip_uri).toEqual(ua.transport.sip_uri);
+    expect(socket.url).toEqual(ua.transport.url);
 
-    test.deepEqual(transport.recovery_options, ua.transport.recovery_options, 'testing transport recovery_options');
+    expect(transport.recovery_options).toEqual(ua.transport.recovery_options);
 
     ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
       eventHandlers : {
         failed : function(e)
         {
-          test.strictEqual(e.cause, JsSIP.C.causes.CONNECTION_ERROR);
+          expect(e.cause).toEqual(JsSIP.C.causes.CONNECTION_ERROR);
         }
       }
     });
 
-    test.throws(
-      function()
-      {
-        ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE');
-      }
-    );
+    expect(
+      () => ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE')
+    ).toThrow();
 
     ua.stop();
-    test.done();
-  }
-
-};
+  });
+});

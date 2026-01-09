@@ -16,8 +16,7 @@ const EXPECT_OPTIONS = {
 gulp.task('test', function()
 {
   const src = [
-    'test/test-parser.js',
-    'test/test-UA-no-WebRTC.js'
+    'test/test-parser.js'
   ];
 
   return gulp.src(src)
