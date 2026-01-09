@@ -26,7 +26,11 @@ switch (task)
   }
 
   case 'test': {
+    executeCmd('jest test/test-classes.js');
+    executeCmd('jest test/test-digestAuthentication.js');
     executeCmd('gulp test');
+
+    // executeCmd(jest);
 
     break;
   }

@@ -15,14 +15,11 @@ const EXPECT_OPTIONS = {
 
 gulp.task('test', function()
 {
-  // var src = 'test/*.js';
   const src = [
-    'test/test-classes.js',
     'test/test-normalizeTarget.js',
     'test/test-parser.js',
     'test/test-properties.js',
-    'test/test-UA-no-WebRTC.js',
-    'test/test-digestAuthentication.js'
+    'test/test-UA-no-WebRTC.js'
   ];
 
   return gulp.src(src)

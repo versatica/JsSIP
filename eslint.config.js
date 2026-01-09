@@ -16,9 +16,27 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-module.exports = defineConfig([{
-    languageOptions: {
-        globals: {
+module.exports = defineConfig([
+    {
+        files: ['test/**/*.js'], // Apply these settings only to test files
+        languageOptions: {
+            globals: {
+                jest: true, // Enables Jest global variables like `test`, `describe`, and `expect`
+                describe: true, // TMP: explicitly enable globally.
+                test: true, // TMP: explicitly enable globally.
+                expect: true, // TMP: explicitly enable globally.
+            },
+        },
+        plugins: {
+            jest: require('eslint-plugin-jest'), // Load the Jest plugin
+        },
+        rules: {
+            ...require('eslint-plugin-jest').configs.recommended.rules, // Use Jest's recommended rules
+        },
+    },
+    {
+        languageOptions: {
+            globals: {
             ...globals.browser,
             ...globals.node,
         },
