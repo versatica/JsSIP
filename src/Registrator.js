@@ -103,7 +103,7 @@ module.exports = class Registrator
       return;
     }
 
-    const extraHeaders = this._extraHeaders.slice();
+    const extraHeaders = Utils.cloneArray(this._extraHeaders);
 
     let contactValue;
 
@@ -331,7 +331,7 @@ module.exports = class Registrator
       this._registrationTimer = null;
     }
 
-    const extraHeaders = this._extraHeaders.slice();
+    const extraHeaders = Utils.cloneArray(this._extraHeaders);
 
     if (options.all)
     {
