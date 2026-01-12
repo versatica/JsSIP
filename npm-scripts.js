@@ -6,7 +6,7 @@ const { version } = require('./package.json');
 
 const task = process.argv.slice(2).join(' ');
 
-const ESLINT_PATHS = [ 'gulpfile.js', 'src', 'test' ].join(' ');
+const ESLINT_PATHS = [ 'src', 'test' ].join(' ');
 
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
@@ -61,15 +61,7 @@ function test()
 {
   logInfo('test()');
 
-  executeCmd('jest test/test-classes.js');
-  executeCmd('jest test/test-digestAuthentication.js');
-  executeCmd('jest test/test-normalizeTarget.js');
-  executeCmd('jest test/test-properties.js');
-  executeCmd('jest test/test-UA-no-WebRTC.js');
-
-  executeCmd('gulp test');
-
-  // executeCmd(jest);
+  executeCmd('jest');
 }
 
 function grammar()
