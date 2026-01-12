@@ -27,8 +27,6 @@
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "@types/debug": "^4.1.7",
-    "@types/events": "^3.0.0",
     "debug": "^4.3.1",
     "events": "^3.3.0",
     "sdp-transform": "^2.14.1"
@@ -36,6 +34,8 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
+    "@types/debug": "^4.1.12",
+    "@types/events": "^3.0.3",
     "eslint": "^9.39.1",
     "eslint-plugin-jest": "^29.12.1",
     "globals": "^17.0.0",
