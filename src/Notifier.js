@@ -44,15 +44,40 @@ module.exports = class Notifier extends EventEmitter
 
   static init_incoming(request, callback)
   {
-    if (request.method !== JsSIP_C.SUBSCRIBE || !request.hasHeader('contact') || !request.hasHeader('event'))
+    try
     {
-      logger.debug('Notifier.init_incoming: invalid request');
+      Notifier.checkSubscribe(request);
+    }
+    catch (error)
+    {
+      logger.warn('Notifier.init_incoming: invalid request. Error: ', error.message);
 
       request.reply(405);
 
       return;
     }
+
     callback();
+  }
+
+  static checkSubscribe(subscribe)
+  {
+    if (!subscribe)
+    {
+      throw new TypeError('Not enough arguments. Missing subscribe request');
+    }
+    if (subscribe.method !== JsSIP_C.SUBSCRIBE)
+    {
+      throw new TypeError('Invalid method for Subscribe request');
+    }
+    if (!subscribe.hasHeader('contact'))
+    {
+      throw new TypeError('Missing Contact header in subscribe request');
+    }
+    if (!subscribe.hasHeader('event'))
+    {
+      throw new TypeError('Missing Event header in subscribe request');
+    }
   }
 
   /**
@@ -70,27 +95,14 @@ module.exports = class Notifier extends EventEmitter
 
     super();
 
-    if (!subscribe)
-    {
-      throw new TypeError('Not enough arguments. Missing subscribe request');
-    }
-
-    if (!subscribe.hasHeader('contact'))
-    {
-      throw new TypeError('Missing Contact header in subscribe request');
-    }
-
     if (!contentType)
     {
       throw new TypeError('Not enough arguments. Missing contentType');
     }
 
-    const eventName = subscribe.getHeader('event');
+    Notifier.checkSubscribe(subscribe);
 
-    if (!eventName)
-    {
-      throw new TypeError('Missing Event header in subscribe request');
-    }
+    const eventName = subscribe.getHeader('event');
 
     this._ua = ua;
     this._initial_subscribe = subscribe;
