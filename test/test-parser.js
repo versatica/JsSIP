@@ -1,5 +1,7 @@
 require('./include/common');
 const JsSIP = require('../');
+const testUA = require('./include/testUA');
+const Parser = require('../src/Parser');
 
 
 describe('parser', () =>
@@ -384,5 +386,39 @@ describe('parser', () =>
 
     expect((parsed = JsSIP.Grammar.parse(data, 'Status_Line'))).not.toBe(-1);
     expect(parsed.status_code).toBe(420);
+  });
+
+  test('parse message', () =>
+  {
+    // eslint-disable-next-line no-multi-str
+    const data = 'INVITE sip:bob@biloxi.com SIP/2.0\r\n\
+Via: SIP/2.0/TCP useragent.cisco.com;branch=z9hG4bK-a111\r\n\
+To: <sip:bob@biloxi.com>\r\n\
+From: "Anonymous" <sip:anonymous@anonymous.invalid>;tag=9802748\r\n\
+Call-ID: 245780247857024504\r\n\
+CSeq: 1 INVITE\r\n\
+Max-Forwards: 70\r\n\
+Privacy: id\r\n\
+P-Preferred-Identity: "Cullen Jennings" <sip:fluffy@cisco.com>\r\n\r\n';
+
+    const config = testUA.UA_CONFIGURATION;
+    const wsSocket = new JsSIP.WebSocketInterface(testUA.SOCKET_DESCRIPTION.url);
+
+    config.sockets = wsSocket;
+
+    const ua = new JsSIP.UA(config);
+    const message = Parser.parseMessage(data, ua);
+
+    expect(message.hasHeader('P-Preferred-Identity')).toBe(true);
+
+    const pai = message.getHeader('P-Preferred-Identity');
+    const nameAddress = JsSIP.NameAddrHeader.parse(pai);
+
+    expect(nameAddress instanceof JsSIP.NameAddrHeader).toBeTruthy();
+    expect(nameAddress.uri.user).toBe('fluffy');
+    expect(nameAddress.uri.host).toBe('cisco.com');
+
+    expect(message.hasHeader('Privacy')).toBe(true);
+    expect(message.getHeader('Privacy')).toBe('id');
   });
 });
