@@ -1,8 +1,7 @@
-<p align="center"><a href="https://jssip.net"><img src="https://jssip.net/images/jssip-banner-new.png"/></a></p>
+[![][npm-shield-jssip]][npm-jssip]
+[![][github-actions-shield-jssip]][github-actions-jssip]
 
-[![Build Status](https://api.travis-ci.com/versatica/JsSIP.png)](https://travis-ci.com/versatica/JsSIP)
-[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/context:javascript)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/alerts)
+<p align="center"><a href="https://jssip.net"><img src="https://jssip.net/images/jssip-banner-new.png"/></a></p>
 
 ## Overview
 
@@ -111,3 +110,8 @@ Check our **Tryit JsSIP** online demo:
 ## License
 
 JsSIP is released under the [MIT license](https://jssip.net/license).
+
+[npm-shield-jssip]: https://img.shields.io/npm/v/jssip.svg
+[npm-jssip]: https://npmjs.org/package/jssip
+[github-actions-shield-jssip]: https://github.com/versatica/jssip/actions/workflows/jssip.yaml/badge.svg
+[github-actions-jssip]: https://github.com/versatica/jssip/actions/workflows/jssip.yaml
