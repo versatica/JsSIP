@@ -275,7 +275,9 @@ module.exports = class Subscriber extends EventEmitter
 
     const prev_state = this._state;
 
-    if (prev_state !== C.STATE_TERMINATED && new_state !== C.STATE_TERMINATED)
+    if (!this._terminated &&
+        prev_state !== C.STATE_TERMINATED &&
+        new_state !== C.STATE_TERMINATED)
     {
       this._state = new_state;
 
@@ -311,7 +313,7 @@ module.exports = class Subscriber extends EventEmitter
     const body = request.body;
 
     // Check if the notify is final.
-    const is_final = new_state === C.STATE_TERMINATED;
+    const is_final = this._terminated || new_state === C.STATE_TERMINATED;
 
     // Notify event fired only for notify with body.
     if (body)
@@ -387,8 +389,6 @@ module.exports = class Subscriber extends EventEmitter
     });
 
     this._sendSubsequentSubscribe(body, headers);
-
-    this._terminateDialog(C.UNSUBSCRIBE_TIMEOUT);
   }
 
   /**
