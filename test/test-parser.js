@@ -1,5 +1,7 @@
 require('./include/common');
 const JsSIP = require('../');
+const testUA = require('./include/testUA');
+const Parser = require('../lib/Parser');
 
 
 module.exports = {
@@ -420,6 +422,42 @@ module.exports = {
 
     test.ok((parsed = JsSIP.Grammar.parse(data, 'Status_Line')) !== -1);
     test.strictEqual(parsed.status_code, 420);
+
+    test.done();
+  },
+
+  'parse message' : function(test)
+  {
+    // eslint-disable-next-line no-multi-str
+    const data = 'INVITE sip:bob@biloxi.com SIP/2.0\r\n\
+Via: SIP/2.0/TCP useragent.cisco.com;branch=z9hG4bK-a111\r\n\
+To: <sip:bob@biloxi.com>\r\n\
+From: "Anonymous" <sip:anonymous@anonymous.invalid>;tag=9802748\r\n\
+Call-ID: 245780247857024504\r\n\
+CSeq: 1 INVITE\r\n\
+Max-Forwards: 70\r\n\
+Privacy: id\r\n\
+P-Preferred-Identity: "Cullen Jennings" <sip:fluffy@cisco.com>\r\n\r\n';
+
+    const config = Object.assign({}, testUA.UA_CONFIGURATION);
+    const wsSocket = new JsSIP.WebSocketInterface(testUA.SOCKET_DESCRIPTION.url);
+
+    config.sockets = wsSocket;
+
+    const ua = new JsSIP.UA(config);
+    const message = Parser.parseMessage(data, ua);
+
+    test.ok(message.hasHeader('P-Preferred-Identity'));
+
+    const pai = message.getHeader('P-Preferred-Identity');
+    const nameAddress = JsSIP.NameAddrHeader.parse(pai);
+
+    test.ok(nameAddress instanceof JsSIP.NameAddrHeader);
+    test.strictEqual(nameAddress.uri.user, 'fluffy');
+    test.strictEqual(nameAddress.uri.host, 'cisco.com');
+
+    test.ok(message.hasHeader('Privacy'));
+    test.strictEqual(message.getHeader('Privacy'), 'id');
 
     test.done();
   }
