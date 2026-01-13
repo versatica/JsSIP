@@ -310,6 +310,24 @@ module.exports = class Notifier extends EventEmitter
    * Private API
    */
 
+  _terminateDialog(termination_code)
+  {
+    if (!this._dialog)
+    {
+      return;
+    }
+
+    this._state = C.STATE_TERMINATED;
+    clearTimeout(this._expires_timer);
+
+    this._dialog.terminate();
+    this._dialog = null;
+
+    logger.debug(`emit "terminated" code=${termination_code}`);
+
+    this.emit('terminated', termination_code);
+  }
+
   /**
    * @param {Array<string>} subsStateParams subscription state parameters.
    * @param {String} body Notify body
@@ -376,24 +394,6 @@ module.exports = class Notifier extends EventEmitter
         }
       }
     });
-  }
-
-  _terminateDialog(termination_code)
-  {
-    if (!this._dialog)
-    {
-      return;
-    }
-
-    this._state = C.STATE_TERMINATED;
-    clearTimeout(this._expires_timer);
-
-    this._dialog.terminate();
-    this._dialog = null;
-
-    logger.debug(`emit "terminated" code=${termination_code}`);
-
-    this.emit('terminated', termination_code);
   }
 
   _setExpiresTimer()

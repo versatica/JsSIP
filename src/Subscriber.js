@@ -32,9 +32,7 @@ const C = {
   STATE_WAITING_NOTIFY : 4,
 
   // RFC 6665 3.1.1, default expires value.
-  DEFAULT_EXPIRES_MS : 900,
-
-  FINAL_NOTIFY_TIMEOUT_MS : 30000
+  DEFAULT_EXPIRES_MS : 900
 };
 
 /**
@@ -137,9 +135,6 @@ module.exports = class Subscriber extends EventEmitter
 
     // To prevent duplicate terminated call.
     this._terminated = false;
-
-    // After send un-subscribe wait final notify limited time.
-    this._unsubscribe_timeout_timer = null;
 
     this._event_name = parsed.event;
     this._event_id = parsed.params && parsed.params.id;
@@ -393,13 +388,7 @@ module.exports = class Subscriber extends EventEmitter
 
     this._sendSubsequentSubscribe(body, headers);
 
-    // Waiting for the final notify for a while.
-    const final_notify_timeout = C.FINAL_NOTIFY_TIMEOUT_MS;
-
-    this._unsubscribe_timeout_timer = setTimeout(() =>
-    {
-      this._terminateDialog(C.UNSUBSCRIBE_TIMEOUT);
-    }, final_notify_timeout);
+    this._terminateDialog(C.UNSUBSCRIBE_TIMEOUT);
   }
 
   /**
@@ -417,7 +406,6 @@ module.exports = class Subscriber extends EventEmitter
 
     // Clear timers.
     clearTimeout(this._expires_timer);
-    clearTimeout(this._unsubscribe_timeout_timer);
 
     if (this._dialog)
     {
@@ -523,6 +511,11 @@ module.exports = class Subscriber extends EventEmitter
 
   _receiveSubscribeResponse(response)
   {
+    if (this._state === C.STATE_TERMINATED)
+    {
+      return;
+    }
+
     if (response.status_code >= 200 && response.status_code < 300)
     {
       // Create dialog.

@@ -1,4 +1,5 @@
 import {EventEmitter} from 'events'
+import {IncomingRequest} from './SIPMessage'
 
 declare enum SubscriberTerminatedCode {
   SUBSCRIBE_RESPONSE_TIMEOUT = 0,
@@ -15,8 +16,8 @@ export interface MessageEventMap {
   pending: [];
   accepted: [];
   active: [];
-  notify: [isFinal: boolean, request: IncomingRequest, body: string | undefined, contentType: string | undefined];
   terminated: [terminationCode: SubscriberTerminatedCode, reason: string | undefined, retryAfter: number | undefined];
+  notify: [isFinal: boolean, request: IncomingRequest, body: string | undefined, contentType: string | undefined];
 }
 
 export class Subscriber extends EventEmitter<MessageEventMap> {
