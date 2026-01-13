@@ -53,7 +53,7 @@ jobs:
             ${{ matrix.ci.os }}-node-
 
       - name: npm i
-        run: npm ci
+        run: npm i
 
       - name: npm run lint
         run: npm run lint
