@@ -18,10 +18,6 @@ const RTCSession_ReferNotifier = require('./RTCSession/ReferNotifier');
 const RTCSession_ReferSubscriber = require('./RTCSession/ReferSubscriber');
 const URI = require('./URI');
 
-/**
- * @typedef {import('./SIPMessage.js').IncomingRequest} IncomingRequest
- */
-
 const logger = new Logger('RTCSession');
 
 const C = {
