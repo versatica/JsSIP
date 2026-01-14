@@ -3,50 +3,59 @@ const path = require('path');
 const process = require('process');
 const { execSync } = require('child_process');
 const { version } = require('./package.json');
+const pkg = require('./package.json');
+const { resolve } = require("path");
+const { build } = require("esbuild");
+const { readFile, writeFile } = require("fs/promises");
 
 const task = process.argv.slice(2).join(' ');
 
 const ESLINT_PATHS = [ 'src', 'test' ].join(' ');
+const rootDir = "./";
+const outDir = "./dist";
 
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
 
-switch (task)
-{
-  case 'grammar': {
-    grammar();
+async function main() {
+  switch (task)
+  {
+    case 'grammar': {
+      grammar();
+      break;
+    }
 
-    break;
-  }
+    case 'lint': {
+      lint();
+      break;
+    }
 
-  case 'lint': {
-    lint();
+    case 'test': {
+      test();
+      break;
+    }
 
-    break;
-  }
+    case 'build': {
+      await buildMin(rootDir, outDir);
+      break;
+    }
 
-  case 'test': {
-    test();
+    case 'release': {
+      lint();
+      test();
+      executeCmd(`git commit -am '${version}'`);
+      executeCmd(`git tag -a ${version} -m '${version}'`);
+      executeCmd('git push origin master && git push origin --tags');
+      executeCmd('npm publish');
 
-    break;
-  }
+      // eslint-disable-next-line no-console
+      console.log('update tryit-jssip and JsSIP website');
+      break;
+    }
 
-  case 'release': {
-    lint();
-    test();
-    executeCmd(`git commit -am '${version}'`);
-    executeCmd(`git tag -a ${version} -m '${version}'`);
-    executeCmd('git push origin master && git push origin --tags');
-    executeCmd('npm publish');
-
-    // eslint-disable-next-line no-console
-    console.log('update tryit-jssip and JsSIP website');
-
-    break;
-  }
-
-  default: {
-    throw new TypeError(`unknown task "${task}"`);
+    default: {
+      throw new TypeError(`unknown task "${task}"`);
+    }
   }
 }
 
@@ -93,6 +102,41 @@ function grammar()
   logInfo('grammar done');
 }
 
+
+// Build a Minified version of JsSIP into /dist/ for publishing
+async function buildMin(rootDir, outDir) {
+  const entry = resolve(rootDir, "src/JsSIP.js");
+  const outfile = resolve(outDir, "jssip.min.js");
+  const banner = `/*!
+ * JsSIP ${pkg.version}
+ * ${pkg.description}
+ * Copyright: 2012-${new Date().getFullYear()} ${pkg.contributors.join(' ')}
+ * Homepage: ${pkg.homepage}
+ * License: ${pkg.license}
+ */`;
+
+  await build({
+    entryPoints: [entry],
+    outfile,
+    bundle: true,
+    minify: true,
+    sourcemap: false,
+    // https://esbuild.github.io/api/#global-name
+    format: "iife",
+    globalName: "JsSIP",
+    platform: "browser",
+    target: ["es2015"],
+    // Make the generated output a single line
+    supported: {
+      "template-literal": false,
+    },
+    // Add a banner
+    banner: {
+      js: banner,
+    },
+  });
+}
+
 function executeCmd(command)
 {
   // eslint-disable-next-line no-console
@@ -114,3 +158,8 @@ function logInfo(...args)
   // eslint-disable-next-line no-console
   console.log(`npm-scripts.mjs \x1b[36m[INFO] [${task}]\x1b[0m`, ...args);
 }
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
