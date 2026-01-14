@@ -300,7 +300,6 @@ module.exports = class Notifier extends EventEmitter
       return;
     }
 
-    this._state = C.STATE_TERMINATED;
     const subsStateParameters = [];
 
     if (reason)
@@ -313,7 +312,7 @@ module.exports = class Notifier extends EventEmitter
       subsStateParameters.push(`;retry-after=${retryAfter}`);
     }
 
-    this._sendNotify(subsStateParameters, body);
+    this._sendNotify(subsStateParameters, body, null, 'terminated');
 
     this._terminateDialog(reason === 'timeout' ? C.SUBSCRIPTION_EXPIRED : C.FINAL_NOTIFY_SENT);
   }
@@ -324,17 +323,18 @@ module.exports = class Notifier extends EventEmitter
 
   _terminateDialog(termination_code)
   {
-    if (!this._dialog)
+    if (this._state === C.STATE_TERMINATED)
     {
       return;
     }
-
     this._state = C.STATE_TERMINATED;
+
     clearTimeout(this._expires_timer);
-
-    this._dialog.terminate();
-    this._dialog = null;
-
+    if (this._dialog)
+    {
+      this._dialog.terminate();
+      this._dialog = null;
+    }
     logger.debug(`emit "terminated" code=${termination_code}`);
 
     this.emit('terminated', termination_code);
@@ -345,10 +345,10 @@ module.exports = class Notifier extends EventEmitter
    * @param {String} body Notify body
    * @param {Array<string>} extraHeaders
    */
-  _sendNotify(subsStateParameters, body=null, extraHeaders=null)
+  _sendNotify(subsStateParameters, body=null, extraHeaders=null, state=null)
   {
     // Prevent send notify after final notify.
-    if (!this._dialog)
+    if (this._state === C.STATE_TERMINATED)
     {
       logger.warn('final notify already sent');
 
@@ -356,7 +356,7 @@ module.exports = class Notifier extends EventEmitter
     }
 
     // Build Subscription-State header with parameters.
-    let subsState = `Subscription-State: ${this._parseState()}`;
+    let subsState = `Subscription-State: ${state || this._parseState()}`;
 
     for (const param of subsStateParameters)
     {
@@ -415,7 +415,7 @@ module.exports = class Notifier extends EventEmitter
     clearTimeout(this._expires_timer);
     this._expires_timer = setTimeout(() =>
     {
-      if (!this._dialog)
+      if (this._state === C.STATE_TERMINATED)
       {
         return;
       }

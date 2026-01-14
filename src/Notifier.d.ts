@@ -21,7 +21,7 @@ export class Notifier extends EventEmitter<MessageEventMap> {
   start(): void;
   setActiveState(): void;
   notify(body?: string): void;
-  terminate(body?: string, reason?: string): void;
+  terminate(body?: string, reason?: string, retryAfter?: number): void;
   get state(): string;
   get id(): string;
   set data(_data: any);
