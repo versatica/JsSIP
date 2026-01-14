@@ -85,9 +85,9 @@ module.exports = class Subscriber extends EventEmitter
       throw new TypeError('Not enough arguments: Missing accept');
     }
 
-    const parsed = Grammar.parse(eventName, 'Event');
+    const event_header = Grammar.parse(eventName, 'Event');
 
-    if (parsed === -1)
+    if (event_header === -1)
     {
       throw new TypeError('Missing Event header field');
     }
@@ -136,8 +136,8 @@ module.exports = class Subscriber extends EventEmitter
     // To prevent duplicate terminated call.
     this._terminated = false;
 
-    this._event_name = parsed.event;
-    this._event_id = parsed.params && parsed.params.id;
+    this._event_name = event_header.event;
+    this._event_id = event_header.params && event_header.params.id;
 
     let eventValue = this._event_name;
 
@@ -270,14 +270,14 @@ module.exports = class Subscriber extends EventEmitter
       logger.warn(`Invalid Subscription-State header value: ${subs_state.state}`);
       request.reply(400);
       this._terminateDialog(C.WRONG_NOTIFY_RECEIVED);
+
+      return;
     }
     request.reply(200);
 
     const prev_state = this._state;
 
-    if (!this._terminated &&
-        prev_state !== C.STATE_TERMINATED &&
-        new_state !== C.STATE_TERMINATED)
+    if (prev_state !== C.STATE_TERMINATED && new_state !== C.STATE_TERMINATED)
     {
       this._state = new_state;
 
@@ -313,7 +313,7 @@ module.exports = class Subscriber extends EventEmitter
     const body = request.body;
 
     // Check if the notify is final.
-    const is_final = this._terminated || new_state === C.STATE_TERMINATED;
+    const is_final = new_state === C.STATE_TERMINATED;
 
     // Notify event fired only for notify with body.
     if (body)

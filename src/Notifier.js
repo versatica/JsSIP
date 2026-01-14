@@ -293,12 +293,12 @@ module.exports = class Notifier extends EventEmitter
    */
   terminate(body = null, reason = null, retryAfter = null)
   {
+    logger.debug('terminate()');
+
     if (this._state === C.STATE_TERMINATED)
     {
       return;
     }
-
-    logger.debug('terminate()');
 
     this._state = C.STATE_TERMINATED;
     const subsStateParameters = [];
@@ -426,7 +426,7 @@ module.exports = class Notifier extends EventEmitter
       this.emit('expired');
 
       // This will be no-op if the client already called `terminate()`.
-      this.terminate('', 'timeout');
+      this.terminate(null, 'timeout');
     }, this._expires * 1000);
   }
 
