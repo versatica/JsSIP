@@ -87,8 +87,12 @@ export interface RegisteredEvent {
 }
 
 export interface UnRegisteredEvent {
-  response: IncomingResponse;
+  response?: IncomingResponse;
   cause?: causes;
+}
+export interface RegistrationFailedEvent {
+  response?: IncomingResponse;
+  cause: causes;
 }
 
 export interface IncomingMessageEvent {
@@ -118,7 +122,7 @@ export type ConnectedListener = (event: ConnectedEvent) => void;
 export type DisconnectedListener = (event: DisconnectEvent) => void;
 export type RegisteredListener = (event: RegisteredEvent) => void;
 export type UnRegisteredListener = (event: UnRegisteredEvent) => void;
-export type RegistrationFailedListener = UnRegisteredListener;
+export type RegistrationFailedListener = (event: RegistrationFailedEvent) => void;;
 export type RegistrationExpiringListener = () => void;
 export type IncomingRTCSessionListener = (event: IncomingRTCSessionEvent) => void;
 export type OutgoingRTCSessionListener = (event: OutgoingRTCSessionEvent) => void;
