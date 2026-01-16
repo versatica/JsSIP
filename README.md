@@ -1,30 +1,29 @@
-<p align="center"><a href="https://jssip.net"><img src="https://jssip.net/images/jssip-banner-new.png"/></a></p>
+[![][npm-shield-jssip]][npm-jssip]
+[![][github-actions-shield-jssip]][github-actions-jssip]
 
-[![Build Status](https://api.travis-ci.com/versatica/JsSIP.png)](https://travis-ci.com/versatica/JsSIP)
-[![Code Quality: Javascript](https://img.shields.io/lgtm/grade/javascript/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/context:javascript)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/versatica/JsSIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/versatica/JsSIP/alerts)
+<p align="center"><a href="https://jssip.net"><img src="https://jssip.net/images/jssip-banner-new.png"/></a></p>
 
 ## Overview
 
-* Runs in the browser and Node.js.
+* Runs in the browser and Node.js
 * SIP over [WebSocket](https://jssip.net/documentation/misc/sip_websocket/) (use real SIP in your web apps)
 * Audio/video calls ([WebRTC](https://jssip.net/documentation/misc/webrtc)) and instant messaging
 * Lightweight!
 * Easy to use and powerful user API
-* Works with OverSIP, Kamailio, Asterisk. Mobicents and repro (reSIProcate) servers ([more info](https://jssip.net/documentation/misc/interoperability))
-* Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](https://tools.ietf.org/html/rfc7118) and [OverSIP](http://oversip.net)
+* Works with Kamailio, Asterisk. Mobicents and repro (reSIProcate) servers ([more info](https://jssip.net/documentation/misc/interoperability))
+* Written by the authors of [RFC 7118 "The WebSocket Protocol as a Transport for SIP"](https://tools.ietf.org/html/rfc7118) and [mediasoup](https://mediasoup.org)
 
 
-## NOTE
+## Website and Documentation
 
-Starting from 3.0.0, JsSIP no longer includes the [rtcninja](https://github.com/eface2face/rtcninja.js/) module. However, the [jssip-rtcninja](https://www.npmjs.com/package/jssip-rtcninja) package is based on the `2.0.x` branch, which does include `rtcninja`.
+[jssip.net](https://jssip.net/)
 
 
-## Support
+## Install
 
-* For questions or usage problems please use the **jssip** [public Google Group](https://groups.google.com/forum/#!forum/jssip).
-
-* For bug reports or feature requests open an [Github issue](https://github.com/versatica/JsSIP/issues).
+```bash
+$ npm install jssip
+```
 
 
 ## Getting Started
@@ -32,8 +31,6 @@ Starting from 3.0.0, JsSIP no longer includes the [rtcninja](https://github.com/
 The following simple JavaScript code creates a JsSIP User Agent instance and makes a SIP call:
 
 ```javascript
-// Create our JsSIP instance and run it:
-
 var socket = new JsSIP.WebSocketInterface('wss://sip.myhost.com');
 var configuration = {
   sockets  : [ socket ],
@@ -62,8 +59,8 @@ var eventHandlers = {
 };
 
 var options = {
-  'eventHandlers'    : eventHandlers,
-  'mediaConstraints' : { 'audio': true, 'video': true }
+  eventHandlers,
+  mediaConstraints: { 'audio': true, 'video': true }
 };
 
 var session = ua.call('sip:bob@example.com', options);
@@ -74,20 +71,14 @@ Want to see more? Check the full documentation at https://jssip.net/documentatio
 
 ## Online Demo
 
-Check our **Tryit JsSIP** online demo:
-
-* [tryit.jssip.net](https://tryit.jssip.net)
+[tryit.jssip.net](https://tryit.jssip.net)
 
 
-## Website and Documentation
+## Support
 
-* [jssip.net](https://jssip.net/)
+* For questions or usage problems please use [Github discussions](https://github.com/versatica/JsSIP/discussions).
 
-
-## Download
-
-* As Node module: `$ npm install jssip`
-* Manually: [jssip.net/download](https://jssip.net/download/)
+* For bug reports or feature requests open an [Github issue](https://github.com/versatica/JsSIP/issues).
 
 
 ## Authors
@@ -111,3 +102,8 @@ Check our **Tryit JsSIP** online demo:
 ## License
 
 JsSIP is released under the [MIT license](https://jssip.net/license).
+
+[npm-shield-jssip]: https://img.shields.io/npm/v/jssip.svg
+[npm-jssip]: https://npmjs.org/package/jssip
+[github-actions-shield-jssip]: https://github.com/versatica/jssip/actions/workflows/jssip.yaml/badge.svg
+[github-actions-jssip]: https://github.com/versatica/jssip/actions/workflows/jssip.yaml

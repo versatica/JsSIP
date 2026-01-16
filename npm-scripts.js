@@ -1,42 +1,43 @@
+const fs = require('fs');
+const path = require('path');
 const process = require('process');
 const { execSync } = require('child_process');
 const { version } = require('./package.json');
 
 const task = process.argv.slice(2).join(' ');
 
+const ESLINT_PATHS = [ 'src', 'test' ].join(' ');
+
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
 
 switch (task)
 {
-  case 'lint':
-  {
-    execute('gulp lint');
+  case 'grammar': {
+    grammar();
 
     break;
   }
 
-  case 'test':
-  {
-    execute('gulp test');
+  case 'lint': {
+    lint();
 
     break;
   }
 
-  case 'prepublish':
-  {
-    execute('gulp babel');
+  case 'test': {
+    test();
 
     break;
   }
 
-  case 'release':
-  {
-    execute('gulp');
-    execute(`git commit -am '${version}'`);
-    execute(`git tag -a ${version} -m '${version}'`);
-    execute('git push origin master && git push origin --tags');
-    execute('npm publish');
+  case 'release': {
+    lint();
+    test();
+    executeCmd(`git commit -am '${version}'`);
+    executeCmd(`git tag -a ${version} -m '${version}'`);
+    executeCmd('git push origin master && git push origin --tags');
+    executeCmd('npm publish');
 
     // eslint-disable-next-line no-console
     console.log('update tryit-jssip and JsSIP website');
@@ -44,13 +45,55 @@ switch (task)
     break;
   }
 
-  default:
-  {
+  default: {
     throw new TypeError(`unknown task "${task}"`);
   }
 }
 
-function execute(command)
+function lint()
+{
+  logInfo('lint()');
+
+  executeCmd(`eslint -c eslint.config.js --max-warnings 0 ${ESLINT_PATHS}`);
+}
+
+function test()
+{
+  logInfo('test()');
+
+  executeCmd('jest');
+}
+
+function grammar()
+{
+  logInfo('grammar()');
+
+  const local_pegjs = path.resolve('./node_modules/.bin/pegjs');
+  const Grammar_pegjs = path.resolve('src/Grammar.pegjs');
+  const Grammar_js = path.resolve('src/Grammar.js');
+
+  logInfo('compiling Grammar.pegjs into Grammar.js...');
+
+  executeCmd(`${local_pegjs} ${Grammar_pegjs} ${Grammar_js}`);
+
+  logInfo('grammar compiled');
+
+  // Modify the generated Grammar.js file with custom changes.
+  logInfo('applying custom changes to Grammar.js...');
+
+  const current_grammar = fs.readFileSync('src/Grammar.js').toString();
+  let modified_grammar = current_grammar.replace(
+    /throw new this\.SyntaxError\(([\s\S]*?)\);([\s\S]*?)}([\s\S]*?)return result;/,
+    'new this.SyntaxError($1);\n        return -1;$2}$3return data;'
+  );
+
+  modified_grammar = modified_grammar.replace(/\s+$/gm, '');
+  fs.writeFileSync('src/Grammar.js', modified_grammar);
+
+  logInfo('grammar done');
+}
+
+function executeCmd(command)
 {
   // eslint-disable-next-line no-console
   console.log(`npm-scripts.js [INFO] executing command: ${command}`);
@@ -59,8 +102,15 @@ function execute(command)
   {
     execSync(command, { stdio: [ 'ignore', process.stdout, process.stderr ] });
   }
+  // eslint-disable-next-line no-unused-vars
   catch (error)
   {
     process.exit(1);
   }
+}
+
+function logInfo(...args)
+{
+  // eslint-disable-next-line no-console
+  console.log(`npm-scripts.mjs \x1b[36m[INFO] [${task}]\x1b[0m`, ...args);
 }

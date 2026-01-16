@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-redeclare
 /* globals RTCPeerConnection: false, RTCSessionDescription: false */
 
 const EventEmitter = require('events').EventEmitter;
@@ -798,7 +799,9 @@ module.exports = class RTCSession extends EventEmitter
           return;
         }
 
-        logger.warn(error);
+        logger.warn(`answer() failed: ${error.message}`);
+
+        this._failed('system', error.message, JsSIP_C.causes.INTERNAL_ERROR);
       });
   }
 
@@ -953,7 +956,6 @@ module.exports = class RTCSession extends EventEmitter
   {
     logger.debug('sendDTMF() | tones: %s', tones);
 
-    let position = 0;
     let duration = options.duration || null;
     let interToneGap = options.interToneGap || null;
     const transportType = options.transportType || JsSIP_C.DTMF_TRANSPORT.INFO;
@@ -1072,8 +1074,7 @@ module.exports = class RTCSession extends EventEmitter
     {
       let timeout;
 
-      if (this._status === C.STATUS_TERMINATED ||
-          !this._tones || position >= this._tones.length)
+      if (this._status === C.STATUS_TERMINATED || !this._tones)
       {
         // Stop sending DTMF.
         this._tones = null;
@@ -1081,9 +1082,11 @@ module.exports = class RTCSession extends EventEmitter
         return;
       }
 
-      const tone = this._tones[position];
+      // Retrieve the next tone.
+      const tone = this._tones[0];
 
-      position += 1;
+      // Remove the tone from this._tones.
+      this._tones = this._tones.substring(1);
 
       if (tone === ',')
       {
@@ -1214,7 +1217,7 @@ module.exports = class RTCSession extends EventEmitter
       return false;
     }
 
-    if (!this._isReadyToReOffer())
+    if (!this.isReadyToReOffer())
     {
       return false;
     }
@@ -1270,7 +1273,7 @@ module.exports = class RTCSession extends EventEmitter
       return false;
     }
 
-    if (!this._isReadyToReOffer())
+    if (!this.isReadyToReOffer())
     {
       return false;
     }
@@ -1323,7 +1326,7 @@ module.exports = class RTCSession extends EventEmitter
       return false;
     }
 
-    if (!this._isReadyToReOffer())
+    if (!this.isReadyToReOffer())
     {
       return false;
     }
@@ -1420,7 +1423,23 @@ module.exports = class RTCSession extends EventEmitter
   {
     logger.debug('sendRequest()');
 
-    return this._dialog.sendRequest(method, options);
+    if (this._dialog)
+    {
+      return this._dialog.sendRequest(method, options);
+    }
+    else
+    {
+      const dialogsArray = Object.values(this._earlyDialogs);
+
+      if (dialogsArray.length > 0)
+      {
+        return dialogsArray[0].sendRequest(method, options);
+      }
+
+      logger.warn('sendRequest() | no valid early dialog found');
+
+      return;
+    }
   }
 
   /**
@@ -1506,8 +1525,7 @@ module.exports = class RTCSession extends EventEmitter
                 this.emit('peerconnection:setremotedescriptionfailed', error);
               });
           }
-          else
-          if (!this._is_confirmed)
+          else if (!this._is_confirmed)
           {
             this._confirmed('remote', request);
           }
@@ -1678,11 +1696,11 @@ module.exports = class RTCSession extends EventEmitter
   /**
    * Check if RTCSession is ready for an outgoing re-INVITE or UPDATE with SDP.
    */
-  _isReadyToReOffer()
+  isReadyToReOffer()
   {
     if (!this._rtcReady)
     {
-      logger.debug('_isReadyToReOffer() | internal WebRTC status not ready');
+      logger.debug('isReadyToReOffer() | internal WebRTC status not ready');
 
       return false;
     }
@@ -1690,7 +1708,7 @@ module.exports = class RTCSession extends EventEmitter
     // No established yet.
     if (!this._dialog)
     {
-      logger.debug('_isReadyToReOffer() | session not established yet');
+      logger.debug('isReadyToReOffer() | session not established yet');
 
       return false;
     }
@@ -1699,7 +1717,7 @@ module.exports = class RTCSession extends EventEmitter
     if (this._dialog.uac_pending_reply === true ||
         this._dialog.uas_pending_reply === true)
     {
-      logger.debug('_isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
+      logger.debug('isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
 
       return false;
     }
@@ -3215,8 +3233,7 @@ module.exports = class RTCSession extends EventEmitter
           });
       }
       // No SDP answer.
-      else
-      if (eventHandlers.succeeded)
+      else if (eventHandlers.succeeded)
       {
         eventHandlers.succeeded(response);
       }
@@ -3424,7 +3441,7 @@ module.exports = class RTCSession extends EventEmitter
       {
         if (this._status === C.STATUS_TERMINATED) { return; }
 
-        if (!this._isReadyToReOffer()) { return; }
+        if (!this.isReadyToReOffer()) { return; }
 
         logger.debug('runSessionTimer() | sending session refresh request');
 

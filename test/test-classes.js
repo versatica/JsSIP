@@ -1,163 +1,156 @@
 require('./include/common');
 const JsSIP = require('../');
 
-
-module.exports = {
-
-  'new URI' : function(test)
+describe('URI Tests', () =>
+{
+  test('new URI', () =>
   {
     const uri = new JsSIP.URI(null, 'alice', 'jssip.net', 6060);
 
-    test.strictEqual(uri.scheme, 'sip');
-    test.strictEqual(uri.user, 'alice');
-    test.strictEqual(uri.host, 'jssip.net');
-    test.strictEqual(uri.port, 6060);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net:6060');
-    test.strictEqual(uri.toAor(), 'sip:alice@jssip.net');
-    test.strictEqual(uri.toAor(false), 'sip:alice@jssip.net');
-    test.strictEqual(uri.toAor(true), 'sip:alice@jssip.net:6060');
+    expect(uri.scheme).toBe('sip');
+    expect(uri.user).toBe('alice');
+    expect(uri.host).toBe('jssip.net');
+    expect(uri.port).toBe(6060);
+    expect(uri.toString()).toBe('sip:alice@jssip.net:6060');
+    expect(uri.toAor()).toBe('sip:alice@jssip.net');
+    expect(uri.toAor(false)).toBe('sip:alice@jssip.net');
+    expect(uri.toAor(true)).toBe('sip:alice@jssip.net:6060');
 
     uri.scheme = 'SIPS';
-    test.strictEqual(uri.scheme, 'sips');
-    test.strictEqual(uri.toAor(), 'sips:alice@jssip.net');
+    expect(uri.scheme).toBe('sips');
+    expect(uri.toAor()).toBe('sips:alice@jssip.net');
     uri.scheme = 'sip';
 
     uri.user = 'Iñaki ðđ';
-    test.strictEqual(uri.user, 'Iñaki ðđ');
-    test.strictEqual(uri.toString(), 'sip:I%C3%B1aki%20%C3%B0%C4%91@jssip.net:6060');
-    test.strictEqual(uri.toAor(), 'sip:I%C3%B1aki%20%C3%B0%C4%91@jssip.net');
+    expect(uri.user).toBe('Iñaki ðđ');
+    expect(uri.toString()).toBe('sip:I%C3%B1aki%20%C3%B0%C4%91@jssip.net:6060');
+    expect(uri.toAor()).toBe('sip:I%C3%B1aki%20%C3%B0%C4%91@jssip.net');
 
     uri.user = '%61lice';
-    test.strictEqual(uri.toAor(), 'sip:alice@jssip.net');
+    expect(uri.toAor()).toBe('sip:alice@jssip.net');
 
     uri.user = null;
-    test.strictEqual(uri.user, null);
-    test.strictEqual(uri.toAor(), 'sip:jssip.net');
+    expect(uri.user).toBeNull();
+    expect(uri.toAor()).toBe('sip:jssip.net');
     uri.user = 'alice';
 
-    test.throws(
-      function()
-      {
-        uri.host = null;
-      },
-      TypeError
-    );
-    test.throws(
-      function()
-      {
-        uri.host = { bar: 'foo' };
-      },
-      TypeError
-    );
-    test.strictEqual(uri.host, 'jssip.net');
+    expect(() =>
+    {
+      uri.host = null;
+    }).toThrow(TypeError);
+
+    expect(() =>
+    {
+      uri.host = { bar: 'foo' };
+    }).toThrow(TypeError);
+
+    expect(uri.host).toBe('jssip.net');
 
     uri.host = 'VERSATICA.com';
-    test.strictEqual(uri.host, 'versatica.com');
+    expect(uri.host).toBe('versatica.com');
     uri.host = 'jssip.net';
 
     uri.port = null;
-    test.strictEqual(uri.port, null);
+    expect(uri.port).toBeNull();
 
     uri.port = undefined;
-    test.strictEqual(uri.port, null);
+    expect(uri.port).toBeNull();
 
     uri.port = 'ABCD'; // Should become null.
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
+    expect(uri.toString()).toBe('sip:alice@jssip.net');
 
     uri.port = '123ABCD'; // Should become 123.
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net:123');
+    expect(uri.toString()).toBe('sip:alice@jssip.net:123');
 
     uri.port = 0;
-    test.strictEqual(uri.port, 0);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net:0');
+    expect(uri.port).toBe(0);
+    expect(uri.toString()).toBe('sip:alice@jssip.net:0');
     uri.port = null;
 
-    test.strictEqual(uri.hasParam('foo'), false);
+    expect(uri.hasParam('foo')).toBe(false);
 
     uri.setParam('Foo', null);
-    test.strictEqual(uri.hasParam('FOO'), true);
+    expect(uri.hasParam('FOO')).toBe(true);
 
     uri.setParam('Baz', 123);
-    test.strictEqual(uri.getParam('baz'), '123');
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net;foo;baz=123');
+    expect(uri.getParam('baz')).toBe('123');
+    expect(uri.toString()).toBe('sip:alice@jssip.net;foo;baz=123');
 
     uri.setParam('zero', 0);
-    test.strictEqual(uri.hasParam('ZERO'), true);
-    test.strictEqual(uri.getParam('ZERO'), '0');
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net;foo;baz=123;zero=0');
-    test.strictEqual(uri.deleteParam('ZERO'), '0');
+    expect(uri.hasParam('ZERO')).toBe(true);
+    expect(uri.getParam('ZERO')).toBe('0');
+    expect(uri.toString()).toBe('sip:alice@jssip.net;foo;baz=123;zero=0');
+    expect(uri.deleteParam('ZERO')).toBe('0');
 
-    test.strictEqual(uri.deleteParam('baZ'), '123');
-    test.strictEqual(uri.deleteParam('NOO'), undefined);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net;foo');
+    expect(uri.deleteParam('baZ')).toBe('123');
+    expect(uri.deleteParam('NOO')).toBeUndefined();
+    expect(uri.toString()).toBe('sip:alice@jssip.net;foo');
 
     uri.clearParams();
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
+    expect(uri.toString()).toBe('sip:alice@jssip.net');
 
-    test.strictEqual(uri.hasHeader('foo'), false);
+    expect(uri.hasHeader('foo')).toBe(false);
 
     uri.setHeader('Foo', 'LALALA');
-    test.strictEqual(uri.hasHeader('FOO'), true);
-    test.deepEqual(uri.getHeader('FOO'), [ 'LALALA' ]);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net?Foo=LALALA');
+    expect(uri.hasHeader('FOO')).toBe(true);
+    expect(uri.getHeader('FOO')).toEqual([ 'LALALA' ]);
+    expect(uri.toString()).toBe('sip:alice@jssip.net?Foo=LALALA');
 
     uri.setHeader('bAz', [ 'ABC-1', 'ABC-2' ]);
-    test.deepEqual(uri.getHeader('baz'), [ 'ABC-1', 'ABC-2' ]);
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net?Foo=LALALA&Baz=ABC-1&Baz=ABC-2');
+    expect(uri.getHeader('baz')).toEqual([ 'ABC-1', 'ABC-2' ]);
+    expect(uri.toString()).toBe('sip:alice@jssip.net?Foo=LALALA&Baz=ABC-1&Baz=ABC-2');
 
-    test.deepEqual(uri.deleteHeader('baZ'), [ 'ABC-1', 'ABC-2' ]);
-    test.deepEqual(uri.deleteHeader('NOO'), undefined);
+    expect(uri.deleteHeader('baZ')).toEqual([ 'ABC-1', 'ABC-2' ]);
+    expect(uri.deleteHeader('NOO')).toBeUndefined();
 
     uri.clearHeaders();
-    test.strictEqual(uri.toString(), 'sip:alice@jssip.net');
+    expect(uri.toString()).toBe('sip:alice@jssip.net');
 
     const uri2 = uri.clone();
 
-    test.strictEqual(uri2.toString(), uri.toString());
+    expect(uri2.toString()).toBe(uri.toString());
     uri2.user = 'popo';
-    test.strictEqual(uri2.user, 'popo');
-    test.strictEqual(uri.user, 'alice');
+    expect(uri2.user).toBe('popo');
+    expect(uri.user).toBe('alice');
+  });
+});
 
-    test.done();
-  },
-
-  'new NameAddr' : function(test)
+describe('NameAddr Tests', () =>
+{
+  test('new NameAddr', () =>
   {
     const uri = new JsSIP.URI('sip', 'alice', 'jssip.net');
     const name = new JsSIP.NameAddrHeader(uri, 'Alice æßð');
 
-    test.strictEqual(name.display_name, 'Alice æßð');
-    test.strictEqual(name.toString(), '"Alice æßð" <sip:alice@jssip.net>');
+    expect(name.display_name).toBe('Alice æßð');
+    expect(name.toString()).toBe('"Alice æßð" <sip:alice@jssip.net>');
 
     name.display_name = null;
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
+    expect(name.toString()).toBe('<sip:alice@jssip.net>');
 
     name.display_name = 0;
-    test.strictEqual(name.toString(), '"0" <sip:alice@jssip.net>');
+    expect(name.toString()).toBe('"0" <sip:alice@jssip.net>');
 
     name.display_name = '';
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
+    expect(name.toString()).toBe('<sip:alice@jssip.net>');
 
     name.setParam('Foo', null);
-    test.strictEqual(name.hasParam('FOO'), true);
+    expect(name.hasParam('FOO')).toBe(true);
 
     name.setParam('Baz', 123);
-    test.strictEqual(name.getParam('baz'), '123');
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>;foo;baz=123');
+    expect(name.getParam('baz')).toBe('123');
+    expect(name.toString()).toBe('<sip:alice@jssip.net>;foo;baz=123');
 
-    test.strictEqual(name.deleteParam('bAz'), '123');
+    expect(name.deleteParam('bAz')).toBe('123');
 
     name.clearParams();
-    test.strictEqual(name.toString(), '<sip:alice@jssip.net>');
+    expect(name.toString()).toBe('<sip:alice@jssip.net>');
 
     const name2 = name.clone();
 
-    test.strictEqual(name2.toString(), name.toString());
+    expect(name2.toString()).toBe(name.toString());
     name2.display_name = '@ł€';
-    test.strictEqual(name2.display_name, '@ł€');
-    test.strictEqual(name.user, undefined);
-
-    test.done();
-  }
-
-};
+    expect(name2.display_name).toBe('@ł€');
+    expect(name.user).toBeUndefined();
+  });
+});

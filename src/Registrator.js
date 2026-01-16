@@ -103,11 +103,21 @@ module.exports = class Registrator
       return;
     }
 
-    const extraHeaders = this._extraHeaders.slice();
+    const extraHeaders = Utils.cloneArray(this._extraHeaders);
 
-    extraHeaders.push(`Contact: \
-${this._contact};expires=${this._expires}${this._extraContactParams}`);
-    extraHeaders.push(`Expires: ${this._expires}`);
+    let contactValue;
+
+    if (this._expires)
+    {
+      contactValue = `${this._contact};expires=${this._expires}${this._extraContactParams}`;
+      extraHeaders.push(`Expires: ${this._expires}`);
+    }
+    else
+    {
+      contactValue = `${this._contact}${this._extraContactParams}`;
+    }
+
+    extraHeaders.push(`Contact: ${contactValue}`);
 
     let fromTag = Utils.newTag();
 
@@ -273,6 +283,9 @@ ${this._contact};expires=${this._expires}${this._extraContactParams}`);
               if (this._expires < MIN_REGISTER_EXPIRES)
                 this._expires = MIN_REGISTER_EXPIRES;
 
+              // Assure register re-try with new expire.
+              this._registering = false;
+
               // Attempt the registration again immediately.
               this.register();
             }
@@ -318,7 +331,7 @@ ${this._contact};expires=${this._expires}${this._extraContactParams}`);
       this._registrationTimer = null;
     }
 
-    const extraHeaders = this._extraHeaders.slice();
+    const extraHeaders = Utils.cloneArray(this._extraHeaders);
 
     if (options.all)
     {

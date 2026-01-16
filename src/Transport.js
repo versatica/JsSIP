@@ -376,10 +376,9 @@ module.exports = class Transport
         else
           data = String.fromCharCode.apply(null, new Uint8Array(data));
       }
-      catch (evt)
+      catch (error)
       {
-        logger.debug('received binary message failed to be converted into string,' +
-              ' message discarded');
+        logger.debug(`received binary message failed to be converted into string: ${error}`);
 
         return;
       }

@@ -3,6 +3,7 @@ import {EventEmitter} from 'events'
 import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
 import {NameAddrHeader} from './NameAddrHeader'
 import {URI} from './URI'
+import {UA} from './UA'
 import {causes, DTMF_TRANSPORT} from './Constants'
 
 interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
@@ -59,7 +60,7 @@ export interface OnHoldResult {
   remote: boolean;
 }
 
-export interface DTFMOptions extends ExtraHeaders {
+export interface DTMFOptions extends ExtraHeaders {
   duration?: number;
   interToneGap?: number;
   transportType?: DTMF_TRANSPORT;
@@ -244,6 +245,8 @@ declare enum SessionStatus {
 }
 
 export class RTCSession extends EventEmitter {
+  constructor (ua: UA);
+
   static get C(): typeof SessionStatus;
 
   get C(): typeof SessionStatus;
@@ -283,7 +286,7 @@ export class RTCSession extends EventEmitter {
 
   terminate(options?: TerminateOptions): void;
 
-  sendDTMF(tones: string | number, options?: DTFMOptions): void;
+  sendDTMF(tones: string | number, options?: DTMFOptions): void;
 
   sendInfo(contentType: string, body?: string, options?: ExtraHeaders): void;
 
@@ -302,8 +305,6 @@ export class RTCSession extends EventEmitter {
   isMuted(): MediaStreamTypes;
 
   refer(target: string | URI, options?: ReferOptions): void;
-
-  resetLocalMedia(): void;
 
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 }

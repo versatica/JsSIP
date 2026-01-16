@@ -2,9 +2,9 @@ require('./include/common');
 const JsSIP = require('../');
 
 
-module.exports = {
-
-  'valid targets' : function(test)
+describe('normalizeTarget', () =>
+{
+  test('valid targets', () =>
   {
     const domain = 'jssip.net';
 
@@ -12,8 +12,8 @@ module.exports = {
     {
       const uri = JsSIP.Utils.normalizeTarget(given_data, domain);
 
-      test.ok(uri instanceof(JsSIP.URI));
-      test.strictEqual(uri.toString(), expected);
+      expect(uri instanceof (JsSIP.URI)).toBeTruthy();
+      expect(uri.toString()).toEqual(expected);
     }
 
     test_ok('%61lice', 'sip:alice@jssip.net');
@@ -38,17 +38,15 @@ module.exports = {
     test_ok('tel:(+34)-944-43-89', 'sip:+349444389@jssip.net');
     test_ok('+123.456.78-9', 'sip:+123456789@jssip.net');
     test_ok('+ALICE-123.456.78-9', 'sip:+ALICE-123.456.78-9@jssip.net');
+  });
 
-    test.done();
-  },
-
-  'invalid targets' : function(test)
+  test('invalid targets', () =>
   {
     const domain = 'jssip.net';
 
     function test_error(given_data)
     {
-      test.deepEqual(JsSIP.Utils.normalizeTarget(given_data, domain), undefined);
+      expect(JsSIP.Utils.normalizeTarget(given_data, domain)).toBe(undefined);
     }
 
     test_error(null);
@@ -60,9 +58,6 @@ module.exports = {
     test_error('ibc@iñaki.com');
     test_error('ibc@aliax.net;;;;;');
 
-    test.deepEqual(JsSIP.Utils.normalizeTarget('alice'), undefined);
-
-    test.done();
-  }
-
-};
+    expect(JsSIP.Utils.normalizeTarget('alice')).toBe(undefined);
+  });
+});
