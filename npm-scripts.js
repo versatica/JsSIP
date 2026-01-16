@@ -1,23 +1,20 @@
+const esbuild = require("esbuild");
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
 const { execSync } = require('child_process');
-const { version } = require('./package.json');
 const pkg = require('./package.json');
-const { resolve } = require("path");
-const { build } = require("esbuild");
-const { readFile, writeFile } = require("fs/promises");
 
 const task = process.argv.slice(2).join(' ');
 
 const ESLINT_PATHS = [ 'src', 'test' ].join(' ');
-const rootDir = "./";
-const outDir = "./dist";
 
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
 
-async function main() {
+void run();
+
+async function run() {
   switch (task)
   {
     case 'grammar': {
@@ -36,15 +33,17 @@ async function main() {
     }
 
     case 'build': {
-      await buildMin(rootDir, outDir);
+      await build(true /* minify */);
+      await build(false /* minify */);
+
       break;
     }
 
     case 'release': {
       lint();
       test();
-      executeCmd(`git commit -am '${version}'`);
-      executeCmd(`git tag -a ${version} -m '${version}'`);
+      executeCmd(`git commit -am '${pkg.version}'`);
+      executeCmd(`git tag -a ${pkg.version} -m '${pkg.version}'`);
       executeCmd('git push origin master && git push origin --tags');
       executeCmd('npm publish');
 
@@ -102,35 +101,35 @@ function grammar()
   logInfo('grammar done');
 }
 
+// Build sources into a file for publishing.
+async function build(minify = true) {
+  const entry = path.resolve("src/JsSIP.js");
+  const outfile = path.resolve("./dist", `jssip${minify ? '.min' : ''}.js`);
+  const banner = `
+ /*
+  * JsSIP ${pkg.version}
+  * ${pkg.description}
+  * Copyright: 2012-${new Date().getFullYear()} ${pkg.contributors.join(' ')}
+  * Homepage: ${pkg.homepage}
+  * License: ${pkg.license}
+  */`;
 
-// Build a Minified version of JsSIP into /dist/ for publishing
-async function buildMin(rootDir, outDir) {
-  const entry = resolve(rootDir, "src/JsSIP.js");
-  const outfile = resolve(outDir, "jssip.min.js");
-  const banner = `/*!
- * JsSIP ${pkg.version}
- * ${pkg.description}
- * Copyright: 2012-${new Date().getFullYear()} ${pkg.contributors.join(' ')}
- * Homepage: ${pkg.homepage}
- * License: ${pkg.license}
- */`;
-
-  await build({
+  await esbuild.build({
     entryPoints: [entry],
     outfile,
     bundle: true,
-    minify: true,
+    minify,
     sourcemap: false,
-    // https://esbuild.github.io/api/#global-name
+    // https://esbuild.github.io/api/#global-name.
     format: "iife",
     globalName: "JsSIP",
     platform: "browser",
     target: ["es2015"],
-    // Make the generated output a single line
+    // Make the generated output a single line.
     supported: {
       "template-literal": false,
     },
-    // Add a banner
+    // Add banner.
     banner: {
       js: banner,
     },
@@ -158,8 +157,3 @@ function logInfo(...args)
   // eslint-disable-next-line no-console
   console.log(`npm-scripts.mjs \x1b[36m[INFO] [${task}]\x1b[0m`, ...args);
 }
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
