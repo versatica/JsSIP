@@ -26,6 +26,13 @@
   "bugs": {
     "url": "https://github.com/versatica/JsSIP/issues"
   },
+  "scripts": {
+    "lint": "node npm-scripts.js lint",
+    "test": "node npm-scripts.js test",
+    "build": "node npm-scripts.js build",
+    "typescript:build": "node npm-scripts.js typescript:build",
+    "release": "node npm-scripts.js release"
+  },
   "dependencies": {
     "debug": "^4.3.1",
     "events": "^3.3.0",
@@ -36,17 +43,14 @@
     "@eslint/js": "^9.39.2",
     "@types/debug": "^4.1.12",
     "@types/events": "^3.0.3",
+    "@types/node": "^25.0.10",
+    "cpx": "^1.5.0",
     "esbuild": "^0.27.2",
     "eslint": "^9.39.1",
     "eslint-plugin-jest": "^29.12.1",
     "globals": "^17.0.0",
     "jest": "^30.2.0",
-    "pegjs": "^0.7.0"
-  },
-  "scripts": {
-    "lint": "node npm-scripts.js lint",
-    "test": "node npm-scripts.js test",
-    "build": "node npm-scripts.js build",
-    "release": "node npm-scripts.js release"
+    "pegjs": "^0.7.0",
+    "typescript": "^5.9.3"
   }
 }

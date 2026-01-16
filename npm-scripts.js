@@ -6,11 +6,12 @@ const { execSync } = require('child_process');
 const pkg = require('./package.json');
 
 const task = process.argv.slice(2).join(' ');
+const taskArgs = process.argv.slice(3).join(' ');
 
 const ESLINT_PATHS = [ 'src', 'test' ].join(' ');
 
-// eslint-disable-next-line no-console
-console.log(`npm-scripts.js [INFO] running task "${task}"`);
+logInfo(`running task "${task}"`);
+logInfo(taskArgs ? `[args:"${taskArgs}"]` : '');
 
 void run();
 
@@ -39,13 +40,19 @@ async function run() {
       break;
     }
 
-    case 'release': {
-      lint();
-      test();
-      executeCmd(`git commit -am '${pkg.version}'`);
-      executeCmd(`git tag -a ${pkg.version} -m '${pkg.version}'`);
-      executeCmd('git push origin master && git push origin --tags');
-      executeCmd('npm publish');
+  case 'typescript:build': {
+    buildTypescript();
+
+    break;
+  }
+
+  case 'release': {
+    lint();
+    test();
+    executeCmd(`git commit -am '${version}'`);
+    executeCmd(`git tag -a ${version} -m '${version}'`);
+    executeCmd('git push origin master && git push origin --tags');
+    executeCmd('npm publish');
 
       // eslint-disable-next-line no-console
       console.log('update tryit-jssip and JsSIP website');
@@ -134,6 +141,30 @@ async function build(minify = true) {
       js: banner,
     },
   });
+}
+
+function buildTypescript()
+{
+  logInfo('buildTypescript()');
+
+  deleteLib();
+
+  // Generate .js CommonJS code and .d.ts TypeScript declaration files in lib/.
+  executeCmd(`tsc ${taskArgs}`);
+
+  executeCmd('cpx \'src/**/**.d.ts\' lib/');
+}
+
+function deleteLib()
+{
+  if (!fs.existsSync('lib'))
+  {
+    return;
+  }
+
+  logInfo('deleteLib()');
+
+  fs.rmSync('lib', { recursive: true, force: true });
 }
 
 function executeCmd(command)
