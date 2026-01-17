@@ -22,6 +22,7 @@ interface NotifierOptions {
   extraHeaders?: Array<string>;
   allowEvents?: string;
   pending?: boolean;
+  defaultExpires?: number;
 }
 
 export class Notifier extends EventEmitter<MessageEventMap> {

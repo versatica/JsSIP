@@ -78,6 +78,17 @@ module.exports = class Notifier extends EventEmitter
     {
       throw new TypeError('Missing Event header in subscribe request');
     }
+    const expires = subscribe.getHeader('expires');
+
+    if (expires)
+    {
+      const parsed_expires = parseInt(expires);
+
+      if (isNaN(parsed_expires) || parsed_expires < 0)
+      {
+        throw new TypeError('Invalid Expires header field in subscribe request');
+      }
+    }
   }
 
   /**
@@ -88,8 +99,11 @@ module.exports = class Notifier extends EventEmitter
    *   @param {Array<string>}  extraHeaders - Additional SIP headers.
    *   @param {string} allowEvents - Allow-Events header value.
    *   @param {boolean} pending - Set initial dialog state as "pending".
+   *   @param {number} defaultExpires - Default expires value (seconds).
    */
-  constructor(ua, subscribe, contentType, { extraHeaders, allowEvents, pending })
+  constructor(ua, subscribe, contentType, {
+    extraHeaders, allowEvents, pending, defaultExpires
+  })
   {
     logger.debug('new');
 
@@ -108,12 +122,13 @@ module.exports = class Notifier extends EventEmitter
     this._initial_subscribe = subscribe;
     this._expires_timestamp = null;
     this._expires_timer = null;
+    this._defaultExpires = defaultExpires || C.DEFAULT_EXPIRES_SEC;
 
     // Notifier state: pending, active, terminated.
     this._state = pending ? C.STATE_PENDING : C.STATE_ACTIVE;
 
     this._content_type = contentType;
-    this._expires = parseInt(subscribe.getHeader('expires'));
+    this._setExpires(subscribe);
     this._headers = Utils.cloneArray(extraHeaders);
     this._headers.push(`Event: ${eventName}`);
 
@@ -193,16 +208,8 @@ module.exports = class Notifier extends EventEmitter
       return;
     }
 
-    if (request.hasHeader('expires'))
-    {
-      this._expires = parseInt(request.getHeader('expires'));
-    }
-    else
-    {
-      this._expires = C.DEFAULT_EXPIRES_SEC;
+    this._setExpires(request);
 
-      logger.debug(`missing Expires header field, default value set: ${this._expires}`);
-    }
     request.reply(200, null, [ `Expires: ${this._expires}`, `${this._contact}` ]);
 
     const body = request.body;
@@ -338,6 +345,19 @@ module.exports = class Notifier extends EventEmitter
     logger.debug(`emit "terminated" code=${termination_code}`);
 
     this.emit('terminated', termination_code);
+  }
+
+  _setExpires(request)
+  {
+    if (request.hasHeader('expires'))
+    {
+      this._expires = parseInt(request.getHeader('expires'));
+    }
+    else
+    {
+      this._expires = this._defaultExpires;
+      logger.debug(`missing Expires header field, default value set: ${this._expires}`);
+    }
   }
 
   /**
