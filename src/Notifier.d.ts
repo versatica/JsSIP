@@ -1,5 +1,6 @@
 import {EventEmitter} from 'events'
 import {IncomingRequest} from './SIPMessage'
+import {UA} from './UA'
 
 declare enum NotifierTerminationReason {
     NOTIFY_RESPONSE_TIMEOUT = 0,
@@ -17,7 +18,14 @@ export interface MessageEventMap {
   expired: [];
 }
 
+interface NotifierOptions {
+  extraHeaders?: Array<string>;
+  allowEvents?: string;
+  pending?: boolean;
+}
+
 export class Notifier extends EventEmitter<MessageEventMap> {
+  constructor(ua: UA, subscribe: IncomingRequest, contentType: string, options: NotifierOptions)
   start(): void;
   setActiveState(): void;
   notify(body?: string): void;
