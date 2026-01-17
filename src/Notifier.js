@@ -152,12 +152,6 @@ module.exports = class Notifier extends EventEmitter
     // Create dialog for normal and fetch-subscribe.
     this._dialog = new Dialog(this, subscribe, 'UAS');
 
-    if (this._expires > 0)
-    {
-      // Set expires timer and time-stamp.
-      this._setExpiresTimer();
-    }
-
     // Custom session empty object for high level use.
     this._data = {};
   }
