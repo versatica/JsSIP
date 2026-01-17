@@ -32,7 +32,7 @@ const C = {
   STATE_WAITING_NOTIFY : 4,
 
   // RFC 6665 3.1.1, default expires value.
-  DEFAULT_EXPIRES_MS : 900
+  DEFAULT_EXPIRES_SEC : 900
 };
 
 /**
@@ -97,7 +97,7 @@ module.exports = class Subscriber extends EventEmitter
 
     if (!Utils.isDecimal(expires) || expires <= 0)
     {
-      expires = C.DEFAULT_EXPIRES_MS;
+      expires = C.DEFAULT_EXPIRES_SEC;
     }
 
     this._expires = expires;
@@ -554,11 +554,11 @@ module.exports = class Subscriber extends EventEmitter
 
       if (!Utils.isDecimal(expires) || expires <= 0)
       {
-        logger.warn(`response without Expires header, setting a default value of ${C.DEFAULT_EXPIRES_MS}`);
+        logger.warn(`response without Expires header, setting a default value of ${C.DEFAULT_EXPIRES_SEC}`);
 
         // RFC 6665 3.1.1 subscribe OK response must contain Expires header.
         // Use workaround expires value.
-        expires = C.DEFAULT_EXPIRES_MS;
+        expires = C.DEFAULT_EXPIRES_SEC;
       }
 
       if (expires > 0)

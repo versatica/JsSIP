@@ -26,7 +26,7 @@ const C = {
   STATE_TERMINATED : 2,
 
   // RFC 6665 3.1.1, default expires value.
-  DEFAULT_EXPIRES_MS : 900
+  DEFAULT_EXPIRES_SEC : 900
 };
 
 /**
@@ -199,7 +199,7 @@ module.exports = class Notifier extends EventEmitter
     }
     else
     {
-      this._expires = C.DEFAULT_EXPIRES_MS;
+      this._expires = C.DEFAULT_EXPIRES_SEC;
 
       logger.debug(`missing Expires header field, default value set: ${this._expires}`);
     }
