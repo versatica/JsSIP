@@ -149,9 +149,6 @@ module.exports = class Notifier extends EventEmitter
     this._target = subscribe.from.uri.user;
     subscribe.to_tag = Utils.newTag();
 
-    // Create dialog for normal and fetch-subscribe.
-    this._dialog = new Dialog(this, subscribe, 'UAS');
-
     // Custom session empty object for high level use.
     this._data = {};
   }
@@ -203,6 +200,12 @@ module.exports = class Notifier extends EventEmitter
     }
 
     this._setExpires(request);
+
+    // Create dialog for normal and fetch-subscribe.
+    if (!this._dialog)
+    {
+      this._dialog = new Dialog(this, request, 'UAS');
+    }
 
     request.reply(200, null, [ `Expires: ${this._expires}`, `${this._contact}` ]);
 
