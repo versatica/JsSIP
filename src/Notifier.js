@@ -84,7 +84,7 @@ module.exports = class Notifier extends EventEmitter
     {
       const parsed_expires = parseInt(expires);
 
-      if (isNaN(parsed_expires) || parsed_expires < 0)
+      if (!Utils.isDecimal(parsed_expires) || parsed_expires < 0)
       {
         throw new TypeError('Invalid Expires header field in subscribe request');
       }
