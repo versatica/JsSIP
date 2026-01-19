@@ -128,7 +128,6 @@ module.exports = class Notifier extends EventEmitter
     this._state = pending ? C.STATE_PENDING : C.STATE_ACTIVE;
 
     this._content_type = contentType;
-    this._setExpires(subscribe);
     this._headers = Utils.cloneArray(extraHeaders);
     this._headers.push(`Event: ${eventName}`);
 
