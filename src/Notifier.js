@@ -277,7 +277,24 @@ module.exports = class Notifier extends EventEmitter
       throw new Exceptions.InvalidStateError(this._state);
     }
 
-    this._sendNotifyOrTerminate(body);
+    const expires = Math.floor((this._expires_timestamp - new Date().getTime()) / 1000);
+
+    // expires_timer is about to trigger. Clean up the timer and terminate.
+    if (expires <= 0)
+    {
+      if (!this._expires_timer)
+      {
+        logger.error('expires timer is not set');
+      }
+
+      clearTimeout(this._expires_timer);
+
+      this.terminate(body, 'timeout');
+    }
+    else
+    {
+      this._sendNotify([ `;expires=${expires}` ], body);
+    }
   }
 
   /**
@@ -415,28 +432,6 @@ module.exports = class Notifier extends EventEmitter
         }
       }
     });
-  }
-
-  _sendNotifyOrTerminate(body)
-  {
-    const expires = Math.floor((this._expires_timestamp - new Date().getTime()) / 1000);
-
-    // expires_timer is about to trigger. Clean up the timer and terminate.
-    if (expires <= 0)
-    {
-      if (!this._expires_timer)
-      {
-        logger.error('expires timer is not set');
-      }
-
-      clearTimeout(this._expires_timer);
-
-      this.terminate(body, 'timeout');
-    }
-    else
-    {
-      this._sendNotify([ `;expires=${expires}` ], body);
-    }
   }
 
   _setExpiresTimer()
