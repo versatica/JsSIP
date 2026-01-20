@@ -1,8 +1,9 @@
+const esbuild = require("esbuild");
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
 const { execSync } = require('child_process');
-const { version } = require('./package.json');
+const pkg = require('./package.json');
 
 const task = process.argv.slice(2).join(' ');
 
@@ -11,42 +12,49 @@ const ESLINT_PATHS = [ 'src', 'test' ].join(' ');
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
 
-switch (task)
-{
-  case 'grammar': {
-    grammar();
+void run();
 
-    break;
-  }
+async function run() {
+  switch (task)
+  {
+    case 'grammar': {
+      grammar();
+      break;
+    }
 
-  case 'lint': {
-    lint();
+    case 'lint': {
+      lint();
+      break;
+    }
 
-    break;
-  }
+    case 'test': {
+      test();
+      break;
+    }
 
-  case 'test': {
-    test();
+    case 'build': {
+      await build(true /* minify */);
+      await build(false /* minify */);
 
-    break;
-  }
+      break;
+    }
 
-  case 'release': {
-    lint();
-    test();
-    executeCmd(`git commit -am '${version}'`);
-    executeCmd(`git tag -a ${version} -m '${version}'`);
-    executeCmd('git push origin master && git push origin --tags');
-    executeCmd('npm publish');
+    case 'release': {
+      lint();
+      test();
+      executeCmd(`git commit -am '${pkg.version}'`);
+      executeCmd(`git tag -a ${pkg.version} -m '${pkg.version}'`);
+      executeCmd('git push origin master && git push origin --tags');
+      executeCmd('npm publish');
 
-    // eslint-disable-next-line no-console
-    console.log('update tryit-jssip and JsSIP website');
+      // eslint-disable-next-line no-console
+      console.log('update tryit-jssip and JsSIP website');
+      break;
+    }
 
-    break;
-  }
-
-  default: {
-    throw new TypeError(`unknown task "${task}"`);
+    default: {
+      throw new TypeError(`unknown task "${task}"`);
+    }
   }
 }
 
@@ -91,6 +99,41 @@ function grammar()
   fs.writeFileSync('src/Grammar.js', modified_grammar);
 
   logInfo('grammar done');
+}
+
+// Build sources into a file for publishing.
+async function build(minify = true) {
+  const entry = path.resolve("src/JsSIP.js");
+  const outfile = path.resolve("./dist", `jssip${minify ? '.min' : ''}.js`);
+  const banner = `
+ /*
+  * JsSIP ${pkg.version}
+  * ${pkg.description}
+  * Copyright: 2012-${new Date().getFullYear()} ${pkg.contributors.join(' ')}
+  * Homepage: ${pkg.homepage}
+  * License: ${pkg.license}
+  */`;
+
+  await esbuild.build({
+    entryPoints: [entry],
+    outfile,
+    bundle: true,
+    minify,
+    sourcemap: false,
+    // https://esbuild.github.io/api/#global-name.
+    format: "iife",
+    globalName: "JsSIP",
+    platform: "browser",
+    target: ["es2015"],
+    // Make the generated output a single line.
+    supported: {
+      "template-literal": false,
+    },
+    // Add banner.
+    banner: {
+      js: banner,
+    },
+  });
 }
 
 function executeCmd(command)
