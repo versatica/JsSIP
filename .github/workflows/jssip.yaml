@@ -1,0 +1,62 @@
+name: jssip
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # Cancel a currently running workflow from the same PR, branch or tag when a
+  # new workflow is triggered.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        ci:
+          - os: ubuntu-22.04
+            node: 20
+          - os: ubuntu-24.04
+            node: 22
+          - os: ubuntu-24.04
+            node: 24
+          - os: macos-14
+            node: 22
+          - os: macos-15
+            node: 24
+          - os: windows-2022
+            node: 22
+          - os: windows-2025
+            node: 24
+
+    runs-on: ${{ matrix.ci.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.ci.node }}
+
+      - name: Configure cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+          key: ${{ matrix.ci.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ matrix.ci.os }}-node-
+
+      - name: npm i
+        run: npm i
+
+      - name: npm run lint
+        run: npm run lint
+
+      - name: npm run test
+        run: npm run test

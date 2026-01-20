@@ -529,6 +529,7 @@ exports.closeMediaStream = (stream) =>
       }
     }
   }
+  // eslint-disable-next-line no-unused-vars
   catch (error)
   {
     // Deprecated by the spec, but still in use.

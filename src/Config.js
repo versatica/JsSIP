@@ -276,7 +276,7 @@ const checks = {
       {
         const value = Number(register_expires);
 
-        if (value > 0)
+        if (value >= 0)
         {
           return value;
         }

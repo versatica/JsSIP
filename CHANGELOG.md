@@ -3,7 +3,63 @@ CHANGELOG
 
 ### NEXT RELEASE
 
+* Modernize eslint.
+
+
+### 3.11.1
+
+* Move code from 'lib/' to 'src/'.
+
+
+### 3.11.0
+
+* Do not browserify nor minimize the library. Apps using JsSIP are responsible to do it.
+
+
+### 3.10.10
+
+* Dialog: Fix wrong ACK Cseq for re-INVITE (#943). Credits to @karstenluedtke.
+
+
+### 3.10.9
+
+* UA: Do not log sensitive information (#941).
+
+
+### 3.10.8
+
+* RTCSession: close and fire 'failed' upon answer() failure (#861). Credits to @pjkundert.
+
+
+### 3.10.7
+
+* Allow sending DTMF during early dialog #689 (#925). Credits to @giacco.
+
+
+### 3.10.6
+
+* Fix DTMF SIP INFO (#871). Credits to @luan-evangelista.
+
+
+### 3.10.5
+
+* Allow to send REGISTER request without `expires` (#794). Credits to @kkozlik.
+
+
+### 3.10.4
+
+* TS: RTCSession: remove resetLocalMedia() method type.
+
+
+### 3.10.3
+
+* RTCSession: make isReadyToReOffer() public.
+
+
+### 3.10.2
+
 * New UA config param register_from_tag_trail (#793). Credits to @kkozlik.
+* Fix register re-try on 423 response (#851). Credits to @staskobzar.
 
 
 ### 3.10.1
@@ -1064,4 +1120,3 @@ CHANGELOG
 ### 0.1.0
 
 * First release. No documentation.
-

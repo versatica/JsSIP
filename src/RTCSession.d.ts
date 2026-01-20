@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events'
-import { DTMF_TRANSPORT, causes } from './Constants'
-import NameAddrHeader from './NameAddrHeader'
-import { IncomingRequest, IncomingResponse, OutgoingRequest } from './SIPMessage'
-import { UA } from './UA'
-import URI from './URI'
+import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
+import {NameAddrHeader} from './NameAddrHeader'
+import {URI} from './URI'
+import {UA} from './UA'
+import {causes, DTMF_TRANSPORT} from './Constants'
 
 // Define VoidFunction type
 type VoidFunction = () => void;
@@ -289,9 +289,7 @@ declare enum SessionStatus {
   STATUS_CONFIRMED = 9
 }
 
-export default class RTCSession extends EventEmitter {
-  _tones: string | null;
-
+export class RTCSession extends EventEmitter {
   constructor (ua: UA);
 
   static get C(): typeof SessionStatus;
@@ -348,7 +346,7 @@ export default class RTCSession extends EventEmitter {
   renegotiate(options?: RenegotiateOptions, done?: () => void, fail?: () => void): Promise<boolean>;
 
   restartIce(options?: RenegotiateOptions, done?: () => void, fail?: () => void): Promise<boolean>;
-  
+
   isOnHold(): OnHoldResult;
 
   mute(options?: MediaStreamTypes): void;
@@ -358,7 +356,7 @@ export default class RTCSession extends EventEmitter {
   isMuted(): MediaStreamTypes;
 
   refer(target: string | URI, options?: ReferOptions): void;
- 
+
   on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
 
   replaceMediaStream(stream: MediaStream, options?: { directionVideo?: RTCRtpTransceiverDirection; directionAudio?: RTCRtpTransceiverDirection; deleteExisting?: boolean; addMissing?: boolean; forceRenegotiation?: boolean; sendEncodings?: RTCRtpEncodingParameters[]; degradationPreference?: TDegradationPreference; onAddedTransceiver?: TOnAddedTransceiver; }): Promise<void>;
