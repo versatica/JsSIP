@@ -4,81 +4,99 @@ require('./include/common');
 const testUA = require('./include/testUA');
 const JsSIP = require('../');
 
+describe('UA No WebRTC', () => {
+	test('UA wrong configuration', () => {
+		expect(() => new JsSIP.UA({ lalala: 'lololo' })).toThrow(
+			JsSIP.Exceptions.ConfigurationError
+		);
+	});
 
-describe('UA No WebRTC', () =>
-{
+	test('UA no WS connection', () => {
+		const config = testUA.UA_CONFIGURATION;
+		const wsSocket = new JsSIP.WebSocketInterface(
+			testUA.SOCKET_DESCRIPTION.url
+		);
 
-  test('UA wrong configuration', () =>
-  {
-    expect(() => new JsSIP.UA({ 'lalala': 'lololo' })).toThrow(JsSIP.Exceptions.ConfigurationError);
-  });
+		config.sockets = wsSocket;
 
-  test('UA no WS connection', () =>
-  {
-    const config = testUA.UA_CONFIGURATION;
-    const wsSocket = new JsSIP.WebSocketInterface(testUA.SOCKET_DESCRIPTION.url);
+		const ua = new JsSIP.UA(config);
 
-    config.sockets = wsSocket;
+		expect(ua instanceof JsSIP.UA).toBeTruthy();
 
-    const ua = new JsSIP.UA(config);
+		ua.start();
 
-    expect(ua instanceof (JsSIP.UA)).toBeTruthy();
+		expect(ua.contact.toString()).toBe(
+			`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws>`
+		);
+		expect(
+			ua.contact.toString({ outbound: false, anonymous: false, foo: true })
+		).toBe(
+			`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws>`
+		);
+		expect(ua.contact.toString({ outbound: true })).toBe(
+			`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws;ob>`
+		);
+		expect(ua.contact.toString({ anonymous: true })).toBe(
+			'<sip:anonymous@anonymous.invalid;transport=ws>'
+		);
+		expect(ua.contact.toString({ anonymous: true, outbound: true })).toBe(
+			'<sip:anonymous@anonymous.invalid;transport=ws;ob>'
+		);
 
-    ua.start();
+		for (const parameter in testUA.UA_CONFIGURATION_AFTER_START) {
+			if (
+				Object.prototype.hasOwnProperty.call(
+					testUA.UA_CONFIGURATION_AFTER_START,
+					parameter
+				)
+			) {
+				switch (parameter) {
+					case 'uri':
+					case 'registrar_server': {
+						expect(ua.configuration[parameter].toString()).toBe(
+							testUA.UA_CONFIGURATION_AFTER_START[parameter],
+							`testing parameter ${parameter}`
+						);
+						break;
+					}
+					case 'sockets': {
+						console.warn('IGNORE SOCKETS');
+						break;
+					}
+					default: {
+						expect(ua.configuration[parameter]).toBe(
+							testUA.UA_CONFIGURATION_AFTER_START[parameter],
+							`testing parameter ${parameter}`
+						);
+					}
+				}
+			}
+		}
 
-    expect(ua.contact.toString()).toBe(`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws>`);
-    expect(ua.contact.toString({ outbound: false, anonymous: false, foo: true })).toBe(`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws>`);
-    expect(ua.contact.toString({ outbound: true })).toBe(`<sip:${ua.contact.uri.user}@${ua.configuration.via_host};transport=ws;ob>`);
-    expect(ua.contact.toString({ anonymous: true })).toBe('<sip:anonymous@anonymous.invalid;transport=ws>');
-    expect(ua.contact.toString({ anonymous: true, outbound: true })).toBe('<sip:anonymous@anonymous.invalid;transport=ws;ob>');
+		const transport = testUA.UA_TRANSPORT_AFTER_START;
+		const sockets = transport.sockets;
+		const socket = sockets[0].socket;
 
-    for (const parameter in testUA.UA_CONFIGURATION_AFTER_START)
-    {
-      if (Object.prototype.hasOwnProperty.call(
-        testUA.UA_CONFIGURATION_AFTER_START, parameter))
-      {
-        switch (parameter)
-        {
-          case 'uri':
-          case 'registrar_server':
-            // eslint-disable-next-line jest/no-conditional-expect
-            expect(ua.configuration[parameter].toString()).toBe(testUA.UA_CONFIGURATION_AFTER_START[parameter], `testing parameter ${parameter}`);
-            break;
-          case 'sockets':
-            console.warn('IGNORE SOCKETS');
-            break;
-          default:
-            // eslint-disable-next-line jest/no-conditional-expect
-            expect(ua.configuration[parameter]).toBe(testUA.UA_CONFIGURATION_AFTER_START[parameter], `testing parameter ${parameter}`);
-        }
-      }
-    }
+		expect(sockets.length).toEqual(ua.transport.sockets.length);
+		expect(sockets[0].weight).toEqual(ua.transport.sockets[0].weight);
+		expect(socket.via_transport).toEqual(ua.transport.via_transport);
+		expect(socket.sip_uri).toEqual(ua.transport.sip_uri);
+		expect(socket.url).toEqual(ua.transport.url);
 
-    const transport = testUA.UA_TRANSPORT_AFTER_START;
-    const sockets = transport.sockets;
-    const socket = sockets[0].socket;
+		expect(transport.recovery_options).toEqual(ua.transport.recovery_options);
 
-    expect(sockets.length).toEqual(ua.transport.sockets.length);
-    expect(sockets[0].weight).toEqual(ua.transport.sockets[0].weight);
-    expect(socket.via_transport).toEqual(ua.transport.via_transport);
-    expect(socket.sip_uri).toEqual(ua.transport.sip_uri);
-    expect(socket.url).toEqual(ua.transport.url);
+		ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
+			eventHandlers: {
+				failed: function (e) {
+					expect(e.cause).toEqual(JsSIP.C.causes.CONNECTION_ERROR);
+				},
+			},
+		});
 
-    expect(transport.recovery_options).toEqual(ua.transport.recovery_options);
+		expect(() =>
+			ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE')
+		).toThrow();
 
-    ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
-      eventHandlers : {
-        failed : function(e)
-        {
-          expect(e.cause).toEqual(JsSIP.C.causes.CONNECTION_ERROR);
-        }
-      }
-    });
-
-    expect(
-      () => ua.sendMessage('sip:ibc@iñaki.ðđß', 'FAIL WITH INVALID_TARGET PLEASE')
-    ).toThrow();
-
-    ua.stop();
-  });
+		ua.stop();
+	});
 });

@@ -1,52 +1,52 @@
-import {NameAddrHeader} from './NameAddrHeader'
-import {URI} from './URI'
+import { NameAddrHeader } from './NameAddrHeader';
+import { URI } from './URI';
 
 declare class IncomingMessage {
-  method: string
-  from: NameAddrHeader
-  to: NameAddrHeader
-  body: string
+	method: string;
+	from: NameAddrHeader;
+	to: NameAddrHeader;
+	body: string;
 
-  constructor();
+	constructor();
 
-  countHeader(name: string): number;
+	countHeader(name: string): number;
 
-  getHeader(name: string): string;
+	getHeader(name: string): string;
 
-  getHeaders(name: string): string[];
+	getHeaders(name: string): string[];
 
-  hasHeader(name: string): boolean;
+	hasHeader(name: string): boolean;
 
-  parseHeader<T = unknown>(name: string, idx?: number): T;
+	parseHeader<T = unknown>(name: string, idx?: number): T;
 
-  toString(): string;
+	toString(): string;
 }
 
 export class IncomingRequest extends IncomingMessage {
-  ruri: URI
+	ruri: URI;
 }
 
 export class IncomingResponse extends IncomingMessage {
-  status_code: number
-  reason_phrase: string
+	status_code: number;
+	reason_phrase: string;
 }
 
 export class OutgoingRequest {
-  method: string
-  ruri: URI
-  cseq: number
-  call_id: string
-  from: NameAddrHeader
-  to: NameAddrHeader
-  body: string
+	method: string;
+	ruri: URI;
+	cseq: number;
+	call_id: string;
+	from: NameAddrHeader;
+	to: NameAddrHeader;
+	body: string;
 
-  setHeader(name: string, value: string | string[]): void;
+	setHeader(name: string, value: string | string[]): void;
 
-  getHeader(name: string): string;
+	getHeader(name: string): string;
 
-  getHeaders(name: string): string[];
+	getHeaders(name: string): string[];
 
-  hasHeader(name: string): boolean;
+	hasHeader(name: string): boolean;
 
-  toString(): string;
+	toString(): string;
 }

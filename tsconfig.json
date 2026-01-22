@@ -1,15 +1,17 @@
 {
-    "compileOnSave": true,
+	"compileOnSave": true,
 	"compilerOptions": {
 		"lib": ["es2024", "dom"],
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"outDir": "lib",
+		"rootDir": "src",
 		"allowJs": true,
-		"declaration": true,
-		"declarationMap": true,
-		"emitDeclarationOnly": false,
-		"declarationDir": "lib",
+		// Do not generate declaration files automatically yet.
+		// "declaration": true,
+		// "declarationMap": true,
+		// "emitDeclarationOnly": false,
+		// "declarationDir": "lib",
 		"isolatedModules": true,
 		"verbatimModuleSyntax": false,
 		"useDefineForClassFields": true,
@@ -35,7 +37,7 @@
 		"strictNullChecks": true,
 		"strictPropertyInitialization": true,
 		"useUnknownInCatchVariables": true,
-		"noUncheckedSideEffectImports": true
+		"noUncheckedSideEffectImports": true,
 	},
-	"include": ["src"]
+	"include": ["src"],
 }

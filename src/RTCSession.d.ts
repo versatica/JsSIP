@@ -1,183 +1,190 @@
-import {EventEmitter} from 'events'
+import { EventEmitter } from 'events';
 
-import {IncomingRequest, IncomingResponse, OutgoingRequest} from './SIPMessage'
-import {NameAddrHeader} from './NameAddrHeader'
-import {URI} from './URI'
-import {UA} from './UA'
-import {causes, DTMF_TRANSPORT} from './Constants'
+import {
+	IncomingRequest,
+	IncomingResponse,
+	OutgoingRequest,
+} from './SIPMessage';
+import { NameAddrHeader } from './NameAddrHeader';
+import { URI } from './URI';
+import { UA } from './UA';
+import { causes, DTMF_TRANSPORT } from './Constants';
 
 interface RTCPeerConnectionDeprecated extends RTCPeerConnection {
-  /**
-   * @deprecated
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getRemoteStreams
-   */
-  getRemoteStreams(): MediaStream[];
+	/**
+	 * @deprecated
+	 * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/getRemoteStreams
+	 */
+	getRemoteStreams(): MediaStream[];
 }
 
 export declare enum SessionDirection {
-  INCOMING = 'incoming',
-  OUTGOING = 'outgoing',
+	INCOMING = 'incoming',
+	OUTGOING = 'outgoing',
 }
 
 export declare enum Originator {
-  LOCAL = 'local',
-  REMOTE = 'remote',
-  SYSTEM = 'system',
+	LOCAL = 'local',
+	REMOTE = 'remote',
+	SYSTEM = 'system',
 }
 
 // options
 export interface ExtraHeaders {
-  extraHeaders?: string[];
+	extraHeaders?: string[];
 }
 
 export interface AnswerOptions extends ExtraHeaders {
-  mediaConstraints?: MediaStreamConstraints;
-  mediaStream?: MediaStream;
-  pcConfig?: RTCConfiguration;
-  rtcConstraints?: object;
-  rtcAnswerConstraints?: RTCOfferOptions;
-  rtcOfferConstraints?: RTCOfferOptions;
-  sessionTimersExpires?: number;
+	mediaConstraints?: MediaStreamConstraints;
+	mediaStream?: MediaStream;
+	pcConfig?: RTCConfiguration;
+	rtcConstraints?: object;
+	rtcAnswerConstraints?: RTCOfferOptions;
+	rtcOfferConstraints?: RTCOfferOptions;
+	sessionTimersExpires?: number;
 }
 
 export interface RejectOptions extends ExtraHeaders {
-  status_code?: number;
-  reason_phrase?: string;
+	status_code?: number;
+	reason_phrase?: string;
 }
 
 export interface TerminateOptions extends RejectOptions {
-  body?: string;
-  cause?: causes | string;
+	body?: string;
+	cause?: causes | string;
 }
 
 export interface ReferOptions extends ExtraHeaders {
-  eventHandlers?: any;
-  replaces?: RTCSession;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	eventHandlers?: any;
+	replaces?: RTCSession;
 }
 
 export interface OnHoldResult {
-  local: boolean;
-  remote: boolean;
+	local: boolean;
+	remote: boolean;
 }
 
 export interface DTMFOptions extends ExtraHeaders {
-  duration?: number;
-  interToneGap?: number;
-  transportType?: DTMF_TRANSPORT;
+	duration?: number;
+	interToneGap?: number;
+	transportType?: DTMF_TRANSPORT;
 }
 
 export interface HoldOptions extends ExtraHeaders {
-  useUpdate?: boolean;
+	useUpdate?: boolean;
 }
 
 export interface RenegotiateOptions extends HoldOptions {
-  rtcOfferConstraints?: RTCOfferOptions;
+	rtcOfferConstraints?: RTCOfferOptions;
 }
 
 // events
 export interface DTMF extends EventEmitter {
-  tone: string;
-  duration: number;
+	tone: string;
+	duration: number;
 }
 
 export interface Info extends EventEmitter {
-  contentType: string;
-  body: string;
+	contentType: string;
+	body: string;
 }
 
 export interface PeerConnectionEvent {
-  peerconnection: RTCPeerConnectionDeprecated;
+	peerconnection: RTCPeerConnectionDeprecated;
 }
 
 export interface ConnectingEvent {
-  request: IncomingRequest | OutgoingRequest;
+	request: IncomingRequest | OutgoingRequest;
 }
 
 export interface SendingEvent {
-  request: OutgoingRequest
+	request: OutgoingRequest;
 }
 
 export interface IncomingEvent {
-  originator: Originator.LOCAL;
+	originator: Originator.LOCAL;
 }
 
 export interface EndEvent {
-  originator: Originator;
-  message: IncomingRequest | IncomingResponse;
-  cause: string;
+	originator: Originator;
+	message: IncomingRequest | IncomingResponse;
+	cause: string;
 }
 
 export interface IncomingDTMFEvent {
-  originator: Originator.REMOTE;
-  dtmf: DTMF;
-  request: IncomingRequest;
+	originator: Originator.REMOTE;
+	dtmf: DTMF;
+	request: IncomingRequest;
 }
 
 export interface OutgoingDTMFEvent {
-  originator: Originator.LOCAL;
-  dtmf: DTMF;
-  request: OutgoingRequest;
+	originator: Originator.LOCAL;
+	dtmf: DTMF;
+	request: OutgoingRequest;
 }
 
 export interface IncomingInfoEvent {
-  originator: Originator.REMOTE;
-  info: Info;
-  request: IncomingRequest;
+	originator: Originator.REMOTE;
+	info: Info;
+	request: IncomingRequest;
 }
 
 export interface OutgoingInfoEvent {
-  originator: Originator.LOCAL;
-  info: Info;
-  request: OutgoingRequest;
+	originator: Originator.LOCAL;
+	info: Info;
+	request: OutgoingRequest;
 }
 
 export interface HoldEvent {
-  originator: Originator
+	originator: Originator;
 }
 
 export interface ReInviteEvent {
-  request: IncomingRequest;
-  callback?: VoidFunction;
-  reject: (options?: RejectOptions) => void;
+	request: IncomingRequest;
+	callback?: VoidFunction;
+	reject: (options?: RejectOptions) => void;
 }
 
 export interface ReferEvent {
-  request: IncomingRequest;
-  accept: Function;
-  reject: VoidFunction;
+	request: IncomingRequest;
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	accept: Function;
+	reject: VoidFunction;
 }
 
 export interface SDPEvent {
-  originator: Originator;
-  type: string;
-  sdp: string;
+	originator: Originator;
+	type: string;
+	sdp: string;
 }
 
 export interface IceCandidateEvent {
-  candidate: RTCIceCandidate;
-  ready: VoidFunction;
+	candidate: RTCIceCandidate;
+	ready: VoidFunction;
 }
 
 export interface OutgoingEvent {
-  originator: Originator.REMOTE;
-  response: IncomingResponse;
+	originator: Originator.REMOTE;
+	response: IncomingResponse;
 }
 
 export interface OutgoingAckEvent {
-  originator: Originator.LOCAL;
+	originator: Originator.LOCAL;
 }
 
 export interface IncomingAckEvent {
-  originator: Originator.REMOTE;
-  ack: IncomingRequest;
+	originator: Originator.REMOTE;
+	ack: IncomingRequest;
 }
 
 export interface MediaStreamTypes {
-  audio?: boolean;
-  video?: boolean;
+	audio?: boolean;
+	video?: boolean;
 }
 
 // listener
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type GenericErrorListener = (error: any) => void;
 export type PeerConnectionListener = (event: PeerConnectionEvent) => void;
 export type ConnectingListener = (event: ConnectingEvent) => void;
@@ -187,7 +194,9 @@ export type OutgoingListener = (event: OutgoingEvent) => void;
 export type IncomingConfirmedListener = (event: IncomingAckEvent) => void;
 export type OutgoingConfirmedListener = (event: OutgoingAckEvent) => void;
 export type CallListener = IncomingListener | OutgoingListener;
-export type ConfirmedListener = IncomingConfirmedListener | OutgoingConfirmedListener;
+export type ConfirmedListener =
+	| IncomingConfirmedListener
+	| OutgoingConfirmedListener;
 export type EndListener = (event: EndEvent) => void;
 export type IncomingDTMFListener = (event: IncomingDTMFEvent) => void;
 export type OutgoingDTMFListener = (event: OutgoingDTMFEvent) => void;
@@ -204,107 +213,112 @@ export type SDPListener = (event: SDPEvent) => void;
 export type IceCandidateListener = (event: IceCandidateEvent) => void;
 
 export interface RTCSessionEventMap {
-  'peerconnection': PeerConnectionListener;
-  'connecting': ConnectingListener;
-  'sending': SendingListener;
-  'progress': CallListener;
-  'accepted': CallListener;
-  'confirmed': ConfirmedListener;
-  'ended': EndListener;
-  'failed': EndListener;
-  'newDTMF': DTMFListener;
-  'newInfo': InfoListener;
-  'hold': HoldListener;
-  'unhold': HoldListener;
-  'muted': MuteListener;
-  'unmuted': MuteListener;
-  'reinvite': ReInviteListener;
-  'update': UpdateListener;
-  'refer': ReferListener;
-  'replaces': ReferListener;
-  'sdp': SDPListener;
-  'icecandidate': IceCandidateListener;
-  'getusermediafailed': GenericErrorListener;
-  'peerconnection:createofferfailed': GenericErrorListener;
-  'peerconnection:createanswerfailed': GenericErrorListener;
-  'peerconnection:setlocaldescriptionfailed': GenericErrorListener;
-  'peerconnection:setremotedescriptionfailed': GenericErrorListener;
+	peerconnection: PeerConnectionListener;
+	connecting: ConnectingListener;
+	sending: SendingListener;
+	progress: CallListener;
+	accepted: CallListener;
+	confirmed: ConfirmedListener;
+	ended: EndListener;
+	failed: EndListener;
+	newDTMF: DTMFListener;
+	newInfo: InfoListener;
+	hold: HoldListener;
+	unhold: HoldListener;
+	muted: MuteListener;
+	unmuted: MuteListener;
+	reinvite: ReInviteListener;
+	update: UpdateListener;
+	refer: ReferListener;
+	replaces: ReferListener;
+	sdp: SDPListener;
+	icecandidate: IceCandidateListener;
+	getusermediafailed: GenericErrorListener;
+	'peerconnection:createofferfailed': GenericErrorListener;
+	'peerconnection:createanswerfailed': GenericErrorListener;
+	'peerconnection:setlocaldescriptionfailed': GenericErrorListener;
+	'peerconnection:setremotedescriptionfailed': GenericErrorListener;
 }
 
 declare enum SessionStatus {
-  STATUS_NULL = 0,
-  STATUS_INVITE_SENT = 1,
-  STATUS_1XX_RECEIVED = 2,
-  STATUS_INVITE_RECEIVED = 3,
-  STATUS_WAITING_FOR_ANSWER = 4,
-  STATUS_ANSWERED = 5,
-  STATUS_WAITING_FOR_ACK = 6,
-  STATUS_CANCELED = 7,
-  STATUS_TERMINATED = 8,
-  STATUS_CONFIRMED = 9
+	STATUS_NULL = 0,
+	STATUS_INVITE_SENT = 1,
+	STATUS_1XX_RECEIVED = 2,
+	STATUS_INVITE_RECEIVED = 3,
+	STATUS_WAITING_FOR_ANSWER = 4,
+	STATUS_ANSWERED = 5,
+	STATUS_WAITING_FOR_ACK = 6,
+	STATUS_CANCELED = 7,
+	STATUS_TERMINATED = 8,
+	STATUS_CONFIRMED = 9,
 }
 
 export class RTCSession extends EventEmitter {
-  constructor (ua: UA);
+	constructor(ua: UA);
 
-  static get C(): typeof SessionStatus;
+	static get C(): typeof SessionStatus;
 
-  get C(): typeof SessionStatus;
+	get C(): typeof SessionStatus;
 
-  get causes(): typeof causes;
+	get causes(): typeof causes;
 
-  get id(): string;
+	get id(): string;
 
-  set data(_data: any);
-  get data(): any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	set data(_data: any);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	get data(): any;
 
-  get connection(): RTCPeerConnectionDeprecated;
+	get connection(): RTCPeerConnectionDeprecated;
 
-  get contact(): string;
+	get contact(): string;
 
-  get direction(): SessionDirection;
+	get direction(): SessionDirection;
 
-  get local_identity(): NameAddrHeader;
+	get local_identity(): NameAddrHeader;
 
-  get remote_identity(): NameAddrHeader;
+	get remote_identity(): NameAddrHeader;
 
-  get start_time(): Date;
+	get start_time(): Date;
 
-  get end_time(): Date;
+	get end_time(): Date;
 
-  get status(): SessionStatus;
+	get status(): SessionStatus;
 
-  isInProgress(): boolean;
+	isInProgress(): boolean;
 
-  isEstablished(): boolean;
+	isEstablished(): boolean;
 
-  isEnded(): boolean;
+	isEnded(): boolean;
 
-  isReadyToReOffer(): boolean;
+	isReadyToReOffer(): boolean;
 
-  answer(options?: AnswerOptions): void;
+	answer(options?: AnswerOptions): void;
 
-  terminate(options?: TerminateOptions): void;
+	terminate(options?: TerminateOptions): void;
 
-  sendDTMF(tones: string | number, options?: DTMFOptions): void;
+	sendDTMF(tones: string | number, options?: DTMFOptions): void;
 
-  sendInfo(contentType: string, body?: string, options?: ExtraHeaders): void;
+	sendInfo(contentType: string, body?: string, options?: ExtraHeaders): void;
 
-  hold(options?: HoldOptions, done?: VoidFunction): boolean;
+	hold(options?: HoldOptions, done?: VoidFunction): boolean;
 
-  unhold(options?: HoldOptions, done?: VoidFunction): boolean;
+	unhold(options?: HoldOptions, done?: VoidFunction): boolean;
 
-  renegotiate(options?: RenegotiateOptions, done?: VoidFunction): boolean;
+	renegotiate(options?: RenegotiateOptions, done?: VoidFunction): boolean;
 
-  isOnHold(): OnHoldResult;
+	isOnHold(): OnHoldResult;
 
-  mute(options?: MediaStreamTypes): void;
+	mute(options?: MediaStreamTypes): void;
 
-  unmute(options?: MediaStreamTypes): void;
+	unmute(options?: MediaStreamTypes): void;
 
-  isMuted(): MediaStreamTypes;
+	isMuted(): MediaStreamTypes;
 
-  refer(target: string | URI, options?: ReferOptions): void;
+	refer(target: string | URI, options?: ReferOptions): void;
 
-  on<T extends keyof RTCSessionEventMap>(type: T, listener: RTCSessionEventMap[T]): this;
+	on<T extends keyof RTCSessionEventMap>(
+		type: T,
+		listener: RTCSessionEventMap[T]
+	): this;
 }

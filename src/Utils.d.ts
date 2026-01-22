@@ -1,5 +1,5 @@
-import {URI} from './URI'
-import {causes} from './Constants'
+import { URI } from './URI';
+import { causes } from './Constants';
 
 export function str_utf8_length(str: string): number;
 
@@ -9,6 +9,7 @@ export function isDecimal(num: unknown): num is number;
 
 export function isEmpty(value: unknown): boolean;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function hasMethods(obj: any, ...methodNames: string[]): boolean;
 
 export function newTag(): string;
@@ -19,7 +20,10 @@ export function hostType(host: string): string;
 
 export function escapeUser(user: string): string;
 
-export function normalizeTarget(target: URI | string, domain?: string): URI | undefined;
+export function normalizeTarget(
+	target: URI | string,
+	domain?: string
+): URI | undefined;
 
 export function headerize(str: string): string;
 

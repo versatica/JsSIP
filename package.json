@@ -1,56 +1,61 @@
 {
-  "name": "jssip",
-  "title": "JsSIP",
-  "description": "The Javascript SIP library",
-  "version": "3.12.0",
-  "homepage": "https://jssip.net",
-  "contributors": [
-    "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
-    "Iñaki Baz Castillo <ibc@aliax.net> (https://inakibaz.me)"
-  ],
-  "types": "src/JsSIP.d.ts",
-  "main": "src/JsSIP.js",
-  "keywords": [
-    "sip",
-    "websocket",
-    "webrtc",
-    "node",
-    "browser",
-    "library"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/versatica/JsSIP.git"
-  },
-  "bugs": {
-    "url": "https://github.com/versatica/JsSIP/issues"
-  },
-  "scripts": {
-    "lint": "node npm-scripts.js lint",
-    "test": "node npm-scripts.js test",
-    "build": "node npm-scripts.js build",
-    "typescript:build": "node npm-scripts.js typescript:build",
-    "release": "node npm-scripts.js release"
-  },
-  "dependencies": {
-    "debug": "^4.3.1",
-    "events": "^3.3.0",
-    "sdp-transform": "^2.14.1"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3.3.3",
-    "@eslint/js": "^9.39.2",
-    "@types/debug": "^4.1.12",
-    "@types/events": "^3.0.3",
-    "@types/node": "^25.0.10",
-    "cpx": "^1.5.0",
-    "esbuild": "^0.27.2",
-    "eslint": "^9.39.1",
-    "eslint-plugin-jest": "^29.12.1",
-    "globals": "^17.0.0",
-    "jest": "^30.2.0",
-    "pegjs": "^0.7.0",
-    "typescript": "^5.9.3"
-  }
+	"name": "jssip",
+	"title": "JsSIP",
+	"description": "The Javascript SIP library",
+	"version": "3.12.0",
+	"homepage": "https://jssip.net",
+	"contributors": [
+		"José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
+		"Iñaki Baz Castillo <ibc@aliax.net> (https://inakibaz.me)"
+	],
+	"types": "src/JsSIP.d.ts",
+	"main": "src/JsSIP.js",
+	"keywords": [
+		"sip",
+		"websocket",
+		"webrtc",
+		"node",
+		"browser",
+		"library"
+	],
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/versatica/JsSIP.git"
+	},
+	"bugs": {
+		"url": "https://github.com/versatica/JsSIP/issues"
+	},
+	"scripts": {
+		"lint": "node npm-scripts.mjs lint",
+		"lint:fix": "node npm-scripts.mjs lint:fix",
+		"test": "node npm-scripts.mjs test",
+		"build": "node npm-scripts.mjs build",
+		"typescript:build": "node npm-scripts.mjs typescript:build",
+		"release": "node npm-scripts.js release"
+	},
+	"dependencies": {
+		"debug": "^4.3.1",
+		"events": "^3.3.0",
+		"sdp-transform": "^2.14.1"
+	},
+	"devDependencies": {
+		"@eslint/eslintrc": "^3.3.3",
+		"@eslint/js": "^9.39.2",
+		"@types/debug": "^4.1.12",
+		"@types/events": "^3.0.3",
+		"@types/node": "^25.0.10",
+		"cpx": "^1.5.0",
+		"esbuild": "^0.27.2",
+		"eslint": "^9.39.1",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-jest": "^29.12.1",
+		"eslint-plugin-prettier": "^5.5.5",
+		"globals": "^17.0.0",
+		"jest": "^30.2.0",
+		"pegjs": "^0.7.0",
+		"prettier": "^3.8.1",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.53.1"
+	}
 }
