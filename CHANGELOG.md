@@ -3,7 +3,9 @@ CHANGELOG
 
 ### NEXT RELEASE
 
+### 3.12.0
 * Modernize eslint.
+* SIP-Specific Event Notification (RFC 6665) (#711). Credits to @ikq and @orgads.
 
 
 ### 3.11.1
