@@ -3,6 +3,8 @@ const Logger = require('./Logger');
 const JsSIP_C = require('./Constants');
 const Registrator = require('./Registrator');
 const RTCSession = require('./RTCSession');
+const Subscriber = require('./Subscriber');
+const Notifier = require('./Notifier');
 const Message = require('./Message');
 const Options = require('./Options');
 const Transactions = require('./Transactions');
@@ -260,6 +262,26 @@ module.exports = class UA extends EventEmitter
     message.send(target, body, options);
 
     return message;
+  }
+
+  /**
+   * Create subscriber instance
+   */
+  subscribe(target, eventName, accept, options)
+  {
+    logger.debug('subscribe()');
+
+    return new Subscriber(this, target, eventName, accept, options);
+  }
+
+  /**
+   * Create notifier instance
+   */
+  notify(subscribe, contentType, options)
+  {
+    logger.debug('notify()');
+
+    return new Notifier(this, subscribe, contentType, options);
   }
 
   /**
@@ -647,6 +669,15 @@ module.exports = class UA extends EventEmitter
 
       message.init_incoming(request);
     }
+    else if (method === JsSIP_C.SUBSCRIBE)
+    {
+      if (this.listeners('newSubscribe').length === 0)
+      {
+        request.reply(405);
+
+        return;
+      }
+    }
     else if (method === JsSIP_C.INVITE)
     {
       // Initial INVITE.
@@ -732,6 +763,15 @@ module.exports = class UA extends EventEmitter
             request
           });
           request.reply(200);
+          break;
+        case JsSIP_C.SUBSCRIBE:
+          Notifier.init_incoming(request, () =>
+          {
+            this.emit('newSubscribe', {
+              event : request.event,
+              request
+            });
+          });
           break;
         default:
           request.reply(405);
