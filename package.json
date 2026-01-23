@@ -8,8 +8,8 @@
 		"José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
 		"Iñaki Baz Castillo <ibc@aliax.net> (https://inakibaz.me)"
 	],
-	"types": "src/JsSIP.d.ts",
-	"main": "src/JsSIP.js",
+	"types": "lib/JsSIP.d.ts",
+	"main": "lib/JsSIP.js",
 	"keywords": [
 		"sip",
 		"websocket",
@@ -26,6 +26,12 @@
 	"bugs": {
 		"url": "https://github.com/versatica/JsSIP/issues"
 	},
+	"files": [
+		"LICENSE",
+		"README.md",
+		"npm-scripts.mjs",
+		"lib"
+	],
 	"scripts": {
 		"lint": "node npm-scripts.mjs lint",
 		"lint:fix": "node npm-scripts.mjs lint:fix",
