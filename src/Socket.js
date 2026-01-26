@@ -23,65 +23,49 @@ const logger = new Logger('Socket');
  *
  */
 
-exports.isSocket = (socket) =>
-{
-  // Ignore if an array is given.
-  if (Array.isArray(socket))
-  {
-    return false;
-  }
+exports.isSocket = socket => {
+	// Ignore if an array is given.
+	if (Array.isArray(socket)) {
+		return false;
+	}
 
-  if (typeof socket === 'undefined')
-  {
-    logger.warn('undefined JsSIP.Socket instance');
+	if (typeof socket === 'undefined') {
+		logger.warn('undefined JsSIP.Socket instance');
 
-    return false;
-  }
+		return false;
+	}
 
-  // Check Properties.
-  try
-  {
-    if (!Utils.isString(socket.url))
-    {
-      logger.warn('missing or invalid JsSIP.Socket url property');
-      throw new Error('Missing or invalid JsSIP.Socket url property');
-    }
+	// Check Properties.
+	try {
+		if (!Utils.isString(socket.url)) {
+			logger.warn('missing or invalid JsSIP.Socket url property');
+			throw new Error('Missing or invalid JsSIP.Socket url property');
+		}
 
-    if (!Utils.isString(socket.via_transport))
-    {
-      logger.warn('missing or invalid JsSIP.Socket via_transport property');
-      throw new Error('Missing or invalid JsSIP.Socket via_transport property');
-    }
+		if (!Utils.isString(socket.via_transport)) {
+			logger.warn('missing or invalid JsSIP.Socket via_transport property');
+			throw new Error('Missing or invalid JsSIP.Socket via_transport property');
+		}
 
-    if (Grammar.parse(socket.sip_uri, 'SIP_URI') === -1)
-    {
-      logger.warn('missing or invalid JsSIP.Socket sip_uri property');
-      throw new Error('missing or invalid JsSIP.Socket sip_uri property');
-    }
-  }
-  // eslint-disable-next-line no-unused-vars
-  catch (error)
-  {
-    return false;
-  }
+		if (Grammar.parse(socket.sip_uri, 'SIP_URI') === -1) {
+			logger.warn('missing or invalid JsSIP.Socket sip_uri property');
+			throw new Error('missing or invalid JsSIP.Socket sip_uri property');
+		}
+	} catch (error) {
+		return false;
+	}
 
-  // Check Methods.
-  try
-  {
-    [ 'connect', 'disconnect', 'send' ].forEach((method) =>
-    {
-      if (!Utils.isFunction(socket[method]))
-      {
-        logger.warn(`missing or invalid JsSIP.Socket method: ${method}`);
-        throw new Error(`Missing or invalid JsSIP.Socket method: ${method}`);
-      }
-    });
-  }
-  // eslint-disable-next-line no-unused-vars
-  catch (error)
-  {
-    return false;
-  }
+	// Check Methods.
+	try {
+		['connect', 'disconnect', 'send'].forEach(method => {
+			if (!Utils.isFunction(socket[method])) {
+				logger.warn(`missing or invalid JsSIP.Socket method: ${method}`);
+				throw new Error(`Missing or invalid JsSIP.Socket method: ${method}`);
+			}
+		});
+	} catch (error) {
+		return false;
+	}
 
-  return true;
+	return true;
 };

@@ -16,17 +16,21 @@ debug('version %s', pkg.version);
  * Expose the JsSIP module.
  */
 module.exports = {
-  C,
-  Exceptions,
-  Utils,
-  UA,
-  URI,
-  NameAddrHeader,
-  WebSocketInterface,
-  Grammar,
-  RTCSession,
-  // Expose the debug module.
-  debug : require('debug'),
-  get name() { return pkg.title; },
-  get version() { return pkg.version; }
+	C,
+	Exceptions,
+	Utils,
+	UA,
+	URI,
+	NameAddrHeader,
+	WebSocketInterface,
+	Grammar,
+	RTCSession,
+	// Expose the debug module.
+	debug: require('debug'),
+	get name() {
+		return pkg.title;
+	},
+	get version() {
+		return pkg.version;
+	},
 };

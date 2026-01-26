@@ -8,273 +8,246 @@ const Exceptions = require('./Exceptions');
 
 const logger = new Logger('Options');
 
-module.exports = class Options extends EventEmitter
-{
-  constructor(ua)
-  {
-    super();
+module.exports = class Options extends EventEmitter {
+	constructor(ua) {
+		super();
 
-    this._ua = ua;
-    this._request = null;
-    this._closed = false;
+		this._ua = ua;
+		this._request = null;
+		this._closed = false;
 
-    this._direction = null;
-    this._local_identity = null;
-    this._remote_identity = null;
+		this._direction = null;
+		this._local_identity = null;
+		this._remote_identity = null;
 
-    // Whether an incoming message has been replied.
-    this._is_replied = false;
+		// Whether an incoming message has been replied.
+		this._is_replied = false;
 
-    // Custom message empty object for high level use.
-    this._data = {};
-  }
+		// Custom message empty object for high level use.
+		this._data = {};
+	}
 
-  get direction()
-  {
-    return this._direction;
-  }
+	get direction() {
+		return this._direction;
+	}
 
-  get local_identity()
-  {
-    return this._local_identity;
-  }
+	get local_identity() {
+		return this._local_identity;
+	}
 
-  get remote_identity()
-  {
-    return this._remote_identity;
-  }
+	get remote_identity() {
+		return this._remote_identity;
+	}
 
-  send(target, body, options = {})
-  {
-    const originalTarget = target;
+	send(target, body, options = {}) {
+		const originalTarget = target;
 
-    if (target === undefined)
-    {
-      throw new TypeError('A target is required for OPTIONS');
-    }
+		if (target === undefined) {
+			throw new TypeError('A target is required for OPTIONS');
+		}
 
-    // Check target validity.
-    target = this._ua.normalizeTarget(target);
-    if (!target)
-    {
-      throw new TypeError(`Invalid target: ${originalTarget}`);
-    }
+		// Check target validity.
+		target = this._ua.normalizeTarget(target);
+		if (!target) {
+			throw new TypeError(`Invalid target: ${originalTarget}`);
+		}
 
-    // Get call options.
-    const extraHeaders = Utils.cloneArray(options.extraHeaders);
-    const eventHandlers = Utils.cloneObject(options.eventHandlers);
-    const contentType = options.contentType || 'application/sdp';
+		// Get call options.
+		const extraHeaders = Utils.cloneArray(options.extraHeaders);
+		const eventHandlers = Utils.cloneObject(options.eventHandlers);
+		const contentType = options.contentType || 'application/sdp';
 
-    // Set event handlers.
-    for (const event in eventHandlers)
-    {
-      if (Object.prototype.hasOwnProperty.call(eventHandlers, event))
-      {
-        this.on(event, eventHandlers[event]);
-      }
-    }
+		// Set event handlers.
+		for (const event in eventHandlers) {
+			if (Object.prototype.hasOwnProperty.call(eventHandlers, event)) {
+				this.on(event, eventHandlers[event]);
+			}
+		}
 
-    extraHeaders.push(`Content-Type: ${contentType}`);
+		extraHeaders.push(`Content-Type: ${contentType}`);
 
-    this._request = new SIPMessage.OutgoingRequest(
-      JsSIP_C.OPTIONS, target, this._ua, null, extraHeaders);
+		this._request = new SIPMessage.OutgoingRequest(
+			JsSIP_C.OPTIONS,
+			target,
+			this._ua,
+			null,
+			extraHeaders
+		);
 
-    if (body)
-    {
-      this._request.body = body;
-    }
+		if (body) {
+			this._request.body = body;
+		}
 
-    const request_sender = new RequestSender(this._ua, this._request, {
-      onRequestTimeout : () =>
-      {
-        this._onRequestTimeout();
-      },
-      onTransportError : () =>
-      {
-        this._onTransportError();
-      },
-      onReceiveResponse : (response) =>
-      {
-        this._receiveResponse(response);
-      }
-    });
+		const request_sender = new RequestSender(this._ua, this._request, {
+			onRequestTimeout: () => {
+				this._onRequestTimeout();
+			},
+			onTransportError: () => {
+				this._onTransportError();
+			},
+			onReceiveResponse: response => {
+				this._receiveResponse(response);
+			},
+		});
 
-    this._newOptions('local', this._request);
+		this._newOptions('local', this._request);
 
-    request_sender.send();
-  }
+		request_sender.send();
+	}
 
-  init_incoming(request)
-  {
-    this._request = request;
+	init_incoming(request) {
+		this._request = request;
 
-    this._newOptions('remote', request);
+		this._newOptions('remote', request);
 
-    // Reply with a 200 OK if the user didn't reply.
-    if (!this._is_replied)
-    {
-      this._is_replied = true;
-      request.reply(200);
-    }
+		// Reply with a 200 OK if the user didn't reply.
+		if (!this._is_replied) {
+			this._is_replied = true;
+			request.reply(200);
+		}
 
-    this._close();
-  }
+		this._close();
+	}
 
-  /**
-   * Accept the incoming Options
-   * Only valid for incoming Options
-   */
-  accept(options = {})
-  {
-    const extraHeaders = Utils.cloneArray(options.extraHeaders);
-    const body = options.body;
+	/**
+	 * Accept the incoming Options
+	 * Only valid for incoming Options
+	 */
+	accept(options = {}) {
+		const extraHeaders = Utils.cloneArray(options.extraHeaders);
+		const body = options.body;
 
-    if (this._direction !== 'incoming')
-    {
-      throw new Exceptions.NotSupportedError('"accept" not supported for outgoing Options');
-    }
+		if (this._direction !== 'incoming') {
+			throw new Exceptions.NotSupportedError(
+				'"accept" not supported for outgoing Options'
+			);
+		}
 
-    if (this._is_replied)
-    {
-      throw new Error('incoming Options already replied');
-    }
+		if (this._is_replied) {
+			throw new Error('incoming Options already replied');
+		}
 
-    this._is_replied = true;
-    this._request.reply(200, null, extraHeaders, body);
-  }
+		this._is_replied = true;
+		this._request.reply(200, null, extraHeaders, body);
+	}
 
-  /**
-   * Reject the incoming Options
-   * Only valid for incoming Options
-   */
-  reject(options = {})
-  {
-    const status_code = options.status_code || 480;
-    const reason_phrase = options.reason_phrase;
-    const extraHeaders = Utils.cloneArray(options.extraHeaders);
-    const body = options.body;
+	/**
+	 * Reject the incoming Options
+	 * Only valid for incoming Options
+	 */
+	reject(options = {}) {
+		const status_code = options.status_code || 480;
+		const reason_phrase = options.reason_phrase;
+		const extraHeaders = Utils.cloneArray(options.extraHeaders);
+		const body = options.body;
 
-    if (this._direction !== 'incoming')
-    {
-      throw new Exceptions.NotSupportedError('"reject" not supported for outgoing Options');
-    }
+		if (this._direction !== 'incoming') {
+			throw new Exceptions.NotSupportedError(
+				'"reject" not supported for outgoing Options'
+			);
+		}
 
-    if (this._is_replied)
-    {
-      throw new Error('incoming Options already replied');
-    }
+		if (this._is_replied) {
+			throw new Error('incoming Options already replied');
+		}
 
-    if (status_code < 300 || status_code >= 700)
-    {
-      throw new TypeError(`Invalid status_code: ${status_code}`);
-    }
+		if (status_code < 300 || status_code >= 700) {
+			throw new TypeError(`Invalid status_code: ${status_code}`);
+		}
 
-    this._is_replied = true;
-    this._request.reply(status_code, reason_phrase, extraHeaders, body);
-  }
+		this._is_replied = true;
+		this._request.reply(status_code, reason_phrase, extraHeaders, body);
+	}
 
-  _receiveResponse(response)
-  {
-    if (this._closed)
-    {
-      return;
-    }
-    switch (true)
-    {
-      case /^1[0-9]{2}$/.test(response.status_code):
-        // Ignore provisional responses.
-        break;
+	_receiveResponse(response) {
+		if (this._closed) {
+			return;
+		}
+		switch (true) {
+			case /^1[0-9]{2}$/.test(response.status_code): {
+				// Ignore provisional responses.
+				break;
+			}
 
-      case /^2[0-9]{2}$/.test(response.status_code):
-        this._succeeded('remote', response);
-        break;
+			case /^2[0-9]{2}$/.test(response.status_code): {
+				this._succeeded('remote', response);
+				break;
+			}
 
-      default:
-      {
-        const cause = Utils.sipErrorCause(response.status_code);
+			default: {
+				const cause = Utils.sipErrorCause(response.status_code);
 
-        this._failed('remote', response, cause);
-        break;
-      }
-    }
-  }
+				this._failed('remote', response, cause);
+				break;
+			}
+		}
+	}
 
-  _onRequestTimeout()
-  {
-    if (this._closed)
-    {
-      return;
-    }
-    this._failed('system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
-  }
+	_onRequestTimeout() {
+		if (this._closed) {
+			return;
+		}
+		this._failed('system', null, JsSIP_C.causes.REQUEST_TIMEOUT);
+	}
 
-  _onTransportError()
-  {
-    if (this._closed)
-    {
-      return;
-    }
-    this._failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
-  }
+	_onTransportError() {
+		if (this._closed) {
+			return;
+		}
+		this._failed('system', null, JsSIP_C.causes.CONNECTION_ERROR);
+	}
 
-  _close()
-  {
-    this._closed = true;
-    this._ua.destroyMessage(this);
-  }
+	_close() {
+		this._closed = true;
+		this._ua.destroyMessage(this);
+	}
 
-  /**
-   * Internal Callbacks
-   */
+	/**
+	 * Internal Callbacks
+	 */
 
-  _newOptions(originator, request)
-  {
-    if (originator === 'remote')
-    {
-      this._direction = 'incoming';
-      this._local_identity = request.to;
-      this._remote_identity = request.from;
-    }
-    else if (originator === 'local')
-    {
-      this._direction = 'outgoing';
-      this._local_identity = request.from;
-      this._remote_identity = request.to;
-    }
+	_newOptions(originator, request) {
+		if (originator === 'remote') {
+			this._direction = 'incoming';
+			this._local_identity = request.to;
+			this._remote_identity = request.from;
+		} else if (originator === 'local') {
+			this._direction = 'outgoing';
+			this._local_identity = request.from;
+			this._remote_identity = request.to;
+		}
 
-    this._ua.newOptions(this, {
-      originator,
-      message : this,
-      request
-    });
-  }
+		this._ua.newOptions(this, {
+			originator,
+			message: this,
+			request,
+		});
+	}
 
-  _failed(originator, response, cause)
-  {
-    logger.debug('OPTIONS failed');
+	_failed(originator, response, cause) {
+		logger.debug('OPTIONS failed');
 
-    this._close();
+		this._close();
 
-    logger.debug('emit "failed"');
+		logger.debug('emit "failed"');
 
-    this.emit('failed', {
-      originator,
-      response : response || null,
-      cause
-    });
-  }
+		this.emit('failed', {
+			originator,
+			response: response || null,
+			cause,
+		});
+	}
 
-  _succeeded(originator, response)
-  {
-    logger.debug('OPTIONS succeeded');
+	_succeeded(originator, response) {
+		logger.debug('OPTIONS succeeded');
 
-    this._close();
+		this._close();
 
-    logger.debug('emit "succeeded"');
+		logger.debug('emit "succeeded"');
 
-    this.emit('succeeded', {
-      originator,
-      response
-    });
-  }
+		this.emit('succeeded', {
+			originator,
+			response,
+		});
+	}
 };
