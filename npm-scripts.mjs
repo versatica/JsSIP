@@ -50,6 +50,7 @@ async function run() {
 		}
 
 		case 'build': {
+			buildTypescript();
 			await build(true /* minify */);
 			await build(false /* minify */);
 
@@ -125,7 +126,7 @@ function grammar() {
 
 // Build sources into a file for publishing.
 async function build(minify = true) {
-	const entry = path.resolve('src/JsSIP.js');
+	const entry = path.resolve('lib/JsSIP.js');
 	const outfile = path.resolve('./dist', `jssip${minify ? '.min' : ''}.js`);
 	const banner = `
  /*
