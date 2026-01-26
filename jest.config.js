@@ -1,3 +1,3 @@
 module.exports = {
-	testRegex: 'test/test-.*\\.js',
+	testRegex: 'src/test/test-.*\\.js',
 };

@@ -1,5 +1,5 @@
 require('./include/common');
-const JsSIP = require('../');
+const JsSIP = require('../..');
 
 describe('URI Tests', () => {
 	test('new URI', () => {

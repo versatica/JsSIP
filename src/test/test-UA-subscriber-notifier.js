@@ -1,5 +1,5 @@
 require('./include/common');
-const JsSIP = require('../');
+const JsSIP = require('../..');
 const LoopSocket = require('./include/loopSocket');
 
 describe('subscriber/notifier communication', () => {

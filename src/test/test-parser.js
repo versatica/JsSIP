@@ -1,7 +1,7 @@
 require('./include/common');
-const JsSIP = require('../');
+const JsSIP = require('../..');
 const testUA = require('./include/testUA');
-const Parser = require('../src/Parser');
+const Parser = require('../Parser');
 
 describe('parser', () => {
 	test('parse URI', () => {
@@ -405,8 +405,8 @@ describe('parser', () => {
 	});
 
 	test('parse message', () => {
+		// eslint-disable-next-line no-multi-str
 		const data =
-			// eslint-disable-next-line no-multi-str
 			'INVITE sip:bob@biloxi.com SIP/2.0\r\n\
 Via: SIP/2.0/TCP useragent.cisco.com;branch=z9hG4bK-a111\r\n\
 To: <sip:bob@biloxi.com>\r\n\
