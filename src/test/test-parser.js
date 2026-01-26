@@ -1,7 +1,7 @@
 require('./include/common');
-const JsSIP = require('../');
+const JsSIP = require('../..');
 const testUA = require('./include/testUA');
-const Parser = require('../src/Parser');
+const Parser = require('../Parser');
 
 describe('parser', () => {
 	test('parse URI', () => {

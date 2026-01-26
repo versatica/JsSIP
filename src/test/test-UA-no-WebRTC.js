@@ -2,7 +2,7 @@
 
 require('./include/common');
 const testUA = require('./include/testUA');
-const JsSIP = require('../');
+const JsSIP = require('../..');
 
 describe('UA No WebRTC', () => {
 	test('UA wrong configuration', () => {

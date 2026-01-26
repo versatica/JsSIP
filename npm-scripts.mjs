@@ -14,7 +14,6 @@ const ESLINT_PATHS = [
 	// "jest.config.mjs",
 	'npm-scripts.mjs',
 	'src',
-	'test',
 ].join(' ');
 
 // Paths for ESLint to ignore. Converted to string argument for convenience.
