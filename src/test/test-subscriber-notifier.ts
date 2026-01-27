@@ -5,10 +5,25 @@ import LoopSocket from './include/LoopSocket';
 const JsSIP = require('../JsSIP.js');
 const { UA } = JsSIP;
 
+const enum STEP {
+	INIT = 0,
+	SOCKET_CONNECTED = 1,
+	SUBSCRIBE_SENT = 2,
+	UA_ON_NEWSUBSCRIBE = 3,
+	NOTIFIER_ON_SUBSCRIBE = 4,
+	SUBSCRIBER_ON_ACCEPTED = 5,
+	SUBSCRIBER_ON_ACTIVE = 6,
+	SUBSCRIBER_ON_NOTIFY_1 = 7,
+	NOTIFIER_ON_UNSUBSCRIBE = 8,
+	NOTIFIER_TERMINATED = 9,
+	SUBSCRIBER_ON_NOTIFY_2 = 10,
+	SUBSCRIBER_TERMINATED = 11,
+}
+
 describe('subscriber/notifier communication', () => {
 	test('should handle subscriber/notifier communication', () =>
 		new Promise<void>(resolve => {
-			let eventSequence = 0;
+			let step = STEP.INIT;
 
 			const TARGET = 'ikq';
 			const REQUEST_URI = 'sip:ikq@example.com';
@@ -35,7 +50,7 @@ describe('subscriber/notifier communication', () => {
 
 				subscriber.on('active', () => {
 					// 'receive notify with subscription-state: active'
-					expect(++eventSequence).toBe(6);
+					expect(++step).toBe(STEP.SUBSCRIBER_ON_ACTIVE);
 				});
 
 				subscriber.on(
@@ -50,9 +65,12 @@ describe('subscriber/notifier communication', () => {
 						body?: string,
 						contType?: string
 					) => {
-						eventSequence++;
+						step++;
 						// 'receive notify'
-						expect(eventSequence === 7 || eventSequence === 11).toBe(true);
+						expect(
+							step === STEP.SUBSCRIBER_ON_NOTIFY_1 ||
+								step === STEP.SUBSCRIBER_ON_NOTIFY_2
+						).toBe(true);
 
 						expect(notify.method).toBe('NOTIFY');
 						expect(notify.getHeader('contact')).toBe(`<${CONTACT_URI}>`); // 'notify contact'
@@ -68,9 +86,7 @@ describe('subscriber/notifier communication', () => {
 						).toBe(true); // 'notify subscription-state'
 
 						// After receiving the first notify, send un-subscribe.
-						if (eventSequence === 7) {
-							++eventSequence; // 'send un-subscribe'
-
+						if (step === STEP.SUBSCRIBER_ON_NOTIFY_1) {
 							subscriber.terminate(WEATHER_REQUEST);
 						}
 					}
@@ -83,7 +99,7 @@ describe('subscriber/notifier communication', () => {
 						reason: string | undefined,
 						retryAfter: number | undefined
 					) => {
-						expect(++eventSequence).toBe(12); // 'subscriber terminated'
+						expect(++step).toBe(STEP.SUBSCRIBER_TERMINATED);
 						expect(terminationCode).toBe(subscriber.C.FINAL_NOTIFY_RECEIVED);
 						expect(reason).toBeUndefined();
 						expect(retryAfter).toBeUndefined();
@@ -93,12 +109,12 @@ describe('subscriber/notifier communication', () => {
 				);
 
 				subscriber.on('accepted', () => {
-					expect(++eventSequence).toBe(5); // 'initial subscribe accepted'
+					expect(++step).toBe(STEP.SUBSCRIBER_ON_ACCEPTED);
 				});
 
-				expect(++eventSequence).toBe(2); // 'send subscribe'
-
 				subscriber.subscribe(WEATHER_REQUEST);
+
+				expect(++step).toBe(STEP.SUBSCRIBE_SENT);
 			}
 
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,7 +136,11 @@ describe('subscriber/notifier communication', () => {
 						expect(body).toBe(WEATHER_REQUEST); // 'subscribe body'
 						expect(contType).toBe(CONTENT_TYPE); // 'subscribe content-type'
 
-						expect(++eventSequence).toBe(isUnsubscribe ? 9 : 4);
+						expect(++step).toBe(
+							isUnsubscribe
+								? STEP.NOTIFIER_ON_UNSUBSCRIBE
+								: STEP.NOTIFIER_ON_SUBSCRIBE
+						);
 						if (isUnsubscribe) {
 							// 'send final notify'
 							notifier.terminate(WEATHER_REPORT);
@@ -137,7 +157,7 @@ describe('subscriber/notifier communication', () => {
 				});
 
 				notifier.on('terminated', () => {
-					expect(++eventSequence).toBe(10); // 'notifier terminated'
+					expect(++step).toBe(STEP.NOTIFIER_TERMINATED);
 				});
 
 				notifier.start();
@@ -158,7 +178,7 @@ describe('subscriber/notifier communication', () => {
 
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			ua.on('newSubscribe', (e: any) => {
-				expect(++eventSequence).toBe(3); // 'receive initial subscribe'
+				expect(++step).toBe(STEP.UA_ON_NEWSUBSCRIBE);
 
 				const subs = e.request;
 				const ev = subs.parseHeader('event');
@@ -187,7 +207,7 @@ describe('subscriber/notifier communication', () => {
 			});
 
 			ua.on('connected', () => {
-				expect(++eventSequence).toBe(1); // 'socket connected'
+				expect(++step).toBe(STEP.SOCKET_CONNECTED);
 
 				createSubscriber(ua);
 			});
