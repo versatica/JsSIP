@@ -36,6 +36,7 @@
 		"lint": "node npm-scripts.mjs lint",
 		"lint:fix": "node npm-scripts.mjs lint:fix",
 		"test": "node npm-scripts.mjs test",
+		"coverage": "node npm-scripts.mjs coverage",
 		"build": "node npm-scripts.mjs build",
 		"typescript:build": "node npm-scripts.mjs typescript:build",
 		"release": "node npm-scripts.js release"
@@ -50,6 +51,7 @@
 		"@eslint/js": "^9.39.2",
 		"@types/debug": "^4.1.12",
 		"@types/events": "^3.0.3",
+		"@types/jest": "^30.0.0",
 		"@types/node": "^25.0.10",
 		"cpx": "^1.5.0",
 		"esbuild": "^0.27.2",
@@ -59,8 +61,10 @@
 		"eslint-plugin-prettier": "^5.5.5",
 		"globals": "^17.0.0",
 		"jest": "^30.2.0",
+		"open-cli": "^8.0.0",
 		"pegjs": "^0.7.0",
 		"prettier": "^3.8.1",
+		"ts-jest": "^29.4.6",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.1"
 	}

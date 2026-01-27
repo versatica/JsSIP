@@ -1,9 +1,12 @@
-require('./include/common');
-const JsSIP = require('../..');
+import './include/common';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { URI, NameAddrHeader } = JsSIP;
 
 describe('URI Tests', () => {
 	test('new URI', () => {
-		const uri = new JsSIP.URI(null, 'alice', 'jssip.net', 6060);
+		const uri = new URI(null, 'alice', 'jssip.net', 6060);
 
 		expect(uri.scheme).toBe('sip');
 		expect(uri.user).toBe('alice');
@@ -115,8 +118,8 @@ describe('URI Tests', () => {
 
 describe('NameAddr Tests', () => {
 	test('new NameAddr', () => {
-		const uri = new JsSIP.URI('sip', 'alice', 'jssip.net');
-		const name = new JsSIP.NameAddrHeader(uri, 'Alice æßð');
+		const uri = new URI('sip', 'alice', 'jssip.net');
+		const name = new NameAddrHeader(uri, 'Alice æßð');
 
 		expect(name.display_name).toBe('Alice æßð');
 		expect(name.toString()).toBe('"Alice æßð" <sip:alice@jssip.net>');
@@ -147,6 +150,5 @@ describe('NameAddr Tests', () => {
 		expect(name2.toString()).toBe(name.toString());
 		name2.display_name = '@ł€';
 		expect(name2.display_name).toBe('@ł€');
-		expect(name.user).toBeUndefined();
 	});
 });

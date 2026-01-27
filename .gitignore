@@ -1,3 +1,9 @@
+## Node.
 /node_modules
 /lib
 /dist
+
+## Others.
+/docs
+/coverage
+/.cache

@@ -1,5 +1,6 @@
-require('./include/common');
-const DigestAuthentication = require('../DigestAuthentication.js');
+import './include/common';
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+const DigestAuthentication: any = require('../DigestAuthentication.js');
 
 // Results of this tests originally obtained from RFC 2617 and:
 // 'https://pernau.at/kd/sipdigest.php'

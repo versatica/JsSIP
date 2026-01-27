@@ -1,18 +1,20 @@
-/* eslint no-console: 0*/
+/* eslint no-console: 0 */
 
 // Show uncaught errors.
-process.on('uncaughtException', function (error) {
+process.on('uncaughtException', function (error: Error) {
 	console.error('uncaught exception:');
 	console.error(error.stack);
 	process.exit(1);
 });
 
 // Define global.WebSocket.
-global.WebSocket = function () {
+(globalThis as Record<string, unknown>)['WebSocket'] = function (this: {
+	close: () => void;
+}) {
 	this.close = function () {};
 };
 
 // Define global.navigator for bowser module.
-global.navigator = {
+(globalThis as Record<string, unknown>)['navigator'] = {
 	userAgent: '',
 };

@@ -6,6 +6,7 @@
   - Modernize eslint.
   - Use prettier.
   - Prepare environment for TS.
+- Rewrite tests to TS (#958).
 
 ### 3.12.0
 
