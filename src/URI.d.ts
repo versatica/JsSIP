@@ -21,7 +21,7 @@ export class URI {
 		headers?: Headers
 	);
 
-	setParam(key: string, value?: string): void;
+	setParam(key: string, value?: string | number | null): void;
 
 	getParam<T = unknown>(key: string): T;
 
@@ -45,7 +45,7 @@ export class URI {
 
 	toString(): string;
 
-	toAor(): string;
+	toAor(show_port?: boolean): string;
 
 	static parse(uri: string): Grammar | undefined;
 }

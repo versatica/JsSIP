@@ -1,21 +1,22 @@
 // LoopSocket send message itself.
 // Used P2P logic: message call-id is modified in each leg.
-module.exports = class LoopSocket {
-	constructor() {
-		this.url = 'ws://localhost:12345';
-		this.via_transport = 'WS';
-		this.sip_uri = 'sip:localhost:12345;transport=ws';
-	}
 
-	connect() {
+import type { Socket } from '../../Socket';
+
+export default class LoopSocket implements Socket {
+	url = 'ws://localhost:12345';
+	via_transport = 'WS';
+	sip_uri = 'sip:localhost:12345;transport=ws';
+
+	connect(): void {
 		setTimeout(() => {
 			this.onconnect();
 		}, 0);
 	}
 
-	disconnect() {}
+	disconnect(): void {}
 
-	send(message) {
+	send(message: string): boolean {
 		const message2 = this._modifyCallId(message);
 
 		setTimeout(() => {
@@ -25,8 +26,23 @@ module.exports = class LoopSocket {
 		return true;
 	}
 
+	isConnected(): boolean {
+		return true;
+	}
+
+	isConnecting(): boolean {
+		return false;
+	}
+
+	onconnect(): void {}
+
+	ondisconnect(): void {}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	ondata<T>(_event: T): void {}
+
 	// Call-ID: add or drop word '_second'.
-	_modifyCallId(message) {
+	private _modifyCallId(message: string): string {
 		const ixBegin = message.indexOf('Call-ID');
 		const ixEnd = message.indexOf('\r', ixBegin);
 		let callId = message.substring(ixBegin + 9, ixEnd);
@@ -39,4 +55,4 @@ module.exports = class LoopSocket {
 
 		return `${message.substring(0, ixBegin)}Call-ID: ${callId}${message.substring(ixEnd)}`;
 	}
-};
+}

@@ -1,5 +1,8 @@
-require('./include/common');
-const JsSIP = require('../..');
+import './include/common';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require('../../package.json');
 
 describe('Properties', () => {

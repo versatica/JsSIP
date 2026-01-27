@@ -1,16 +1,20 @@
-require('./include/common');
-const JsSIP = require('../..');
-const testUA = require('./include/testUA');
-const Parser = require('../Parser');
+import './include/common';
+import * as testUA from './include/testUA';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { URI, NameAddrHeader, Grammar, WebSocketInterface, UA } = JsSIP;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const Parser = require('../Parser.js');
 
 describe('parser', () => {
 	test('parse URI', () => {
 		const data =
 			'SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2';
-		const uri = JsSIP.URI.parse(data);
+		const uri = URI.parse(data);
 
 		// Parsed data.
-		expect(uri instanceof JsSIP.URI).toBeTruthy();
+		expect(uri instanceof URI).toBeTruthy();
 		expect(uri.scheme).toBe('sip');
 		expect(uri.user).toBe('aliCE');
 		expect(uri.host).toBe('versatica.com');
@@ -49,10 +53,10 @@ describe('parser', () => {
 		const data =
 			' "Iñaki ðđøþ foo \\"bar\\" \\\\\\\\ \\\\ \\\\d \\\\\\\\d \\\\\' \\\\\\"sdf\\\\\\"" ' +
 			'<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
-		const name = JsSIP.NameAddrHeader.parse(data);
+		const name = NameAddrHeader.parse(data);
 
 		// Parsed data.
-		expect(name instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(name instanceof NameAddrHeader).toBeTruthy();
 		expect(name.display_name).toBe(
 			'Iñaki ðđøþ foo "bar" \\\\ \\ \\d \\\\d \\\' \\"sdf\\"'
 		);
@@ -64,7 +68,7 @@ describe('parser', () => {
 
 		const uri = name.uri;
 
-		expect(uri instanceof JsSIP.URI).toBeTruthy();
+		expect(uri instanceof URI).toBeTruthy();
 		expect(uri.scheme).toBe('sip');
 		expect(uri.user).toBe('aliCE');
 		expect(uri.host).toBe('versatica.com');
@@ -94,15 +98,15 @@ describe('parser', () => {
 	test('parse invalid NameAddr with non UTF-8 characters', () => {
 		const buffer = Buffer.from([0xc0]);
 		const data = `"${buffer.toString()}"<sip:foo@bar.com>`;
-		const name = JsSIP.NameAddrHeader.parse(data);
+		const name = NameAddrHeader.parse(data);
 
 		// Parsed data.
-		expect(name instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(name instanceof NameAddrHeader).toBeTruthy();
 		expect(name.display_name).toBe(buffer.toString());
 
 		const uri = name.uri;
 
-		expect(uri instanceof JsSIP.URI).toBeTruthy();
+		expect(uri instanceof URI).toBeTruthy();
 		expect(uri.scheme).toBe('sip');
 		expect(uri.user).toBe('foo');
 		expect(uri.host).toBe('bar.com');
@@ -112,37 +116,37 @@ describe('parser', () => {
 	test('parse NameAddr with token display_name', () => {
 		const data =
 			'Foo    Foo Bar\tBaz<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
-		const name = JsSIP.NameAddrHeader.parse(data);
+		const name = NameAddrHeader.parse(data);
 
 		// Parsed data.
-		expect(name instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(name instanceof NameAddrHeader).toBeTruthy();
 		expect(name.display_name).toBe('Foo Foo Bar Baz');
 	});
 
 	test('parse NameAddr with no space between DQUOTE and LAQUOT', () => {
 		const data =
 			'"Foo"<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
-		const name = JsSIP.NameAddrHeader.parse(data);
+		const name = NameAddrHeader.parse(data);
 
 		// Parsed data.
-		expect(name instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(name instanceof NameAddrHeader).toBeTruthy();
 		expect(name.display_name).toBe('Foo');
 	});
 
 	test('parse NameAddr with no display_name', () => {
 		const data =
 			'<SIP:%61liCE@versaTICA.Com:6060;TRansport=TCp;Foo=ABc;baz?X-Header-1=AaA1&X-Header-2=BbB&x-header-1=AAA2>;QWE=QWE;ASd';
-		const name = JsSIP.NameAddrHeader.parse(data);
+		const name = NameAddrHeader.parse(data);
 
 		// Parsed data.
-		expect(name instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(name instanceof NameAddrHeader).toBeTruthy();
 		expect(name.display_name).toBe(undefined);
 	});
 
 	test('parse multiple Contact', () => {
 		const data =
 			'"Iñaki @ł€" <SIP:+1234@ALIAX.net;Transport=WS>;+sip.Instance="abCD", sip:bob@biloxi.COM;headerParam, <sip:DOMAIN.com:5>';
-		const contacts = JsSIP.Grammar.parse(data, 'Contact');
+		const contacts = Grammar.parse(data, 'Contact');
 
 		expect(contacts instanceof Array).toBeTruthy();
 		expect(contacts.length).toBe(3);
@@ -151,13 +155,13 @@ describe('parser', () => {
 		const c3 = contacts[2].parsed;
 
 		// Parsed data.
-		expect(c1 instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(c1 instanceof NameAddrHeader).toBeTruthy();
 		expect(c1.display_name).toBe('Iñaki @ł€');
 		expect(c1.hasParam('+sip.instance')).toBe(true);
 		expect(c1.hasParam('nooo')).toBe(false);
 		expect(c1.getParam('+SIP.instance')).toBe('"abCD"');
 		expect(c1.getParam('nooo')).toBe(undefined);
-		expect(c1.uri instanceof JsSIP.URI).toBeTruthy();
+		expect(c1.uri instanceof URI).toBeTruthy();
 		expect(c1.uri.scheme).toBe('sip');
 		expect(c1.uri.user).toBe('+1234');
 		expect(c1.uri.host).toBe('aliax.net');
@@ -184,10 +188,10 @@ describe('parser', () => {
 		);
 
 		// Parsed data.
-		expect(c2 instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(c2 instanceof NameAddrHeader).toBeTruthy();
 		expect(c2.display_name).toBe(undefined);
 		expect(c2.hasParam('HEADERPARAM')).toBe(true);
-		expect(c2.uri instanceof JsSIP.URI).toBeTruthy();
+		expect(c2.uri instanceof URI).toBeTruthy();
 		expect(c2.uri.scheme).toBe('sip');
 		expect(c2.uri.user).toBe('bob');
 		expect(c2.uri.host).toBe('biloxi.com');
@@ -200,9 +204,9 @@ describe('parser', () => {
 		expect(c2.toString()).toBe('"@ł€ĸłæß" <sip:bob@biloxi.com>;headerparam');
 
 		// Parsed data.
-		expect(c3 instanceof JsSIP.NameAddrHeader).toBeTruthy();
+		expect(c3 instanceof NameAddrHeader).toBeTruthy();
 		expect(c3.displayName).toBe(undefined);
-		expect(c3.uri instanceof JsSIP.URI).toBeTruthy();
+		expect(c3.uri instanceof URI).toBeTruthy();
 		expect(c3.uri.scheme).toBe('sip');
 		expect(c3.uri.user).toBe(undefined);
 		expect(c3.uri.host).toBe('domain.com');
@@ -221,7 +225,7 @@ describe('parser', () => {
 	test('parse Via', () => {
 		let data =
 			'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;Param1=Foo;paRAM2;param3=Bar';
-		let via = JsSIP.Grammar.parse(data, 'Via');
+		let via = Grammar.parse(data, 'Via');
 
 		expect(via.protocol).toBe('SIP');
 		expect(via.transport).toBe('UDP');
@@ -237,7 +241,7 @@ describe('parser', () => {
 
 		data =
 			'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;rport=1111;Param1=Foo;paRAM2;param3=Bar';
-		via = JsSIP.Grammar.parse(data, 'Via');
+		via = Grammar.parse(data, 'Via');
 
 		expect(via.protocol).toBe('SIP');
 		expect(via.transport).toBe('UDP');
@@ -254,7 +258,7 @@ describe('parser', () => {
 
 		data =
 			'SIP /  3.0 \r\n / UDP [1:ab::FF]:6060 ;\r\n  BRanch=1234;rport;Param1=Foo;paRAM2;param3=Bar';
-		via = JsSIP.Grammar.parse(data, 'Via');
+		via = Grammar.parse(data, 'Via');
 
 		expect(via.protocol).toBe('SIP');
 		expect(via.transport).toBe('UDP');
@@ -272,7 +276,7 @@ describe('parser', () => {
 
 	test('parse CSeq', () => {
 		const data = '123456  CHICKEN';
-		const cseq = JsSIP.Grammar.parse(data, 'CSeq');
+		const cseq = Grammar.parse(data, 'CSeq');
 
 		expect(cseq.value).toBe(123456);
 		expect(cseq.method).toBe('CHICKEN');
@@ -281,7 +285,7 @@ describe('parser', () => {
 	test('parse authentication challenge', () => {
 		const data =
 			'Digest realm =  "[1:ABCD::abc]", nonce =  "31d0a89ed7781ce6877de5cb032bf114", qop="AUTH,autH-INt", algorithm =  md5  ,  stale =  TRUE , opaque = "00000188"';
-		const auth = JsSIP.Grammar.parse(data, 'challenge');
+		const auth = Grammar.parse(data, 'challenge');
 
 		expect(auth.realm).toBe('[1:ABCD::abc]');
 		expect(auth.nonce).toBe('31d0a89ed7781ce6877de5cb032bf114');
@@ -293,7 +297,7 @@ describe('parser', () => {
 
 	test('parse Event', () => {
 		const data = 'Presence;Param1=QWe;paraM2';
-		const event = JsSIP.Grammar.parse(data, 'Event');
+		const event = Grammar.parse(data, 'Event');
 
 		expect(event.event).toBe('presence');
 		expect(event.params).toEqual({ param1: 'QWe', param2: undefined });
@@ -303,13 +307,13 @@ describe('parser', () => {
 		let data, session_expires;
 
 		data = '180;refresher=uac';
-		session_expires = JsSIP.Grammar.parse(data, 'Session_Expires');
+		session_expires = Grammar.parse(data, 'Session_Expires');
 
 		expect(session_expires.expires).toBe(180);
 		expect(session_expires.refresher).toBe('uac');
 
 		data = '210  ;   refresher  =  UAS ; foo  =  bar';
-		session_expires = JsSIP.Grammar.parse(data, 'Session_Expires');
+		session_expires = Grammar.parse(data, 'Session_Expires');
 
 		expect(session_expires.expires).toBe(210);
 		expect(session_expires.refresher).toBe('uas');
@@ -319,14 +323,14 @@ describe('parser', () => {
 		let data, reason;
 
 		data = 'SIP  ; cause = 488 ; text = "Wrong SDP"';
-		reason = JsSIP.Grammar.parse(data, 'Reason');
+		reason = Grammar.parse(data, 'Reason');
 
 		expect(reason.protocol).toBe('sip');
 		expect(reason.cause).toBe(488);
 		expect(reason.text).toBe('Wrong SDP');
 
 		data = 'ISUP; cause=500 ; LALA = foo';
-		reason = JsSIP.Grammar.parse(data, 'Reason');
+		reason = Grammar.parse(data, 'Reason');
 
 		expect(reason.protocol).toBe('isup');
 		expect(reason.cause).toBe(500);
@@ -338,33 +342,33 @@ describe('parser', () => {
 		let data, parsed;
 
 		data = 'versatica.com';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).not.toBe(-1);
 		expect(parsed.host_type).toBe('domain');
 
 		data = 'myhost123';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).not.toBe(-1);
 		expect(parsed.host_type).toBe('domain');
 
 		data = '1.2.3.4';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).not.toBe(-1);
 		expect(parsed.host_type).toBe('IPv4');
 
 		data = '[1:0:fF::432]';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).not.toBe(-1);
 		expect(parsed.host_type).toBe('IPv6');
 
 		data = '1.2.3.444';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).toBe(-1);
 
 		data = 'iñaki.com';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).toBe(-1);
 
 		data = '1.2.3.bar.qwe-asd.foo';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).not.toBe(-1);
 		expect(parsed.host_type).toBe('domain');
 
 		data = '1.2.3.4.bar.qwe-asd.foo';
-		expect((parsed = JsSIP.Grammar.parse(data, 'host'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'host'))).not.toBe(-1);
 		expect(parsed.host_type).toBe('domain');
 	});
 
@@ -372,13 +376,13 @@ describe('parser', () => {
 		let data, parsed;
 
 		data = 'sip:alice@versatica.com';
-		expect((parsed = JsSIP.Grammar.parse(data, 'Refer_To'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'Refer_To'))).not.toBe(-1);
 		expect(parsed.uri.scheme).toBe('sip');
 		expect(parsed.uri.user).toBe('alice');
 		expect(parsed.uri.host).toBe('versatica.com');
 
 		data = '<sip:bob@versatica.com?Accept-Contact=sip:bobsdesk.versatica.com>';
-		expect((parsed = JsSIP.Grammar.parse(data, 'Refer_To'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'Refer_To'))).not.toBe(-1);
 		expect(parsed.uri.scheme).toBe('sip');
 		expect(parsed.uri.user).toBe('bob');
 		expect(parsed.uri.host).toBe('versatica.com');
@@ -390,7 +394,7 @@ describe('parser', () => {
 
 		const data = '5t2gpbrbi72v79p1i8mr;to-tag=03aq91cl9n;from-tag=kun98clbf7';
 
-		expect((parsed = JsSIP.Grammar.parse(data, 'Replaces'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'Replaces'))).not.toBe(-1);
 		expect(parsed.call_id).toBe('5t2gpbrbi72v79p1i8mr');
 		expect(parsed.to_tag).toBe('03aq91cl9n');
 		expect(parsed.from_tag).toBe('kun98clbf7');
@@ -400,7 +404,7 @@ describe('parser', () => {
 		const data = 'SIP/2.0 420 Bad Extension';
 		let parsed;
 
-		expect((parsed = JsSIP.Grammar.parse(data, 'Status_Line'))).not.toBe(-1);
+		expect((parsed = Grammar.parse(data, 'Status_Line'))).not.toBe(-1);
 		expect(parsed.status_code).toBe(420);
 	});
 
@@ -418,23 +422,21 @@ Privacy: id\r\n\
 P-Preferred-Identity: "Cullen Jennings" <sip:fluffy@cisco.com>\r\n\r\n';
 
 		const config = testUA.UA_CONFIGURATION;
-		const wsSocket = new JsSIP.WebSocketInterface(
-			testUA.SOCKET_DESCRIPTION.url
-		);
+		const wsSocket = new WebSocketInterface(testUA.SOCKET_DESCRIPTION['url']);
 
-		config.sockets = wsSocket;
+		config['sockets'] = wsSocket;
 
-		const ua = new JsSIP.UA(config);
+		const ua = new UA(config as ConstructorParameters<typeof UA>[0]);
 		const message = Parser.parseMessage(data, ua);
 
 		expect(message.hasHeader('P-Preferred-Identity')).toBe(true);
 
 		const pai = message.getHeader('P-Preferred-Identity');
-		const nameAddress = JsSIP.NameAddrHeader.parse(pai);
+		const nameAddress = NameAddrHeader.parse(pai);
 
-		expect(nameAddress instanceof JsSIP.NameAddrHeader).toBeTruthy();
-		expect(nameAddress.uri.user).toBe('fluffy');
-		expect(nameAddress.uri.host).toBe('cisco.com');
+		expect(nameAddress instanceof NameAddrHeader).toBeTruthy();
+		expect(nameAddress!.uri.user).toBe('fluffy');
+		expect(nameAddress!.uri.host).toBe('cisco.com');
 
 		expect(message.hasHeader('Privacy')).toBe(true);
 		expect(message.getHeader('Privacy')).toBe('id');

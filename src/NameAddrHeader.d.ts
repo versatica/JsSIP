@@ -9,7 +9,7 @@ export class NameAddrHeader {
 
 	constructor(uri: URI, display_name?: string, parameters?: Parameters);
 
-	setParam(key: string, value?: string): void;
+	setParam(key: string, value?: string | number | null): void;
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	getParam<T = any>(key: string): T;

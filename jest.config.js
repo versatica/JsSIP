@@ -1,3 +1,13 @@
 module.exports = {
-	testRegex: 'src/test/test-.*\\.js',
+	preset: 'ts-jest',
+	testEnvironment: 'node',
+	testRegex: 'src/test/test-.*\\.ts',
+	transform: {
+		'^.+\\.ts$': [
+			'ts-jest',
+			{
+				tsconfig: 'tsconfig.json',
+			},
+		],
+	},
 };

@@ -50,6 +50,7 @@
 		"@eslint/js": "^9.39.2",
 		"@types/debug": "^4.1.12",
 		"@types/events": "^3.0.3",
+		"@types/jest": "^30.0.0",
 		"@types/node": "^25.0.10",
 		"cpx": "^1.5.0",
 		"esbuild": "^0.27.2",
@@ -61,6 +62,7 @@
 		"jest": "^30.2.0",
 		"pegjs": "^0.7.0",
 		"prettier": "^3.8.1",
+		"ts-jest": "^29.4.6",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.53.1"
 	}

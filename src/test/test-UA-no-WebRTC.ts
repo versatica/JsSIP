@@ -1,27 +1,28 @@
 /* eslint no-console: 0*/
 
-require('./include/common');
-const testUA = require('./include/testUA');
-const JsSIP = require('../..');
+import './include/common';
+import * as testUA from './include/testUA';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { UA, WebSocketInterface, Exceptions, C } = JsSIP;
 
 describe('UA No WebRTC', () => {
 	test('UA wrong configuration', () => {
-		expect(() => new JsSIP.UA({ lalala: 'lololo' })).toThrow(
-			JsSIP.Exceptions.ConfigurationError
+		expect(() => new UA({ lalala: 'lololo' } as never)).toThrow(
+			Exceptions.ConfigurationError
 		);
 	});
 
 	test('UA no WS connection', () => {
 		const config = testUA.UA_CONFIGURATION;
-		const wsSocket = new JsSIP.WebSocketInterface(
-			testUA.SOCKET_DESCRIPTION.url
-		);
+		const wsSocket = new WebSocketInterface(testUA.SOCKET_DESCRIPTION['url']);
 
-		config.sockets = wsSocket;
+		config['sockets'] = wsSocket;
 
-		const ua = new JsSIP.UA(config);
+		const ua = new UA(config);
 
-		expect(ua instanceof JsSIP.UA).toBeTruthy();
+		expect(ua instanceof UA).toBeTruthy();
 
 		ua.start();
 
@@ -53,9 +54,9 @@ describe('UA No WebRTC', () => {
 				switch (parameter) {
 					case 'uri':
 					case 'registrar_server': {
+						// eslint-disable-next-line jest/no-conditional-expect
 						expect(ua.configuration[parameter].toString()).toBe(
-							testUA.UA_CONFIGURATION_AFTER_START[parameter],
-							`testing parameter ${parameter}`
+							testUA.UA_CONFIGURATION_AFTER_START[parameter]
 						);
 						break;
 					}
@@ -64,9 +65,9 @@ describe('UA No WebRTC', () => {
 						break;
 					}
 					default: {
+						// eslint-disable-next-line jest/no-conditional-expect
 						expect(ua.configuration[parameter]).toBe(
-							testUA.UA_CONFIGURATION_AFTER_START[parameter],
-							`testing parameter ${parameter}`
+							testUA.UA_CONFIGURATION_AFTER_START[parameter]
 						);
 					}
 				}
@@ -74,7 +75,7 @@ describe('UA No WebRTC', () => {
 		}
 
 		const transport = testUA.UA_TRANSPORT_AFTER_START;
-		const sockets = transport.sockets;
+		const sockets = transport['sockets'];
 		const socket = sockets[0].socket;
 
 		expect(sockets.length).toEqual(ua.transport.sockets.length);
@@ -83,12 +84,15 @@ describe('UA No WebRTC', () => {
 		expect(socket.sip_uri).toEqual(ua.transport.sip_uri);
 		expect(socket.url).toEqual(ua.transport.url);
 
-		expect(transport.recovery_options).toEqual(ua.transport.recovery_options);
+		expect(transport['recovery_options']).toEqual(
+			ua.transport.recovery_options
+		);
 
 		ua.sendMessage('test', 'FAIL WITH CONNECTION_ERROR PLEASE', {
 			eventHandlers: {
-				failed: function (e) {
-					expect(e.cause).toEqual(JsSIP.C.causes.CONNECTION_ERROR);
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				failed: function (e: any) {
+					expect(e.cause).toEqual(C.causes.CONNECTION_ERROR);
 				},
 			},
 		});

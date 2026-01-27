@@ -92,8 +92,6 @@ function lint(fix = false) {
 function test() {
 	logInfo('test()');
 
-	// TODO: remove when tests are written in TS.
-	buildTypescript();
 	executeCmd('jest');
 }
 

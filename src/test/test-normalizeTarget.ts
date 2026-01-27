@@ -1,15 +1,18 @@
-require('./include/common');
-const JsSIP = require('../..');
+import './include/common';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { URI, Utils } = JsSIP;
 
 describe('normalizeTarget', () => {
 	test('valid targets', () => {
 		const domain = 'jssip.net';
 
-		function test_ok(given_data, expected) {
-			const uri = JsSIP.Utils.normalizeTarget(given_data, domain);
+		function test_ok(given_data: string, expected: string): void {
+			const uri = Utils.normalizeTarget(given_data, domain);
 
-			expect(uri instanceof JsSIP.URI).toBeTruthy();
-			expect(uri.toString()).toEqual(expected);
+			expect(uri instanceof URI).toBeTruthy();
+			expect(uri!.toString()).toEqual(expected);
 		}
 
 		test_ok('%61lice', 'sip:alice@jssip.net');
@@ -39,8 +42,10 @@ describe('normalizeTarget', () => {
 	test('invalid targets', () => {
 		const domain = 'jssip.net';
 
-		function test_error(given_data) {
-			expect(JsSIP.Utils.normalizeTarget(given_data, domain)).toBe(undefined);
+		function test_error(given_data: unknown): void {
+			expect(Utils.normalizeTarget(given_data as string, domain)).toBe(
+				undefined
+			);
 		}
 
 		test_error(null);
@@ -52,6 +57,6 @@ describe('normalizeTarget', () => {
 		test_error('ibc@iñaki.com');
 		test_error('ibc@aliax.net;;;;;');
 
-		expect(JsSIP.Utils.normalizeTarget('alice')).toBe(undefined);
+		expect(Utils.normalizeTarget('alice')).toBe(undefined);
 	});
 });
