@@ -36,6 +36,7 @@
 		"lint": "node npm-scripts.mjs lint",
 		"lint:fix": "node npm-scripts.mjs lint:fix",
 		"test": "node npm-scripts.mjs test",
+		"coverage": "node npm-scripts.mjs coverage",
 		"build": "node npm-scripts.mjs build",
 		"typescript:build": "node npm-scripts.mjs typescript:build",
 		"release": "node npm-scripts.js release"
@@ -60,6 +61,7 @@
 		"eslint-plugin-prettier": "^5.5.5",
 		"globals": "^17.0.0",
 		"jest": "^30.2.0",
+		"open-cli": "^8.0.0",
 		"pegjs": "^0.7.0",
 		"prettier": "^3.8.1",
 		"ts-jest": "^29.4.6",

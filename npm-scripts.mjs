@@ -30,21 +30,31 @@ async function run() {
 	switch (task) {
 		case 'grammar': {
 			grammar();
+
 			break;
 		}
 
 		case 'lint': {
 			lint();
+
 			break;
 		}
 
 		case 'lint:fix': {
 			lint(true);
+
 			break;
 		}
 
 		case 'test': {
 			test();
+
+			break;
+		}
+
+		case 'coverage': {
+			coverage();
+
 			break;
 		}
 
@@ -72,6 +82,7 @@ async function run() {
 
 			// eslint-disable-next-line no-console
 			console.log('update tryit-jssip and JsSIP website');
+
 			break;
 		}
 
@@ -92,7 +103,14 @@ function lint(fix = false) {
 function test() {
 	logInfo('test()');
 
-	executeCmd('jest');
+	executeCmd(`jest --silent false --detectOpenHandles ${taskArgs}`);
+}
+
+function coverage() {
+	logInfo('coverage()');
+
+	executeCmd(`jest --coverage ${taskArgs}`);
+	executeCmd('open-cli coverage/lcov-report/index.html');
 }
 
 function grammar() {

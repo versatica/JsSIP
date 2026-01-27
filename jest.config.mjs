@@ -11,6 +11,8 @@ const config = {
 			},
 		],
 	},
+	coveragePathIgnorePatterns: ['src/test'],
+	cacheDirectory: '.cache/jest',
 };
 
 export default config;
