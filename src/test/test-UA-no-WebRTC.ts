@@ -1,7 +1,7 @@
 /* eslint no-console: 0*/
 
 import './include/common';
-import * as testUA from './include/testUA';
+import * as consts from './include/consts';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const JsSIP = require('../JsSIP.js');
@@ -15,8 +15,8 @@ describe('UA No WebRTC', () => {
 	});
 
 	test('UA no WS connection', () => {
-		const config = testUA.UA_CONFIGURATION;
-		const wsSocket = new WebSocketInterface(testUA.SOCKET_DESCRIPTION['url']);
+		const config = consts.UA_CONFIGURATION;
+		const wsSocket = new WebSocketInterface(consts.SOCKET_DESCRIPTION['url']);
 
 		config['sockets'] = wsSocket;
 
@@ -44,10 +44,10 @@ describe('UA No WebRTC', () => {
 			'<sip:anonymous@anonymous.invalid;transport=ws;ob>'
 		);
 
-		for (const parameter in testUA.UA_CONFIGURATION_AFTER_START) {
+		for (const parameter in consts.UA_CONFIGURATION_AFTER_START) {
 			if (
 				Object.prototype.hasOwnProperty.call(
-					testUA.UA_CONFIGURATION_AFTER_START,
+					consts.UA_CONFIGURATION_AFTER_START,
 					parameter
 				)
 			) {
@@ -56,7 +56,7 @@ describe('UA No WebRTC', () => {
 					case 'registrar_server': {
 						// eslint-disable-next-line jest/no-conditional-expect
 						expect(ua.configuration[parameter].toString()).toBe(
-							testUA.UA_CONFIGURATION_AFTER_START[parameter]
+							consts.UA_CONFIGURATION_AFTER_START[parameter]
 						);
 						break;
 					}
@@ -67,14 +67,14 @@ describe('UA No WebRTC', () => {
 					default: {
 						// eslint-disable-next-line jest/no-conditional-expect
 						expect(ua.configuration[parameter]).toBe(
-							testUA.UA_CONFIGURATION_AFTER_START[parameter]
+							consts.UA_CONFIGURATION_AFTER_START[parameter]
 						);
 					}
 				}
 			}
 		}
 
-		const transport = testUA.UA_TRANSPORT_AFTER_START;
+		const transport = consts.UA_TRANSPORT_AFTER_START;
 		const sockets = transport['sockets'];
 		const socket = sockets[0].socket;
 

@@ -1,5 +1,5 @@
 import './include/common';
-import * as testUA from './include/testUA';
+import * as consts from './include/consts';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const JsSIP = require('../JsSIP.js');
@@ -421,8 +421,8 @@ Max-Forwards: 70\r\n\
 Privacy: id\r\n\
 P-Preferred-Identity: "Cullen Jennings" <sip:fluffy@cisco.com>\r\n\r\n';
 
-		const config = testUA.UA_CONFIGURATION;
-		const wsSocket = new WebSocketInterface(testUA.SOCKET_DESCRIPTION['url']);
+		const config = consts.UA_CONFIGURATION;
+		const wsSocket = new WebSocketInterface(consts.SOCKET_DESCRIPTION['url']);
 
 		config['sockets'] = wsSocket;
 
