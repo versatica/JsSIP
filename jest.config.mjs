@@ -1,4 +1,5 @@
-module.exports = {
+const config = {
+	verbose: true,
 	preset: 'ts-jest',
 	testEnvironment: 'node',
 	testRegex: 'src/test/test-.*\\.ts',
@@ -11,3 +12,5 @@ module.exports = {
 		],
 	},
 };
+
+export default config;
