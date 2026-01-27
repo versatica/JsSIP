@@ -1,5 +1,5 @@
 import './include/common';
-import LoopSocket from './include/loopSocket';
+import LoopSocket from './include/LoopSocket';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const JsSIP = require('../JsSIP.js');
