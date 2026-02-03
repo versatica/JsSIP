@@ -7,7 +7,7 @@ import * as consts from './include/consts';
 const JsSIP = require('../JsSIP.js');
 const { UA, WebSocketInterface, Exceptions, C } = JsSIP;
 
-describe('UA No WebRTC', () => {
+describe('UA', () => {
 	test('UA wrong configuration', () => {
 		expect(() => new UA({ lalala: 'lololo' } as never)).toThrow(
 			Exceptions.ConfigurationError

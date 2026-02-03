@@ -4,8 +4,8 @@ import './include/common';
 const JsSIP = require('../JsSIP.js');
 const { URI, Utils } = JsSIP;
 
-describe('normalizeTarget', () => {
-	test('valid targets', () => {
+describe('Utils', () => {
+	test('normalizeTarget() valid targets', () => {
 		const domain = 'jssip.net';
 
 		function test_ok(given_data: string, expected: string): void {
@@ -39,7 +39,7 @@ describe('normalizeTarget', () => {
 		test_ok('+ALICE-123.456.78-9', 'sip:+ALICE-123.456.78-9@jssip.net');
 	});
 
-	test('invalid targets', () => {
+	test('normalizeTarget() invalid targets', () => {
 		const domain = 'jssip.net';
 
 		function test_error(given_data: unknown): void {
