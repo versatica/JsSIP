@@ -86,6 +86,27 @@ async function run() {
 			break;
 		}
 
+		case 'docs': {
+			generateDocs();
+
+			break;
+		}
+
+		case 'docs:watch': {
+			generateDocs();
+
+			executeCmd('open-cli docs/index.html');
+			executeCmd('typedoc --watch');
+
+			break;
+		}
+
+		case 'docs:check': {
+			checkDocs();
+
+			break;
+		}
+
 		default: {
 			throw new TypeError(`unknown task "${task}"`);
 		}
@@ -197,6 +218,18 @@ function deleteLib() {
 	logInfo('deleteLib()');
 
 	fs.rmSync('lib', { recursive: true, force: true });
+}
+
+function generateDocs() {
+	logInfo('generateDocs()');
+
+	executeCmd('typedoc');
+}
+
+function checkDocs() {
+	logInfo('checkDocs()');
+
+	executeCmd('typedoc --emit none');
 }
 
 function executeCmd(command) {
