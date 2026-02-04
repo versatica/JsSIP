@@ -2,7 +2,7 @@
 	"name": "jssip",
 	"title": "JsSIP",
 	"description": "The Javascript SIP library",
-	"version": "3.12.0",
+	"version": "3.13.0",
 	"homepage": "https://jssip.net",
 	"contributors": [
 		"José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -39,7 +39,7 @@
 		"coverage": "node npm-scripts.mjs coverage",
 		"build": "node npm-scripts.mjs build",
 		"typescript:build": "node npm-scripts.mjs typescript:build",
-		"release": "node npm-scripts.js release",
+		"release": "node npm-scripts.mjs release",
 		"docs": "node npm-scripts.mjs docs",
 		"docs:watch": "node npm-scripts.mjs docs:watch",
 		"docs:check": "node npm-scripts.mjs docs:check"

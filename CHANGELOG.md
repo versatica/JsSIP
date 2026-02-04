@@ -2,6 +2,8 @@
 
 ### NEXT
 
+### 3.13.0
+
 - Modernize (#955).
   - Modernize eslint.
   - Use prettier.
