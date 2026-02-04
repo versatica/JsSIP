@@ -1,0 +1,72 @@
+# Workflow for deploying docs static content to GitHub Pages.
+name: docs
+
+on:
+  push:
+    branches: [master]
+  # Allows you to run this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run
+# in-progress and latest queued. However, do NOT cancel in-progress runs as we
+# want to allow these production deployments to complete.
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying.
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check if version has been updated
+        id: versionCheck
+        uses: EndBug/version-check@v2
+
+      - name: Log when version has changed
+        if: steps.versionCheck.outputs.changed == 'true'
+        run: 'echo "Version changed, new version: ${{ steps.versionCheck.outputs.version }} (${{ steps.versionCheck.outputs.type }})"'
+
+      - name: Log when version has not changed
+        if: steps.versionCheck.outputs.changed == 'false'
+        run: 'echo "Version did not change"'
+
+      - name: npm ci
+        if: steps.versionCheck.outputs.changed == 'true'
+        run: npm ci --foreground-scripts
+
+      - name: npm run docs
+        if: steps.versionCheck.outputs.changed == 'true'
+        run: npm run docs
+
+      - name: Upload docs
+        if: steps.versionCheck.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy docs to GitHub Pages
+        if: steps.versionCheck.outputs.changed == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
