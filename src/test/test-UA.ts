@@ -3,9 +3,7 @@
 import './include/common';
 import * as consts from './include/consts';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const JsSIP = require('../JsSIP.js');
-const { UA, WebSocketInterface, Exceptions, C } = JsSIP;
+import { UA, WebSocketInterface, Exceptions, C } from '../JsSIP';
 
 describe('UA', () => {
 	test('UA wrong configuration', () => {

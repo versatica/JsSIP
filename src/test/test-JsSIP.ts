@@ -1,16 +1,16 @@
 import './include/common';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const JsSIP = require('../JsSIP.js');
+import { version, name } from '../JsSIP';
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require('../../package.json');
 
 describe('Properties', () => {
 	test('should have a name property', () => {
-		expect(JsSIP.name).toEqual(pkg.title);
+		expect(name).toEqual(pkg.title);
 	});
 
 	test('should have a version property', () => {
-		expect(JsSIP.version).toEqual(pkg.version);
+		expect(version).toEqual(pkg.version);
 	});
 });

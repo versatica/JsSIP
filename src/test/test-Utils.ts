@@ -1,8 +1,6 @@
 import './include/common';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const JsSIP = require('../JsSIP.js');
-const { URI, Utils } = JsSIP;
+import { URI, Utils } from '../JsSIP';
 
 describe('Utils', () => {
 	test('normalizeTarget() valid targets', () => {
