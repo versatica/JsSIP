@@ -7,7 +7,7 @@
   - Use prettier.
   - Prepare environment for TS.
 - Rewrite tests to TS (#958).
-- Move JsSIP.js to JsSIP.ts.
+- Move JsSIP.js to JsSIP.ts (#959).
 
 ### 3.12.0
 
