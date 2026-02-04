@@ -1,6 +1,8 @@
 import './include/common';
 
-import { URI } from '../JsSIP';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { URI } = JsSIP;
 
 describe('URI', () => {
 	test('new URI', () => {

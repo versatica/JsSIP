@@ -1,7 +1,9 @@
 import './include/common';
 import LoopSocket from './include/LoopSocket';
 
-import { UA } from '../JsSIP';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { UA } = JsSIP;
 
 const enum STEP {
 	INIT = 0,

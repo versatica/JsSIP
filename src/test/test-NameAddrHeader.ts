@@ -1,6 +1,8 @@
 import './include/common';
 
-import { URI, NameAddrHeader } from '../JsSIP';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { URI, NameAddrHeader } = JsSIP;
 
 describe('NameAddrHeader', () => {
 	test('new NameAddrHeader', () => {

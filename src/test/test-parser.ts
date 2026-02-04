@@ -1,7 +1,9 @@
 import './include/common';
 import * as consts from './include/consts';
 
-import { URI, NameAddrHeader, Grammar, WebSocketInterface, UA } from '../JsSIP';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const JsSIP = require('../JsSIP.js');
+const { URI, NameAddrHeader, Grammar, WebSocketInterface, UA } = JsSIP;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Parser = require('../Parser.js');
 
