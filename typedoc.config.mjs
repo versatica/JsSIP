@@ -4,7 +4,7 @@
 
 /** @type {Partial<import('typedoc').TypeDocOptions>} */
 const config = {
-	entryPoints: ['src/JsSIP.ts'],
+	entryPoints: ['src/JsSIP.js'],
 	out: 'docs',
 	skipErrorChecking: false,
 	exclude: ['src/**/*.d.ts', 'src/test/**/test-*.ts'],
