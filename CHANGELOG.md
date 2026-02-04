@@ -7,6 +7,7 @@
   - Use prettier.
   - Prepare environment for TS.
 - Rewrite tests to TS (#958).
+- Prepare typedoc (#959).
 
 ### 3.12.0
 

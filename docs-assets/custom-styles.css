@@ -1,0 +1,21 @@
+/* Remove ugly square in bottom-right corner when scroll shows up. */
+*::-webkit-scrollbar {
+	width: 0px;
+}
+
+/* Add margin after code. */
+.tsd-comment {
+	margin-bottom: 2em;
+}
+
+/* Avoid word wrapping when code doesn't fit into avaiable width. */
+.tsd-comment > pre {
+	white-space: pre;
+	overflow: scroll;
+}
+
+/* Remove ugly border radius in code. */
+.tsd-comment > pre,
+.tsd-comment > code {
+	border-radius: 0px;
+}
