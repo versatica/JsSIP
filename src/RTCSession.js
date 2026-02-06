@@ -2306,7 +2306,7 @@ module.exports = class RTCSession extends EventEmitter {
 				options.extraHeaders.push(`Replaces: ${replaces}`);
 			}
 
-			session.connect(request.refer_to.uri.toAor(), options, initCallback);
+			session.connect(request.refer_to.uri, options, initCallback);
 		}
 
 		function reject() {
