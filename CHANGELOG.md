@@ -2,7 +2,7 @@
 
 ### NEXT
 
-### 3.13.2
+### 3.13.3
 
 - RTCSession: Fix INVITE request URI from REFER message (#962). Thanks to @jim-holmes-vtcsecure for reporting.
 
