@@ -2,6 +2,8 @@
 
 ### NEXT
 
+- ReferSubscriber: Fix authentication causing ID update (#961). Thans to @sabrineLayouni reporting.
+
 ### 3.13.4
 
 - Fix: Regenerate package-lock.json with all platform bindings.
