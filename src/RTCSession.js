@@ -1296,7 +1296,7 @@ module.exports = class RTCSession extends EventEmitter {
 		referSubscriber.sendRefer(target, options);
 
 		// Store in the map.
-		const id = referSubscriber.id;
+		let id = referSubscriber.id;
 
 		this._referSubscribers[id] = referSubscriber;
 
@@ -1309,6 +1309,14 @@ module.exports = class RTCSession extends EventEmitter {
 		});
 		referSubscriber.on('failed', () => {
 			delete this._referSubscribers[id];
+		});
+		referSubscriber.on('authenticated', () => {
+			// Refer request authentication casues CSEQ and hence ID update.
+			delete this._referSubscribers[id];
+
+			id = referSubscriber.id;
+
+			this._referSubscribers[id] = referSubscriber;
 		});
 
 		return referSubscriber;

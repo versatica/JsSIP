@@ -78,6 +78,10 @@ module.exports = class ReferSubscriber extends EventEmitter {
 				onDialogError: () => {
 					this._requestFailed(null, JsSIP_C.causes.DIALOG_ERROR);
 				},
+				onAuthenticated: _request => {
+					this._id = _request.cseq;
+					this.emit('authenticated');
+				},
 			},
 		});
 

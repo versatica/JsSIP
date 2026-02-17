@@ -141,14 +141,19 @@ module.exports = class Dialog {
 		const body = options.body || null;
 		const request = this._createRequest(method, extraHeaders, body);
 
+		// Some usages may need to know about authentication.
+		const onAuthenticated = eventHandlers.onAuthenticated || (() => {});
+
 		// Increase the local CSeq on authentication.
-		eventHandlers.onAuthenticated = () => {
+		eventHandlers.onAuthenticated = _request => {
 			this._local_seqnum += 1;
 
 			// In case of re-INVITE store outgoing ack_seqnum for its CANCEL or ACK.
 			if (request.method === JsSIP_C.INVITE) {
 				this._outgoing_ack_seqnum = this._local_seqnum;
 			}
+
+			onAuthenticated(_request);
 		};
 
 		const request_sender = new Dialog_RequestSender(
