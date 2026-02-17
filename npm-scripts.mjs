@@ -75,6 +75,7 @@ async function run() {
 		case 'release': {
 			lint();
 			test();
+			buildTypescript();
 			executeCmd(`git commit -am '${pkg.version}'`);
 			executeCmd(`git tag -a ${pkg.version} -m '${pkg.version}'`);
 			executeCmd('git push origin master && git push origin --tags');

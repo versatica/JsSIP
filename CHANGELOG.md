@@ -2,7 +2,10 @@
 
 ### NEXT
 
+### 3.13.5
+
 - ReferSubscriber: Fix authentication causing ID update (#961). Thans to @sabrineLayouni reporting.
+- Fix: JsSIP.d.ts was missing in lib/.
 
 ### 3.13.4
 
