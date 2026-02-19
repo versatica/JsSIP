@@ -49,6 +49,7 @@ describe('Proactive Authorization - Nonce Count Management', () => {
 
 		// Simulate first authentication after 401 challenge
 		const sender1 = new RequestSender(mockUA, mockRequest, eventHandlers);
+
 		sender1._auth = new DigestAuthentication({
 			username: 'testuser',
 			password: 'testpass',
@@ -84,6 +85,7 @@ describe('Proactive Authorization - Nonce Count Management', () => {
 
 		// Verify cache has correct values
 		const cached = RequestSender._authCache['sip.example.com'];
+
 		expect(cached.nc).toBe(1);
 		expect(cached.ncHex).toBe('00000001');
 
@@ -129,6 +131,7 @@ describe('Proactive Authorization - Nonce Count Management', () => {
 		};
 
 		const sender3 = new RequestSender(mockUA, mockRequest3, eventHandlers);
+
 		sender3._attemptProactiveAuth();
 
 		// Verify continuous increment
@@ -191,6 +194,7 @@ describe('Proactive Authorization - Nonce Count Management', () => {
 		};
 
 		const sender = new RequestSender(mockUA, mockRequest, eventHandlers);
+
 		sender._attemptProactiveAuth();
 
 		// Should default to 0, then increment to 1

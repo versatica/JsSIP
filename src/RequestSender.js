@@ -14,7 +14,6 @@ const EventHandlers = {
 };
 
 module.exports = class RequestSender {
-
 	// Static cache for proactive authorization credentials
 	static _authCache = {};
 
@@ -105,27 +104,24 @@ module.exports = class RequestSender {
 	}
 
 	/**
-	* Attempt proactive authorization using cached credentials.
-	* This avoids the need to wait for a 401/407 challenge.
-	*/
-	_attemptProactiveAuth()
-	{
+	 * Attempt proactive authorization using cached credentials.
+	 * This avoids the need to wait for a 401/407 challenge.
+	 */
+	_attemptProactiveAuth() {
 		const cacheKey = this._ua.configuration.registrar_server;
 		const cachedAuth = RequestSender._authCache[cacheKey];
 
-		if (!cachedAuth)
-		{
+		if (!cachedAuth) {
 			return;
 		}
 
-		try
-		{
+		try {
 			// Create a digest authentication object from cached credentials
 			this._auth = new DigestAuthentication({
 				username: this._ua.configuration.authorization_user,
 				password: this._ua.configuration.password,
 				realm: this._ua.configuration.realm,
-				ha1: this._ua.configuration.ha1
+				ha1: this._ua.configuration.ha1,
 			});
 
 			// Restore nonce count state from cache to maintain replay protection
@@ -142,22 +138,21 @@ module.exports = class RequestSender {
 			this._auth._qop = cachedAuth.qop;
 
 			// Authenticate the request
-			if (this._auth.authenticate(this._request, {
-				realm: cachedAuth.realm,
-				nonce: cachedAuth.nonce,
-				opaque: cachedAuth.opaque,
-				algorithm: cachedAuth.algorithm,
-				qop: cachedAuth.qop,
-				stale: false
-			}))
-			{
+			if (
+				this._auth.authenticate(this._request, {
+					realm: cachedAuth.realm,
+					nonce: cachedAuth.nonce,
+					opaque: cachedAuth.opaque,
+					algorithm: cachedAuth.algorithm,
+					qop: cachedAuth.qop,
+					stale: false,
+				})
+			) {
 				this._request.setHeader('authorization', this._auth.toString());
 				this._proactiveAuth = true;
 				logger.debug('Proactive authorization header added');
 			}
-		}
-		catch (e)
-		{
+		} catch (e) {
 			logger.debug('Proactive authentication failed:', e.message);
 		}
 	}
@@ -220,15 +215,16 @@ module.exports = class RequestSender {
 				// Cache authentication credentials for proactive authorization.
 				// Include nonce count state to maintain RFC 2617 replay protection
 				const cacheKey = this._ua.configuration.registrar_server;
+
 				RequestSender._authCache[cacheKey] = {
 					realm: challenge.realm,
 					nonce: challenge.nonce,
 					opaque: challenge.opaque,
 					algorithm: challenge.algorithm,
 					qop: challenge.qop,
-					nc: this._auth._nc,              // Store current nonce count
-					ncHex: this._auth._ncHex,        // Store hex representation
-					cnonce: this._auth._cnonce       // Store client nonce for qop support
+					nc: this._auth._nc, // Store current nonce count
+					ncHex: this._auth._ncHex, // Store hex representation
+					cnonce: this._auth._cnonce, // Store client nonce for qop support
 				};
 				logger.debug('Authentication credentials cached for proactive auth');
 
