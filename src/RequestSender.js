@@ -14,6 +14,10 @@ const EventHandlers = {
 };
 
 module.exports = class RequestSender {
+
+	// Static cache for proactive authorization credentials
+	static _authCache = {};
+
 	constructor(ua, request, eventHandlers) {
 		this._ua = ua;
 		this._eventHandlers = eventHandlers;
@@ -22,6 +26,7 @@ module.exports = class RequestSender {
 		this._auth = null;
 		this._challenged = false;
 		this._staled = false;
+		this._proactiveAuth = false;
 
 		// Define the undefined handlers.
 		for (const handler in EventHandlers) {
@@ -56,6 +61,9 @@ module.exports = class RequestSender {
 				this._receiveResponse(response);
 			},
 		};
+
+		// Try proactive authorization if we have cached credentials.
+		this._attemptProactiveAuth();
 
 		switch (this._method) {
 			case 'INVITE': {
@@ -94,6 +102,64 @@ module.exports = class RequestSender {
 		}
 
 		this.clientTransaction.send();
+	}
+
+	/**
+	* Attempt proactive authorization using cached credentials.
+	* This avoids the need to wait for a 401/407 challenge.
+	*/
+	_attemptProactiveAuth()
+	{
+		const cacheKey = this._ua.configuration.registrar_server;
+		const cachedAuth = RequestSender._authCache[cacheKey];
+
+		if (!cachedAuth)
+		{
+			return;
+		}
+
+		try
+		{
+			// Create a digest authentication object from cached credentials
+			this._auth = new DigestAuthentication({
+				username: this._ua.configuration.authorization_user,
+				password: this._ua.configuration.password,
+				realm: this._ua.configuration.realm,
+				ha1: this._ua.configuration.ha1
+			});
+
+			// Restore nonce count state from cache to maintain replay protection
+			// RFC 2617: nonce count must increase for each request with same nonce
+			this._auth._nc = cachedAuth.nc || 0;
+			this._auth._ncHex = cachedAuth.ncHex || '00000000';
+			this._auth._cnonce = cachedAuth.cnonce || null;
+
+			// Set authentication parameters from cache
+			this._auth._realm = cachedAuth.realm;
+			this._auth._nonce = cachedAuth.nonce;
+			this._auth._opaque = cachedAuth.opaque;
+			this._auth._algorithm = cachedAuth.algorithm;
+			this._auth._qop = cachedAuth.qop;
+
+			// Authenticate the request
+			if (this._auth.authenticate(this._request, {
+				realm: cachedAuth.realm,
+				nonce: cachedAuth.nonce,
+				opaque: cachedAuth.opaque,
+				algorithm: cachedAuth.algorithm,
+				qop: cachedAuth.qop,
+				stale: false
+			}))
+			{
+				this._request.setHeader('authorization', this._auth.toString());
+				this._proactiveAuth = true;
+				logger.debug('Proactive authorization header added');
+			}
+		}
+		catch (e)
+		{
+			logger.debug('Proactive authentication failed:', e.message);
+		}
 	}
 
 	/**
@@ -150,6 +216,21 @@ module.exports = class RequestSender {
 					return;
 				}
 				this._challenged = true;
+
+				// Cache authentication credentials for proactive authorization.
+				// Include nonce count state to maintain RFC 2617 replay protection
+				const cacheKey = this._ua.configuration.registrar_server;
+				RequestSender._authCache[cacheKey] = {
+					realm: challenge.realm,
+					nonce: challenge.nonce,
+					opaque: challenge.opaque,
+					algorithm: challenge.algorithm,
+					qop: challenge.qop,
+					nc: this._auth._nc,              // Store current nonce count
+					ncHex: this._auth._ncHex,        // Store hex representation
+					cnonce: this._auth._cnonce       // Store client nonce for qop support
+				};
+				logger.debug('Authentication credentials cached for proactive auth');
 
 				// Update ha1 and realm in the UA.
 				this._ua.set('realm', this._auth.get('realm'));
