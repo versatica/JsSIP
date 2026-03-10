@@ -56,8 +56,8 @@ module.exports = class Dialog {
 			this._remote_uri = message.parseHeader('from').uri;
 			this._remote_target = contact.uri;
 			this._route_set = message.getHeaders('record-route');
-			this.incoming_ack_seqnum = message.cseq;
-			this.outgoing_ack_seqnum = null;
+			this._incoming_ack_seqnum = message.cseq;
+			this._outgoing_ack_seqnum = null;
 		}
 		// RFC 3261 12.1.2.
 		else if (type === 'UAC') {
@@ -75,8 +75,8 @@ module.exports = class Dialog {
 			this._remote_uri = message.parseHeader('to').uri;
 			this._remote_target = contact.uri;
 			this._route_set = message.getHeaders('record-route').reverse();
-			this.incoming_ack_seqnum = null;
-			this.outgoing_ack_seqnum = this._local_seqnum;
+			this._incoming_ack_seqnum = null;
+			this._outgoing_ack_seqnum = this._local_seqnum;
 		}
 
 		this._ua.newDialog(this);
@@ -175,12 +175,12 @@ module.exports = class Dialog {
 		}
 
 		// ACK received. Cleanup this._ack_seqnum.
-		if (request.method === JsSIP_C.ACK && this.incoming_ack_seqnum !== null) {
-			this.incoming_ack_seqnum = null;
+		if (request.method === JsSIP_C.ACK && this._incoming_ack_seqnum !== null) {
+			this._incoming_ack_seqnum = null;
 		}
 		// INVITE received. Set this._ack_seqnum.
 		else if (request.method === JsSIP_C.INVITE) {
-			this.incoming_ack_seqnum = request.cseq;
+			this._incoming_ack_seqnum = request.cseq;
 		}
 
 		this._owner.receiveRequest(request);
@@ -197,12 +197,12 @@ module.exports = class Dialog {
 		// CANCEL and ACK must use the same sequence number as the INVITE.
 		const cseq =
 			method === JsSIP_C.CANCEL || method === JsSIP_C.ACK
-				? this.outgoing_ack_seqnum
+				? this._outgoing_ack_seqnum
 				: (this._local_seqnum += 1);
 
 		// In case of re-INVITE store ack_seqnum for future CANCEL or ACK.
 		if (method === JsSIP_C.INVITE) {
-			this.outgoing_ack_seqnum = cseq;
+			this._outgoing_ack_seqnum = cseq;
 		}
 
 		const request = new SIPMessage.OutgoingRequest(
@@ -234,8 +234,8 @@ module.exports = class Dialog {
 				// We are not expecting any ACK with lower seqnum than the current one.
 				// Or this is not the ACK we are waiting for.
 				if (
-					this.incoming_ack_seqnum === null ||
-					request.cseq !== this.incoming_ack_seqnum
+					this._incoming_ack_seqnum === null ||
+					request.cseq !== this._incoming_ack_seqnum
 				) {
 					return false;
 				}

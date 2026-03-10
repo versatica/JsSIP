@@ -2,6 +2,10 @@
 
 ### NEXT
 
+### 3.13.6
+
+- Dialog: Fix wrong CSEQ on ACK for re-INVITE (#966). Thans to @sabrineLayouni reporting.
+
 ### 3.13.5
 
 - ReferSubscriber: Fix authentication causing ID update (#961). Thans to @sabrineLayouni reporting.
