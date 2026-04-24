@@ -125,7 +125,7 @@ const config = tsEslint.config(
 		files: ['src/**/*.ts'],
 		languageOptions: {
 			parserOptions: {
-				project: 'tsconfig.json',
+				project: 'tsconfig.eslint.json',
 			},
 		},
 		rules: {

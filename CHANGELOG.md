@@ -2,13 +2,17 @@
 
 ### NEXT
 
+### 3.13.7
+
+- Do not include test folder in lib/.
+
 ### 3.13.6
 
-- Dialog: Fix wrong CSEQ on ACK for re-INVITE (#966). Thans to @sabrineLayouni reporting.
+- Dialog: Fix wrong CSEQ on ACK for re-INVITE (#966). Thanks to @sabrineLayouni reporting.
 
 ### 3.13.5
 
-- ReferSubscriber: Fix authentication causing ID update (#961). Thans to @sabrineLayouni reporting.
+- ReferSubscriber: Fix authentication causing ID update (#961). Thanks to @sabrineLayouni reporting.
 - Fix: JsSIP.d.ts was missing in lib/.
 
 ### 3.13.4
