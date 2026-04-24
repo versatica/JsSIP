@@ -40,4 +40,5 @@
 		"noUncheckedSideEffectImports": true,
 	},
 	"include": ["src"],
+	"exclude": ["src/test"],
 }
