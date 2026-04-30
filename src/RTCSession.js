@@ -2314,7 +2314,8 @@ module.exports = class RTCSession extends EventEmitter {
 				options.extraHeaders.push(`Replaces: ${replaces}`);
 			}
 
-			let target_uri = request.refer_to.uri.clone();
+			const target_uri = request.refer_to.uri.clone();
+
 			target_uri.clearHeaders();
 			session.connect(target_uri, options, initCallback);
 		}
