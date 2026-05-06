@@ -2,6 +2,10 @@
 
 ### NEXT
 
+### 3.13.8
+
+- RTCSession: Fix, remove refer_to uri headers when creating target uri for INVITE (#971). Thanks to @karstenluedtke.
+
 ### 3.13.7
 
 - Do not include test folder in lib/.
