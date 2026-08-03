@@ -106,6 +106,7 @@ gulp.task('test', function(cb)
     'test/test-parser.js',
     'test/test-properties.js',
     'test/test-UA-no-WebRTC.js',
+    'test/test-UA-subscriber-notifier.js',
     'test/test-digestAuthentication.js'
   ];
 

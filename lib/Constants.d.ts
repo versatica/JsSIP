@@ -57,7 +57,7 @@ export declare enum DTMF_TRANSPORT {
 }
 
 export const REASON_PHRASE: Record<number, string>
-export const ALLOWED_METHODS = 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY'
+export const ALLOWED_METHODS = 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY,SUBSCRIBE'
 export const ACCEPTED_BODY_TYPES = 'application/sdp, application/dtmf-relay'
 export const MAX_FORWARDS = 69
 export const SESSION_EXPIRES = 90
