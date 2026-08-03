@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A fork of [versatica/JsSIP](https://github.com/versatica/JsSIP) (the JavaScript SIP library, SIP over WebSocket + WebRTC), published as the scoped package `@per_moeller/jssip-telecomx`. The fork's custom changes are concentrated in `lib/RTCSession.js`: a `forceUseStunResponse` option (passed via constraints/`mediaConstraints`) that rewrites the SDP so only the server-reflexive (STUN response) ICE candidate is advertised — used because calls always go through a media server, never peer-to-peer, and browsers don't reliably surface the srflx candidate via `icecandidate` events. Key helpers: `_correctSdpIfForcingStun()` and `_substituteIceCandidatesWithLocalCandidate()`; incoming calls use the `selectedcandidatepairchange` event on the ICE transport, outgoing calls capture the srflx candidate from `icecandidate` events. Preserve this behavior when merging upstream changes.
 
+Upstream sync state: all protocol/behavior fixes and the RFC 6665 Subscribe/Notify feature through upstream 3.13.8 have been ported (August 2026). Upstream's 3.11+ tooling restructure (lib/→src/, esbuild instead of gulp/browserify, TypeScript jest tests) was deliberately NOT adopted — this fork keeps the gulp/lib layout. When syncing again, cherry-pick or hand-port upstream's `src/` changes into `lib/`, translating to this repo's Allman style.
+
 ## Commands
 
 Gulp drives everything (use `node_modules/.bin/gulp` if gulp-cli is not installed globally):
@@ -21,7 +23,7 @@ Gulp drives everything (use `node_modules/.bin/gulp` if gulp-cli is not installe
 
 ## Build pipeline / generated code
 
-- Source lives in `lib/` (modern JS, CommonJS modules). Babel transpiles it to `lib-es5/`, which is the published `main` entry. Browserify bundles `lib-es5` into `dist/` for browser use. **Consumers never see `lib/` directly** — an edit in `lib/` is invisible until `gulp babel` is re-run, and `lib-es5/`/`dist/` are committed artifacts.
+- Source lives in `lib/` (modern JS, CommonJS modules). Babel transpiles it to `lib-es5/`, which is the published `main` entry. Browserify bundles `lib-es5` into `dist/` for browser use. **Consumers never see `lib/` directly** — an edit in `lib/` is invisible until `gulp babel` is re-run. `dist/` is committed; `lib-es5/` is gitignored and must be rebuilt (`gulp babel`) after any `lib/` change, e.g. before running tests.
 - `lib/Grammar.js` (~12k lines) is **generated** from `lib/Grammar.pegjs` by `gulp grammar`, which also applies regex post-processing (converts thrown SyntaxErrors into `-1` returns). Never hand-edit `Grammar.js`; edit the `.pegjs` file and regenerate.
 - TypeScript definitions (`lib/*.d.ts`) are hand-maintained alongside the sources; update them when changing public API.
 
