@@ -14,8 +14,7 @@ const uglify = require('gulp-uglify-es').default;
 const rename = require('gulp-rename');
 const header = require('gulp-header');
 const expect = require('gulp-expect-file');
-const nodeunit = require('gulp-nodeunit-runner');
-const eslint = require('gulp-eslint');
+const eslint = require('gulp-eslint-new');
 const plumber = require('gulp-plumber');
 const log = require('fancy-log');
 const colors = require('ansi-colors');
@@ -96,8 +95,10 @@ gulp.task('uglify', function()
     .pipe(gulp.dest('dist/'));
 });
 
-gulp.task('test', function()
+gulp.task('test', function(cb)
 {
+  const local_nodeunit = path.resolve('./node_modules/.bin/nodeunit');
+
   // var src = 'test/*.js';
   const src = [
     'test/test-classes.js',
@@ -108,9 +109,19 @@ gulp.task('test', function()
     'test/test-digestAuthentication.js'
   ];
 
-  return gulp.src(src)
-    .pipe(expect(EXPECT_OPTIONS, src))
-    .pipe(nodeunit({ reporter: 'default' }));
+  exec(`${local_nodeunit} ${src.join(' ')}`,
+    function(error, stdout, stderr)
+    {
+      log(stdout);
+      if (error)
+      {
+        cb(new Error(stderr || 'test failed'));
+
+        return;
+      }
+      cb();
+    }
+  );
 });
 
 gulp.task('grammar', function(cb)
