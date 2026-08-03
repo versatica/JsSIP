@@ -1,5 +1,5 @@
 /*
- * JsSIP v4.10.4
+ * JsSIP v4.11.0
  * the Javascript SIP library
  * Copyright: 2012-2026 
  * Homepage: https://jssip.net
@@ -209,7 +209,7 @@ var checks = {
     register_expires: function register_expires(_register_expires) {
       if (Utils.isDecimal(_register_expires)) {
         var value = Number(_register_expires);
-        if (value > 0) {
+        if (value >= 0) {
           return value;
         }
       }
@@ -298,7 +298,7 @@ exports.load = function (dst, src) {
     }
   }
 };
-},{"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Socket":22,"./URI":27,"./Utils":28}],2:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Grammar":7,"./Socket":23,"./URI":29,"./Utils":30}],2:[function(require,module,exports){
 "use strict";
 
 var pkg = require('../package.json');
@@ -464,7 +464,7 @@ module.exports = {
     604: 'Does Not Exist Anywhere',
     606: 'Not Acceptable'
   },
-  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY',
+  ALLOWED_METHODS: 'INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY,SUBSCRIBE',
   ACCEPTED_BODY_TYPES: 'application/sdp, application/dtmf-relay',
   MAX_FORWARDS: 69,
   SESSION_EXPIRES: 90,
@@ -472,7 +472,7 @@ module.exports = {
   CONNECTION_RECOVERY_MAX_INTERVAL: 30,
   CONNECTION_RECOVERY_MIN_INTERVAL: 2
 };
-},{"../package.json":40}],3:[function(require,module,exports){
+},{"../package.json":42}],3:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -530,7 +530,8 @@ module.exports = /*#__PURE__*/function () {
       this._remote_uri = message.parseHeader('from').uri;
       this._remote_target = contact.uri;
       this._route_set = message.getHeaders('record-route');
-      this._ack_seqnum = this._remote_seqnum;
+      this._incoming_ack_seqnum = message.cseq;
+      this._outgoing_ack_seqnum = null;
     }
     // RFC 3261 12.1.2.
     else if (type === 'UAC') {
@@ -548,7 +549,8 @@ module.exports = /*#__PURE__*/function () {
       this._remote_uri = message.parseHeader('to').uri;
       this._remote_target = contact.uri;
       this._route_set = message.getHeaders('record-route').reverse();
-      this._ack_seqnum = null;
+      this._incoming_ack_seqnum = null;
+      this._outgoing_ack_seqnum = this._local_seqnum;
     }
     this._ua.newDialog(this);
     logger.debug("new ".concat(type, " dialog created with status ").concat(this._state === C.STATUS_EARLY ? 'EARLY' : 'CONFIRMED'));
@@ -616,9 +618,18 @@ module.exports = /*#__PURE__*/function () {
       var body = options.body || null;
       var request = this._createRequest(method, extraHeaders, body);
 
+      // Some usages may need to know about authentication.
+      var onAuthenticated = eventHandlers.onAuthenticated || function () {};
+
       // Increase the local CSeq on authentication.
-      eventHandlers.onAuthenticated = function () {
+      eventHandlers.onAuthenticated = function (_request) {
         _this._local_seqnum += 1;
+
+        // In case of re-INVITE store outgoing ack_seqnum for its CANCEL or ACK.
+        if (request.method === JsSIP_C.INVITE) {
+          _this._outgoing_ack_seqnum = _this._local_seqnum;
+        }
+        onAuthenticated(_request);
       };
       var request_sender = new Dialog_RequestSender(this, request, eventHandlers);
       request_sender.send();
@@ -635,12 +646,12 @@ module.exports = /*#__PURE__*/function () {
       }
 
       // ACK received. Cleanup this._ack_seqnum.
-      if (request.method === JsSIP_C.ACK && this._ack_seqnum !== null) {
-        this._ack_seqnum = null;
+      if (request.method === JsSIP_C.ACK && this._incoming_ack_seqnum !== null) {
+        this._incoming_ack_seqnum = null;
       }
       // INVITE received. Set this._ack_seqnum.
       else if (request.method === JsSIP_C.INVITE) {
-        this._ack_seqnum = request.cseq;
+        this._incoming_ack_seqnum = request.cseq;
       }
       this._owner.receiveRequest(request);
     }
@@ -653,7 +664,14 @@ module.exports = /*#__PURE__*/function () {
       if (!this._local_seqnum) {
         this._local_seqnum = Math.floor(Math.random() * 10000);
       }
-      var cseq = method === JsSIP_C.CANCEL || method === JsSIP_C.ACK ? this._local_seqnum : this._local_seqnum += 1;
+
+      // CANCEL and ACK must use the same sequence number as the INVITE.
+      var cseq = method === JsSIP_C.CANCEL || method === JsSIP_C.ACK ? this._outgoing_ack_seqnum : this._local_seqnum += 1;
+
+      // In case of re-INVITE store ack_seqnum for future CANCEL or ACK.
+      if (method === JsSIP_C.INVITE) {
+        this._outgoing_ack_seqnum = cseq;
+      }
       var request = new SIPMessage.OutgoingRequest(method, this._remote_target, this._ua, {
         'cseq': cseq,
         'call_id': this._id.call_id,
@@ -677,7 +695,7 @@ module.exports = /*#__PURE__*/function () {
         if (request.method === JsSIP_C.ACK) {
           // We are not expecting any ACK with lower seqnum than the current one.
           // Or this is not the ACK we are waiting for.
-          if (this._ack_seqnum === null || request.cseq !== this._ack_seqnum) {
+          if (this._incoming_ack_seqnum === null || request.cseq !== this._incoming_ack_seqnum) {
             return false;
           }
         } else {
@@ -736,7 +754,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Constants":2,"./Dialog/RequestSender":4,"./Logger":9,"./SIPMessage":21,"./Transactions":24,"./Utils":28}],4:[function(require,module,exports){
+},{"./Constants":2,"./Dialog/RequestSender":4,"./Logger":9,"./SIPMessage":22,"./Transactions":26,"./Utils":30}],4:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -825,11 +843,7 @@ module.exports = /*#__PURE__*/function () {
         this._eventHandlers.onDialogError(response);
       } else if (response.method === JsSIP_C.INVITE && response.status_code === 491) {
         if (this._reattempt) {
-          if (response.status_code >= 200 && response.status_code < 300) {
-            this._eventHandlers.onSuccessResponse(response);
-          } else if (response.status_code >= 300) {
-            this._eventHandlers.onErrorResponse(response);
-          }
+          this._eventHandlers.onErrorResponse(response);
         } else {
           this._request.cseq = this._dialog.local_seqnum += 1;
           this._reattemptTimer = setTimeout(function () {
@@ -847,7 +861,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"../Constants":2,"../RequestSender":20,"../Transactions":24}],5:[function(require,module,exports){
+},{"../Constants":2,"../RequestSender":21,"../Transactions":26}],5:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -1040,7 +1054,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Logger":9,"./Utils":28}],6:[function(require,module,exports){
+},{"./Logger":9,"./Utils":30}],6:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -13528,7 +13542,7 @@ module.exports = function () {
   result.SyntaxError.prototype = Error.prototype;
   return result;
 }();
-},{"./NameAddrHeader":11,"./URI":27}],8:[function(require,module,exports){
+},{"./NameAddrHeader":11,"./URI":29}],8:[function(require,module,exports){
 "use strict";
 
 var pkg = require('../package.json');
@@ -13541,6 +13555,7 @@ var NameAddrHeader = require('./NameAddrHeader');
 var Grammar = require('./Grammar');
 var WebSocketInterface = require('./WebSocketInterface');
 var debug = require('debug')('JsSIP');
+var RTCSession = require('./RTCSession');
 debug('version %s', pkg.version);
 
 /**
@@ -13555,6 +13570,7 @@ module.exports = {
   NameAddrHeader: NameAddrHeader,
   WebSocketInterface: WebSocketInterface,
   Grammar: Grammar,
+  RTCSession: RTCSession,
   // Expose the debug module.
   debug: require('debug'),
   get name() {
@@ -13564,7 +13580,7 @@ module.exports = {
     return pkg.version;
   }
 };
-},{"../package.json":40,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":11,"./UA":26,"./URI":27,"./Utils":28,"./WebSocketInterface":29,"debug":31}],9:[function(require,module,exports){
+},{"../package.json":42,"./Constants":2,"./Exceptions":6,"./Grammar":7,"./NameAddrHeader":11,"./RTCSession":15,"./UA":28,"./URI":29,"./Utils":30,"./WebSocketInterface":31,"debug":33}],9:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -13610,7 +13626,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"debug":31}],10:[function(require,module,exports){
+},{"debug":33}],10:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -13872,7 +13888,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
 }(EventEmitter);
-},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./URI":27,"./Utils":28,"events":33}],11:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":21,"./SIPMessage":22,"./URI":29,"./Utils":30,"events":35}],11:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -13992,7 +14008,436 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Grammar":7,"./URI":27}],12:[function(require,module,exports){
+},{"./Grammar":7,"./URI":29}],12:[function(require,module,exports){
+"use strict";
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
+function _possibleConstructorReturn(t, e) { if (e && ("object" == _typeof(e) || "function" == typeof e)) return e; if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined"); return _assertThisInitialized(t); }
+function _assertThisInitialized(e) { if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); return e; }
+function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
+function _getPrototypeOf(t) { return _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function (t) { return t.__proto__ || Object.getPrototypeOf(t); }, _getPrototypeOf(t); }
+function _inherits(t, e) { if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function"); t.prototype = Object.create(e && e.prototype, { constructor: { value: t, writable: !0, configurable: !0 } }), Object.defineProperty(t, "prototype", { writable: !1 }), e && _setPrototypeOf(t, e); }
+function _setPrototypeOf(t, e) { return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function (t, e) { return t.__proto__ = e, t; }, _setPrototypeOf(t, e); }
+var EventEmitter = require('events').EventEmitter;
+var Exceptions = require('./Exceptions');
+var Logger = require('./Logger');
+var JsSIP_C = require('./Constants');
+var Utils = require('./Utils');
+var Dialog = require('./Dialog');
+var logger = new Logger('Notifier');
+
+/**
+ * Termination codes.
+ */
+var C = {
+  // Termination codes.
+  NOTIFY_RESPONSE_TIMEOUT: 0,
+  NOTIFY_TRANSPORT_ERROR: 1,
+  NOTIFY_NON_OK_RESPONSE: 2,
+  NOTIFY_AUTHENTICATION_FAILED: 3,
+  FINAL_NOTIFY_SENT: 4,
+  UNSUBSCRIBE_RECEIVED: 5,
+  SUBSCRIPTION_EXPIRED: 6,
+  // Notifer states.
+  STATE_PENDING: 0,
+  STATE_ACTIVE: 1,
+  STATE_TERMINATED: 2,
+  // RFC 6665 3.1.1, default expires value.
+  DEFAULT_EXPIRES_SEC: 900
+};
+
+/**
+ * RFC 6665 Notifier implementation.
+ */
+module.exports = /*#__PURE__*/function (_EventEmitter) {
+  /**
+   * @param {UA} ua - JsSIP User Agent instance.
+   * @param {IncomingRequest} subscribe - Subscribe request.
+   * @param {string} contentType - Content-Type header value.
+   * @param {NotifierOptions} options - Optional parameters.
+   *   @param {Array<string>}  extraHeaders - Additional SIP headers.
+   *   @param {string} allowEvents - Allow-Events header value.
+   *   @param {boolean} pending - Set initial dialog state as "pending".
+   *   @param {number} defaultExpires - Default expires value (seconds).
+   */
+  function Notifier(ua, subscribe, contentType, _ref) {
+    var _this;
+    var extraHeaders = _ref.extraHeaders,
+      allowEvents = _ref.allowEvents,
+      pending = _ref.pending,
+      defaultExpires = _ref.defaultExpires;
+    _classCallCheck(this, Notifier);
+    logger.debug('new');
+    _this = _callSuper(this, Notifier);
+    if (!contentType) {
+      throw new TypeError('Not enough arguments. Missing contentType');
+    }
+    Notifier.checkSubscribe(subscribe);
+    var eventName = subscribe.getHeader('event');
+    _this._ua = ua;
+    _this._initial_subscribe = subscribe;
+    _this._expires_timestamp = null;
+    _this._expires_timer = null;
+    _this._defaultExpires = defaultExpires || C.DEFAULT_EXPIRES_SEC;
+
+    // Notifier state: pending, active, terminated.
+    _this._state = pending ? C.STATE_PENDING : C.STATE_ACTIVE;
+    _this._content_type = contentType;
+    _this._headers = Utils.cloneArray(extraHeaders);
+    _this._headers.push("Event: ".concat(eventName));
+
+    // Use contact from extraHeaders or create it.
+    _this._contact = _this._headers.find(function (header) {
+      return header.startsWith('Contact');
+    });
+    if (!_this._contact) {
+      _this._contact = "Contact: ".concat(_this._ua._contact.toString());
+      _this._headers.push(_this._contact);
+    }
+    if (allowEvents) {
+      _this._headers.push("Allow-Events: ".concat(allowEvents));
+    }
+    _this._target = subscribe.from.uri.user;
+    subscribe.to_tag = Utils.newTag();
+
+    // Custom session empty object for high level use.
+    _this._data = {};
+    return _this;
+  }
+
+  // Expose Notifier constants as a property of the Notifier instance.
+  _inherits(Notifier, _EventEmitter);
+  return _createClass(Notifier, [{
+    key: "C",
+    get: function get() {
+      return C;
+    }
+
+    /**
+     * Get dialog state.
+     */
+  }, {
+    key: "state",
+    get: function get() {
+      return this._state;
+    }
+
+    /**
+     * Get dialog id.
+     */
+  }, {
+    key: "id",
+    get: function get() {
+      return this._dialog ? this._dialog.id : null;
+    }
+  }, {
+    key: "data",
+    get: function get() {
+      return this._data;
+    },
+    set: function set(_data) {
+      this._data = _data;
+    }
+
+    /**
+     * Dialog callback.
+     * Called also for initial subscribe.
+     * Supported RFC 6665 4.4.3: initial fetch subscribe (with expires: 0).
+     */
+  }, {
+    key: "receiveRequest",
+    value: function receiveRequest(request) {
+      if (request.method !== JsSIP_C.SUBSCRIBE) {
+        request.reply(405);
+        return;
+      }
+      this._setExpires(request);
+
+      // Create dialog for normal and fetch-subscribe.
+      if (!this._dialog) {
+        this._dialog = new Dialog(this, request, 'UAS');
+      }
+      request.reply(200, null, ["Expires: ".concat(this._expires), "".concat(this._contact)]);
+      var body = request.body;
+      var content_type = request.getHeader('content-type');
+      var is_unsubscribe = this._expires === 0;
+      if (!is_unsubscribe) {
+        this._setExpiresTimer();
+      }
+      logger.debug('emit "subscribe"');
+      this.emit('subscribe', is_unsubscribe, request, body, content_type);
+      if (is_unsubscribe) {
+        this._terminateDialog(C.UNSUBSCRIBE_RECEIVED);
+      }
+    }
+
+    /**
+     * User API
+     */
+
+    /**
+     * Call this method after creating the Notifier instance and setting the event handlers.
+     */
+  }, {
+    key: "start",
+    value: function start() {
+      logger.debug('start()');
+      if (this._state === C.STATE_TERMINATED) {
+        throw new Exceptions.InvalidStateError(this._state);
+      }
+      this.receiveRequest(this._initial_subscribe);
+    }
+
+    /**
+     * Switch pending dialog state to active.
+     */
+  }, {
+    key: "setActiveState",
+    value: function setActiveState() {
+      logger.debug('setActiveState()');
+      if (this._state === C.STATE_TERMINATED) {
+        throw new Exceptions.InvalidStateError(this._state);
+      }
+      if (this._state === C.STATE_PENDING) {
+        this._state = C.STATE_ACTIVE;
+      }
+    }
+
+    /**
+     *  Send the initial and subsequent notify request.
+     *  @param {string} body - notify request body.
+     */
+  }, {
+    key: "notify",
+    value: function notify() {
+      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      logger.debug('notify()');
+      if (this._state === C.STATE_TERMINATED) {
+        throw new Exceptions.InvalidStateError(this._state);
+      }
+      var expires = Math.floor((this._expires_timestamp - new Date().getTime()) / 1000);
+
+      // expires_timer is about to trigger. Clean up the timer and terminate.
+      if (expires <= 0) {
+        if (!this._expires_timer) {
+          logger.error('expires timer is not set');
+        }
+        clearTimeout(this._expires_timer);
+        this.terminate(body, 'timeout');
+      } else {
+        this._sendNotify([";expires=".concat(expires)], body);
+      }
+    }
+
+    /**
+     *  Terminate. (Send the final NOTIFY request).
+     *
+     * @param {string} body - Notify message body.
+     * @param {string} reason - Set Subscription-State reason parameter.
+     * @param {number} retryAfter - Set Subscription-State retry-after parameter.
+     */
+  }, {
+    key: "terminate",
+    value: function terminate() {
+      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var reason = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var retryAfter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      logger.debug('terminate()');
+      if (this._state === C.STATE_TERMINATED) {
+        return;
+      }
+      var subsStateParameters = [];
+      if (reason) {
+        subsStateParameters.push(";reason=".concat(reason));
+      }
+      if (retryAfter !== null) {
+        subsStateParameters.push(";retry-after=".concat(retryAfter));
+      }
+      this._sendNotify(subsStateParameters, body, null, 'terminated');
+      this._terminateDialog(reason === 'timeout' ? C.SUBSCRIPTION_EXPIRED : C.FINAL_NOTIFY_SENT);
+    }
+
+    /**
+     * Private API
+     */
+  }, {
+    key: "_terminateDialog",
+    value: function _terminateDialog(termination_code) {
+      if (this._state === C.STATE_TERMINATED) {
+        return;
+      }
+      this._state = C.STATE_TERMINATED;
+      clearTimeout(this._expires_timer);
+      if (this._dialog) {
+        this._dialog.terminate();
+        this._dialog = null;
+      }
+      logger.debug("emit \"terminated\" code=".concat(termination_code));
+      this.emit('terminated', termination_code);
+    }
+  }, {
+    key: "_setExpires",
+    value: function _setExpires(request) {
+      if (request.hasHeader('expires')) {
+        this._expires = parseInt(request.getHeader('expires'));
+      } else {
+        this._expires = this._defaultExpires;
+        logger.debug("missing Expires header field, default value set: ".concat(this._expires));
+      }
+    }
+
+    /**
+     * @param {Array<string>} subsStateParams subscription state parameters.
+     * @param {String} body Notify body
+     * @param {Array<string>} extraHeaders
+     */
+  }, {
+    key: "_sendNotify",
+    value: function _sendNotify(subsStateParameters) {
+      var _this2 = this;
+      var body = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var extraHeaders = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var state = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+      // Prevent send notify after final notify.
+      if (this._state === C.STATE_TERMINATED) {
+        logger.warn('final notify already sent');
+        return;
+      }
+
+      // Build Subscription-State header with parameters.
+      var subsState = "Subscription-State: ".concat(state || this._parseState());
+      var _iterator = _createForOfIteratorHelper(subsStateParameters),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var param = _step.value;
+          subsState += param;
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      var headers = Utils.cloneArray(this._headers);
+      headers.push(subsState);
+      if (extraHeaders) {
+        headers = headers.concat(extraHeaders);
+      }
+      if (body) {
+        headers.push("Content-Type: ".concat(this._content_type));
+      }
+      this._dialog.sendRequest(JsSIP_C.NOTIFY, {
+        body: body,
+        extraHeaders: headers,
+        eventHandlers: {
+          onRequestTimeout: function onRequestTimeout() {
+            _this2._terminateDialog(C.NOTIFY_RESPONSE_TIMEOUT);
+          },
+          onTransportError: function onTransportError() {
+            _this2._terminateDialog(C.NOTIFY_TRANSPORT_ERROR);
+          },
+          onErrorResponse: function onErrorResponse(response) {
+            if (response.status_code === 401 || response.status_code === 407) {
+              _this2._terminateDialog(C.NOTIFY_AUTHENTICATION_FAILED);
+            } else {
+              _this2._terminateDialog(C.NOTIFY_NON_OK_RESPONSE);
+            }
+          },
+          onDialogError: function onDialogError() {
+            _this2._terminateDialog(C.NOTIFY_NON_OK_RESPONSE);
+          }
+        }
+      });
+    }
+  }, {
+    key: "_setExpiresTimer",
+    value: function _setExpiresTimer() {
+      var _this3 = this;
+      this._expires_timestamp = new Date().getTime() + this._expires * 1000;
+      clearTimeout(this._expires_timer);
+      this._expires_timer = setTimeout(function () {
+        if (_this3._state === C.STATE_TERMINATED) {
+          return;
+        }
+        logger.debug('emit "expired"');
+
+        // Client can hook into the 'expired' event and call terminate to send a custom notify.
+        _this3.emit('expired');
+
+        // This will be no-op if the client already called `terminate()`.
+        _this3.terminate(null, 'timeout');
+      }, this._expires * 1000);
+    }
+  }, {
+    key: "_parseState",
+    value: function _parseState() {
+      switch (this._state) {
+        case C.STATE_PENDING:
+          return 'pending';
+        case C.STATE_ACTIVE:
+          return 'active';
+        case C.STATE_TERMINATED:
+          return 'terminated';
+        default:
+          throw new TypeError('wrong state value');
+      }
+    }
+  }], [{
+    key: "C",
+    get:
+    /**
+     * Expose C object.
+     */
+    function get() {
+      return C;
+    }
+  }, {
+    key: "init_incoming",
+    value: function init_incoming(request, callback) {
+      try {
+        Notifier.checkSubscribe(request);
+      } catch (error) {
+        logger.warn('Notifier.init_incoming: invalid request. Error: ', error.message);
+        request.reply(405);
+        return;
+      }
+      callback();
+    }
+  }, {
+    key: "checkSubscribe",
+    value: function checkSubscribe(subscribe) {
+      if (!subscribe) {
+        throw new TypeError('Not enough arguments. Missing subscribe request');
+      }
+      if (subscribe.method !== JsSIP_C.SUBSCRIBE) {
+        throw new TypeError('Invalid method for Subscribe request');
+      }
+      if (!subscribe.hasHeader('contact')) {
+        throw new TypeError('Missing Contact header in subscribe request');
+      }
+      if (!subscribe.hasHeader('event')) {
+        throw new TypeError('Missing Event header in subscribe request');
+      }
+      var expires = subscribe.getHeader('expires');
+      if (expires) {
+        var parsed_expires = parseInt(expires);
+        if (!Utils.isDecimal(parsed_expires) || parsed_expires < 0) {
+          throw new TypeError('Invalid Expires header field in subscribe request');
+        }
+      }
+    }
+  }]);
+}(EventEmitter);
+},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Logger":9,"./Utils":30,"events":35}],13:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -14245,7 +14690,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
 }(EventEmitter);
-},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28,"events":33}],13:[function(require,module,exports){
+},{"./Constants":2,"./Exceptions":6,"./Logger":9,"./RequestSender":21,"./SIPMessage":22,"./Utils":30,"events":35}],14:[function(require,module,exports){
 "use strict";
 
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -14520,7 +14965,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
     return true;
   }
 }
-},{"./Grammar":7,"./Logger":9,"./SIPMessage":21}],14:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9,"./SIPMessage":22}],15:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -15231,7 +15676,8 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         if (_this3._status === C.STATUS_TERMINATED) {
           return;
         }
-        logger.warn(error);
+        logger.warn("answer() failed: ".concat(error.message));
+        _this3._failed('system', error.message, JsSIP_C.causes.INTERNAL_ERROR);
       });
     }
 
@@ -15353,7 +15799,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     value: function sendDTMF(tones) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       logger.debug('sendDTMF() | tones: %s', tones);
-      var position = 0;
       var duration = options.duration || null;
       var interToneGap = options.interToneGap || null;
       var transportType = options.transportType || JsSIP_C.DTMF_TRANSPORT.INFO;
@@ -15433,13 +15878,15 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       function _sendDTMF() {
         var _this5 = this;
         var timeout;
-        if (this._status === C.STATUS_TERMINATED || !this._tones || position >= this._tones.length) {
+        if (this._status === C.STATUS_TERMINATED || !this._tones) {
           // Stop sending DTMF.
           this._tones = null;
           return;
         }
-        var tone = this._tones[position];
-        position += 1;
+
+        // Retrieve the next tone.
+        var tone = this._tones[0];
+        this._tones = this._tones.substring(1);
         if (tone === ',') {
           timeout = 2000;
         } else {
@@ -15554,7 +16001,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._localHold === true) {
         return false;
       }
-      if (!this._isReadyToReOffer()) {
+      if (!this.isReadyToReOffer()) {
         return false;
       }
       this._localHold = true;
@@ -15600,7 +16047,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._localHold === false) {
         return false;
       }
-      if (!this._isReadyToReOffer()) {
+      if (!this.isReadyToReOffer()) {
         return false;
       }
       this._localHold = false;
@@ -15644,7 +16091,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       if (this._status !== C.STATUS_WAITING_FOR_ACK && this._status !== C.STATUS_CONFIRMED) {
         return false;
       }
-      if (!this._isReadyToReOffer()) {
+      if (!this.isReadyToReOffer()) {
         return false;
       }
       var eventHandlers = {
@@ -15714,6 +16161,12 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       referSubscriber.on('failed', function () {
         delete _this9._referSubscribers[id];
       });
+      referSubscriber.on('authenticated', function () {
+        // Refer request authentication causes CSEQ and hence ID update.
+        delete _this9._referSubscribers[id];
+        id = referSubscriber.id;
+        _this9._referSubscribers[id] = referSubscriber;
+      });
       return referSubscriber;
     }
 
@@ -15724,7 +16177,16 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "sendRequest",
     value: function sendRequest(method, options) {
       logger.debug('sendRequest()');
-      return this._dialog.sendRequest(method, options);
+      if (this._dialog) {
+        return this._dialog.sendRequest(method, options);
+      } else {
+        var dialogsArray = Object.values(this._earlyDialogs);
+        if (dialogsArray.length > 0) {
+          return dialogsArray[0].sendRequest(method, options);
+        }
+        logger.warn('sendRequest() | no valid early dialog found');
+        return;
+      }
     }
 
     /**
@@ -15925,22 +16387,22 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      * Check if RTCSession is ready for an outgoing re-INVITE or UPDATE with SDP.
      */
   }, {
-    key: "_isReadyToReOffer",
-    value: function _isReadyToReOffer() {
+    key: "isReadyToReOffer",
+    value: function isReadyToReOffer() {
       if (!this._rtcReady) {
-        logger.debug('_isReadyToReOffer() | internal WebRTC status not ready');
+        logger.debug('isReadyToReOffer() | internal WebRTC status not ready');
         return false;
       }
 
       // No established yet.
       if (!this._dialog) {
-        logger.debug('_isReadyToReOffer() | session not established yet');
+        logger.debug('isReadyToReOffer() | session not established yet');
         return false;
       }
 
       // Another INVITE transaction is in progress.
       if (this._dialog.uac_pending_reply === true || this._dialog.uas_pending_reply === true) {
-        logger.debug('_isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
+        logger.debug('isReadyToReOffer() | there is another INVITE/UPDATE transaction in progress');
         return false;
       }
       return true;
@@ -16579,7 +17041,9 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           options.extraHeaders = Utils.cloneArray(options.extraHeaders);
           options.extraHeaders.push("Replaces: ".concat(replaces));
         }
-        session.connect(request.refer_to.uri.toAor(), options, initCallback);
+        var target_uri = request.refer_to.uri.clone();
+        target_uri.clearHeaders();
+        session.connect(target_uri, options, initCallback);
       }
       function _reject() {
         notifier.notify(603);
@@ -17342,7 +17806,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           if (_this25._status === C.STATUS_TERMINATED) {
             return;
           }
-          if (!_this25._isReadyToReOffer()) {
+          if (!_this25.isReadyToReOffer()) {
             return;
           }
           logger.debug('runSessionTimer() | sending session refresh request');
@@ -17593,7 +18057,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
 }(EventEmitter);
-},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Logger":9,"./RTCSession/DTMF":15,"./RTCSession/Info":16,"./RTCSession/ReferNotifier":17,"./RTCSession/ReferSubscriber":18,"./RequestSender":20,"./SIPMessage":21,"./Timers":23,"./Transactions":24,"./URI":27,"./Utils":28,"events":33,"sdp-transform":37}],15:[function(require,module,exports){
+},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Logger":9,"./RTCSession/DTMF":16,"./RTCSession/Info":17,"./RTCSession/ReferNotifier":18,"./RTCSession/ReferSubscriber":19,"./RequestSender":21,"./SIPMessage":22,"./Timers":25,"./Transactions":26,"./URI":29,"./Utils":30,"events":35,"sdp-transform":39}],16:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -17656,7 +18120,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       this._direction = 'outgoing';
 
       // Check RTCSession Status.
-      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK) {
+      if (this._session.status !== this._session.C.STATUS_CONFIRMED && this._session.status !== this._session.C.STATUS_WAITING_FOR_ACK && this._session.status !== this._session.C.STATUS_1XX_RECEIVED) {
         throw new Exceptions.InvalidStateError(this._session.status);
       }
       var extraHeaders = Utils.cloneArray(options.extraHeaders);
@@ -17760,7 +18224,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
  * Expose C object.
  */
 module.exports.C = C;
-},{"../Constants":2,"../Exceptions":6,"../Logger":9,"../Utils":28,"events":33}],16:[function(require,module,exports){
+},{"../Constants":2,"../Exceptions":6,"../Logger":9,"../Utils":30,"events":35}],17:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -17869,7 +18333,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
 }(EventEmitter);
-},{"../Constants":2,"../Exceptions":6,"../Utils":28,"events":33}],17:[function(require,module,exports){
+},{"../Constants":2,"../Exceptions":6,"../Utils":30,"events":35}],18:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -17926,7 +18390,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"../Constants":2,"../Logger":9}],18:[function(require,module,exports){
+},{"../Constants":2,"../Logger":9}],19:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -18017,6 +18481,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           },
           onDialogError: function onDialogError() {
             _this2._requestFailed(null, JsSIP_C.causes.DIALOG_ERROR);
+          },
+          onAuthenticated: function onAuthenticated(_request) {
+            _this2._id = _request.cseq;
+            _this2.emit('authenticated');
           }
         }
       });
@@ -18082,7 +18550,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
 }(EventEmitter);
-},{"../Constants":2,"../Grammar":7,"../Logger":9,"../Utils":28,"events":33}],19:[function(require,module,exports){
+},{"../Constants":2,"../Grammar":7,"../Logger":9,"../Utils":30,"events":35}],20:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -18178,9 +18646,15 @@ module.exports = /*#__PURE__*/function () {
         logger.debug('Register request in progress...');
         return;
       }
-      var extraHeaders = this._extraHeaders.slice();
-      extraHeaders.push("Contact: ".concat(this._contact, ";expires=").concat(this._expires).concat(this._extraContactParams));
-      extraHeaders.push("Expires: ".concat(this._expires));
+      var extraHeaders = Utils.cloneArray(this._extraHeaders);
+      var contactValue;
+      if (this._expires) {
+        contactValue = "".concat(this._contact, ";expires=").concat(this._expires).concat(this._extraContactParams);
+        extraHeaders.push("Expires: ".concat(this._expires));
+      } else {
+        contactValue = "".concat(this._contact).concat(this._extraContactParams);
+      }
+      extraHeaders.push("Contact: ".concat(contactValue));
       var fromTag = Utils.newTag();
       if (this._ua.configuration.register_from_tag_trail) {
         if (typeof this._ua.configuration.register_from_tag_trail === 'function') {
@@ -18337,7 +18811,7 @@ module.exports = /*#__PURE__*/function () {
         clearTimeout(this._registrationTimer);
         this._registrationTimer = null;
       }
-      var extraHeaders = this._extraHeaders.slice();
+      var extraHeaders = Utils.cloneArray(this._extraHeaders);
       if (options.all) {
         extraHeaders.push("Contact: *".concat(this._extraContactParams));
       } else {
@@ -18426,7 +18900,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Constants":2,"./Logger":9,"./RequestSender":20,"./SIPMessage":21,"./Utils":28}],20:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./RequestSender":21,"./SIPMessage":22,"./Utils":30}],21:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -18578,7 +19052,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Constants":2,"./DigestAuthentication":5,"./Logger":9,"./Transactions":24}],21:[function(require,module,exports){
+},{"./Constants":2,"./DigestAuthentication":5,"./Logger":9,"./Transactions":26}],22:[function(require,module,exports){
 "use strict";
 
 function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
@@ -19341,7 +19815,7 @@ module.exports = {
   IncomingRequest: IncomingRequest,
   IncomingResponse: IncomingResponse
 };
-},{"./Constants":2,"./Grammar":7,"./Logger":9,"./NameAddrHeader":11,"./Utils":28,"sdp-transform":37}],22:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./Logger":9,"./NameAddrHeader":11,"./Utils":30,"sdp-transform":39}],23:[function(require,module,exports){
 "use strict";
 
 var Logger = require('./Logger');
@@ -19409,7 +19883,546 @@ exports.isSocket = function (socket) {
   }
   return true;
 };
-},{"./Grammar":7,"./Logger":9,"./Utils":28}],23:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9,"./Utils":30}],24:[function(require,module,exports){
+"use strict";
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
+function _possibleConstructorReturn(t, e) { if (e && ("object" == _typeof(e) || "function" == typeof e)) return e; if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined"); return _assertThisInitialized(t); }
+function _assertThisInitialized(e) { if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); return e; }
+function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
+function _getPrototypeOf(t) { return _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function (t) { return t.__proto__ || Object.getPrototypeOf(t); }, _getPrototypeOf(t); }
+function _inherits(t, e) { if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function"); t.prototype = Object.create(e && e.prototype, { constructor: { value: t, writable: !0, configurable: !0 } }), Object.defineProperty(t, "prototype", { writable: !1 }), e && _setPrototypeOf(t, e); }
+function _setPrototypeOf(t, e) { return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function (t, e) { return t.__proto__ = e, t; }, _setPrototypeOf(t, e); }
+var EventEmitter = require('events').EventEmitter;
+var Exceptions = require('./Exceptions');
+var Logger = require('./Logger');
+var JsSIP_C = require('./Constants');
+var Utils = require('./Utils');
+var Grammar = require('./Grammar');
+var SIPMessage = require('./SIPMessage');
+var RequestSender = require('./RequestSender');
+var Dialog = require('./Dialog');
+var logger = new Logger('Subscriber');
+
+/**
+ * Termination codes.
+ */
+var C = {
+  // Termination codes.
+  SUBSCRIBE_RESPONSE_TIMEOUT: 0,
+  SUBSCRIBE_TRANSPORT_ERROR: 1,
+  SUBSCRIBE_NON_OK_RESPONSE: 2,
+  SUBSCRIBE_WRONG_OK_RESPONSE: 3,
+  SUBSCRIBE_AUTHENTICATION_FAILED: 4,
+  UNSUBSCRIBE_TIMEOUT: 5,
+  FINAL_NOTIFY_RECEIVED: 6,
+  WRONG_NOTIFY_RECEIVED: 7,
+  // Subscriber states.
+  STATE_PENDING: 0,
+  STATE_ACTIVE: 1,
+  STATE_TERMINATED: 2,
+  STATE_INIT: 3,
+  STATE_WAITING_NOTIFY: 4,
+  // RFC 6665 3.1.1, default expires value.
+  DEFAULT_EXPIRES_SEC: 900
+};
+
+/**
+ * RFC 6665 Subscriber implementation.
+ */
+module.exports = /*#__PURE__*/function (_EventEmitter) {
+  /**
+   * @param {UA} ua - reference to JsSIP.UA
+   * @param {string} target
+   * @param {string} eventName - Event header value. May end with optional ;id=xxx
+   * @param {string} accept - Accept header value.
+   *
+   * @param {SubscriberOption} options - optional parameters.
+   *   @param {number} expires - Expires header value. Default is 900.
+   *   @param {string} contentType - Content-Type header value. Used for SUBSCRIBE with body
+   *   @param {string} allowEvents - Allow-Events header value.
+   *   @param {RequestParams} params - Will have priority over ua.configuration.
+   *      If set please define: to_uri, to_display_name, from_uri, from_display_name
+   *   @param {Array<string>} extraHeaders - Additional SIP headers.
+   */
+  function Subscriber(ua, target, eventName, accept, _ref) {
+    var _this;
+    var expires = _ref.expires,
+      contentType = _ref.contentType,
+      allowEvents = _ref.allowEvents,
+      params = _ref.params,
+      extraHeaders = _ref.extraHeaders;
+    _classCallCheck(this, Subscriber);
+    logger.debug('new');
+    _this = _callSuper(this, Subscriber);
+
+    // Check that arguments are defined.
+    if (!target) {
+      throw new TypeError('Not enough arguments: Missing target');
+    }
+    if (!eventName) {
+      throw new TypeError('Not enough arguments: Missing eventName');
+    }
+    if (!accept) {
+      throw new TypeError('Not enough arguments: Missing accept');
+    }
+    var event_header = Grammar.parse(eventName, 'Event');
+    if (event_header === -1) {
+      throw new TypeError('Missing Event header field');
+    }
+    _this._ua = ua;
+    _this._target = target;
+    if (!Utils.isDecimal(expires) || expires <= 0) {
+      expires = C.DEFAULT_EXPIRES_SEC;
+    }
+    _this._expires = expires;
+
+    // Used to subscribe with body.
+    _this._content_type = contentType;
+
+    // Set initial subscribe parameters.
+    _this._params = Utils.cloneObject(params);
+    if (!_this._params.from_uri) {
+      _this._params.from_uri = _this._ua.configuration.uri;
+    }
+    _this._params.from_tag = Utils.newTag();
+    _this._params.to_tag = null;
+    _this._params.call_id = Utils.createRandomToken(20);
+
+    // Create subscribe cseq if not defined custom cseq.
+    if (_this._params.cseq === undefined) {
+      _this._params.cseq = Math.floor(Math.random() * 10000 + 1);
+    }
+
+    // Subscriber state.
+    _this._state = C.STATE_INIT;
+
+    // Dialog.
+    _this._dialog = null;
+
+    // To refresh subscription.
+    _this._expires_timer = null;
+    _this._expires_timestamp = null;
+
+    // To prevent duplicate terminated call.
+    _this._terminated = false;
+    _this._event_name = event_header.event;
+    _this._event_id = event_header.params && event_header.params.id;
+    var eventValue = _this._event_name;
+    if (_this._event_id) {
+      eventValue += ";id=".concat(_this._event_id);
+    }
+    _this._headers = Utils.cloneArray(extraHeaders);
+    _this._headers = _this._headers.concat(["Event: ".concat(eventValue), "Expires: ".concat(_this._expires), "Accept: ".concat(accept)]);
+    if (!_this._headers.find(function (header) {
+      return header.startsWith('Contact');
+    })) {
+      var contact = "Contact: ".concat(_this._ua._contact.toString());
+      _this._headers.push(contact);
+    }
+    if (allowEvents) {
+      _this._headers.push("Allow-Events: ".concat(allowEvents));
+    }
+
+    // To enqueue SUBSCRIBE requests created before the reception of the initial subscribe OK response.
+    _this._queue = [];
+
+    // Custom session empty object for high level use.
+    _this._data = {};
+    return _this;
+  }
+
+  // Expose Subscriber constants as a property of the Subscriber instance.
+  _inherits(Subscriber, _EventEmitter);
+  return _createClass(Subscriber, [{
+    key: "C",
+    get: function get() {
+      return C;
+    }
+
+    /**
+     * Get dialog state.
+     */
+  }, {
+    key: "state",
+    get: function get() {
+      return this._state;
+    }
+
+    /**
+     * Get dialog id.
+     */
+  }, {
+    key: "id",
+    get: function get() {
+      return this._dialog ? this._dialog.id : null;
+    }
+  }, {
+    key: "data",
+    get: function get() {
+      return this._data;
+    },
+    set: function set(_data) {
+      this._data = _data;
+    }
+  }, {
+    key: "onRequestTimeout",
+    value: function onRequestTimeout() {
+      this._terminateDialog(C.SUBSCRIBE_RESPONSE_TIMEOUT);
+    }
+  }, {
+    key: "onTransportError",
+    value: function onTransportError() {
+      this._terminateDialog(C.SUBSCRIBE_TRANSPORT_ERROR);
+    }
+
+    /**
+     * Dialog callback.
+     */
+  }, {
+    key: "receiveRequest",
+    value: function receiveRequest(request) {
+      if (request.method !== JsSIP_C.NOTIFY) {
+        logger.warn('received non-NOTIFY request');
+        request.reply(405);
+        return;
+      }
+
+      // RFC 6665 8.2.1. Check if event header matches.
+      var event_header = request.parseHeader('Event');
+      if (!event_header) {
+        logger.warn('missing Event header');
+        request.reply(400);
+        this._terminateDialog(C.WRONG_NOTIFY_RECEIVED);
+        return;
+      }
+      var event_name = event_header.event;
+      var event_id = event_header.params && event_header.params.id;
+      if (event_name !== this._event_name || event_id !== this._event_id) {
+        logger.warn('Event header does not match the one in SUBSCRIBE request');
+        request.reply(489);
+        this._terminateDialog(C.WRONG_NOTIFY_RECEIVED);
+        return;
+      }
+
+      // Process Subscription-State header.
+      var subs_state = request.parseHeader('subscription-state');
+      if (!subs_state) {
+        logger.warn('missing Subscription-State header');
+        request.reply(400);
+        this._terminateDialog(C.WRONG_NOTIFY_RECEIVED);
+        return;
+      }
+      var new_state = this._parseSubscriptionState(subs_state.state);
+      if (new_state === undefined) {
+        logger.warn("Invalid Subscription-State header value: ".concat(subs_state.state));
+        request.reply(400);
+        this._terminateDialog(C.WRONG_NOTIFY_RECEIVED);
+        return;
+      }
+      request.reply(200);
+      var prev_state = this._state;
+      if (prev_state !== C.STATE_TERMINATED && new_state !== C.STATE_TERMINATED) {
+        this._state = new_state;
+        if (subs_state.expires !== undefined) {
+          var expires = subs_state.expires;
+          var expires_timestamp = new Date().getTime() + expires * 1000;
+          var max_time_deviation = 2000;
+
+          // Expiration time is shorter and the difference is not too small.
+          if (this._expires_timestamp - expires_timestamp > max_time_deviation) {
+            logger.debug('update sending re-SUBSCRIBE time');
+            this._scheduleSubscribe(expires);
+          }
+        }
+      }
+      if (prev_state !== C.STATE_PENDING && new_state === C.STATE_PENDING) {
+        logger.debug('emit "pending"');
+        this.emit('pending');
+      } else if (prev_state !== C.STATE_ACTIVE && new_state === C.STATE_ACTIVE) {
+        logger.debug('emit "active"');
+        this.emit('active');
+      }
+      var body = request.body;
+
+      // Check if the notify is final.
+      var is_final = new_state === C.STATE_TERMINATED;
+
+      // Notify event fired only for notify with body.
+      if (body) {
+        var content_type = request.getHeader('content-type');
+        logger.debug('emit "notify"');
+        this.emit('notify', is_final, request, body, content_type);
+      }
+      if (is_final) {
+        var reason = subs_state.reason;
+        var retry_after = undefined;
+        if (subs_state.params && subs_state.params['retry-after'] !== undefined) {
+          retry_after = parseInt(subs_state.params['retry-after']);
+        }
+        this._terminateDialog(C.FINAL_NOTIFY_RECEIVED, reason, retry_after);
+      }
+    }
+
+    /**
+     * User API
+     */
+
+    /**
+     * Send the initial (non-fetch)  and subsequent subscribe.
+     * @param {string} body - subscribe request body.
+     */
+  }, {
+    key: "subscribe",
+    value: function subscribe() {
+      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      logger.debug('subscribe()');
+      if (this._state === C.STATE_INIT) {
+        this._sendInitialSubscribe(body, this._headers);
+      } else {
+        this._sendSubsequentSubscribe(body, this._headers);
+      }
+    }
+
+    /**
+     * terminate.
+     * Send un-subscribe or fetch-subscribe (with Expires: 0).
+     * @param {string} body - un-subscribe request body
+     */
+  }, {
+    key: "terminate",
+    value: function terminate() {
+      var body = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      logger.debug('terminate()');
+      if (this._state === C.STATE_INIT) {
+        throw new Exceptions.InvalidStateError(this._state);
+      }
+
+      // Prevent duplication un-subscribe sending.
+      if (this._terminated) {
+        return;
+      }
+      this._terminated = true;
+
+      // Set header Expires: 0.
+      var headers = this._headers.map(function (header) {
+        return header.startsWith('Expires') ? 'Expires: 0' : header;
+      });
+      this._sendSubsequentSubscribe(body, headers);
+    }
+
+    /**
+     * Private API.
+     */
+  }, {
+    key: "_terminateDialog",
+    value: function _terminateDialog(terminationCode) {
+      var reason = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      var retryAfter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+      // To prevent duplicate emit terminated event.
+      if (this._state === C.STATE_TERMINATED) {
+        return;
+      }
+      this._state = C.STATE_TERMINATED;
+
+      // Clear timers.
+      clearTimeout(this._expires_timer);
+      if (this._dialog) {
+        this._dialog.terminate();
+        this._dialog = null;
+      }
+      logger.debug("emit \"terminated\" code=".concat(terminationCode));
+      this.emit('terminated', terminationCode, reason, retryAfter);
+    }
+  }, {
+    key: "_sendInitialSubscribe",
+    value: function _sendInitialSubscribe(body, headers) {
+      var _this2 = this;
+      if (body) {
+        if (!this._content_type) {
+          throw new TypeError('content_type is undefined');
+        }
+        headers = Utils.cloneArray(headers);
+        headers.push("Content-Type: ".concat(this._content_type));
+      }
+      this._state = C.STATE_WAITING_NOTIFY;
+      var request = new SIPMessage.OutgoingRequest(JsSIP_C.SUBSCRIBE, this._ua.normalizeTarget(this._target), this._ua, this._params, headers, body);
+      var request_sender = new RequestSender(this._ua, request, {
+        onRequestTimeout: function onRequestTimeout() {
+          _this2.onRequestTimeout();
+        },
+        onTransportError: function onTransportError() {
+          _this2.onTransportError();
+        },
+        onReceiveResponse: function onReceiveResponse(response) {
+          _this2._receiveSubscribeResponse(response);
+        }
+      });
+      request_sender.send();
+    }
+  }, {
+    key: "_sendSubsequentSubscribe",
+    value: function _sendSubsequentSubscribe(body, headers) {
+      var _this3 = this;
+      if (this._state === C.STATE_TERMINATED) {
+        return;
+      }
+      if (!this._dialog) {
+        logger.debug('enqueue subscribe');
+        this._queue.push({
+          body: body,
+          headers: Utils.cloneArray(headers)
+        });
+        return;
+      }
+      if (body) {
+        if (!this._content_type) {
+          throw new TypeError('content_type is undefined');
+        }
+        headers = Utils.cloneArray(headers);
+        headers.push("Content-Type: ".concat(this._content_type));
+      }
+      this._dialog.sendRequest(JsSIP_C.SUBSCRIBE, {
+        body: body,
+        extraHeaders: headers,
+        eventHandlers: {
+          onRequestTimeout: function onRequestTimeout() {
+            _this3.onRequestTimeout();
+          },
+          onTransportError: function onTransportError() {
+            _this3.onTransportError();
+          },
+          onSuccessResponse: function onSuccessResponse(response) {
+            _this3._receiveSubscribeResponse(response);
+          },
+          onErrorResponse: function onErrorResponse(response) {
+            _this3._receiveSubscribeResponse(response);
+          },
+          onDialogError: function onDialogError(response) {
+            _this3._receiveSubscribeResponse(response);
+          }
+        }
+      });
+    }
+  }, {
+    key: "_receiveSubscribeResponse",
+    value: function _receiveSubscribeResponse(response) {
+      if (this._state === C.STATE_TERMINATED) {
+        return;
+      }
+      if (response.status_code >= 200 && response.status_code < 300) {
+        // Create dialog.
+        if (this._dialog === null) {
+          var dialog = new Dialog(this, response, 'UAC');
+          if (dialog.error) {
+            // OK response without Contact.
+            logger.warn(dialog.error);
+            this._terminateDialog(C.SUBSCRIBE_WRONG_OK_RESPONSE);
+            return;
+          }
+          this._dialog = dialog;
+          logger.debug('emit "accepted"');
+          this.emit('accepted');
+
+          // Subsequent subscribes saved in the queue until dialog created.
+          var _iterator = _createForOfIteratorHelper(this._queue),
+            _step;
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var subscribe = _step.value;
+              logger.debug('dequeue subscribe');
+              this._sendSubsequentSubscribe(subscribe.body, subscribe.headers);
+            }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
+        }
+
+        // Check expires value.
+        var expires_value = response.getHeader('expires');
+        var expires = parseInt(expires_value);
+        if (!Utils.isDecimal(expires) || expires <= 0) {
+          logger.warn("response without Expires header, setting a default value of ".concat(C.DEFAULT_EXPIRES_SEC));
+
+          // RFC 6665 3.1.1 subscribe OK response must contain Expires header.
+          // Use workaround expires value.
+          expires = C.DEFAULT_EXPIRES_SEC;
+        }
+        if (expires > 0) {
+          this._scheduleSubscribe(expires);
+        }
+      } else if (response.status_code === 401 || response.status_code === 407) {
+        this._terminateDialog(C.SUBSCRIBE_AUTHENTICATION_FAILED);
+      } else if (response.status_code >= 300) {
+        this._terminateDialog(C.SUBSCRIBE_NON_OK_RESPONSE);
+      }
+    }
+  }, {
+    key: "_scheduleSubscribe",
+    value: function _scheduleSubscribe(expires) {
+      var _this4 = this;
+      /*
+        If the expires time is less than 140 seconds we do not support Chrome intensive timer throttling mode.
+        In this case, the re-subcribe is sent 5 seconds before the subscription expiration.
+         When Chrome is in intensive timer throttling mode, in the worst case,
+      the timer will be 60 seconds late.
+        We give the server 10 seconds to make sure it will execute the command even if it is heavily loaded.
+        As a result, we order the time no later than 70 seconds before the subscription expiration.
+        Resulting time calculated as half time interval + (half interval - 70) * random.
+         E.g. expires is 140, re-subscribe will be ordered to send in 70 seconds.
+          expires is 600, re-subscribe will be ordered to send in 300 + (0 .. 230) seconds.
+      */
+
+      var timeout = expires >= 140 ? expires * 1000 / 2 + Math.floor((expires / 2 - 70) * 1000 * Math.random()) : expires * 1000 - 5000;
+      this._expires_timestamp = new Date().getTime() + expires * 1000;
+      logger.debug("next SUBSCRIBE will be sent in ".concat(Math.floor(timeout / 1000), " sec"));
+      clearTimeout(this._expires_timer);
+      this._expires_timer = setTimeout(function () {
+        _this4._expires_timer = null;
+        _this4._sendSubsequentSubscribe(null, _this4._headers);
+      }, timeout);
+    }
+  }, {
+    key: "_parseSubscriptionState",
+    value: function _parseSubscriptionState(strState) {
+      switch (strState) {
+        case 'pending':
+          return C.STATE_PENDING;
+        case 'active':
+          return C.STATE_ACTIVE;
+        case 'terminated':
+          return C.STATE_TERMINATED;
+        case 'init':
+          return C.STATE_INIT;
+        case 'notify_wait':
+          return C.STATE_WAITING_NOTIFY;
+        default:
+          return undefined;
+      }
+    }
+  }], [{
+    key: "C",
+    get:
+    /**
+     * Expose C object.
+     */
+    function get() {
+      return C;
+    }
+  }]);
+}(EventEmitter);
+},{"./Constants":2,"./Dialog":3,"./Exceptions":6,"./Grammar":7,"./Logger":9,"./RequestSender":21,"./SIPMessage":22,"./Utils":30,"events":35}],25:[function(require,module,exports){
 "use strict";
 
 var T1 = 500,
@@ -19430,7 +20443,7 @@ module.exports = {
   TIMER_M: 64 * T1,
   PROVISIONAL_RESPONSE_INTERVAL: 60000 // See RFC 3261 Section 13.3.1.1
 };
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -20130,7 +21143,7 @@ module.exports = {
   InviteServerTransaction: InviteServerTransaction,
   checkTransaction: checkTransaction
 };
-},{"./Constants":2,"./Logger":9,"./SIPMessage":21,"./Timers":23,"events":33}],25:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./SIPMessage":22,"./Timers":25,"events":35}],27:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -20452,10 +21465,16 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Constants":2,"./Logger":9,"./Socket":22}],26:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./Socket":23}],28:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
@@ -20473,6 +21492,8 @@ var Logger = require('./Logger');
 var JsSIP_C = require('./Constants');
 var Registrator = require('./Registrator');
 var RTCSession = require('./RTCSession');
+var Subscriber = require('./Subscriber');
+var Notifier = require('./Notifier');
 var Message = require('./Message');
 var Options = require('./Options');
 var Transactions = require('./Transactions');
@@ -20507,7 +21528,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   function UA(configuration) {
     var _this;
     _classCallCheck(this, UA);
-    logger.debug('new() [configuration:%o]', configuration);
+    // Check configuration argument.
+    if (!configuration) {
+      throw new TypeError('Not enough arguments');
+    }
+
+    // Hide sensitive information.
+    var sensitiveKeys = ['password', 'ha1', 'authorization_jwt'];
+    logger.debug('new() [configuration:%o]', Object.entries(configuration).filter(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 1),
+        key = _ref2[0];
+      return !sensitiveKeys.includes(key);
+    }));
     _this = _callSuper(this, UA);
     _this._cache = {
       credentials: {}
@@ -20533,11 +21565,6 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     // Custom UA empty object for high level use.
     _this._data = {};
     _this._closeTimer = null;
-
-    // Check configuration argument.
-    if (configuration === undefined) {
-      throw new TypeError('Not enough arguments');
-    }
 
     // Load configuration.
     try {
@@ -20700,6 +21727,26 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
       var message = new Message(this);
       message.send(target, body, options);
       return message;
+    }
+
+    /**
+     * Create subscriber instance
+     */
+  }, {
+    key: "subscribe",
+    value: function subscribe(target, eventName, accept, options) {
+      logger.debug('subscribe()');
+      return new Subscriber(this, target, eventName, accept, options);
+    }
+
+    /**
+     * Create notifier instance
+     */
+  }, {
+    key: "notify",
+    value: function notify(subscribe, contentType, options) {
+      logger.debug('notify()');
+      return new Notifier(this, subscribe, contentType, options);
     }
 
     /**
@@ -21001,6 +22048,7 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "receiveRequest",
     value: function receiveRequest(request) {
+      var _this3 = this;
       var method = request.method;
 
       // Check that request URI points to us.
@@ -21053,6 +22101,11 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
         }
         var _message = new Message(this);
         _message.init_incoming(request);
+      } else if (method === JsSIP_C.SUBSCRIBE) {
+        if (this.listeners('newSubscribe').length === 0) {
+          request.reply(405);
+          return;
+        }
       } else if (method === JsSIP_C.INVITE) {
         // Initial INVITE.
         if (!request.to_tag && this.listeners('newRTCSession').length === 0) {
@@ -21117,6 +22170,14 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             });
             request.reply(200);
             break;
+          case JsSIP_C.SUBSCRIBE:
+            Notifier.init_incoming(request, function () {
+              _this3.emit('newSubscribe', {
+                event: request.event,
+                request: request
+              });
+            });
+            break;
           default:
             request.reply(405);
             break;
@@ -21156,10 +22217,10 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
      */
   }, {
     key: "_findSession",
-    value: function _findSession(_ref) {
-      var call_id = _ref.call_id,
-        from_tag = _ref.from_tag,
-        to_tag = _ref.to_tag;
+    value: function _findSession(_ref3) {
+      var call_id = _ref3.call_id,
+        from_tag = _ref3.from_tag,
+        to_tag = _ref3.to_tag;
       var sessionIDa = call_id + from_tag;
       var sessionA = this._sessions[sessionIDa];
       var sessionIDb = call_id + to_tag;
@@ -21429,7 +22490,7 @@ function onTransportData(data) {
     }
   }
 }
-},{"./Config":1,"./Constants":2,"./Exceptions":6,"./Logger":9,"./Message":10,"./Options":12,"./Parser":13,"./RTCSession":14,"./Registrator":19,"./SIPMessage":21,"./Transactions":24,"./Transport":25,"./URI":27,"./Utils":28,"./sanityCheck":30,"events":33}],27:[function(require,module,exports){
+},{"./Config":1,"./Constants":2,"./Exceptions":6,"./Logger":9,"./Message":10,"./Notifier":12,"./Options":13,"./Parser":14,"./RTCSession":15,"./Registrator":20,"./SIPMessage":22,"./Subscriber":24,"./Transactions":26,"./Transport":27,"./URI":29,"./Utils":30,"./sanityCheck":32,"events":35}],29:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -21660,7 +22721,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Constants":2,"./Grammar":7,"./Utils":28}],28:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./Utils":30}],30:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -22125,7 +23186,7 @@ exports.cloneObject = function (obj) {
   var fallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   return obj && Object.assign({}, obj) || fallback;
 };
-},{"./Constants":2,"./Grammar":7,"./URI":27}],29:[function(require,module,exports){
+},{"./Constants":2,"./Grammar":7,"./URI":29}],31:[function(require,module,exports){
 "use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -22273,7 +23334,7 @@ module.exports = /*#__PURE__*/function () {
     }
   }]);
 }();
-},{"./Grammar":7,"./Logger":9}],30:[function(require,module,exports){
+},{"./Grammar":7,"./Logger":9}],32:[function(require,module,exports){
 "use strict";
 
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -22482,7 +23543,7 @@ function reply(status_code) {
   response += '\r\n';
   transport.send(response);
 }
-},{"./Constants":2,"./Logger":9,"./SIPMessage":21,"./Utils":28}],31:[function(require,module,exports){
+},{"./Constants":2,"./Logger":9,"./SIPMessage":22,"./Utils":30}],33:[function(require,module,exports){
 (function (process){(function (){
 /* eslint-env browser */
 
@@ -22758,7 +23819,7 @@ formatters.j = function (v) {
 };
 
 }).call(this)}).call(this,require('_process'))
-},{"./common":32,"_process":35}],32:[function(require,module,exports){
+},{"./common":34,"_process":37}],34:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -23052,7 +24113,7 @@ function setup(env) {
 
 module.exports = setup;
 
-},{"ms":34}],33:[function(require,module,exports){
+},{"ms":36}],35:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -23551,7 +24612,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -23715,7 +24776,7 @@ function plural(ms, msAbs, n, name) {
   return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
 
-},{}],35:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -23901,7 +24962,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var grammar = module.exports = {
   v: [{
     name: 'version',
@@ -24063,9 +25124,10 @@ var grammar = module.exports = {
     },
     {
       // a=msid:0c8b064d-d807-43b4-b434-f92a889d8587 98178685-d409-46e0-8e16-7ef0db0db64a
-      name: 'msid',
-      reg: /^msid:(.*)/,
-      format: 'msid:%s'
+      push: 'msid',
+      reg: /^msid:([\w-]+)(?: ([\w-]+))?/,
+      names: ['id', 'appdata'],
+      format: 'msid:%s %s'
     },
     {
       // a=ptime:20
@@ -24397,7 +25459,7 @@ Object.keys(grammar).forEach(function (key) {
   });
 });
 
-},{}],37:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var parser = require('./parser');
 var writer = require('./writer');
 var grammar = require('./grammar');
@@ -24412,7 +25474,7 @@ exports.parseRemoteCandidates = parser.parseRemoteCandidates;
 exports.parseImageAttributes = parser.parseImageAttributes;
 exports.parseSimulcastStreamList = parser.parseSimulcastStreamList;
 
-},{"./grammar":36,"./parser":38,"./writer":39}],38:[function(require,module,exports){
+},{"./grammar":38,"./parser":40,"./writer":41}],40:[function(require,module,exports){
 var toIntIfInt = function (v) {
   return String(Number(v)) === v ? Number(v) : v;
 };
@@ -24538,7 +25600,7 @@ exports.parseSimulcastStreamList = function (str) {
   });
 };
 
-},{"./grammar":36}],39:[function(require,module,exports){
+},{"./grammar":38}],41:[function(require,module,exports){
 var grammar = require('./grammar');
 
 // customized util.format - discards excess arguments and can void middle ones
@@ -24654,12 +25716,12 @@ module.exports = function (session, opts) {
   return sdp.join('\r\n') + '\r\n';
 };
 
-},{"./grammar":36}],40:[function(require,module,exports){
+},{"./grammar":38}],42:[function(require,module,exports){
 module.exports={
   "name": "@per_moeller/jssip-telecomx",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "4.10.4",
+  "version": "4.11.0",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
@@ -24684,11 +25746,11 @@ module.exports={
     "url": "https://github.com/versatica/JsSIP/issues"
   },
   "dependencies": {
-    "@types/debug": "^4.1.7",
-    "@types/events": "^3.0.0",
-    "debug": "^4.3.1",
+    "@types/debug": "^4.1.13",
+    "@types/events": "^3.0.3",
+    "debug": "^4.4.3",
     "events": "^3.3.0",
-    "sdp-transform": "^2.14.1"
+    "sdp-transform": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
