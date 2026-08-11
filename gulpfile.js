@@ -107,7 +107,8 @@ gulp.task('test', function(cb)
     'test/test-properties.js',
     'test/test-UA-no-WebRTC.js',
     'test/test-UA-subscriber-notifier.js',
-    'test/test-digestAuthentication.js'
+    'test/test-digestAuthentication.js',
+    'test/test-createLocalDescription.js'
   ];
 
   exec(`${local_nodeunit} ${src.join(' ')}`,

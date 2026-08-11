@@ -1,5 +1,5 @@
 /*
- * JsSIP v4.11.0
+ * JsSIP v4.12.0
  * the Javascript SIP library
  * Copyright: 2012-2026 
  * Homepage: https://jssip.net
@@ -15019,6 +15019,15 @@ var C = {
  * Local variables.
  */
 var holdMediaTypes = ['audio', 'video'];
+
+/**
+ * Default watchdog timeouts (milliseconds) for _createLocalDescription(), used
+ * when the constraints object does not provide 'iceGatheringTimeout'. The
+ * answer path with forceUseStunResponse waits for actual ICE connectivity
+ * (the Windows first-call fix), so it gets a more generous default.
+ */
+var DEFAULT_ICE_GATHERING_TIMEOUT = 2000;
+var FORCE_STUN_ANSWER_ICE_GATHERING_TIMEOUT = 5000;
 module.exports = /*#__PURE__*/function (_EventEmitter) {
   function RTCSession(ua) {
     var _this;
@@ -16623,11 +16632,25 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
           var iceCandidateListener;
           var iceGatheringStateListener;
           var selectedCandidatePairChangeListener;
+
+          /*
+           * Watchdog: never wait for ICE gathering/connectivity forever. On some
+           * machines (observed on long-uptime multi-homed macOS) STUN requests are
+           * blackholed: no srflx candidate ever arrives and gathering does not
+           * complete for 40-100+ seconds, so no INVITE / 200 OK would be sent.
+           * Proceeding with the candidates gathered so far is a safe degraded
+           * mode: the media gateway latches onto the actual RTP source address.
+           */
+          var iceGatheringTimeout = constraints === null || constraints === void 0 ? void 0 : constraints.iceGatheringTimeout;
+          if (typeof iceGatheringTimeout !== 'number') {
+            iceGatheringTimeout = forceUseStunResponseAndIsIngoing ? FORCE_STUN_ANSWER_ICE_GATHERING_TIMEOUT : DEFAULT_ICE_GATHERING_TIMEOUT;
+          }
           _this11._iceReady = false;
           var ready = function ready() {
             if (finished) {
               return;
             }
+            clearTimeout(watchdogTimer);
             connection.removeEventListener('icecandidate', iceCandidateListener);
             connection.removeEventListener('icegatheringstatechange', iceGatheringStateListener);
             connection.removeEventListener('selectedcandidatepairchange', selectedCandidatePairChangeListener);
@@ -16648,14 +16671,18 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
             _this11.emit('sdp', e);
             resolve(e.sdp);
           };
+          var watchdogTimer = setTimeout(function () {
+            logger.warn("ICE gathering watchdog fired after ".concat(iceGatheringTimeout, "ms - ") + 'proceeding with available candidates');
+            ready();
+          }, iceGatheringTimeout);
           if (!forceUseStunResponse || forceUseStunResponseAndIsOutgoing) {
             connection.addEventListener('icecandidate', iceCandidateListener = function iceCandidateListener(event) {
               var candidate = event.candidate;
-              var isStunResponse = event.candidate.type === 'srflx' && event.candidate.relatedAddress !== null && event.candidate.relatedPort !== null;
-              if (forceUseStunResponseAndIsOutgoing && isStunResponse && !publicIceCandidate) {
-                publicIceCandidate = candidate;
-              }
               if (candidate) {
+                var isStunResponse = candidate.type === 'srflx' && candidate.relatedAddress !== null && candidate.relatedPort !== null;
+                if (forceUseStunResponseAndIsOutgoing && isStunResponse && !publicIceCandidate) {
+                  publicIceCandidate = candidate;
+                }
                 _this11.emit('icecandidate', {
                   candidate: candidate,
                   ready: ready
@@ -18034,11 +18061,17 @@ module.exports = /*#__PURE__*/function (_EventEmitter) {
     key: "_correctSdpIfForcingStun",
     value: function _correctSdpIfForcingStun(sdp, forceUseStunResponseAndIsIngoing, forceUseStunResponseAndIsOutgoing, iceTransport, publicIceCandidate) {
       if (forceUseStunResponseAndIsIngoing) {
-        var _this$_substituteIceC;
-        return (_this$_substituteIceC = this._substituteIceCandidatesWithLocalCandidate(sdp, iceTransport.getSelectedCandidatePair().local.candidate)) !== null && _this$_substituteIceC !== void 0 ? _this$_substituteIceC : sdp;
-      } else if (forceUseStunResponseAndIsOutgoing) {
         var _iceTransport$getSele;
-        var bestCandidate = publicIceCandidate !== null && publicIceCandidate !== void 0 ? publicIceCandidate : iceTransport === null || iceTransport === void 0 || (_iceTransport$getSele = iceTransport.getSelectedCandidatePair()) === null || _iceTransport$getSele === void 0 ? void 0 : _iceTransport$getSele.local;
+        // The watchdog may fire before any candidate pair has been selected, in
+        // which case getSelectedCandidatePair() returns null: keep the SDP as is.
+        var selectedCandidate = (_iceTransport$getSele = iceTransport.getSelectedCandidatePair()) === null || _iceTransport$getSele === void 0 || (_iceTransport$getSele = _iceTransport$getSele.local) === null || _iceTransport$getSele === void 0 ? void 0 : _iceTransport$getSele.candidate;
+        if (selectedCandidate) {
+          var _this$_substituteIceC;
+          return (_this$_substituteIceC = this._substituteIceCandidatesWithLocalCandidate(sdp, selectedCandidate)) !== null && _this$_substituteIceC !== void 0 ? _this$_substituteIceC : sdp;
+        }
+      } else if (forceUseStunResponseAndIsOutgoing) {
+        var _iceTransport$getSele2;
+        var bestCandidate = publicIceCandidate !== null && publicIceCandidate !== void 0 ? publicIceCandidate : iceTransport === null || iceTransport === void 0 || (_iceTransport$getSele2 = iceTransport.getSelectedCandidatePair()) === null || _iceTransport$getSele2 === void 0 ? void 0 : _iceTransport$getSele2.local;
         if (bestCandidate !== null && bestCandidate !== void 0 && bestCandidate.candidate) {
           var _this$_substituteIceC2;
           return (_this$_substituteIceC2 = this._substituteIceCandidatesWithLocalCandidate(sdp, bestCandidate.candidate)) !== null && _this$_substituteIceC2 !== void 0 ? _this$_substituteIceC2 : sdp;
@@ -25721,7 +25754,7 @@ module.exports={
   "name": "@per_moeller/jssip-telecomx",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "4.11.0",
+  "version": "4.12.0",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",

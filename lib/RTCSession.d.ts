@@ -30,13 +30,22 @@ export interface ExtraHeaders {
   extraHeaders?: string[];
 }
 
+// Fork extensions to the standard RTCOfferOptions, handled by
+// RTCSession._createLocalDescription().
+export interface RTCOfferConstraints extends RTCOfferOptions {
+  /** Rewrite the SDP so only the STUN-derived (srflx) candidate is advertised. */
+  forceUseStunResponse?: boolean;
+  /** Max time (ms) to wait for ICE gathering/connectivity before proceeding. */
+  iceGatheringTimeout?: number;
+}
+
 export interface AnswerOptions extends ExtraHeaders {
   mediaConstraints?: MediaStreamConstraints;
   mediaStream?: MediaStream;
   pcConfig?: RTCConfiguration;
   rtcConstraints?: object;
-  rtcAnswerConstraints?: RTCOfferOptions;
-  rtcOfferConstraints?: RTCOfferOptions;
+  rtcAnswerConstraints?: RTCOfferConstraints;
+  rtcOfferConstraints?: RTCOfferConstraints;
   sessionTimersExpires?: number;
 }
 
@@ -71,7 +80,7 @@ export interface HoldOptions extends ExtraHeaders {
 }
 
 export interface RenegotiateOptions extends HoldOptions {
-  rtcOfferConstraints?: RTCOfferOptions;
+  rtcOfferConstraints?: RTCOfferConstraints;
 }
 
 // events

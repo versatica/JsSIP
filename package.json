@@ -2,7 +2,7 @@
   "name": "@per_moeller/jssip-telecomx",
   "title": "JsSIP",
   "description": "the Javascript SIP library",
-  "version": "4.11.0",
+  "version": "4.12.0",
   "homepage": "https://jssip.net",
   "contributors": [
     "José Luis Millán <jmillan@aliax.net> (https://github.com/jmillan)",
