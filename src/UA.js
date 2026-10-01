@@ -72,6 +72,9 @@ module.exports = class UA extends EventEmitter {
 		this._dynConfiguration = {};
 		this._dialogs = {};
 
+		// Notifier instances with an established subscription.
+		this._notifiers = new Set();
+
 		// User actions outside any session/dialog (MESSAGE/OPTIONS).
 		this._applicants = {};
 
@@ -335,6 +338,16 @@ module.exports = class UA extends EventEmitter {
 			}
 		}
 
+		// End every subscription we serve with a final NOTIFY, sent before the
+		// UA is closed: the subscribers would otherwise wait for the
+		// subscription to expire.
+		for (const notifier of this._notifiers) {
+			logger.debug('closing notifier');
+			try {
+				notifier.terminate();
+			} catch (error) {}
+		}
+
 		this._status = C.STATUS_USER_CLOSED;
 
 		const num_transactions =
@@ -521,6 +534,20 @@ module.exports = class UA extends EventEmitter {
 	}
 
 	/**
+	 * Notifier accepted its initial SUBSCRIBE.
+	 */
+	newNotifier(notifier) {
+		this._notifiers.add(notifier);
+	}
+
+	/**
+	 * Notifier terminated.
+	 */
+	destroyNotifier(notifier) {
+		this._notifiers.delete(notifier);
+	}
+
+	/**
 	 * Registered
 	 */
 	registered(data) {
@@ -616,8 +643,10 @@ module.exports = class UA extends EventEmitter {
 
 			message.init_incoming(request);
 		} else if (method === JsSIP_C.SUBSCRIBE) {
+			// SUBSCRIBE is an allowed method: without a listener it is the event
+			// package that is not supported (RFC 6665 4.2.1.1).
 			if (this.listeners('newSubscribe').length === 0) {
-				request.reply(405);
+				request.reply(489);
 
 				return;
 			}

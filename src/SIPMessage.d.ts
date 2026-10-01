@@ -24,6 +24,15 @@ declare class IncomingMessage {
 
 export class IncomingRequest extends IncomingMessage {
 	ruri: URI;
+
+	reply(
+		code: number,
+		reason?: string,
+		extraHeaders?: string[],
+		body?: string,
+		onSuccess?: () => void,
+		onFailure?: () => void
+	): void;
 }
 
 export class IncomingResponse extends IncomingMessage {
