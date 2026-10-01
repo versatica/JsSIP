@@ -76,6 +76,10 @@ module.exports = class UA extends EventEmitter {
 		this._applicants = {};
 
 		this._sessions = {};
+
+		// Subscriber instances with a subscription sent or established.
+		this._subscribers = new Set();
+
 		this._transport = null;
 		this._contact = null;
 		this._status = C.STATUS_INIT;
@@ -326,6 +330,16 @@ module.exports = class UA extends EventEmitter {
 			}
 		}
 
+		// Unsubscribe every subscription. The un-SUBSCRIBE must leave before
+		// the UA is closed, so that the server does not keep sending NOTIFY
+		// requests to a gone UA until the subscription expires.
+		for (const subscriber of this._subscribers) {
+			logger.debug('closing subscriber');
+			try {
+				subscriber.terminate();
+			} catch (error) {}
+		}
+
 		// Run  _close_ on every applicant.
 		for (const applicant in this._applicants) {
 			if (Object.prototype.hasOwnProperty.call(this._applicants, applicant)) {
@@ -503,6 +517,20 @@ module.exports = class UA extends EventEmitter {
 	 */
 	destroyMessage(message) {
 		delete this._applicants[message];
+	}
+
+	/**
+	 * Subscriber sent its initial SUBSCRIBE.
+	 */
+	newSubscriber(subscriber) {
+		this._subscribers.add(subscriber);
+	}
+
+	/**
+	 * Subscriber terminated.
+	 */
+	destroySubscriber(subscriber) {
+		this._subscribers.delete(subscriber);
 	}
 
 	/**
