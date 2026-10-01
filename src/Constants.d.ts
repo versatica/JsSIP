@@ -46,6 +46,7 @@ export const INVITE = 'INVITE';
 export const MESSAGE = 'MESSAGE';
 export const NOTIFY = 'NOTIFY';
 export const OPTIONS = 'OPTIONS';
+export const PUBLISH = 'PUBLISH';
 export const REGISTER = 'REGISTER';
 export const REFER = 'REFER';
 export const UPDATE = 'UPDATE';
