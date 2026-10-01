@@ -7,6 +7,7 @@ const Registrator = require('./Registrator');
 const RTCSession = require('./RTCSession');
 const Subscriber = require('./Subscriber');
 const Notifier = require('./Notifier');
+const Publisher = require('./Publisher');
 const Message = require('./Message');
 const Options = require('./Options');
 const Transactions = require('./Transactions');
@@ -74,6 +75,9 @@ module.exports = class UA extends EventEmitter {
 
 		// User actions outside any session/dialog (MESSAGE/OPTIONS).
 		this._applicants = {};
+
+		// Publisher instances with a publication sent or established.
+		this._publishers = new Set();
 
 		this._sessions = {};
 		this._transport = null;
@@ -262,6 +266,15 @@ module.exports = class UA extends EventEmitter {
 	}
 
 	/**
+	 * Create publisher instance
+	 */
+	publish(target, eventName, contentType, options) {
+		logger.debug('publish()');
+
+		return new Publisher(this, target, eventName, contentType, options);
+	}
+
+	/**
 	 * Send a SIP OPTIONS.
 	 *
 	 * -param {String} target
@@ -308,6 +321,16 @@ module.exports = class UA extends EventEmitter {
 			logger.debug('UA already closed');
 
 			return;
+		}
+
+		// Remove every publication (RFC 3903 4.5), before the un-REGISTER.
+		// The PUBLISH must leave before the UA is closed: others would
+		// otherwise see our state until the publication expires.
+		for (const publisher of this._publishers) {
+			logger.debug('closing publisher');
+			try {
+				publisher.terminate();
+			} catch (error) {}
 		}
 
 		// Close registrator.
@@ -480,6 +503,20 @@ module.exports = class UA extends EventEmitter {
 	 */
 	destroyDialog(dialog) {
 		delete this._dialogs[dialog.id];
+	}
+
+	/**
+	 * Publisher sent its initial PUBLISH.
+	 */
+	newPublisher(publisher) {
+		this._publishers.add(publisher);
+	}
+
+	/**
+	 * Publisher terminated.
+	 */
+	destroyPublisher(publisher) {
+		this._publishers.delete(publisher);
 	}
 
 	/**

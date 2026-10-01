@@ -16,6 +16,7 @@ import {
 import { Message, SendMessageOptions } from './Message';
 import { Registrator } from './Registrator';
 import { Notifier } from './Notifier';
+import { Publisher, PublisherOptions } from './Publisher';
 import { Subscriber } from './Subscriber';
 import { URI } from './URI';
 import { causes } from './Constants';
@@ -267,6 +268,13 @@ export class UA extends EventEmitter {
 		contentType: string,
 		options?: NotifierOptions
 	): Notifier;
+
+	publish(
+		target: string | URI,
+		eventName: string,
+		contentType: string,
+		options?: PublisherOptions
+	): Publisher;
 
 	terminateSessions(options?: TerminateOptions): void;
 
