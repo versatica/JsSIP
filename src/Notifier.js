@@ -49,7 +49,7 @@ module.exports = class Notifier extends EventEmitter {
 				error.message
 			);
 
-			request.reply(405);
+			request.reply(400);
 
 			return;
 		}
@@ -223,6 +223,11 @@ module.exports = class Notifier extends EventEmitter {
 		}
 
 		this.receiveRequest(this._initial_subscribe);
+
+		// A fetch (Expires: 0) is already over.
+		if (this._state !== C.STATE_TERMINATED) {
+			this._ua.newNotifier(this);
+		}
 	}
 
 	/**
@@ -315,6 +320,7 @@ module.exports = class Notifier extends EventEmitter {
 			this._dialog.terminate();
 			this._dialog = null;
 		}
+		this._ua.destroyNotifier(this);
 		logger.debug(`emit "terminated" code=${termination_code}`);
 
 		this.emit('terminated', termination_code);
