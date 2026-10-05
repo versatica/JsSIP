@@ -20,6 +20,15 @@ const enum STEP {
 	SUBSCRIBER_TERMINATED = 11,
 }
 
+// Status line of the response to `method` sent through the socket.
+function sentStatus(socket: LoopSocket, method: string): string | undefined {
+	return jest
+		.mocked(socket.send)
+		.mock.calls.map(([message]) => message)
+		.find(m => m.startsWith('SIP/2.0') && m.includes(` ${method}\r\n`))
+		?.split('\r\n')[0];
+}
+
 describe('subscriber/notifier communication', () => {
 	test('should handle subscriber/notifier communication', () =>
 		new Promise<void>(resolve => {
@@ -217,5 +226,163 @@ describe('subscriber/notifier communication', () => {
 			});
 
 			ua.start();
+		}));
+
+	test('notifier answers 489 when nobody listens to "newSubscribe"', () =>
+		new Promise<void>(resolve => {
+			const socket = new LoopSocket();
+
+			jest.spyOn(socket, 'send');
+
+			const ua = new UA({
+				sockets: socket,
+				uri: 'sip:ikq@example.com',
+				register: false,
+			});
+
+			ua.on('connected', () => {
+				const subscriber = ua.subscribe('ikq', 'weather', 'text/plain', {});
+
+				subscriber.on('terminated', (terminationCode: number) => {
+					expect(terminationCode).toBe(subscriber.C.SUBSCRIBE_NON_OK_RESPONSE);
+					expect(sentStatus(socket, 'SUBSCRIBE')).toBe('SIP/2.0 489 Bad Event');
+
+					ua.stop();
+				});
+
+				subscriber.subscribe();
+			});
+
+			ua.on('disconnected', () => {
+				resolve();
+			});
+
+			ua.start();
+		}));
+
+	test('notifier answers 400 to a SUBSCRIBE without Event header', () =>
+		new Promise<void>(resolve => {
+			const socket = new LoopSocket();
+			const send = socket.send.bind(socket);
+
+			// The Event header is removed from the SUBSCRIBE on its way.
+			jest
+				.spyOn(socket, 'send')
+				.mockImplementation(message =>
+					send(
+						message.startsWith('SUBSCRIBE ')
+							? message.replace(/\r\nEvent:[^\r]*/i, '')
+							: message
+					)
+				);
+
+			const ua = new UA({
+				sockets: socket,
+				uri: 'sip:ikq@example.com',
+				register: false,
+			});
+
+			ua.on('newSubscribe', () => {
+				throw new Error('a malformed SUBSCRIBE must not reach the application');
+			});
+
+			ua.on('connected', () => {
+				const subscriber = ua.subscribe('ikq', 'weather', 'text/plain', {});
+
+				subscriber.on('terminated', (terminationCode: number) => {
+					expect(terminationCode).toBe(subscriber.C.SUBSCRIBE_NON_OK_RESPONSE);
+					expect(sentStatus(socket, 'SUBSCRIBE')).toBe(
+						'SIP/2.0 400 Bad Request'
+					);
+
+					ua.stop();
+				});
+
+				subscriber.subscribe();
+			});
+
+			ua.on('disconnected', () => {
+				resolve();
+			});
+
+			ua.start();
+		}));
+
+	test('UA.stop() sends the final NOTIFY', () =>
+		new Promise<void>(resolve => {
+			// A stopped UA drops incoming requests, so it cannot be its own
+			// subscriber: the subscriber and the notifier are two UAs.
+			const [subscriberSocket, notifierSocket] = LoopSocket.pair();
+
+			const subscriberUA = new UA({
+				sockets: subscriberSocket,
+				uri: 'sip:alice@example.com',
+				contact_uri: 'sip:alice@abcdefabcdef.invalid;transport=ws',
+				register: false,
+			});
+
+			const notifierUA = new UA({
+				sockets: notifierSocket,
+				uri: 'sip:ikq@example.com',
+				contact_uri: 'sip:ikq@abcdefabcdef.invalid;transport=ws',
+				register: false,
+			});
+
+			const ended: string[] = [];
+			let disconnected = 0;
+
+			const onDisconnected = (): void => {
+				if (++disconnected === 2) {
+					resolve();
+				}
+			};
+
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			notifierUA.on('newSubscribe', (e: any) => {
+				const notifier = notifierUA.notify(e.request, 'text/plain', {
+					pending: false,
+				});
+
+				notifier.on('subscribe', (isUnsubscribe: boolean) => {
+					if (!isUnsubscribe) {
+						notifier.notify();
+					}
+				});
+
+				notifier.on('terminated', (terminationCode: number) => {
+					expect(terminationCode).toBe(notifier.C.FINAL_NOTIFY_SENT);
+					ended.push('notifier');
+				});
+
+				notifier.start();
+			});
+
+			subscriberUA.on('connected', () => {
+				const subscriber = subscriberUA.subscribe(
+					'sip:ikq@example.com',
+					'weather',
+					'text/plain',
+					{ expires: 3600 }
+				);
+
+				subscriber.on('active', () => {
+					notifierUA.stop();
+				});
+
+				subscriber.on('terminated', (terminationCode: number) => {
+					expect(terminationCode).toBe(subscriber.C.FINAL_NOTIFY_RECEIVED);
+					expect(ended).toEqual(['notifier']);
+
+					subscriberUA.stop();
+				});
+
+				subscriber.subscribe();
+			});
+
+			subscriberUA.on('disconnected', onDisconnected);
+			notifierUA.on('disconnected', onDisconnected);
+
+			notifierUA.start();
+			subscriberUA.start();
 		}));
 });
