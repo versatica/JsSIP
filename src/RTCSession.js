@@ -843,7 +843,7 @@ module.exports = class RTCSession extends EventEmitter {
 					this._status === C.STATUS_WAITING_FOR_ACK &&
 					this._direction === 'incoming' &&
 					this._request.server_transaction.state !==
-						Transactions.C.STATUS_TERMINATED
+						Transactions.Status.TERMINATED
 				) {
 					// Save the dialog for later restoration.
 					const dialog = this._dialog;
@@ -863,7 +863,7 @@ module.exports = class RTCSession extends EventEmitter {
 					this._request.server_transaction.on('stateChanged', () => {
 						if (
 							this._request.server_transaction.state ===
-							Transactions.C.STATUS_TERMINATED
+							Transactions.Status.TERMINATED
 						) {
 							this.sendRequest(JsSIP_C.BYE, {
 								extraHeaders,
