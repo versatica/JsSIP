@@ -522,7 +522,7 @@ export type IncomingMessageParams = {
 	headers: IncomingHeaders;
 	method: string;
 	// Undefined when the corresponding header field is missing or unparseable.
-	via?: Grammar.Grammar;
+	via?: Grammar.ViaHeader;
 	via_branch?: string;
 	call_id?: string;
 	cseq?: number;
@@ -536,9 +536,9 @@ export type IncomingMessageParams = {
 	body: string;
 	session_expires?: number;
 	session_expires_refresher?: string;
-	refer_to?: Grammar.Grammar;
-	replaces?: Grammar.Grammar;
-	event?: Grammar.Grammar;
+	refer_to?: Grammar.ReferToHeader;
+	replaces?: Grammar.ReplacesHeader;
+	event?: Grammar.EventHeader;
 };
 
 export type IncomingRequestParams = IncomingMessageParams & {
@@ -684,7 +684,7 @@ export class IncomingMessage {
 	data: string;
 	headers: IncomingHeaders;
 	method: string;
-	via?: Grammar.Grammar;
+	via?: Grammar.ViaHeader;
 	via_branch?: string;
 	call_id?: string;
 	cseq?: number;
@@ -698,9 +698,9 @@ export class IncomingMessage {
 	// Only set when the corresponding header field is present.
 	session_expires?: number;
 	session_expires_refresher?: string;
-	refer_to?: Grammar.Grammar;
-	replaces?: Grammar.Grammar;
-	event?: Grammar.Grammar;
+	refer_to?: Grammar.ReferToHeader;
+	replaces?: Grammar.ReplacesHeader;
+	event?: Grammar.EventHeader;
 
 	constructor({
 		data,

@@ -24,7 +24,7 @@ const logger = new Logger('IncomingMessageBuilder');
 export class IncomingMessageBuilder {
 	#headers: IncomingHeaders = {};
 
-	#via?: Grammar.Grammar;
+	#via?: Grammar.ViaHeader;
 	#via_branch?: string;
 	#call_id?: string;
 	#cseq?: number;
@@ -43,9 +43,9 @@ export class IncomingMessageBuilder {
 	// Only set when the corresponding header field is present.
 	#session_expires?: number;
 	#session_expires_refresher?: string;
-	#refer_to?: Grammar.Grammar;
-	#replaces?: Grammar.Grammar;
-	#event?: Grammar.Grammar;
+	#refer_to?: Grammar.ReferToHeader;
+	#replaces?: Grammar.ReplacesHeader;
+	#event?: Grammar.EventHeader;
 
 	/**
 	 * Whether the given header field is present.
@@ -76,7 +76,7 @@ export class IncomingMessageBuilder {
 			case 'v': {
 				IncomingMessage.addHeader(this.#headers, 'via', value);
 				if (IncomingMessage.getHeaders(this.#headers, 'via').length === 1) {
-					parsed = IncomingMessage.parseHeader<Grammar.Grammar>(
+					parsed = IncomingMessage.parseHeader<Grammar.ViaHeader>(
 						this.#headers,
 						'Via'
 					);
@@ -178,7 +178,7 @@ export class IncomingMessageBuilder {
 			}
 			case 'cseq': {
 				IncomingMessage.setHeader(this.#headers, 'cseq', value);
-				parsed = IncomingMessage.parseHeader<Grammar.Grammar>(
+				parsed = IncomingMessage.parseHeader<Grammar.CSeqHeader>(
 					this.#headers,
 					'cseq'
 				);
@@ -214,7 +214,7 @@ export class IncomingMessageBuilder {
 			case 'session-expires':
 			case 'x': {
 				IncomingMessage.setHeader(this.#headers, 'session-expires', value);
-				parsed = IncomingMessage.parseHeader<Grammar.Grammar>(
+				parsed = IncomingMessage.parseHeader<Grammar.SessionExpiresHeader>(
 					this.#headers,
 					'session-expires'
 				);
@@ -227,7 +227,7 @@ export class IncomingMessageBuilder {
 			case 'refer-to':
 			case 'r': {
 				IncomingMessage.setHeader(this.#headers, 'refer-to', value);
-				parsed = IncomingMessage.parseHeader<Grammar.Grammar>(
+				parsed = IncomingMessage.parseHeader<Grammar.ReferToHeader>(
 					this.#headers,
 					'refer-to'
 				);
@@ -238,7 +238,7 @@ export class IncomingMessageBuilder {
 			}
 			case 'replaces': {
 				IncomingMessage.setHeader(this.#headers, 'replaces', value);
-				parsed = IncomingMessage.parseHeader<Grammar.Grammar>(
+				parsed = IncomingMessage.parseHeader<Grammar.ReplacesHeader>(
 					this.#headers,
 					'replaces'
 				);
@@ -250,7 +250,7 @@ export class IncomingMessageBuilder {
 			case 'event':
 			case 'o': {
 				IncomingMessage.setHeader(this.#headers, 'event', value);
-				parsed = IncomingMessage.parseHeader<Grammar.Grammar>(
+				parsed = IncomingMessage.parseHeader<Grammar.EventHeader>(
 					this.#headers,
 					'event'
 				);
