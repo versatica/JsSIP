@@ -3,6 +3,9 @@ import { causes } from './Constants';
 
 export function str_utf8_length(str: string): number;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isFunction(fn: unknown): fn is (...args: any[]) => any;
+
 export function isString(str: unknown): str is string;
 
 export function isDecimal(num: unknown): num is number;
@@ -11,6 +14,8 @@ export function isEmpty(value: unknown): boolean;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function hasMethods(obj: any, ...methodNames: string[]): boolean;
+
+export function createRandomToken(size: number, base?: number): string;
 
 export function newTag(): string;
 

@@ -1,6 +1,5 @@
 import './include/common';
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-const DigestAuthentication: any = require('../DigestAuthentication.js');
+import { DigestAuthentication } from '../DigestAuthentication';
 
 // Results of this tests originally obtained from RFC 2617 and:
 // 'https://pernau.at/kd/sipdigest.php'
@@ -29,7 +28,7 @@ describe('DigestAuthentication', () => {
 
 		digest.authenticate({ method, ruri }, challenge, cnonce);
 
-		expect(digest._response).toBe('6629fae49393a05397450978507c4ef1');
+		expect(digest.response).toBe('6629fae49393a05397450978507c4ef1');
 	});
 
 	test('digest authenticate qop = null', () => {
@@ -54,7 +53,7 @@ describe('DigestAuthentication', () => {
 
 		digest.authenticate({ method, ruri }, challenge);
 
-		expect(digest._response).toBe('f99e05f591f147facbc94ff23b4b1dee');
+		expect(digest.response).toBe('f99e05f591f147facbc94ff23b4b1dee');
 	});
 
 	test('digest authenticate qop = auth', () => {
@@ -80,7 +79,7 @@ describe('DigestAuthentication', () => {
 
 		digest.authenticate({ method, ruri }, challenge, cnonce);
 
-		expect(digest._response).toBe('a69b9c2ea0dea1437a21df6ddc9b05e4');
+		expect(digest.response).toBe('a69b9c2ea0dea1437a21df6ddc9b05e4');
 	});
 
 	test('digest authenticate qop = auth-int and empty body', () => {
@@ -106,7 +105,7 @@ describe('DigestAuthentication', () => {
 
 		digest.authenticate({ method, ruri }, challenge, cnonce);
 
-		expect(digest._response).toBe('82b3cab8b1c4df404434db6a0581650c');
+		expect(digest.response).toBe('82b3cab8b1c4df404434db6a0581650c');
 	});
 
 	test('digest authenticate qop = auth-int and non-empty body', () => {
@@ -133,6 +132,6 @@ describe('DigestAuthentication', () => {
 
 		digest.authenticate({ method, ruri, body }, challenge, cnonce);
 
-		expect(digest._response).toBe('7bf0e9de3fbb5da121974509d617f532');
+		expect(digest.response).toBe('7bf0e9de3fbb5da121974509d617f532');
 	});
 });
