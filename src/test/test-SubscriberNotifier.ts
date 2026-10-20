@@ -20,6 +20,15 @@ const enum STEP {
 	SUBSCRIBER_TERMINATED = 11,
 }
 
+// Expires header of every SUBSCRIBE sent through the socket.
+function sentSubscribeExpires(socket: LoopSocket): string[] {
+	return jest
+		.mocked(socket.send)
+		.mock.calls.map(([message]) => message)
+		.filter(message => message.startsWith('SUBSCRIBE '))
+		.map(message => /\r\nExpires: *(\d+)/i.exec(message)![1]);
+}
+
 describe('subscriber/notifier communication', () => {
 	test('should handle subscriber/notifier communication', () =>
 		new Promise<void>(resolve => {
@@ -104,6 +113,9 @@ describe('subscriber/notifier communication', () => {
 						expect(reason).toBeUndefined();
 						expect(retryAfter).toBeUndefined();
 
+						// The un-SUBSCRIBE, and no refresh after it.
+						expect(sentSubscribeExpires(socket)).toEqual(['3600', '0']);
+
 						ua.stop();
 					}
 				);
@@ -164,8 +176,12 @@ describe('subscriber/notifier communication', () => {
 			}
 
 			// Start JsSIP UA with loop socket.
+			const socket = new LoopSocket(); // message sending itself, with modified Call-ID
+
+			jest.spyOn(socket, 'send');
+
 			const config = {
-				sockets: new LoopSocket(), // message sending itself, with modified Call-ID
+				sockets: socket,
 				uri: REQUEST_URI,
 				contact_uri: CONTACT_URI,
 				register: false,
@@ -217,5 +233,139 @@ describe('subscriber/notifier communication', () => {
 			});
 
 			ua.start();
+		}));
+
+	test('subscriber refuses a target that is not a SIP URI', () => {
+		const ua = new UA({
+			sockets: new LoopSocket(),
+			uri: 'sip:ikq@example.com',
+			register: false,
+		});
+
+		expect(() => ua.subscribe('sip:', 'weather', 'text/plain', {})).toThrow(
+			TypeError
+		);
+	});
+
+	test('subscriber gets the final response with "terminated"', () =>
+		new Promise<void>(resolve => {
+			const ua = new UA({
+				sockets: new LoopSocket(),
+				uri: 'sip:ikq@example.com',
+				register: false,
+			});
+
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			ua.on('newSubscribe', (e: any) => {
+				e.request.reply(489); // "Bad Event"
+			});
+
+			ua.on('connected', () => {
+				const subscriber = ua.subscribe('ikq', 'weather', 'text/plain', {});
+
+				subscriber.on(
+					'terminated',
+					(
+						terminationCode: number,
+						reason: string | undefined,
+						retryAfter: number | undefined,
+						response: { status_code: number } | undefined
+					) => {
+						expect(terminationCode).toBe(
+							subscriber.C.SUBSCRIBE_NON_OK_RESPONSE
+						);
+						expect(reason).toBeUndefined();
+						expect(retryAfter).toBeUndefined();
+						expect(response?.status_code).toBe(489);
+
+						ua.stop();
+					}
+				);
+
+				subscriber.subscribe();
+			});
+
+			ua.on('disconnected', () => {
+				resolve();
+			});
+
+			ua.start();
+		}));
+
+	test('UA.stop() unsubscribes', () =>
+		new Promise<void>(resolve => {
+			// A stopped UA drops incoming requests, so it cannot be its own
+			// notifier: the subscriber and the notifier are two UAs.
+			const [subscriberSocket, notifierSocket] = LoopSocket.pair();
+
+			jest.spyOn(subscriberSocket, 'send');
+
+			const subscriberUA = new UA({
+				sockets: subscriberSocket,
+				uri: 'sip:alice@example.com',
+				contact_uri: 'sip:alice@abcdefabcdef.invalid;transport=ws',
+				register: false,
+			});
+
+			const notifierUA = new UA({
+				sockets: notifierSocket,
+				uri: 'sip:ikq@example.com',
+				contact_uri: 'sip:ikq@abcdefabcdef.invalid;transport=ws',
+				register: false,
+			});
+
+			let disconnected = 0;
+
+			const onDisconnected = (): void => {
+				if (++disconnected === 2) {
+					resolve();
+				}
+			};
+
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			notifierUA.on('newSubscribe', (e: any) => {
+				const notifier = notifierUA.notify(e.request, 'text/plain', {
+					pending: false,
+				});
+
+				notifier.on('subscribe', (isUnsubscribe: boolean) => {
+					if (isUnsubscribe) {
+						notifier.terminate();
+					} else {
+						notifier.notify();
+					}
+				});
+
+				notifier.start();
+			});
+
+			subscriberUA.on('connected', () => {
+				const subscriber = subscriberUA.subscribe(
+					'sip:ikq@example.com',
+					'weather',
+					'text/plain',
+					{ expires: 3600 }
+				);
+
+				subscriber.on('active', () => {
+					subscriberUA.stop();
+
+					expect(sentSubscribeExpires(subscriberSocket)).toEqual(['3600', '0']);
+				});
+
+				subscriber.on('terminated', (terminationCode: number) => {
+					expect(terminationCode).toBe(subscriber.C.UA_STOPPED);
+
+					notifierUA.stop();
+				});
+
+				subscriber.subscribe();
+			});
+
+			subscriberUA.on('disconnected', onDisconnected);
+			notifierUA.on('disconnected', onDisconnected);
+
+			notifierUA.start();
+			subscriberUA.start();
 		}));
 });

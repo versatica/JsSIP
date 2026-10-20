@@ -23,6 +23,7 @@ const C = {
 	UNSUBSCRIBE_TIMEOUT: 5,
 	FINAL_NOTIFY_RECEIVED: 6,
 	WRONG_NOTIFY_RECEIVED: 7,
+	UA_STOPPED: 8,
 
 	// Subscriber states.
 	STATE_PENDING: 0,
@@ -33,6 +34,9 @@ const C = {
 
 	// RFC 6665 3.1.1, default expires value.
 	DEFAULT_EXPIRES_SEC: 900,
+
+	// How long to wait for the final NOTIFY once the un-SUBSCRIBE is accepted.
+	FINAL_NOTIFY_TIMEOUT_SEC: 32,
 };
 
 /**
@@ -91,7 +95,11 @@ module.exports = class Subscriber extends EventEmitter {
 		}
 
 		this._ua = ua;
-		this._target = target;
+		this._target = this._ua.normalizeTarget(target);
+
+		if (!this._target) {
+			throw new TypeError(`Invalid target: ${target}`);
+		}
 
 		if (!Utils.isDecimal(expires) || expires <= 0) {
 			expires = C.DEFAULT_EXPIRES_SEC;
@@ -347,6 +355,10 @@ module.exports = class Subscriber extends EventEmitter {
 		}
 		this._terminated = true;
 
+		// No refresh from now on.
+		clearTimeout(this._expires_timer);
+		this._expires_timer = null;
+
 		// Set header Expires: 0.
 		const headers = this._headers.map(header => {
 			return header.startsWith('Expires') ? 'Expires: 0' : header;
@@ -361,7 +373,8 @@ module.exports = class Subscriber extends EventEmitter {
 	_terminateDialog(
 		terminationCode,
 		reason = undefined,
-		retryAfter = undefined
+		retryAfter = undefined,
+		response = undefined
 	) {
 		// To prevent duplicate emit terminated event.
 		if (this._state === C.STATE_TERMINATED) {
@@ -378,9 +391,11 @@ module.exports = class Subscriber extends EventEmitter {
 			this._dialog = null;
 		}
 
+		this._ua.destroySubscriber(this);
+
 		logger.debug(`emit "terminated" code=${terminationCode}`);
 
-		this.emit('terminated', terminationCode, reason, retryAfter);
+		this.emit('terminated', terminationCode, reason, retryAfter, response);
 	}
 
 	_sendInitialSubscribe(body, headers) {
@@ -395,9 +410,11 @@ module.exports = class Subscriber extends EventEmitter {
 
 		this._state = C.STATE_WAITING_NOTIFY;
 
+		this._ua.newSubscriber(this);
+
 		const request = new SIPMessage.OutgoingRequest(
 			JsSIP_C.SUBSCRIBE,
-			this._ua.normalizeTarget(this._target),
+			this._target,
 			this._ua,
 			this._params,
 			headers,
@@ -477,7 +494,12 @@ module.exports = class Subscriber extends EventEmitter {
 				if (dialog.error) {
 					// OK response without Contact.
 					logger.warn(dialog.error);
-					this._terminateDialog(C.SUBSCRIBE_WRONG_OK_RESPONSE);
+					this._terminateDialog(
+						C.SUBSCRIBE_WRONG_OK_RESPONSE,
+						undefined,
+						undefined,
+						response
+					);
 
 					return;
 				}
@@ -494,6 +516,24 @@ module.exports = class Subscriber extends EventEmitter {
 
 					this._sendSubsequentSubscribe(subscribe.body, subscribe.headers);
 				}
+			}
+
+			// Un-SUBSCRIBE accepted: no refresh, only the final NOTIFY to wait for
+			// (RFC 6665 4.1.2.3).
+			if (this._terminated) {
+				// A stopped UA drops every incoming request, the final NOTIFY too.
+				if (this._ua.status === this._ua.C.STATUS_USER_CLOSED) {
+					this._terminateDialog(
+						C.UA_STOPPED,
+						undefined,
+						undefined,
+						response
+					);
+				} else {
+					this._scheduleFinalNotifyTimeout();
+				}
+
+				return;
 			}
 
 			// Check expires value.
@@ -515,9 +555,19 @@ module.exports = class Subscriber extends EventEmitter {
 				this._scheduleSubscribe(expires);
 			}
 		} else if (response.status_code === 401 || response.status_code === 407) {
-			this._terminateDialog(C.SUBSCRIBE_AUTHENTICATION_FAILED);
+			this._terminateDialog(
+				C.SUBSCRIBE_AUTHENTICATION_FAILED,
+				undefined,
+				undefined,
+				response
+			);
 		} else if (response.status_code >= 300) {
-			this._terminateDialog(C.SUBSCRIBE_NON_OK_RESPONSE);
+			this._terminateDialog(
+				C.SUBSCRIBE_NON_OK_RESPONSE,
+				undefined,
+				undefined,
+				response
+			);
 		}
 	}
 
@@ -553,6 +603,15 @@ module.exports = class Subscriber extends EventEmitter {
 			this._expires_timer = null;
 			this._sendSubsequentSubscribe(null, this._headers);
 		}, timeout);
+	}
+
+	_scheduleFinalNotifyTimeout() {
+		clearTimeout(this._expires_timer);
+		this._expires_timer = setTimeout(() => {
+			this._expires_timer = null;
+			logger.debug('no final NOTIFY received after un-SUBSCRIBE');
+			this._terminateDialog(C.UNSUBSCRIBE_TIMEOUT);
+		}, C.FINAL_NOTIFY_TIMEOUT_SEC * 1000);
 	}
 
 	_parseSubscriptionState(strState) {

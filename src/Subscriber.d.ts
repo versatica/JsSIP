@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { IncomingRequest } from './SIPMessage';
+import { IncomingRequest, IncomingResponse } from './SIPMessage';
 import { UA } from './UA';
 
 declare enum SubscriberTerminatedCode {
@@ -11,6 +11,7 @@ declare enum SubscriberTerminatedCode {
 	UNSUBSCRIBE_TIMEOUT = 5,
 	FINAL_NOTIFY_RECEIVED = 6,
 	WRONG_NOTIFY_RECEIVED = 7,
+	UA_STOPPED = 8,
 }
 
 export interface MessageEventMap {
@@ -21,6 +22,7 @@ export interface MessageEventMap {
 		terminationCode: SubscriberTerminatedCode,
 		reason: string | undefined,
 		retryAfter: number | undefined,
+		response: IncomingResponse | undefined,
 	];
 	notify: [
 		isFinal: boolean,
