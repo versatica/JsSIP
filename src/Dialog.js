@@ -114,7 +114,7 @@ module.exports = class Dialog {
 	}
 
 	isTerminated() {
-		return this._status === C.STATUS_TERMINATED;
+		return this._state === C.STATUS_TERMINATED;
 	}
 
 	update(message, type) {

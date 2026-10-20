@@ -2,6 +2,8 @@
 
 ### NEXT
 
+- Dialog: Fix, Dialog.isTerminated() never returns true (#981). Thanks to @deltapath-eric.
+
 ### 3.13.8
 
 - RTCSession: Fix, remove refer_to uri headers when creating target uri for INVITE (#971). Thanks to @karstenluedtke.
