@@ -8,7 +8,7 @@ import {
 	TerminateOptions,
 } from './RTCSession';
 import { IncomingResponse } from './SIPMessage';
-import { NameAddrHeader } from './NameAddrHeader';
+import NameAddrHeader = require('./NameAddrHeader');
 import { causes } from './Constants';
 
 export interface AcceptOptions extends ExtraHeaders {

@@ -17,7 +17,7 @@ import { Message, SendMessageOptions } from './Message';
 import { Registrator } from './Registrator';
 import { Notifier } from './Notifier';
 import { Subscriber } from './Subscriber';
-import { URI } from './URI';
+import URI = require('./URI');
 import { causes } from './Constants';
 
 export interface UnRegisterOptions {

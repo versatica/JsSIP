@@ -6,7 +6,7 @@ const UA = require('./UA');
 const URI = require('./URI');
 const NameAddrHeader = require('./NameAddrHeader');
 const Grammar = require('./Grammar');
-const WebSocketInterface = require('./WebSocketInterface');
+const { WebSocketInterface } = require('./WebSocketInterface');
 const debug = require('debug')('JsSIP');
 const RTCSession = require('./RTCSession');
 

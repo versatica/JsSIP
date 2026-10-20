@@ -5,8 +5,8 @@ import {
 	IncomingResponse,
 	OutgoingRequest,
 } from './SIPMessage';
-import { NameAddrHeader } from './NameAddrHeader';
-import { URI } from './URI';
+import NameAddrHeader = require('./NameAddrHeader');
+import URI = require('./URI');
 import { UA } from './UA';
 import { causes, DTMF_TRANSPORT } from './Constants';
 

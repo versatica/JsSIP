@@ -7,11 +7,13 @@ import * as Utils from './Utils';
 
 export { C, Exceptions, Grammar, Utils };
 
+import URI = require('./URI');
+import NameAddrHeader = require('./NameAddrHeader');
+
 export { UA } from './UA';
-export { URI } from './URI';
-export { NameAddrHeader } from './NameAddrHeader';
+export { URI, NameAddrHeader };
 export { WebSocketInterface } from './WebSocketInterface';
-export { Socket, WeightedSocket } from './Socket';
+export type { Socket, WeightedSocket } from './Socket';
 
 export const debug: Debug;
 export const name: string;
