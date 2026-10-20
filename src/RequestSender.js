@@ -1,6 +1,6 @@
 const { Logger } = require('./Logger');
 const JsSIP_C = require('./Constants');
-const DigestAuthentication = require('./DigestAuthentication');
+const { DigestAuthentication } = require('./DigestAuthentication');
 const Transactions = require('./Transactions');
 
 const logger = new Logger('RequestSender');
