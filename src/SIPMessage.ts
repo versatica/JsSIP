@@ -3,6 +3,7 @@ import type { EventEmitter } from 'events';
 import * as JsSIP_C from './Constants';
 import { Logger } from './Logger';
 import * as Grammar from './Grammar';
+import type { Transport } from './Transport';
 import {
 	cloneArray,
 	createRandomToken,
@@ -85,18 +86,6 @@ export type OutgoingRequestParams = {
  */
 
 /**
- * The transport surface SIP messages depend on.
- *
- * TODO: Replace with `import type { Transport } from './Transport'` once
- * `Transport` is ported to TypeScript.
- */
-export interface TransportLike {
-	readonly sip_uri: string;
-
-	send(data: string): boolean;
-}
-
-/**
  * The client transaction an outgoing INVITE is bound to.
  *
  * TODO: Replace with `import type { InviteClientTransaction } from
@@ -149,7 +138,7 @@ export interface UALike {
 		pub_gruu?: string | null;
 		temp_gruu?: string | null;
 	};
-	readonly transport: TransportLike;
+	readonly transport: Transport;
 }
 
 /**
@@ -829,7 +818,7 @@ export class IncomingMessage {
 export class IncomingRequest extends IncomingMessage {
 	ua: UALike;
 	ruri: URI;
-	transport: TransportLike | null;
+	transport: Transport | null;
 	server_transaction: ServerTransactionLike | null;
 
 	constructor({ ua, ruri, ...params }: IncomingRequestParams) {
