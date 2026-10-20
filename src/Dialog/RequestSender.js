@@ -59,19 +59,18 @@ module.exports = class DialogRequestSender {
 		if (
 			(this._request.method === JsSIP_C.INVITE ||
 				(this._request.method === JsSIP_C.UPDATE && this._request.body)) &&
-			request_sender.clientTransaction.state !==
-				Transactions.C.STATUS_TERMINATED
+			request_sender.clientTransaction.state !== Transactions.Status.TERMINATED
 		) {
 			this._dialog.uac_pending_reply = true;
 
 			const stateChanged = () => {
 				if (
 					request_sender.clientTransaction.state ===
-						Transactions.C.STATUS_ACCEPTED ||
+						Transactions.Status.ACCEPTED ||
 					request_sender.clientTransaction.state ===
-						Transactions.C.STATUS_COMPLETED ||
+						Transactions.Status.COMPLETED ||
 					request_sender.clientTransaction.state ===
-						Transactions.C.STATUS_TERMINATED
+						Transactions.Status.TERMINATED
 				) {
 					request_sender.clientTransaction.removeListener(
 						'stateChanged',
