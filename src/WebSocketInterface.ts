@@ -17,7 +17,7 @@ export class WebSocketInterface implements Socket {
 		code?: number,
 		reason?: string
 	) => void;
-	declare ondata: <T>(event: T) => void;
+	declare ondata: (data: string | ArrayBuffer) => void;
 
 	constructor(url: string) {
 		logger.debug('new() [url:"%s"]', url);

@@ -28,12 +28,12 @@ export interface Socket {
 
 	ondisconnect(error: boolean, code?: number, reason?: string): void;
 
-	ondata<T>(event: T): void;
+	ondata(data: string | ArrayBuffer): void;
 }
 
 export interface WeightedSocket {
 	socket: Socket;
-	weight: number;
+	weight?: number;
 }
 
 export const isSocket = (socket: unknown): socket is Socket => {
