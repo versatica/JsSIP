@@ -2,6 +2,8 @@
 
 ### NEXT
 
+### 3.13.9
+
 - Dialog: Fix, Dialog.isTerminated() never returns true (#981). Thanks to @deltapath-eric.
 
 ### 3.13.8
