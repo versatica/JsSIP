@@ -354,7 +354,7 @@ describe('subscriber/notifier communication', () => {
 				});
 
 				subscriber.on('terminated', (terminationCode: number) => {
-					expect(terminationCode).toBe(subscriber.C.UNSUBSCRIBED_ON_UA_STOP);
+					expect(terminationCode).toBe(subscriber.C.UA_STOPPED);
 
 					notifierUA.stop();
 				});

@@ -23,7 +23,7 @@ const C = {
 	UNSUBSCRIBE_TIMEOUT: 5,
 	FINAL_NOTIFY_RECEIVED: 6,
 	WRONG_NOTIFY_RECEIVED: 7,
-	UNSUBSCRIBED_ON_UA_STOP: 8,
+	UA_STOPPED: 8,
 
 	// Subscriber states.
 	STATE_PENDING: 0,
@@ -524,7 +524,7 @@ module.exports = class Subscriber extends EventEmitter {
 				// A stopped UA drops every incoming request, the final NOTIFY too.
 				if (this._ua.status === this._ua.C.STATUS_USER_CLOSED) {
 					this._terminateDialog(
-						C.UNSUBSCRIBED_ON_UA_STOP,
+						C.UA_STOPPED,
 						undefined,
 						undefined,
 						response
