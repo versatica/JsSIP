@@ -120,9 +120,9 @@ export interface ServerTransactionLike extends EventEmitter {
  * nor `transport`, even though `UA` exposes both as public getters, so that
  * gap must be closed first.
  *
- * TODO: The `configuration` shape below is the *resolved* configuration, which
- * is not the same as the `UAConfiguration` input type declared in `UA.d.ts`.
- * It should become a type exported by `Config` once that module is ported.
+ * TODO: The `configuration` shape below is `Config.Configuration` plus the
+ * `jssip_id` that `UA` adds, so it can only be replaced once `UA` is ported.
+ * Note it is not the `UAConfiguration` input type declared in `UA.d.ts`.
  */
 export interface UALike {
 	readonly configuration: {

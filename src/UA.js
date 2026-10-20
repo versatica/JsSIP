@@ -17,7 +17,7 @@ const URI = require('./URI');
 const Parser = require('./Parser');
 const SIPMessage = require('./SIPMessage');
 const sanityCheck = require('./sanityCheck');
-const config = require('./Config');
+const config = require('./Configuration');
 
 const logger = new Logger('UA');
 
@@ -68,7 +68,7 @@ module.exports = class UA extends EventEmitter {
 			credentials: {},
 		};
 
-		this._configuration = Object.assign({}, config.settings);
+		this._configuration = Object.assign({}, config.DEFAULT_CONFIGURATION);
 		this._dynConfiguration = {};
 		this._dialogs = {};
 
@@ -933,7 +933,12 @@ module.exports = class UA extends EventEmitter {
 		logger.debug('configuration parameters after validation:');
 		for (const parameter in this._configuration) {
 			// Only show the user user configurable parameters.
-			if (Object.prototype.hasOwnProperty.call(config.settings, parameter)) {
+			if (
+				Object.prototype.hasOwnProperty.call(
+					config.DEFAULT_CONFIGURATION,
+					parameter
+				)
+			) {
 				switch (parameter) {
 					case 'uri':
 					case 'registrar_server': {
