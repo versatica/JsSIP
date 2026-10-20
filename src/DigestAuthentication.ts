@@ -3,20 +3,24 @@ import { calculateMD5, createRandomToken } from './Utils';
 
 const logger = new Logger('DigestAuthentication');
 
+/* NOTE: All of them are nullable because they come straight from the UA
+ * configuration, whose defaults are `null`.
+ */
 export type DigestCredentials = {
-	username?: string;
-	password?: string;
-	realm?: string;
+	username?: string | null;
+	password?: string | null;
+	realm?: string | null;
 	ha1?: string | null;
 };
 
+// A parsed WWW-Authenticate or Proxy-Authenticate header field.
 export type DigestChallenge = {
-	algorithm?: string | null;
-	realm?: string | null;
-	nonce?: string | null;
-	opaque?: string | null;
-	stale?: boolean | null;
-	qop?: string | string[] | null;
+	algorithm?: string;
+	realm?: string;
+	nonce?: string;
+	opaque?: string;
+	stale?: boolean;
+	qop?: string | string[];
 };
 
 export type DigestAuthenticateRequest = {
@@ -27,36 +31,24 @@ export type DigestAuthenticateRequest = {
 
 export class DigestAuthentication {
 	#credentials: DigestCredentials;
-	#cnonce: string | null;
-	#nc: number;
-	#ncHex: string;
-	#algorithm: string | null | undefined;
-	#realm: string | null | undefined;
-	#nonce: string | null | undefined;
-	#opaque: string | null | undefined;
+	#nc = 0;
+	#ncHex = '00000000';
+	#cnonce?: string;
+	#algorithm?: string;
+	#realm?: string;
+	#nonce?: string;
+	#opaque?: string;
 	// eslint-disable-next-line no-unused-private-class-members
-	#stale: boolean | null | undefined;
-	#qop: 'auth' | 'auth-int' | null;
-	#method: string | null;
-	#uri: string | { toString(): string } | null;
-	#ha1: string | null | undefined;
-	#response: string | null;
+	#stale?: boolean;
+	#qop?: 'auth' | 'auth-int';
+	#method?: string;
+	#uri?: string | { toString(): string };
+	// NOTE: Nullable because it may come from the UA configuration.
+	#ha1?: string | null;
+	#response?: string;
 
 	constructor(credentials: DigestCredentials) {
 		this.#credentials = credentials;
-		this.#cnonce = null;
-		this.#nc = 0;
-		this.#ncHex = '00000000';
-		this.#algorithm = null;
-		this.#realm = null;
-		this.#nonce = null;
-		this.#opaque = null;
-		this.#stale = null;
-		this.#qop = null;
-		this.#method = null;
-		this.#uri = null;
-		this.#ha1 = null;
-		this.#response = null;
 	}
 
 	/**
@@ -64,7 +56,7 @@ export class DigestAuthentication {
 	 *
 	 * NOTE: Exposed for testing purposes only.
 	 */
-	get response(): string | null {
+	get response(): string | undefined {
 		return this.#response;
 	}
 
@@ -168,7 +160,7 @@ export class DigestAuthentication {
 				return false;
 			}
 		} else {
-			this.#qop = null;
+			this.#qop = undefined;
 		}
 
 		// Fill other attributes.
@@ -226,7 +218,7 @@ export class DigestAuthentication {
 			this.#response = calculateMD5(
 				`${this.#ha1}:${this.#nonce}:${this.#ncHex}:${this.#cnonce}:auth-int:${ha2}`
 			);
-		} else if (this.#qop === null) {
+		} else if (this.#qop === undefined) {
 			// HA2 = MD5(A2) = MD5(method:digestURI).
 			a2 = `${this.#method}:${this.#uri}`;
 			ha2 = calculateMD5(a2);

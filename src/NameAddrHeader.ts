@@ -19,7 +19,7 @@ class NameAddrHeader {
 	}
 
 	#uri: URI;
-	#display_name: string | undefined;
+	#display_name?: string;
 	#parameters: URI.Parameters;
 
 	constructor(
