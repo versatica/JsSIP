@@ -53,7 +53,7 @@ module.exports = class ReferSubscriber extends EventEmitter {
 				header.toLowerCase().startsWith('referred-by:')
 			)
 		) {
-			const referredBy = `Referred-By: <${this._session._ua._configuration.uri._scheme}:${this._session._ua._configuration.uri._user}@${this._session._ua._configuration.uri._host}>`;
+			const referredBy = `Referred-By: <${this._session._ua._configuration.uri.scheme}:${this._session._ua._configuration.uri.user}@${this._session._ua._configuration.uri.host}>`;
 
 			extraHeaders.push(referredBy);
 		}

@@ -135,6 +135,10 @@ const config = tsEslint.config(
 			],
 			'@typescript-eslint/prefer-function-type': 0,
 			'@typescript-eslint/dot-notation': 0,
+			// `import X = require('./X')` is the only way to consume a module that
+			// uses `export =` while `esModuleInterop` is disabled. Bare `require()`
+			// calls remain forbidden.
+			'@typescript-eslint/no-require-imports': [2, { allowAsImport: true }],
 			'@typescript-eslint/no-unused-vars': [
 				2,
 				{
