@@ -1,5 +1,5 @@
 const sdp_transform = require('sdp-transform');
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const JsSIP_C = require('./Constants');
 const Utils = require('./Utils');
 const NameAddrHeader = require('./NameAddrHeader');

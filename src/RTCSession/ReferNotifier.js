@@ -1,4 +1,4 @@
-const Logger = require('../Logger');
+const { Logger } = require('../Logger');
 const JsSIP_C = require('../Constants');
 
 const logger = new Logger('RTCSession:ReferNotifier');

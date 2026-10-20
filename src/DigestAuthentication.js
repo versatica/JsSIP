@@ -1,4 +1,4 @@
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const Utils = require('./Utils');
 
 const logger = new Logger('DigestAuthentication');

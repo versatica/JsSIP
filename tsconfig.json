@@ -7,11 +7,11 @@
 		"outDir": "lib",
 		"rootDir": "src",
 		"allowJs": true,
-		// Do not generate declaration files automatically yet.
-		// "declaration": true,
-		// "declarationMap": true,
-		// "emitDeclarationOnly": false,
-		// "declarationDir": "lib",
+		// Declaration files are generated for .ts sources. Modules not yet ported
+		// to TypeScript still ship the hand-written .d.ts files in src/, which
+		// npm-scripts.mjs copies over the generated ones.
+		"declaration": true,
+		"declarationMap": true,
 		"isolatedModules": true,
 		"verbatimModuleSyntax": false,
 		"useDefineForClassFields": true,

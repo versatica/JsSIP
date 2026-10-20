@@ -1,4 +1,4 @@
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const SIPMessage = require('./SIPMessage');
 const JsSIP_C = require('./Constants');
 const Transactions = require('./Transactions');

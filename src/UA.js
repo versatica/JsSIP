@@ -1,7 +1,7 @@
 /* eslint-disable no-invalid-this */
 
 const EventEmitter = require('events').EventEmitter;
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const JsSIP_C = require('./Constants');
 const Registrator = require('./Registrator');
 const RTCSession = require('./RTCSession');

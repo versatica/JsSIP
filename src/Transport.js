@@ -1,4 +1,4 @@
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const Socket = require('./Socket');
 const JsSIP_C = require('./Constants');
 

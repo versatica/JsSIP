@@ -1,4 +1,4 @@
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const Utils = require('./Utils');
 const Grammar = require('./Grammar');
 

@@ -1,6 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const Exceptions = require('./Exceptions');
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const JsSIP_C = require('./Constants');
 const Utils = require('./Utils');
 const Dialog = require('./Dialog');

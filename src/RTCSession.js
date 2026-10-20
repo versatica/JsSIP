@@ -3,7 +3,7 @@
 
 const EventEmitter = require('events').EventEmitter;
 const sdp_transform = require('sdp-transform');
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const JsSIP_C = require('./Constants');
 const Exceptions = require('./Exceptions');
 const Transactions = require('./Transactions');

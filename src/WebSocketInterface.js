@@ -1,4 +1,4 @@
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const Grammar = require('./Grammar');
 
 const logger = new Logger('WebSocketInterface');

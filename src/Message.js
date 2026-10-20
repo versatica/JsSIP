@@ -1,5 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
-const Logger = require('./Logger');
+const { Logger } = require('./Logger');
 const JsSIP_C = require('./Constants');
 const SIPMessage = require('./SIPMessage');
 const Utils = require('./Utils');
