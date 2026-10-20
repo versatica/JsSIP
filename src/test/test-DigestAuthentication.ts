@@ -20,7 +20,6 @@ describe('DigestAuthentication', () => {
 			realm: 'testrealm@host.com',
 			nonce: 'dcd98b7102dd2f0e8b11d0f600bfb0c093',
 			opaque: '5ccc069c403ebaf9f0171e9517f40e41',
-			stale: null,
 			qop: 'auth',
 		};
 
@@ -44,9 +43,6 @@ describe('DigestAuthentication', () => {
 			algorithm: 'MD5',
 			realm: 'testrealm@host.com',
 			nonce: '5a071f75353f667787615249c62dcc7b15a4828f',
-			opaque: null,
-			stale: null,
-			qop: null,
 		};
 
 		const digest = new DigestAuthentication(credentials);
@@ -70,8 +66,6 @@ describe('DigestAuthentication', () => {
 			algorithm: 'MD5',
 			realm: 'testrealm@host.com',
 			nonce: '5a071f75353f667787615249c62dcc7b15a4828f',
-			opaque: null,
-			stale: null,
 			qop: 'auth',
 		};
 
@@ -96,8 +90,6 @@ describe('DigestAuthentication', () => {
 			algorithm: 'MD5',
 			realm: 'testrealm@host.com',
 			nonce: '5a071f75353f667787615249c62dcc7b15a4828f',
-			opaque: null,
-			stale: null,
 			qop: 'auth-int',
 		};
 
@@ -123,8 +115,6 @@ describe('DigestAuthentication', () => {
 			algorithm: 'MD5',
 			realm: 'testrealm@host.com',
 			nonce: '5a071f75353f667787615249c62dcc7b15a4828f',
-			opaque: null,
-			stale: null,
 			qop: 'auth-int',
 		};
 

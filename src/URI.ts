@@ -27,9 +27,9 @@ class URI {
 	}
 
 	#scheme: string;
-	#user: string | undefined;
+	#user?: string;
 	#host: string;
-	#port: number | null | undefined;
+	#port?: number | null;
 	#parameters: URI.Parameters;
 	#headers: URI.Headers;
 

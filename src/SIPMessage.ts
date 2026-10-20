@@ -163,14 +163,11 @@ export interface UALike {
  * -param {String} [body]
  */
 export class OutgoingRequest {
-	/* NOTE: Declared in the very same order in which the constructor assigns
-	 * them so that the own property order of the instance is preserved.
-	 */
 	ua: UALike;
 	headers: Record<string, OutgoingHeaderValue[]>;
 	method: string;
 	ruri: URI;
-	body: string | undefined;
+	body?: string;
 	extraHeaders: string[];
 	to: NameAddrHeader;
 	from: NameAddrHeader;
@@ -515,103 +512,112 @@ export class InitialOutgoingInviteRequest extends OutgoingRequest {
 	}
 }
 
+export type IncomingHeaders = Record<string, IncomingHeader[]>;
+
+/**
+ * Everything needed to build an `IncomingMessage`.
+ */
+export type IncomingMessageParams = {
+	data: string;
+	headers: IncomingHeaders;
+	method: string;
+	// Undefined when the corresponding header field is missing or unparseable.
+	via?: Grammar.Grammar;
+	via_branch?: string;
+	call_id?: string;
+	cseq?: number;
+	from: NameAddrHeader;
+	/* NOTE: `null` when the tag parameter is present but valueless (`;tag`),
+	 * `undefined` when it is absent altogether.
+	 */
+	from_tag?: string | null;
+	to: NameAddrHeader;
+	to_tag?: string | null;
+	body: string;
+	session_expires?: number;
+	session_expires_refresher?: string;
+	refer_to?: Grammar.Grammar;
+	replaces?: Grammar.Grammar;
+	event?: Grammar.Grammar;
+};
+
+export type IncomingRequestParams = IncomingMessageParams & {
+	ua: UALike;
+	ruri: URI;
+};
+
+export type IncomingResponseParams = IncomingMessageParams & {
+	status_code: number;
+	reason_phrase: string;
+};
+
 export class IncomingMessage {
-	/* NOTE: Declared in the very same order in which the constructor assigns
-	 * them so that the own property order of the instance is preserved.
+	/* Header store operations.
+	 *
+	 * They are static so that `IncomingMessageBuilder` can collect and parse
+	 * header fields before any `IncomingMessage` exists. The instance methods
+	 * of the same name delegate to them.
 	 */
-	data: string | null;
-	headers: Record<string, IncomingHeader[]>;
-	method: string | null;
-	via: Grammar.Grammar | null;
-	via_branch: string | null;
-	call_id: string | null;
-	cseq: number | null;
-	from: NameAddrHeader | null;
-	from_tag: string | null;
-	to: NameAddrHeader | null;
-	to_tag: string | null;
-	body: string | null;
-	sdp: SDP | null;
-
-	/* NOTE: `declare`d (and so not emitted) because the original implementation
-	 * does not create these own properties. They are assigned by `Parser.js`
-	 * when the corresponding header field is present.
-	 */
-	declare session_expires?: number;
-	declare session_expires_refresher?: string;
-	declare refer_to?: Grammar.Grammar;
-	declare replaces?: Grammar.Grammar;
-	declare event?: Grammar.Grammar;
-
-	constructor() {
-		this.data = null;
-		// NOTE: The original implementation sets `null` here and both subclasses
-		// immediately replace it with `{}`. An empty object is used instead so
-		// that the type does not have to be nullable. Nothing can observe the
-		// difference since `IncomingMessage` is never instantiated directly.
-		this.headers = {};
-		this.method = null;
-		this.via = null;
-		this.via_branch = null;
-		this.call_id = null;
-		this.cseq = null;
-		this.from = null;
-		this.from_tag = null;
-		this.to = null;
-		this.to_tag = null;
-		this.body = null;
-		this.sdp = null;
-	}
 
 	/**
 	 * Insert a header of the given name and value into the last position of the
-	 * header array.
+	 * given header store.
 	 */
-	addHeader(name: string, value: string): void {
+	static addHeader(
+		headers: IncomingHeaders,
+		name: string,
+		value: string
+	): void {
 		const header: IncomingHeader = { raw: value };
 
 		name = headerize(name);
 
-		const headers = this.headers[name];
+		const existing = headers[name];
 
-		if (headers) {
-			headers.push(header);
+		if (existing) {
+			existing.push(header);
 		} else {
-			this.headers[name] = [header];
+			headers[name] = [header];
 		}
 	}
 
 	/**
-	 * Get the value of the given header name at the given position.
+	 * Replace the value of the given header by the value.
 	 */
-	getHeader(name: string): string | undefined {
-		const header = this.headers[headerize(name)];
+	static setHeader(
+		headers: IncomingHeaders,
+		name: string,
+		value: string
+	): void {
+		headers[headerize(name)] = [{ raw: value }];
+	}
 
-		if (header) {
-			if (header[0]) {
-				return header[0].raw;
-			}
-		} else {
-			return;
+	/**
+	 * Get the value of the given header name at the first position, or undefined
+	 * if the header field is not present.
+	 */
+	static getHeader(headers: IncomingHeaders, name: string): string | undefined {
+		const header = headers[headerize(name)];
+
+		if (header?.[0]) {
+			return header[0].raw;
 		}
 
-		// NOTE: Explicit (and otherwise implicit) `undefined` for
-		// `noImplicitReturns`.
-		return;
+		return undefined;
 	}
 
 	/**
 	 * Get the header/s of the given name.
 	 */
-	getHeaders(name: string): string[] {
-		const headers = this.headers[headerize(name)];
+	static getHeaders(headers: IncomingHeaders, name: string): string[] {
+		const found = headers[headerize(name)];
 		const result: string[] = [];
 
-		if (!headers) {
+		if (!found) {
 			return [];
 		}
 
-		for (const header of headers) {
+		for (const header of found) {
 			result.push(header.raw);
 		}
 
@@ -621,33 +627,37 @@ export class IncomingMessage {
 	/**
 	 * Verify the existence of the given header.
 	 */
-	hasHeader(name: string): boolean {
-		return this.headers[headerize(name)] ? true : false;
+	static hasHeader(headers: IncomingHeaders, name: string): boolean {
+		return headers[headerize(name)] ? true : false;
 	}
 
 	/**
-	 * Parse the given header on the given index.
-	 * -param {String} name header name
-	 * -param {Number} [idx=0] header index
-	 * -returns {Object|undefined} Parsed header object, undefined if the header
-	 *  is not present or in case of a parsing error.
+	 * Parse the given header on the given index, caching the result.
 	 */
-	parseHeader<T = unknown>(name: string, idx = 0): T | undefined {
+	/**
+	 * Parse the given header on the given index, caching the result. Returns
+	 * undefined if the header field is not present or cannot be parsed.
+	 */
+	static parseHeader<T = unknown>(
+		headers: IncomingHeaders,
+		name: string,
+		idx = 0
+	): T | undefined {
 		name = headerize(name);
 
-		const headers = this.headers[name];
+		const found = headers[name];
 
-		if (!headers) {
+		if (!found) {
 			logger.debug(`header "${name}" not present`);
 
-			return;
-		} else if (idx >= headers.length) {
+			return undefined;
+		} else if (idx >= found.length) {
 			logger.debug(`not so many "${name}" headers present`);
 
-			return;
+			return undefined;
 		}
 
-		const header = headers[idx]!;
+		const header = found[idx]!;
 		const value = header.raw;
 
 		if (header.parsed) {
@@ -658,17 +668,117 @@ export class IncomingMessage {
 		const parsed = Grammar.parse(value, name.replace(/-/g, '_'));
 
 		if (parsed === -1) {
-			headers.splice(idx, 1); // delete from headers
+			found.splice(idx, 1); // delete from headers
 			logger.debug(
 				`error parsing "${name}" header field with value "${value}"`
 			);
 
-			return;
+			return undefined;
 		} else {
 			header.parsed = parsed;
 
 			return parsed as T;
 		}
+	}
+
+	data: string;
+	headers: IncomingHeaders;
+	method: string;
+	via?: Grammar.Grammar;
+	via_branch?: string;
+	call_id?: string;
+	cseq?: number;
+	from: NameAddrHeader;
+	from_tag?: string | null;
+	to: NameAddrHeader;
+	to_tag?: string | null;
+	body: string;
+	sdp: SDP | null;
+
+	// Only set when the corresponding header field is present.
+	session_expires?: number;
+	session_expires_refresher?: string;
+	refer_to?: Grammar.Grammar;
+	replaces?: Grammar.Grammar;
+	event?: Grammar.Grammar;
+
+	constructor({
+		data,
+		headers,
+		method,
+		via,
+		via_branch,
+		call_id,
+		cseq,
+		from,
+		from_tag,
+		to,
+		to_tag,
+		body,
+		session_expires,
+		session_expires_refresher,
+		refer_to,
+		replaces,
+		event,
+	}: IncomingMessageParams) {
+		this.data = data;
+		this.headers = headers;
+		this.method = method;
+		this.via = via;
+		this.via_branch = via_branch;
+		this.call_id = call_id;
+		this.cseq = cseq;
+		this.from = from;
+		this.from_tag = from_tag;
+		this.to = to;
+		this.to_tag = to_tag;
+		this.body = body;
+		this.sdp = null;
+		this.session_expires = session_expires;
+		this.session_expires_refresher = session_expires_refresher;
+		this.refer_to = refer_to;
+		this.replaces = replaces;
+		this.event = event;
+	}
+
+	/**
+	 * Insert a header of the given name and value into the last position of the
+	 * header array.
+	 */
+	addHeader(name: string, value: string): void {
+		IncomingMessage.addHeader(this.headers, name, value);
+	}
+
+	/**
+	 * Get the value of the given header name at the given position.
+	 */
+	getHeader(name: string): string | undefined {
+		return IncomingMessage.getHeader(this.headers, name);
+	}
+
+	/**
+	 * Get the header/s of the given name.
+	 */
+	getHeaders(name: string): string[] {
+		return IncomingMessage.getHeaders(this.headers, name);
+	}
+
+	/**
+	 * Verify the existence of the given header.
+	 */
+	hasHeader(name: string): boolean {
+		return IncomingMessage.hasHeader(this.headers, name);
+	}
+
+	/**
+	 * Parse the given header on the given index.
+	 * -param {String} name header name
+	 * -param {Number} [idx=0] header index
+	 * -returns {Object|undefined} Parsed header object, undefined if the header
+	 *  is not present or in case of a parsing error.
+	 */
+	parseHeader<T = unknown>(name: string, idx = 0): T | undefined {
+		return IncomingMessage.parseHeader<T>(this.headers, name, idx);
 	}
 
 	/**
@@ -691,9 +801,7 @@ export class IncomingMessage {
 	 * -param {String} value header value
 	 */
 	setHeader(name: string, value: string): void {
-		const header: IncomingHeader = { raw: value };
-
-		this.headers[headerize(name)] = [header];
+		IncomingMessage.setHeader(this.headers, name, value);
 	}
 
 	/**
@@ -713,28 +821,22 @@ export class IncomingMessage {
 		}
 	}
 
-	toString(): string | null {
+	toString(): string {
 		return this.data;
 	}
 }
 
 export class IncomingRequest extends IncomingMessage {
-	/* NOTE: Declared in the very same order in which the constructor assigns
-	 * them so that the own property order of the instance is preserved.
-	 * `headers` is not redeclared because it is already created by the parent
-	 * constructor.
-	 */
 	ua: UALike;
-	ruri: URI | null;
+	ruri: URI;
 	transport: TransportLike | null;
 	server_transaction: ServerTransactionLike | null;
 
-	constructor(ua: UALike) {
-		super();
+	constructor({ ua, ruri, ...params }: IncomingRequestParams) {
+		super(params);
 
 		this.ua = ua;
-		this.headers = {};
-		this.ruri = null;
+		this.ruri = ruri;
 		this.transport = null;
 		this.server_transaction = null;
 	}
@@ -757,7 +859,11 @@ export class IncomingRequest extends IncomingMessage {
 		onFailure?: () => void
 	): void {
 		const supported: string[] = [];
-		let to = this.getHeader('To')!;
+		/* NOTE: `getHeader()` may return undefined, but a To header field is
+		 * guaranteed here: `IncomingMessageBuilder` refuses to build a message
+		 * whose To header field is missing or unparseable.
+		 */
+		let to = this.getHeader('To');
 
 		// NOTE: `code` is normalized into a local (instead of onto the parameter
 		// itself) so that the `TypeError` message below is identical to the one
@@ -808,7 +914,7 @@ export class IncomingRequest extends IncomingMessage {
 
 		if (!this.to_tag && status_code > 100) {
 			to += `;tag=${newTag()}`;
-		} else if (this.to_tag && !this.s<NameAddrHeader>('to')!.hasParam('tag')) {
+		} else if (this.to_tag && !this.to.hasParam('tag')) {
 			to += `;tag=${this.to_tag}`;
 		}
 
@@ -905,11 +1011,15 @@ export class IncomingRequest extends IncomingMessage {
 			response += `Via: ${via}\r\n`;
 		}
 
-		let to = this.getHeader('To')!;
+		/* NOTE: `getHeader()` may return undefined, but a To header field is
+		 * guaranteed here: `IncomingMessageBuilder` refuses to build a message
+		 * whose To header field is missing or unparseable.
+		 */
+		let to = this.getHeader('To');
 
 		if (!this.to_tag && code > 100) {
 			to += `;tag=${newTag()}`;
-		} else if (this.to_tag && !this.s<NameAddrHeader>('to')!.hasParam('tag')) {
+		} else if (this.to_tag && !this.to.hasParam('tag')) {
 			to += `;tag=${this.to_tag}`;
 		}
 
@@ -931,14 +1041,17 @@ export class IncomingRequest extends IncomingMessage {
 }
 
 export class IncomingResponse extends IncomingMessage {
-	status_code: number | null;
-	reason_phrase: string | null;
+	status_code: number;
+	reason_phrase: string;
 
-	constructor() {
-		super();
+	constructor({
+		status_code,
+		reason_phrase,
+		...params
+	}: IncomingResponseParams) {
+		super(params);
 
-		this.headers = {};
-		this.status_code = null;
-		this.reason_phrase = null;
+		this.status_code = status_code;
+		this.reason_phrase = reason_phrase;
 	}
 }
