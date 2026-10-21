@@ -94,6 +94,8 @@ module.exports = class Registrator {
 		const extraHeaders = Utils.cloneArray(this._extraHeaders);
 
 		let contactValue;
+		// Proactive Authorization: Authorization header will be added automatically
+		// by RequestSender if cached credentials are available from previous auth challenges.
 
 		if (this._expires) {
 			contactValue = `${this._contact};expires=${this._expires}${this._extraContactParams}`;
