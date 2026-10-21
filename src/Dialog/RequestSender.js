@@ -1,6 +1,6 @@
 const JsSIP_C = require('../Constants');
 const Transactions = require('../Transactions');
-const RequestSender = require('../RequestSender');
+const { RequestSender } = require('../RequestSender');
 
 // Default event handlers.
 const EventHandlers = {

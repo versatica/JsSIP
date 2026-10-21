@@ -89,10 +89,8 @@ export class NonInviteClientTransaction extends EventEmitter {
 	request: SIPMessage.OutgoingRequest;
 	eventHandlers: ClientTransactionEventHandlers;
 
-	/* NOTE: `declare`d (and so not emitted) because the original implementation
-	 * does not create these own properties in the constructor. `state` is
-	 * created by `stateChanged()` and the timer handles when their timers are
-	 * armed.
+	/* NOTE: Not set by the constructor. `state` is set by `stateChanged()` and
+	 * the timer handles when their timers are armed.
 	 */
 	state?: Status;
 	F?: ReturnType<typeof setTimeout>;
@@ -207,10 +205,8 @@ export class InviteClientTransaction extends EventEmitter {
 	request: SIPMessage.OutgoingRequest;
 	eventHandlers: ClientTransactionEventHandlers;
 
-	/* NOTE: `declare`d (and so not emitted) because the original implementation
-	 * does not create these own properties in the constructor. `state` is
-	 * created by `stateChanged()` and the timer handles when their timers are
-	 * armed.
+	/* NOTE: Not set by the constructor. `state` is set by `stateChanged()` and
+	 * the timer handles when their timers are armed.
 	 */
 	state?: Status;
 	B?: ReturnType<typeof setTimeout>;
@@ -453,8 +449,8 @@ export class NonInviteServerTransaction extends EventEmitter {
 	last_response: string;
 	state: Status;
 
-	/* NOTE: `declare`d (and so not emitted) because the original implementation
-	 * does not create these own properties in the constructor.
+	/* NOTE: Not set by the constructor. `transportError` is set by
+	 * `onTransportError()` and `J` when its timer is armed.
 	 */
 	transportError?: boolean;
 	J?: ReturnType<typeof setTimeout>;
@@ -574,8 +570,8 @@ export class InviteServerTransaction extends EventEmitter {
 	state: Status;
 	resendProvisionalTimer: ReturnType<typeof setInterval> | null;
 
-	/* NOTE: `declare`d (and so not emitted) because the original implementation
-	 * does not create these own properties in the constructor.
+	/* NOTE: Not set by the constructor. `transportError` is set by
+	 * `onTransportError()` and the timer handles when their timers are armed.
 	 */
 	transportError?: boolean;
 	H?: ReturnType<typeof setTimeout>;
