@@ -4,8 +4,8 @@ import * as consts from './include/consts';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const JsSIP = require('../JsSIP.js');
 const { URI, NameAddrHeader, Grammar, WebSocketInterface, UA } = JsSIP;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const Parser = require('../Parser.js');
+
+import * as Parser from '../Parser';
 
 describe('parser', () => {
 	test('parse URI', () => {
@@ -429,14 +429,18 @@ P-Preferred-Identity: "Cullen Jennings" <sip:fluffy@cisco.com>\r\n\r\n';
 		const ua = new UA(config as ConstructorParameters<typeof UA>[0]);
 		const message = Parser.parseMessage(data, ua);
 
+		if (!message) {
+			throw new Error('parseMessage() did not return a message');
+		}
+
 		expect(message.hasHeader('P-Preferred-Identity')).toBe(true);
 
 		const pai = message.getHeader('P-Preferred-Identity');
 		const nameAddress = NameAddrHeader.parse(pai);
 
 		expect(nameAddress instanceof NameAddrHeader).toBeTruthy();
-		expect(nameAddress!.uri.user).toBe('fluffy');
-		expect(nameAddress!.uri.host).toBe('cisco.com');
+		expect(nameAddress.uri.user).toBe('fluffy');
+		expect(nameAddress.uri.host).toBe('cisco.com');
 
 		expect(message.hasHeader('Privacy')).toBe(true);
 		expect(message.getHeader('Privacy')).toBe('id');
