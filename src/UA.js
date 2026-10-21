@@ -16,7 +16,7 @@ const Exceptions = require('./Exceptions');
 const URI = require('./URI');
 const Parser = require('./Parser');
 const SIPMessage = require('./SIPMessage');
-const sanityCheck = require('./sanityCheck');
+const { sanityCheck } = require('./sanityCheck');
 const config = require('./Configuration');
 
 const logger = new Logger('UA');
