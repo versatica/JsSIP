@@ -2,7 +2,7 @@ const { Logger } = require('./Logger');
 const Utils = require('./Utils');
 const JsSIP_C = require('./Constants');
 const SIPMessage = require('./SIPMessage');
-const RequestSender = require('./RequestSender');
+const { RequestSender } = require('./RequestSender');
 
 const logger = new Logger('Registrator');
 
