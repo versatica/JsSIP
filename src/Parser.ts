@@ -1,35 +1,41 @@
-const { Logger } = require('./Logger');
-const Grammar = require('./Grammar');
-const { IncomingMessageBuilder } = require('./IncomingMessageBuilder');
+import { Logger } from './Logger';
+import * as Grammar from './Grammar';
+import { IncomingMessageBuilder } from './IncomingMessageBuilder';
+import type { IncomingRequest, IncomingResponse, UALike } from './SIPMessage';
 
 const logger = new Logger('Parser');
 
 /**
  * Parse SIP Message
  */
-exports.parseMessage = (data, ua) => {
-	let bodyStart;
+export const parseMessage = (
+	data: string,
+	ua: UALike
+): IncomingRequest | IncomingResponse | undefined => {
+	let bodyStart: number;
 	let headerEnd = data.indexOf('\r\n');
 
 	if (headerEnd === -1) {
 		logger.warn('parseMessage() | no CRLF found, not a SIP message');
 
-		return;
+		return undefined;
 	}
 
 	// Parse first line. Check if it is a Request or a Reply.
 	const firstLine = data.substring(0, headerEnd);
-	const parsed = Grammar.parse(firstLine, 'Request_Response');
+	const parsed: Grammar.RequestResponse | -1 = Grammar.parse(
+		firstLine,
+		'Request_Response'
+	);
 
 	if (parsed === -1) {
 		logger.warn(
 			`parseMessage() | error parsing first line of SIP message: "${firstLine}"`
 		);
 
-		return;
+		return undefined;
 	}
 
-	const isResponse = Boolean(parsed.status_code);
 	const builder = new IncomingMessageBuilder();
 
 	let headerStart = headerEnd + 2;
@@ -37,6 +43,7 @@ exports.parseMessage = (data, ua) => {
 	/* Loop over every line in data. Detect the end of each header and parse
 	 * it or simply add to the headers collection.
 	 */
+
 	while (true) {
 		headerEnd = getHeader(data, headerStart);
 
@@ -49,7 +56,7 @@ exports.parseMessage = (data, ua) => {
 		else if (headerEnd === -1) {
 			logger.warn('parseMessage() | malformed message');
 
-			return;
+			return undefined;
 		}
 
 		const result = parseHeader(builder, data, headerStart, headerEnd);
@@ -57,7 +64,7 @@ exports.parseMessage = (data, ua) => {
 		if (result !== true) {
 			logger.warn('parseMessage() |', result.error);
 
-			return;
+			return undefined;
 		}
 
 		headerStart = headerEnd + 2;
@@ -72,27 +79,38 @@ exports.parseMessage = (data, ua) => {
 	if (builder.hasHeader('content-length')) {
 		const contentLength = builder.getHeader('content-length');
 
-		body = data.substr(bodyStart, contentLength);
+		body = data.substr(bodyStart, Number(contentLength));
 	} else {
 		body = data.substring(bodyStart);
 	}
 
-	if (isResponse) {
+	if ('status_code' in parsed) {
 		return builder.buildResponse(
 			data,
 			parsed.status_code,
 			parsed.reason_phrase,
 			body
 		);
-	} else {
-		return builder.buildRequest(ua, data, parsed.method, parsed.uri, body);
 	}
+
+	/* RFC 3261 8.2.2.1. The grammar accepts any absoluteURI as Request-URI but
+	 * only turns a SIP one into a `URI`, so anything else cannot be handled.
+	 */
+	if (!parsed.uri) {
+		logger.warn(
+			`parseMessage() | unsupported Request-URI scheme in "${firstLine}"`
+		);
+
+		return undefined;
+	}
+
+	return builder.buildRequest(ua, data, parsed.method, parsed.uri, body);
 };
 
 /**
  * Extract and parse every header of a SIP message.
  */
-function getHeader(data, headerStart) {
+function getHeader(data: string, headerStart: number): number {
 	// 'start' position of the header.
 	let start = headerStart;
 	// 'end' position of the header.
@@ -128,7 +146,12 @@ function getHeader(data, headerStart) {
 	return end;
 }
 
-function parseHeader(builder, data, headerStart, headerEnd) {
+function parseHeader(
+	builder: IncomingMessageBuilder,
+	data: string,
+	headerStart: number,
+	headerEnd: number
+): true | { error: string } {
 	const hcolonIndex = data.indexOf(':', headerStart);
 	const headerName = data.substring(headerStart, hcolonIndex).trim();
 	const headerValue = data.substring(hcolonIndex + 1, headerEnd).trim();
